@@ -52,9 +52,9 @@ After a dot, a keyword can be used as a member name: `obj.End`, `list.Next` (as 
 
 ### 1.2 Diagnostics
 
-Neither the lexer nor the parser stops at an error: they report it and keep reading, so that one mistake does not hide the rest. Codes are stable and never reused.
+Neither the lexer, the parser nor the analyzer stops at an error: they report it and keep reading, so that one mistake does not hide the rest. Codes are stable and never reused.
 
-Every diagnostic is an **error** unless marked as a **warning** below. Errors must be fixed. Warnings point out something that works but may surprise; they **never stop a program from running or being built** (D23). The code's prefix says who reports it (L lexer, P parser), not how serious it is.
+Every diagnostic is an **error** unless marked as a **warning** below. Errors must be fixed. Warnings point out something that works but may surprise; they **never stop a program from running or being built** (D23). The code's prefix says who reports it (L lexer, P parser, A analyzer), not how serious it is.
 
 **Lexer**
 
@@ -101,6 +101,41 @@ How the parser recovers:
 | P021 | `ByRef` (not available yet; stage 2) | Reads it normally; the message suggests a `Function` with `Return` |
 | P022 | `Handles` (not available yet; stage 2) | Reads it normally; the message suggests a `ControlName_EventName` Sub |
 
+**Analyzer**
+
+The analyzer checks names and types (§2.1, §3.2, §5.2). It runs even when the parser found errors; anything it cannot work out is never checked again, so one mistake gives one diagnostic.
+
+| Code | Problem |
+|---|---|
+| A001 | A name is not declared |
+| A002 | A name is not declared, and a similar visible name exists ("did you mean") |
+| A003 | An undeclared name used with `.` (`lblMessage.Caption`), or `Me`: controls and forms are not available yet |
+| A004 | A type name does not exist |
+| A005 | A name is already declared in the same scope or procedure |
+| A006 | A local is used above its declaration |
+| A007 | A `Dim` with neither a type nor a value; a parameter or `Function` without `As` |
+| A008 | A value of one type where another is expected (§2.1) |
+| A009 | Text where a number is expected (use `CInt`, `CDbl`, `Val`) |
+| A010 | A `Double` where an `Integer` is expected (use `CInt` or `Int`) |
+| A011 | Text and a number joined with `+` (use `&`) |
+| A012 | A condition that is not `True`/`False` |
+| A013 | A binary operator used with types it does not support |
+| A014 | A unary operator used with a type it does not support |
+| A015 | The wrong number of arguments |
+| A016 | Something that is not a `Sub` or `Function`, called |
+| A017 | A `Sub` used where a value is needed |
+| A018 | `(index)` on something without numbered items |
+| A019 | A member the type does not have |
+| A020 | Something that cannot be on the left of `=` (a constant, a procedure, a call result) |
+| A021 | VB6 style `FunctionName = value` (use `Return value`) |
+| A022 | `Return value` in a `Sub` |
+| A023 | `Return` without a value in a `Function` |
+| A024 | `Exit For` / `Exit Do` / `Exit Sub` / `Exit Function` outside a matching loop or procedure |
+| A025 | `For Each` over something that is not a `List` or an array |
+| A026 | **Warning.** A local variable that is never used |
+| A027 | **Warning.** A `Function` with no `Return` |
+| A028 | **Warning.** A local that hides a form-level variable of the same name |
+
 ## 2. Types
 
 | GuBASIC | Dart | Default value |
@@ -118,6 +153,34 @@ How the parser recovers:
 - **`Nothing` (null) exists only for objects.** Value types always have a value, so beginners rarely meet null errors.
 - **To check whether an object is `Nothing`, compare with `Is`:** `If player Is Nothing Then`. For the opposite, write `If Not player Is Nothing Then`. (`=` compares values, not objects.)
 - There is **no `Variant`**. Use `Object` when a variable really must hold anything.
+
+### 2.1 Automatic conversions
+
+The same rules apply to assignments, arguments and `Return` values. Anything else needs a conversion function.
+
+| From → to | |
+|---|---|
+| `Integer` → `Double` | automatic |
+| `Integer`, `Double`, `Boolean`, `Date` → `String` | automatic, in the text form of §2.2 (`lblCount.Caption = count`) |
+| any value → `Object` | automatic |
+| `Nothing` → `Object`, `List`, arrays, `Exception` | automatic. Not to `String` or other value types |
+| `String` → a number | **no** (A009): use `CInt`, `CDbl` or `Val` |
+| `Double` → `Integer` | **no** (A010): use `CInt` (rounds) or `Int` (rounds down) — the fraction would be lost silently otherwise |
+| `Object` → a specific type | **no** (A008): use `CInt`, `CDbl`, `CStr` or `CBool` |
+| `Boolean` ↔ numbers | **no** (A008) |
+
+**Rounding.** `CInt` and `Round` round halves **away from zero**, as taught in school and as Excel's ROUND does: `CInt(2.5)` is 3, `CInt(-2.5)` is −3. `Int` rounds **down** to the smaller whole number: `Int(2.5)` is 2, `Int(-2.5)` is −3. This differs from Visual Basic, where `CInt` rounds halves to the nearest even number (2.5 → 2) ([Type Conversion Functions](https://learn.microsoft.com/en-us/dotnet/visual-basic/language-reference/functions/type-conversion-functions)) and `Math.Round` does the same by default ([Math.Round](https://learn.microsoft.com/en-us/dotnet/api/system.math.round)); to a beginner, 2.5 → 2 looks like a bug. Also unlike Visual Basic, where `Int` returns the type it is given ([Type Conversion Functions](https://learn.microsoft.com/en-us/dotnet/visual-basic/language-reference/functions/type-conversion-functions)), GuBASIC's `Int` returns an `Integer`, so `Int(x)` can be stored in an `Integer` directly.
+
+### 2.2 Text form of values
+
+Automatic conversion to `String`, `CStr`, `&` and `Debug.Print` all use one rule, which gives the same text on every platform:
+
+| Type | Text | Examples |
+|---|---|---|
+| `Integer` | the digits | `42`, `-7` |
+| `Double` | whole values without a decimal point; otherwise the shortest text that reads back as exactly the same number. Plain decimal from 1E-6 (inclusive) to 1E+15 (exclusive) in size, `d.dddE±n` outside it | `1`, `0.25`, `0.30000000000000004`, `1E+15`, `2.5E-7`; `-0` prints as `0`; also `NaN`, `Infinity`, `-Infinity` |
+| `Boolean` | `True` / `False` | |
+| `Date` | `yyyy-MM-dd HH:mm:ss` | `2026-03-07 09:05:02` |
 
 ## 3. Variables
 
@@ -151,6 +214,13 @@ End Sub
 ```
 
 Dart has no static locals; the transpiler turns each `Static` into a hidden form-level field.
+
+**Name rules** (checked by the analyzer):
+- A name is looked up from the innermost block outwards: block locals, the procedure's locals and parameters, form-level names and procedures, then built-ins. Case does not matter.
+- **A `Dim` inside a block (`If`, `For`, `Do`, `Select Case`, `Try`) is visible only in that block.** Two sibling blocks may reuse a name.
+- Within one procedure, a name can be declared only once, even in different blocks (A005).
+- A local may have the same name as a form-level variable, but this is a warning (A028): the form-level one cannot be reached there, a common mistake with counters that should be `Static`.
+- A local can be used only below its declaration (A006). Form-level variables and procedures can be used anywhere in the file.
 
 ### 3.3 Constants
 
@@ -224,6 +294,24 @@ From highest to lowest, as in VB.NET. Operators on the same level are evaluated 
 - **`^` is also left to right.** VB and Excel calculate `2 ^ 3 ^ 2` as `(2 ^ 3) ^ 2` = 64, unlike mathematical notation, where 2^3^2 means 2^(3^2) = 512. Write `2 ^ (3 ^ 2)` when you mean 512.
 - **`=` at the start of a statement assigns; anywhere else it compares.** `x = y = z` stores in `x` whether `y` equals `z`.
 
+### 5.2 Operand and result types
+
+| Operator | Operands | Result |
+|---|---|---|
+| `+ - *` | numbers | `Integer` if both are `Integer`, otherwise `Double` |
+| `+` | two `String`s | `String` |
+| `/`, `^` | numbers | always `Double` |
+| `\` | **`Integer`s only** (use `CInt` or `Int` first) | `Integer` |
+| `Mod` | numbers | `Integer` if both are `Integer`, otherwise `Double` |
+| `&` | any values (§2.2) | `String` |
+| `= <> < > <= >=` | two numbers, two `String`s or two `Date`s; `Boolean`s with `=` and `<>` only | `Boolean` |
+| `Is` | objects or `Nothing` | `Boolean` |
+| `Not`, `And`, `Or`, `Xor` | **`Boolean`s only** | `Boolean` |
+
+- `"1" + 1` is an error (A011): text is never turned into a number automatically, and turning the number into text would silently give `"11"`. Use `&` to join, or `CInt` to add.
+- `And`, `Or`, `Xor` and `Not` work only on `True`/`False` in GuBASIC 1.0, so they always mean logic, never bit operations.
+- **Conditions** (`If`, `ElseIf`, `Do While`, `Loop Until`, …) must be `True` or `False`. Write `If count <> 0 Then`, not `If count Then` (A012).
+
 ## 6. Control flow
 
 ```vb
@@ -263,7 +351,8 @@ Loop Until done
 `Exit For`, `Exit Do`, `Exit Sub`, `Exit Function` are supported. `GoTo` is not.
 
 - **Single-line `If`.** `If x > 0 Then y = 1 Else y = 2` is one statement and needs no `End If`. Only simple statements fit on the line (assignments, calls, `Exit`, `Return`, …); loops and other blocks need the block form.
-- **The loop variable may carry its type:** `For i As Integer = 1 To 10`, `For Each name As String In names`. Whether an undeclared loop variable is declared automatically is decided in the analyzer stage (§12).
+- **The loop variable may carry its type:** `For i As Integer = 1 To 10`, `For Each name As String In names`.
+- **An undeclared loop variable is declared automatically, only for that loop.** `For i = 1 To 10` with no `i` declared creates an `i` that exists only inside the loop. Its type comes from the start, end and step values (`Double` if any of them is a `Double`, otherwise `Integer`); for `For Each`, from the items of the list or array. A variable that is already declared is used as it is. Visual Basic does the same ([For...Next, Counter Argument](https://learn.microsoft.com/en-us/dotnet/visual-basic/language-reference/statements/for-next-statement)).
 
 ## 7. Procedures
 
@@ -356,8 +445,12 @@ String functions follow classic BASIC and **count from 1**. String *methods* (`.
 | Math | `Abs`, `Int`, `Round`, `Sqr`, `Rnd`, `Randomize`, `Min`, `Max` |
 | Date | `Now`, `Today`, `Year`, `Month`, `Day`, `Hour`, `Minute`, `Second` |
 | Dialogs | `MsgBox`, `InputBox` |
+| Output for developers | `Debug.Print(value)`: writes a line to the playground's output window (VB6's Immediate window) |
 | Program | `DoEvents`, `End` |
 | Settings | `SaveSetting(key, value)`, `GetSetting(key, default)` |
+
+- `Debug.Print` needs parentheses like any call with arguments: `Debug.Print("x")`, not `Debug.Print "x"` (P011).
+- `CInt`, `Round` and `Int` round as described in §2.1; `Int` returns an `Integer`.
 
 ## 11. Forms and controls
 
@@ -384,6 +477,5 @@ End Sub
 ## 12. Open questions
 
 - File extension (`.gbas` is provisional).
-- Undeclared loop variables (§6). **Recommended:** if the variable of a `For` or `For Each` has not been declared, it is declared automatically, visible only inside that loop (as VB.NET does with `Option Infer`). To be confirmed in the analyzer stage.
 - User-defined classes (`Class … End Class`) — not in 1.0.
 - Exact syntax of the embedded-Dart escape hatch.

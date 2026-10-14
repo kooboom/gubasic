@@ -52,9 +52,9 @@ Handles ReDim Preserve Optional Of ByVal
 
 ### 1.2 진단
 
-렉서와 파서는 오류를 만나도 멈추지 않습니다. 오류를 알리고 계속 읽어서, 실수 하나가 나머지를 가리지 않게 합니다. 코드는 바뀌지 않으며 다시 쓰지 않습니다.
+렉서, 파서, 분석기는 오류를 만나도 멈추지 않습니다. 오류를 알리고 계속 읽어서, 실수 하나가 나머지를 가리지 않게 합니다. 코드는 바뀌지 않으며 다시 쓰지 않습니다.
 
-아래 표에서 **경고**라고 표시한 것 말고는 모두 **오류**입니다. 오류는 고쳐야 합니다. 경고는 동작은 하지만 뜻밖일 수 있는 것을 알려 주며, **프로그램의 실행이나 빌드를 막지 않습니다**(D23). 코드의 접두사는 심각도가 아니라 누가 알리는지(L 렉서, P 파서)를 나타냅니다.
+아래 표에서 **경고**라고 표시한 것 말고는 모두 **오류**입니다. 오류는 고쳐야 합니다. 경고는 동작은 하지만 뜻밖일 수 있는 것을 알려 주며, **프로그램의 실행이나 빌드를 막지 않습니다**(D23). 코드의 접두사는 심각도가 아니라 누가 알리는지(L 렉서, P 파서, A 분석기)를 나타냅니다.
 
 **렉서**
 
@@ -101,6 +101,41 @@ Handles ReDim Preserve Optional Of ByVal
 | P021 | `ByRef` (아직 준비 중, 2단계) | 정상으로 읽음. 메시지는 `Return`을 쓰는 `Function`을 안내 |
 | P022 | `Handles` (아직 준비 중, 2단계) | 정상으로 읽음. 메시지는 `컨트롤이름_이벤트이름` 형태의 Sub 프로시저를 안내 |
 
+**분석기**
+
+분석기는 이름과 타입을 검사합니다(2.1절, 3.2절, 5.2절). 파서가 오류를 찾았어도 실행되며, 알아낼 수 없는 부분은 다시 검사하지 않아서 실수 하나에 진단 하나가 나옵니다.
+
+| 코드 | 문제 |
+|---|---|
+| A001 | 선언하지 않은 이름 |
+| A002 | 선언하지 않은 이름. 철자가 비슷한 이름이 있음("혹시 이것인가요") |
+| A003 | `.`과 함께 쓴 선언하지 않은 이름(`lblMessage.Caption`) 또는 `Me`: 컨트롤과 폼은 아직 쓸 수 없음 |
+| A004 | 없는 타입 이름 |
+| A005 | 같은 범위나 프로시저에 이미 선언한 이름 |
+| A006 | 지역 변수를 선언보다 먼저 씀 |
+| A007 | 타입도 값도 없는 `Dim`, `As`가 없는 매개변수나 `Function` |
+| A008 | 다른 타입이 필요한 자리에 넣은 값(2.1절) |
+| A009 | 숫자가 필요한 자리의 문자열(`CInt`, `CDbl`, `Val` 사용) |
+| A010 | `Integer`가 필요한 자리의 `Double`(`CInt`나 `Int` 사용) |
+| A011 | 문자열과 숫자를 `+`로 이음(`&` 사용) |
+| A012 | `True`/`False`가 아닌 조건 |
+| A013 | 이항 연산자를 쓸 수 없는 타입 |
+| A014 | 단항 연산자를 쓸 수 없는 타입 |
+| A015 | 인수 개수가 맞지 않음 |
+| A016 | `Sub`나 `Function`이 아닌 것을 호출함 |
+| A017 | 값이 필요한 자리에 쓴 `Sub` |
+| A018 | 번호로 꺼낼 항목이 없는 값에 `(번호)`를 씀 |
+| A019 | 타입에 없는 멤버 |
+| A020 | `=` 왼쪽에 올 수 없는 것(상수, 프로시저, 호출 결과) |
+| A021 | VB6 방식의 `함수이름 = 값`(`Return 값` 사용) |
+| A022 | `Sub` 안의 `Return 값` |
+| A023 | `Function` 안의 값 없는 `Return` |
+| A024 | 짝이 맞는 반복문이나 프로시저 밖의 `Exit For` / `Exit Do` / `Exit Sub` / `Exit Function` |
+| A025 | `List`나 배열이 아닌 값에 쓴 `For Each` |
+| A026 | **경고.** 쓰지 않는 지역 변수 |
+| A027 | **경고.** `Return`이 없는 `Function` |
+| A028 | **경고.** 같은 이름의 폼 변수를 가리는 지역 변수 |
+
 ## 2. 타입
 
 | GuBASIC | Dart | 기본값 |
@@ -118,6 +153,34 @@ Handles ReDim Preserve Optional Of ByVal
 - **`Nothing`(null)은 객체에만 있습니다.** 값 타입은 항상 값이 있으므로 초보자가 null 오류를 만날 일이 거의 없습니다.
 - **객체가 `Nothing`인지는 `Is`로 비교합니다:** `If player Is Nothing Then`. 반대는 `If Not player Is Nothing Then`으로 씁니다. (`=`는 객체가 아니라 값을 비교합니다.)
 - **`Variant`는 없습니다.** 정말 아무 값이나 담아야 하면 `Object`를 씁니다.
+
+### 2.1 자동 변환
+
+대입, 인수, `Return` 값에 같은 규칙이 적용됩니다. 그 밖의 변환에는 변환 함수가 필요합니다.
+
+| 출발 → 도착 | |
+|---|---|
+| `Integer` → `Double` | 자동 |
+| `Integer`, `Double`, `Boolean`, `Date` → `String` | 자동. 2.2절의 글자 모양으로 바뀜(`lblCount.Caption = count`) |
+| 모든 값 → `Object` | 자동 |
+| `Nothing` → `Object`, `List`, 배열, `Exception` | 자동. `String`이나 다른 값 타입에는 안 됨 |
+| `String` → 숫자 | **안 됨**(A009): `CInt`, `CDbl`, `Val`을 씀 |
+| `Double` → `Integer` | **안 됨**(A010): `CInt`(반올림)나 `Int`(내림)를 씀. 그렇지 않으면 소수 부분이 소리 없이 사라지기 때문 |
+| `Object` → 구체적인 타입 | **안 됨**(A008): `CInt`, `CDbl`, `CStr`, `CBool`을 씀 |
+| `Boolean` ↔ 숫자 | **안 됨**(A008) |
+
+**반올림.** `CInt`와 `Round`는 학교 수학과 엑셀의 ROUND처럼 0.5를 **0에서 먼 쪽**으로 올립니다(사사오입): `CInt(2.5)`는 3, `CInt(-2.5)`는 -3입니다. `Int`는 **더 작은 쪽 정수로 내립니다**: `Int(2.5)`는 2, `Int(-2.5)`는 -3입니다. 이는 Visual Basic과 다릅니다. Visual Basic의 `CInt`는 0.5를 가까운 짝수로 보내고(2.5 → 2) ([Type Conversion Functions](https://learn.microsoft.com/en-us/dotnet/visual-basic/language-reference/functions/type-conversion-functions)), `Math.Round`도 기본으로 같은 방식입니다([Math.Round](https://learn.microsoft.com/en-us/dotnet/api/system.math.round)). 초보자에게 2.5 → 2는 버그처럼 보입니다. 또 Visual Basic의 `Int`는 받은 값과 같은 타입을 돌려주지만([Type Conversion Functions](https://learn.microsoft.com/en-us/dotnet/visual-basic/language-reference/functions/type-conversion-functions)), GuBASIC의 `Int`는 `Integer`를 돌려주므로 `Int(x)`를 `Integer` 변수에 바로 넣을 수 있습니다.
+
+### 2.2 값의 글자 모양
+
+`String`으로의 자동 변환, `CStr`, `&`, `Debug.Print`는 모두 한 가지 규칙을 쓰며, 모든 플랫폼에서 같은 글자가 나옵니다.
+
+| 타입 | 글자 모양 | 예 |
+|---|---|---|
+| `Integer` | 숫자 그대로 | `42`, `-7` |
+| `Double` | 정수 값이면 소수점 없이, 아니면 원래 값을 정확히 되살릴 수 있는 가장 짧은 표기. 크기가 1E-6 이상 1E+15 미만이면 소수점 표기, 그 밖에는 `d.dddE±n` | `1`, `0.25`, `0.30000000000000004`, `1E+15`, `2.5E-7`. `-0`은 `0`, 그 밖에 `NaN`, `Infinity`, `-Infinity` |
+| `Boolean` | `True` / `False` | |
+| `Date` | `yyyy-MM-dd HH:mm:ss` | `2026-03-07 09:05:02` |
 
 ## 3. 변수
 
@@ -151,6 +214,13 @@ End Sub
 ```
 
 Dart에는 정적 지역 변수가 없어서, 트랜스파일러가 `Static`을 숨겨진 폼 필드로 바꿉니다.
+
+**이름 규칙**(분석기가 검사):
+- 이름은 가장 안쪽 블록에서 바깥으로 찾습니다: 블록 지역 변수, 프로시저의 지역 변수와 매개변수, 폼 변수와 프로시저, 마지막으로 내장 함수. 대소문자는 구분하지 않습니다.
+- **블록(`If`, `For`, `Do`, `Select Case`, `Try`) 안의 `Dim`은 그 블록 안에서만 보입니다.** 나란히 있는 두 블록은 같은 이름을 다시 쓸 수 있습니다.
+- 한 프로시저 안에서는 블록이 달라도 같은 이름을 한 번만 선언할 수 있습니다(A005).
+- 폼 변수와 같은 이름의 지역 변수는 쓸 수 있지만 경고합니다(A028). 그 자리에서는 폼 변수를 쓸 수 없게 되어, `Static`이어야 할 카운터에서 흔히 실수하기 때문입니다.
+- 지역 변수는 선언한 줄 아래에서만 쓸 수 있습니다(A006). 폼 변수와 프로시저는 파일 어디서나 쓸 수 있습니다.
 
 ### 3.3 상수
 
@@ -224,6 +294,24 @@ VB.NET과 같고, 위쪽이 먼저 계산됩니다. 같은 단계의 연산자�
 - **`^`도 왼쪽부터 계산합니다.** VB와 엑셀은 `2 ^ 3 ^ 2`를 `(2 ^ 3) ^ 2` = 64로 계산합니다. 2^3^2를 2^(3^2) = 512로 읽는 수학 표기와 다릅니다. 512를 원하면 `2 ^ (3 ^ 2)`로 씁니다.
 - **문장 맨 앞의 `=`는 대입이고, 그 밖의 `=`는 비교입니다.** `x = y = z`는 `y`와 `z`가 같은지를 `x`에 넣습니다.
 
+### 5.2 피연산자와 결과의 타입
+
+| 연산자 | 피연산자 | 결과 |
+|---|---|---|
+| `+ - *` | 숫자 | 둘 다 `Integer`면 `Integer`, 아니면 `Double` |
+| `+` | `String` 둘 | `String` |
+| `/`, `^` | 숫자 | 항상 `Double` |
+| `\` | **`Integer`만**(먼저 `CInt`나 `Int`를 씀) | `Integer` |
+| `Mod` | 숫자 | 둘 다 `Integer`면 `Integer`, 아니면 `Double` |
+| `&` | 모든 값(2.2절) | `String` |
+| `= <> < > <= >=` | 숫자 둘, `String` 둘, `Date` 둘. `Boolean`은 `=`와 `<>`만 | `Boolean` |
+| `Is` | 객체나 `Nothing` | `Boolean` |
+| `Not`, `And`, `Or`, `Xor` | **`Boolean`만** | `Boolean` |
+
+- `"1" + 1`은 오류입니다(A011). 문자열은 숫자로 자동으로 바뀌지 않고, 숫자를 문자열로 바꾸면 소리 없이 `"11"`이 되기 때문입니다. 이으려면 `&`를, 더하려면 `CInt`를 씁니다.
+- GuBASIC 1.0에서 `And`, `Or`, `Xor`, `Not`은 `True`/`False`에만 쓰므로, 비트 연산이 아니라 항상 논리 연산입니다.
+- **조건**(`If`, `ElseIf`, `Do While`, `Loop Until` 등)은 `True`나 `False`여야 합니다. `If count Then`이 아니라 `If count <> 0 Then`으로 씁니다(A012).
+
 ## 6. 제어 구조
 
 ```vb
@@ -263,7 +351,8 @@ Loop Until done
 `Exit For`, `Exit Do`, `Exit Sub`, `Exit Function`을 지원합니다. `GoTo`는 지원하지 않습니다.
 
 - **한 줄 `If`.** `If x > 0 Then y = 1 Else y = 2`는 문장 하나이며 `End If`가 필요 없습니다. 한 줄에는 간단한 문장(대입, 호출, `Exit`, `Return` 등)만 쓸 수 있고, 반복문 같은 블록은 여러 줄 형태로 씁니다.
-- **반복 변수에 타입을 붙일 수 있습니다:** `For i As Integer = 1 To 10`, `For Each name As String In names`. 선언하지 않은 반복 변수를 자동으로 선언할지는 분석기 단계에서 정합니다(12절).
+- **반복 변수에 타입을 붙일 수 있습니다:** `For i As Integer = 1 To 10`, `For Each name As String In names`.
+- **선언하지 않은 반복 변수는 그 반복문 안에서만 쓰는 변수로 자동 선언합니다.** `i`를 선언하지 않고 `For i = 1 To 10`이라고 쓰면, 반복문 안에서만 있는 `i`가 생깁니다. 타입은 시작, 끝, Step 값에서 정합니다(하나라도 `Double`이면 `Double`, 아니면 `Integer`). `For Each`이면 목록이나 배열의 항목 타입을 따릅니다. 이미 선언된 변수는 그대로 씁니다. Visual Basic도 같습니다([For...Next, Counter Argument](https://learn.microsoft.com/en-us/dotnet/visual-basic/language-reference/statements/for-next-statement)).
 
 ## 7. 프로시저
 
@@ -356,8 +445,12 @@ End Try
 | 수학 | `Abs`, `Int`, `Round`, `Sqr`, `Rnd`, `Randomize`, `Min`, `Max` |
 | 날짜 | `Now`, `Today`, `Year`, `Month`, `Day`, `Hour`, `Minute`, `Second` |
 | 대화상자 | `MsgBox`, `InputBox` |
+| 개발자용 출력 | `Debug.Print(값)`: 놀이터의 직접 실행 창(VB6의 직접 실행 창)에 한 줄 씀 |
 | 프로그램 | `DoEvents`, `End` |
 | 설정 | `SaveSetting(key, value)`, `GetSetting(key, default)` |
+
+- `Debug.Print`도 인수가 있는 다른 호출처럼 괄호가 필요합니다. `Debug.Print "x"`가 아니라 `Debug.Print("x")`로 씁니다(P011).
+- `CInt`, `Round`, `Int`는 2.1절처럼 반올림하고, `Int`는 `Integer`를 돌려줍니다.
 
 ## 11. 폼과 컨트롤
 
@@ -384,6 +477,5 @@ End Sub
 ## 12. 열린 질문
 
 - 파일 확장자 (`.gbas`는 임시).
-- 선언하지 않은 반복 변수 (6절). **추천안:** `For`나 `For Each`의 변수가 선언되어 있지 않으면, 그 반복문 안에서만 쓰는 변수로 자동 선언한다 (VB.NET의 `Option Infer`와 같은 방식). 분석기 단계에서 확정.
 - 사용자 정의 클래스 (`Class … End Class`) — 1.0에는 없음.
 - Dart 코드 삽입(비상구)의 정확한 문법.

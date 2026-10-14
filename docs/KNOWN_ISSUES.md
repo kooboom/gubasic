@@ -18,8 +18,8 @@ Problems we know about and have **deliberately** left unfixed for now. Each entr
 - **Why deferred:** the lexer cannot know whether a minus sign belongs to the number (`-5`) or is a subtraction (`x -5`). Rarely needed; `Integer.MinValue`-style constants can cover it later.
 - **Revisit:** in the analyzer stage, consider treating an integer literal with a leading minus sign as a single value.
 
-## Undeclared loop variables
+## Controls and the form cannot be used yet
 
-- **What:** `For i = 1 To 10` parses, but whether `i` must be declared first is not decided. Declaration is otherwise always required ([LANGUAGE.md](LANGUAGE.md) §3.1).
-- **Why deferred:** it is a rule about names and scopes, which the analyzer checks, not the parser. Recommended answer: an undeclared `For` / `For Each` variable is declared automatically, visible only inside that loop (as VB.NET's `Option Infer`). See [LANGUAGE.md](LANGUAGE.md) §12.
-- **Revisit:** the analyzer stage.
+- **What:** names of controls (`lblMessage`, `btnSave`) and `Me` are reported as not declared (A003), with a note that controls become available once the form designer exists. Control types (`Button`) are unknown types (A004). The README example therefore shows one diagnostic.
+- **Why deferred:** controls come from form files and `gubasic_runtime`, which do not exist yet. Imitating them in the playground would create a second runtime (D24).
+- **Revisit:** when the form designer and `gubasic_runtime` arrive.
