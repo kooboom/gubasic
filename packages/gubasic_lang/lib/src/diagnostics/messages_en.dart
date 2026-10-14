@@ -30,6 +30,8 @@ const Map<DiagnosticCode, String> englishMessages = {
       'it a Double ({0}.0), but its last digits may change.',
   DiagnosticCode.doubleTooLarge: 'The number {0} is too large for a Double '
       '(the largest is about 1.7976931348623157E+308). Use a smaller number.',
+  DiagnosticCode.doubleBecomesZero: 'This number is so small that it becomes '
+      '0 as a Double (you wrote {0}). If you meant 0, write 0.',
   DiagnosticCode.integerTooLargeMinValue: 'The number {0} is too large for '
       'an Integer, which holds up to 9223372036854775807. If you need the '
       'smallest Integer (-9223372036854775808), use Integer.MinValue.',

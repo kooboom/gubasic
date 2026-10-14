@@ -35,6 +35,9 @@ enum DiagnosticCode {
   /// A Double literal beyond the Double range (`1E400`).
   doubleTooLarge('L008'),
 
+  /// A non-zero Double literal so small that it becomes 0 (`1E-400`).
+  doubleBecomesZero('L009', DiagnosticSeverity.warning),
+
   // L007 (an integer the web could not store exactly) is retired: Integer
   // is exact 64-bit on every platform (D26). The code is not reused.
 

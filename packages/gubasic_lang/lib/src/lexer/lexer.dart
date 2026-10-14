@@ -258,6 +258,13 @@ class _Lexer {
         _report(DiagnosticCode.doubleTooLarge, start, [text]);
         _emit(TokenKind.doubleLiteral, start);
       } else {
+        // A non-zero literal too small for a Double becomes exactly 0: say
+        // so (L009). One that only loses precision keeps a non-zero value
+        // and is not reported.
+        final mantissa = text.split(RegExp('[eE]')).first;
+        if (value == 0 && mantissa.contains(RegExp('[1-9]'))) {
+          _report(DiagnosticCode.doubleBecomesZero, start, [text]);
+        }
         _emit(TokenKind.doubleLiteral, start, value: value);
       }
       return;

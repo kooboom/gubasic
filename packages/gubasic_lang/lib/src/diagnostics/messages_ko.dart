@@ -33,6 +33,8 @@ const Map<DiagnosticCode, String> koreanMessages = {
       '이때는 끝자리가 달라질 수 있습니다.',
   DiagnosticCode.doubleTooLarge:
       'Double에 담기에는 너무 큰 수입니다(입력한 수: {0}, 가장 큰 값: 약 1.7976931348623157E+308). 더 작은 수를 써 주세요.',
+  DiagnosticCode.doubleBecomesZero:
+      '이 수는 너무 작아서 Double에 담으면 0이 됩니다(입력한 수: {0}). 0을 쓰려던 것이면 0을 써 주세요.',
   DiagnosticCode.integerTooLargeMinValue:
       'Integer에 담기에는 너무 큰 수입니다(입력한 수: {0}). '
           'Integer는 9223372036854775807까지 담을 수 있습니다. '

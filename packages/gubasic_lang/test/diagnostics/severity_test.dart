@@ -4,6 +4,7 @@ import 'package:test/test.dart';
 void main() {
   test('exactly these codes are warnings; every other code is an error', () {
     const warnings = {
+      DiagnosticCode.doubleBecomesZero,
       DiagnosticCode.unusedLocal,
       DiagnosticCode.functionWithoutReturn,
       DiagnosticCode.localHidesField,

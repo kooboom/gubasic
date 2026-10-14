@@ -15,7 +15,7 @@ GuBASIC is a simplified, VB.NET-flavored BASIC. This is a **draft**: it fixes th
 | Comments | `'` to end of line. `REM` also accepted, but only as a whole word (`REM note` is a comment; `Remark` is an identifier). It can also follow a statement: `x = 1 REM note`. |
 | Line continuation | A `_` that is the last thing on a line (only spaces or tabs may follow) continues the statement on the next line. A `_` anywhere else is an error (L005). `x_` is simply an identifier. |
 | Statements per line | One. A `:` separator is an error (L003); the lexer still treats it as the end of a statement so that the rest of the line is checked. |
-| Numbers | Integers (`123`) and reals (`1.5`). A real needs digits on **both** sides of the dot: `.5` and `1.` are not numbers (write `0.5` and `1.0`). **Exponent notation** is allowed: `1E+21`, `1.5E-7`, `2e10` — `E` in either case, an optional sign, then digits; such a literal is always a `Double`. It is the same notation the text form uses (§2.2), so printed values can be written back as they are. A literal beyond the `Double` range (`1E400`) is an error (L008); one too small for a `Double` (`1E-400`) becomes 0. A minus sign is an operator, not part of the number. |
+| Numbers | Integers (`123`) and reals (`1.5`). A real needs digits on **both** sides of the dot: `.5` and `1.` are not numbers (write `0.5` and `1.0`). **Exponent notation** is allowed: `1E+21`, `1.5E-7`, `2e10` — `E` in either case, an optional sign, then digits; such a literal is always a `Double`. It is the same notation the text form uses (§2.2), so printed values can be written back as they are. A literal beyond the `Double` range (`1E400`) is an error (L008); a non-zero literal so small that it becomes exactly 0 (`1E-400`) gets a warning (L009); one that only loses precision but stays non-zero (`4E-324`) does not. A minus sign is an operator, not part of the number. |
 | String literals | `"..."`; a doubled quote `""` is a literal quote. A string must close on the line where it starts (L001). |
 | Statement end | A line break ends a statement. Blank lines and comment-only lines are ignored. |
 | Positions | Lines and columns count from 1. A tab counts as one column. |
@@ -68,6 +68,7 @@ Every diagnostic is an **error** unless marked as a **warning** below. Errors mu
 | L006 | An integer too large for `Integer` (64-bit) | Integer token with no value. For exactly 9223372036854775808 the message points to `Integer.MinValue` |
 | L007 | **Retired** (D26 made it unnecessary): it warned about integers the web could not store exactly; Integer is now exact on every platform. The code is not reused | — |
 | L008 | A `Double` literal beyond the `Double` range (`1E400`) | Double token with no value |
+| L009 | **Warning.** A non-zero `Double` literal so small that it becomes exactly 0 (`1E-400`) | Double token with the value 0; the program still runs (D23) |
 
 **Parser**
 

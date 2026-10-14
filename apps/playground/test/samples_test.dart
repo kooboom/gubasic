@@ -39,20 +39,21 @@ void main() {
       'L005@8',
       'L006@9',
       'L008@10',
-      'A026@11',
-      'P006@12',
-      'P011@13',
-      'P007@14',
-      'P013@15',
-      'A010@16',
-      'L002@17',
-      'A002@17',
+      'L009@11',
+      'A026@12',
+      'P006@13',
+      'P011@14',
+      'P007@15',
+      'P013@16',
+      'A010@17',
+      'L002@18',
+      'A002@18',
     ]);
     final lexerCodes = DiagnosticCode.values
         .map((c) => c.code)
         .where((c) => c.startsWith('L'))
         .toSet();
-    expect(lexerCodes, hasLength(7), reason: 'add the new code to errorSample');
+    expect(lexerCodes, hasLength(8), reason: 'add the new code to errorSample');
   });
 
   test('errorSample is read to the end', () {

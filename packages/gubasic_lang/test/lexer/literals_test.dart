@@ -68,9 +68,34 @@ void main() {
       expect(codesOf(lex('1${'0' * 400}.0')), ['L008']);
     });
 
-    test('too small for a Double becomes 0 (no diagnostic)', () {
-      final r = lexClean('1E-400');
-      expect(r.tokens.first.value, 0.0);
+    test('L009 (warning): a non-zero literal that becomes exactly 0', () {
+      for (final text in ['1E-400', '2E-324', '0.000001E-320']) {
+        final r = lex(text);
+        expect(codesOf(r), ['L009'], reason: text);
+        expect(r.diagnostics.single.isWarning, isTrue);
+        expect(r.hasErrors, isFalse);
+        expect(r.tokens.first.value, 0.0);
+      }
+      expect(lex('1E-400').diagnostics.single.message, contains('1E-400'));
+      expect(lex('1E-400').diagnostics.single.formatMessage(koreanMessages),
+          contains('0을 쓰려던 것이면 0을 써 주세요'));
+    });
+
+    test('no warning when a non-zero value remains, or for a written 0', () {
+      for (final text in [
+        '5E-324',
+        '4E-324',
+        '3E-324',
+        '1E-310',
+        '0E-400',
+        '0.0E5',
+        '0.0',
+        '0'
+      ]) {
+        expect(codesOf(lex(text)), isEmpty, reason: text);
+      }
+      expect(lex('4E-324').tokens.first.value, 5e-324,
+          reason: 'loses precision but is not 0');
     });
 
     test('a minus sign is a separate token', () {
