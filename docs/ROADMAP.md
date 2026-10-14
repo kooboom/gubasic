@@ -10,7 +10,7 @@ Each stage ends with something that runs. Small, finished stages beat a big unfi
 
 - [x] Design decisions ([DESIGN.md](DESIGN.md))
 - [x] Language draft ([LANGUAGE.md](LANGUAGE.md))
-- [ ] Repository setup: license, CI that runs `dart test`
+- [x] Repository setup: license, CI that runs `dart test`
 
 ## Stage 1 — Draw, double-click, run
 
@@ -21,7 +21,7 @@ The core Visual Basic experience, entirely inside the IDE.
 - [ ] Built-in components: `Form`, `Button`, `Label`, `TextBox`, `CheckBox`, `ListBox`, `Image`
 - [ ] Absolute layout with `Anchor`; form size presets (Phone / Tablet / Desktop)
 - [ ] Project files in plain text (`.gbproj`, `.form.yaml`, `.gbas`)
-- [ ] Lexer and **error-tolerant** parser
+- [ ] Lexer and **error-tolerant** parser (lexer done)
 - [ ] Code editor: syntax highlighting, double-click → handler stub, rename-safe handlers
 - [ ] Light autocompletion (keywords, controls, members, "did you mean")
 - [ ] **Async interpreter**; F5 runs the app inside the IDE
