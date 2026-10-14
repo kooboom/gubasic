@@ -35,9 +35,42 @@ void main() {
       expect(kindsOf('1.'), [TokenKind.integerLiteral, TokenKind.dot]);
     });
 
-    test('exponent notation is not a number', () {
-      expect(kindsOf('1e5'), [TokenKind.integerLiteral, TokenKind.identifier]);
-      expect(textsOf('1e5'), ['1', 'e5']);
+    test('exponent notation makes a Double', () {
+      for (final (text, value) in [
+        ('1E+21', 1e21),
+        ('1.5E-7', 1.5e-7),
+        ('2e10', 2e10),
+        ('3E5', 3e5),
+        ('9.3E+18', 9.3e18),
+        ('1.7976931348623157E+308', 1.7976931348623157e308),
+        ('5E-324', 5e-324),
+      ]) {
+        final t = lexClean(text).tokens.first;
+        expect(t.kind, TokenKind.doubleLiteral, reason: text);
+        expect(t.value, value, reason: text);
+        expect(t.text, text);
+      }
+    });
+
+    test('without digits after E it is not an exponent', () {
+      expect(textsOf('2e'), ['2', 'e']);
+      expect(textsOf('2E+'), ['2', 'E', '+']);
+      expect(textsOf('2Ex'), ['2', 'Ex']);
+      // A dot first is still not part of the number: `.` then 5E3.
+      expect(kindsOf('.5E3'), [TokenKind.dot, TokenKind.doubleLiteral]);
+    });
+
+    test('L008: beyond the Double range', () {
+      final r = lex('x = 1E400');
+      expect(codesOf(r), ['L008']);
+      expect(r.diagnostics.single.message, contains('1E400'));
+      expect(r.tokens[2].kind, TokenKind.doubleLiteral);
+      expect(codesOf(lex('1${'0' * 400}.0')), ['L008']);
+    });
+
+    test('too small for a Double becomes 0 (no diagnostic)', () {
+      final r = lexClean('1E-400');
+      expect(r.tokens.first.value, 0.0);
     });
 
     test('a minus sign is a separate token', () {

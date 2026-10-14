@@ -1325,7 +1325,9 @@ class _Parser {
         return IntegerLiteral(t.text, t.value as int?, t.offset, t.end);
       case TokenKind.doubleLiteral:
         _advance();
-        return DoubleLiteral(t.text, t.value! as double, t.offset, t.end);
+        // L008 leaves no value; the program cannot run anyway.
+        return DoubleLiteral(
+            t.text, (t.value as double?) ?? double.infinity, t.offset, t.end);
       case TokenKind.stringLiteral:
         _advance();
         return StringLiteral(t.value! as String, t.offset, t.end);

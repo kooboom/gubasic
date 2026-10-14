@@ -1,5 +1,4 @@
 ' Integer limits: which operations overflow (R001) and which do not.
-' 9.3E+18 is written as 9.3 * 10.0 ^ 18 (GuBASIC has no exponent literals).
 Sub Main()
     Try
         Debug.Print(Integer.MinValue \ -1)
@@ -22,7 +21,7 @@ Sub Main()
         Debug.Print("MinValue Mod -1: " & ex.Message)
     End Try
     Try
-        Debug.Print(CInt(9.3 * 10.0 ^ 18))
+        Debug.Print(CInt(9.3E+18))
     Catch ex As Exception
         Debug.Print("CInt(9.3E+18): " & ex.Message)
     End Try

@@ -142,7 +142,7 @@ void main() {
             .map((c) => c.code)
             .where((c) => c.startsWith('L'))
             .toSet(),
-        {'L001', 'L002', 'L003', 'L004', 'L005', 'L006'});
+        {'L001', 'L002', 'L003', 'L004', 'L005', 'L006', 'L008'});
   });
 
   test('several errors: lexing reaches the end and collects them all', () {

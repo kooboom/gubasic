@@ -28,6 +28,8 @@ const Map<DiagnosticCode, String> englishMessages = {
       'which holds up to 9223372036854775807. '
       'If an approximate value is enough, you can add a decimal point to make '
       'it a Double ({0}.0), but its last digits may change.',
+  DiagnosticCode.doubleTooLarge: 'The number {0} is too large for a Double '
+      '(the largest is about 1.7976931348623157E+308). Use a smaller number.',
   DiagnosticCode.integerTooLargeMinValue: 'The number {0} is too large for '
       'an Integer, which holds up to 9223372036854775807. If you need the '
       'smallest Integer (-9223372036854775808), use Integer.MinValue.',

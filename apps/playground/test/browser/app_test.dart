@@ -94,13 +94,13 @@ void main() {
     _click('#sample-errors');
     _click('#tabs button:nth-child(3)');
     expect(_texts('.diagnostics .code'), [
-      'L002', 'L001', 'L003', 'L004', 'L005', 'L006', 'A026', //
+      'L002', 'L001', 'L003', 'L004', 'L005', 'L006', 'L008', 'A026', //
       'P006', 'P011', 'P007', 'P013', 'A010', 'L002', 'A002',
     ]);
-    expect(_texts('.summary'), ['13 errors · 1 warning']);
+    expect(_texts('.summary'), ['14 errors · 1 warning']);
     expect(_texts('.diagnostics li.warning .sev'), ['Warning']);
     expect(_texts('.diagnostics li.error .sev'), everyElement('Error'));
-    expect(_texts('#tabs .badge.error'), ['14']);
+    expect(_texts('#tabs .badge.error'), ['15']);
 
     _click('.diagnostics li:nth-child(4) button'); // L004 at "@"
     final start = _source.selectionStart;
@@ -203,7 +203,7 @@ void main() {
           web.document.querySelector('#run-button')!.hasAttribute('disabled'),
           isTrue);
       expect(
-          _texts('.run-blocked').single, startsWith('Fix the 13 errors first'));
+          _texts('.run-blocked').single, startsWith('Fix the 14 errors first'));
       _click('.run-blocked button');
       expect(_texts('#tabs button[aria-selected="true"]').single,
           startsWith('Diagnostics'));

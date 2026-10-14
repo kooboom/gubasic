@@ -19,12 +19,19 @@ void main() {
         .map((c) => c.code)
         .toList();
     expect(all.toSet(), hasLength(all.length));
+    // Retired codes stay unused, so they leave a gap on purpose.
+    const retired = {'L007'};
     for (final prefix in ['L', 'P', 'A', 'R']) {
-      final numbers = all
-          .where((c) => c.startsWith(prefix))
-          .map((c) => int.parse(c.substring(1)))
-          .toList();
-      expect(numbers, List.generate(numbers.length, (i) => i + 1));
+      final numbers = {
+        ...all.where((c) => c.startsWith(prefix)),
+        ...retired.where((c) => c.startsWith(prefix)),
+      }.map((c) => int.parse(c.substring(1))).toList()
+        ..sort();
+      expect(numbers, List.generate(numbers.length, (i) => i + 1),
+          reason: prefix);
+    }
+    for (final code in retired) {
+      expect(all, isNot(contains(code)), reason: '$code is retired');
     }
   });
 

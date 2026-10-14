@@ -15,7 +15,7 @@ GuBASIC is a simplified, VB.NET-flavored BASIC. This is a **draft**: it fixes th
 | Comments | `'` to end of line. `REM` also accepted, but only as a whole word (`REM note` is a comment; `Remark` is an identifier). It can also follow a statement: `x = 1 REM note`. |
 | Line continuation | A `_` that is the last thing on a line (only spaces or tabs may follow) continues the statement on the next line. A `_` anywhere else is an error (L005). `x_` is simply an identifier. |
 | Statements per line | One. A `:` separator is an error (L003); the lexer still treats it as the end of a statement so that the rest of the line is checked. |
-| Numbers | Integers (`123`) and reals (`1.5`). A real needs digits on **both** sides of the dot: `.5` and `1.` are not numbers (write `0.5` and `1.0`). Exponent notation (`1e5`) is not supported. A minus sign is an operator, not part of the number. |
+| Numbers | Integers (`123`) and reals (`1.5`). A real needs digits on **both** sides of the dot: `.5` and `1.` are not numbers (write `0.5` and `1.0`). **Exponent notation** is allowed: `1E+21`, `1.5E-7`, `2e10` — `E` in either case, an optional sign, then digits; such a literal is always a `Double`. It is the same notation the text form uses (§2.2), so printed values can be written back as they are. A literal beyond the `Double` range (`1E400`) is an error (L008); one too small for a `Double` (`1E-400`) becomes 0. A minus sign is an operator, not part of the number. |
 | String literals | `"..."`; a doubled quote `""` is a literal quote. A string must close on the line where it starts (L001). |
 | Statement end | A line break ends a statement. Blank lines and comment-only lines are ignored. |
 | Positions | Lines and columns count from 1. A tab counts as one column. |
@@ -67,6 +67,7 @@ Every diagnostic is an **error** unless marked as a **warning** below. Errors mu
 | L005 | `_` that is not the last thing on its line | Error token |
 | L006 | An integer too large for `Integer` (64-bit) | Integer token with no value. For exactly 9223372036854775808 the message points to `Integer.MinValue` |
 | L007 | **Retired** (D26 made it unnecessary): it warned about integers the web could not store exactly; Integer is now exact on every platform. The code is not reused | — |
+| L008 | A `Double` literal beyond the `Double` range (`1E400`) | Double token with no value |
 
 **Parser**
 
@@ -191,7 +192,7 @@ The same rules apply to assignments, arguments and `Return` values. Anything els
 
 ### 2.2 Text form of values
 
-Automatic conversion to `String`, `CStr`, `&` and `Debug.Print` all use one rule, which gives the same text on every platform:
+Automatic conversion to `String`, `CStr`, `&` and `Debug.Print` all use one rule, which gives the same text on every platform. The same notation is accepted as a literal, and a printed value written back reads as the same number (a whole-valued `Double` prints without a decimal point, so it reads back as an `Integer` of the same value):
 
 | Type | Text | Examples |
 |---|---|---|

@@ -32,6 +32,9 @@ enum DiagnosticCode {
   /// a second message.
   integerTooLargeMinValue('L006'),
 
+  /// A Double literal beyond the Double range (`1E400`).
+  doubleTooLarge('L008'),
+
   // L007 (an integer the web could not store exactly) is retired: Integer
   // is exact 64-bit on every platform (D26). The code is not reused.
 

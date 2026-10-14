@@ -44,6 +44,8 @@ const _dot = 0x2E;
 const _slash = 0x2F;
 const _digit0 = 0x30;
 const _digit9 = 0x39;
+const _letterE = 0x45;
+const _letterLowerE = 0x65;
 const _colon = 0x3A;
 const _less = 0x3C;
 const _equal = 0x3D;
@@ -228,17 +230,38 @@ class _Lexer {
     while (_isDigit(_peek())) {
       _pos++;
     }
+    var isDouble = false;
     // A fraction needs digits on both sides of the dot: `1.` is `1` `.`.
     if (_peek() == _dot && _isDigit(_peek(1))) {
+      isDouble = true;
       _pos++;
       while (_isDigit(_peek())) {
         _pos++;
       }
-      final text = _src.substring(start, _pos);
-      _emit(TokenKind.doubleLiteral, start, value: double.parse(text));
-      return;
+    }
+    // An exponent: E or e, an optional sign, then at least one digit
+    // (`1E+21`, `2.5e-7`). Without digits, `2e` stays `2` and a name.
+    if (_peek() == _letterE || _peek() == _letterLowerE) {
+      final signed = _peek(1) == _plus || _peek(1) == _minus;
+      if (_isDigit(_peek(signed ? 2 : 1))) {
+        isDouble = true;
+        _pos += signed ? 2 : 1;
+        while (_isDigit(_peek())) {
+          _pos++;
+        }
+      }
     }
     final text = _src.substring(start, _pos);
+    if (isDouble) {
+      final value = double.parse(text);
+      if (value.isInfinite) {
+        _report(DiagnosticCode.doubleTooLarge, start, [text]);
+        _emit(TokenKind.doubleLiteral, start);
+      } else {
+        _emit(TokenKind.doubleLiteral, start, value: value);
+      }
+      return;
+    }
     if (_exceeds(text, _maxInt64)) {
       final digits = text.replaceFirst(RegExp('^0+(?=.)'), '');
       _report(

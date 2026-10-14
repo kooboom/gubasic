@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:gubasic_lang/gubasic_lang.dart';
 import 'package:test/test.dart';
 
@@ -114,6 +116,42 @@ void main() {
               _QuietHost())
           .run();
       expect((result as RunFailed).error.code, DiagnosticCode.divisionByZero);
+    });
+  });
+
+  group('exponent literals and the text form read back the same', () {
+    test('exponent literals', () {
+      expect(lex('1E+21').tokens.first.value, 1e21);
+      expect(lex('1.5E-7').tokens.first.value, 1.5e-7);
+      expect(lex('2e10').tokens.first.value, 2e10);
+      expect(lex('1E400').diagnostics.single.code.code, 'L008');
+    });
+
+    test('formatDouble → literal → same value', () {
+      final random = math.Random(20261016);
+      final values = <double>[
+        0.1,
+        1 / 3,
+        0.1 + 0.2,
+        1e15,
+        1.5e20,
+        1e-7,
+        2.5e-10,
+        9.3e18,
+        1.7976931348623157e308,
+        5e-324,
+        123456789012345.0,
+        for (var i = 0; i < 2000; i++)
+          random.nextDouble() * math.pow(10.0, random.nextInt(600) - 300),
+      ];
+      for (final x in values) {
+        final text = formatDouble(x);
+        final token = lex(text).tokens.first;
+        final back = token.kind == TokenKind.integerLiteral
+            ? GbInt.parse(text)!.toDouble()
+            : token.value! as double;
+        expect(back, x, reason: text);
+      }
     });
   });
 }

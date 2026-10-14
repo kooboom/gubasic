@@ -39,7 +39,7 @@ Sub btnHello_Click()
 End Sub
 ''';
 
-/// One mistake for every lexer diagnostic (L001–L006), a few parser and
+/// One mistake for every lexer diagnostic (L001–L006, L008), a few parser and
 /// analyzer ones and a warning (A026), followed by a correct procedure to
 /// show that reading continues to the end.
 const errorSample = r'''
@@ -52,13 +52,14 @@ Sub Main()
     Dim price As Integer = 100 @ 2
     Dim answer As Integer = 1 + _ 2
     Dim big As Integer = 99999999999999999999
+    Dim huge As Double = 1E400
     Dim unused As String
     If total > 0 Then
         MsgBox "Hi"
     Next
     On Error Resume Next
     Dim half As Integer = total / 2
-    Debug.Print(점수 & greeting & price & answer & big & half & totl)
+    Debug.Print(점수 & greeting & price & answer & big & huge & half & totl)
 End Sub
 
 Sub Later()
