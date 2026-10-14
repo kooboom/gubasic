@@ -12,9 +12,9 @@ void main() {
       expect(t.take(3).map((t) => t.value), [0, 123, 9007199254740991]);
     });
 
-    test('the largest Integer is accepted, with only the web warning', () {
+    test('the largest Integer is accepted without any diagnostic', () {
       final r = lex('9223372036854775807');
-      expect(codesOf(r), ['L007']);
+      expect(codesOf(r), isEmpty);
       expect(r.tokens.first.kind, TokenKind.integerLiteral);
       expect(r.tokens.first.text, '9223372036854775807');
     });
@@ -56,8 +56,8 @@ void main() {
     });
     test('L006 is decided on the digits, the same on every platform', () {
       // The web has no 64-bit int, so int.tryParse there never fails.
-      expect(codesOf(lex('9223372036854775807')), ['L007']);
-      expect(codesOf(lex('00009223372036854775807')), ['L007']);
+      expect(codesOf(lex('9223372036854775807')), isEmpty);
+      expect(codesOf(lex('00009223372036854775807')), isEmpty);
       expect(lex('000').tokens.first.value, 0);
       expect(codesOf(lex('9223372036854775808')), ['L006']);
       expect(codesOf(lex('10000000000000000000')), ['L006']);
@@ -65,34 +65,36 @@ void main() {
     });
   });
 
-  group('L007: integers the web cannot store exactly (warning)', () {
-    test('boundaries: above 2^53 - 1 and up to 2^63 - 1', () {
-      expect(codesOf(lex('9007199254740991')), isEmpty, reason: '2^53 - 1');
-      expect(codesOf(lex('9007199254740992')), ['L007'], reason: '2^53');
-      expect(codesOf(lex('9223372036854775807')), ['L007'], reason: '2^63 - 1');
-      expect(codesOf(lex('9223372036854775808')), ['L006'],
-          reason: 'too large: the error only, no warning on top');
+  test('L006 for exactly 2^63 points to Integer.MinValue', () {
+    final d = lex('x = 9223372036854775808').diagnostics.single;
+    expect(d.code.code, 'L006');
+    expect(d.code, DiagnosticCode.integerTooLargeMinValue);
+    expect(d.message, contains('Integer.MinValue'));
+    expect(d.formatMessage(koreanMessages), contains('Integer.MinValue를 쓰세요'));
+    expect(lex('x = 9223372036854775809').diagnostics.single.code,
+        DiagnosticCode.integerTooLarge);
+    expect(lex('x = 0009223372036854775808').diagnostics.single.code,
+        DiagnosticCode.integerTooLargeMinValue);
+  });
+
+  group('large integers (L007 is retired: Integer is exact everywhere, D26)',
+      () {
+    test('no diagnostic from 2^53 up to 2^63 - 1', () {
+      for (final n in [
+        '9007199254740991',
+        '9007199254740992',
+        '1234567890123456789',
+        '0009007199254740993',
+        '9223372036854775807',
+      ]) {
+        expect(codesOf(lex(n)), isEmpty, reason: n);
+      }
+      expect(codesOf(lex('9223372036854775808')), ['L006']);
     });
 
-    test('leading zeros do not matter', () {
-      expect(codesOf(lex('0009007199254740991')), isEmpty);
-      expect(codesOf(lex('0009007199254740992')), ['L007']);
-    });
-
-    test('reals are approximate anyway and get no warning', () {
-      expect(codesOf(lex('9007199254740993.0')), isEmpty);
-    });
-
-    test('it is a warning: the token keeps its exact text and a value', () {
-      final r = lex('id = 1234567890123456789');
-      final d = r.diagnostics.single;
-      expect(d.code, DiagnosticCode.integerInexactOnWeb);
-      expect(d.severity, DiagnosticSeverity.warning);
-      expect(d.isWarning, isTrue);
-      expect([d.line, d.column, d.offset, d.length], [1, 6, 5, 19]);
-      expect(r.tokens[2].text, '1234567890123456789');
-      expect(r.tokens[2].value, isNotNull);
-      expect(r.hasErrors, isFalse, reason: 'warnings alone are not errors');
+    test('the token keeps its exact text', () {
+      expect(
+          lex('1234567890123456789').tokens.first.text, '1234567890123456789');
     });
   });
 

@@ -1,0 +1,16 @@
+' CInt and Round: half away from zero; Int rounds down (LANGUAGE 2.1).
+Sub Main()
+    Debug.Print(CInt(2.5) & " " & CInt(3.5) & " " & CInt(-2.5) & " " & CInt(2.4))
+    Debug.Print(Int(2.5) & " " & Int(-2.5) & " " & Int(3.0))
+    Debug.Print(Round(2.5) & " " & Round(-2.5) & " " & Round(2.675, 2) & " " & Round(1.005, 2))
+    Debug.Print(CInt("42") & " " & CInt(" 7 ") & " " & CInt("2.5"))
+    Debug.Print(CDbl("1.25") & " " & Val("12abc") & " " & Val("abc") & " " & Val("  -3.5e2x"))
+    Debug.Print(CBool("true") & " " & CBool(0) & " " & CBool(2.5))
+    Debug.Print(Abs(-7) & " " & Abs(-7.5) & " " & Max(3, 9) & " " & Min(2, 1.5))
+    Debug.Print(Sqr(16))
+    Try
+        Debug.Print(CInt("abc"))
+    Catch ex As Exception
+        Debug.Print("Cannot convert")
+    End Try
+End Sub

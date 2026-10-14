@@ -4,7 +4,6 @@ import 'package:test/test.dart';
 void main() {
   test('exactly these codes are warnings; every other code is an error', () {
     const warnings = {
-      DiagnosticCode.integerInexactOnWeb,
       DiagnosticCode.unusedLocal,
       DiagnosticCode.functionWithoutReturn,
       DiagnosticCode.localHidesField,
@@ -19,21 +18,22 @@ void main() {
     }
   });
 
-  test('hasErrors counts errors only, for lexing and parsing', () {
-    const warningOnly = 'Sub A()\nid = 1234567890123456789\nEnd Sub';
-    expect(lex(warningOnly).hasErrors, isFalse);
-    final parsed = parse(warningOnly);
-    expect(parsed.diagnostics.map((d) => d.code.code), ['L007']);
-    expect(parsed.hasErrors, isFalse);
+  test('hasErrors counts errors only', () {
+    final warningOnly = compile('Sub A()\nDim unused As Integer\nEnd Sub');
+    expect(warningOnly.diagnostics.map((d) => d.code.code), ['A026']);
+    expect(warningOnly.hasErrors, isFalse);
 
     expect(lex('x = "open').hasErrors, isTrue);
     expect(parse('Sub A()\nx = 1 +\nEnd Sub').hasErrors, isTrue,
         reason: 'parser errors count too');
-    expect(parse('Sub A()\nEnd Sub').hasErrors, isFalse);
+    expect(compile('Sub A()\nDebug.Print(nope)\nEnd Sub').hasErrors, isTrue,
+        reason: 'analyzer errors count too');
+    expect(compile('Sub A()\nEnd Sub').hasErrors, isFalse);
   });
 
-  test('a warning does not silence parser errors on its line', () {
-    final r = parse('Sub A()\nx = 1234567890123456789 +\nEnd Sub');
-    expect(r.diagnostics.map((d) => d.code.code), ['L007', 'P001']);
+  test('a warning does not hide errors', () {
+    final r = compile(
+        'Sub A()\nDim unused As Integer\nDim x As Integer\nx = 1 +\nEnd Sub');
+    expect(r.diagnostics.map((d) => d.code.code), ['A026', 'P001']);
   });
 }

@@ -28,13 +28,9 @@ const Map<DiagnosticCode, String> englishMessages = {
       'which holds up to 9223372036854775807. '
       'If an approximate value is enough, you can add a decimal point to make '
       'it a Double ({0}.0), but its last digits may change.',
-  DiagnosticCode.integerInexactOnWeb:
-      'The number {0} is larger than 9007199254740991, the largest whole '
-          'number a web browser can store exactly. It works as written in '
-          'macOS, Windows, iOS and Android apps, but on the web its last '
-          'digits may change. If it is a number you do not calculate with '
-          '(an order number, a member ID, …), store it as a string ("...") '
-          'instead; that also keeps any leading zeros.',
+  DiagnosticCode.integerTooLargeMinValue: 'The number {0} is too large for '
+      'an Integer, which holds up to 9223372036854775807. If you need the '
+      'smallest Integer (-9223372036854775808), use Integer.MinValue.',
 
   // Parser: structure
   DiagnosticCode.expectedExpression: 'A value or expression is missing here. '
@@ -178,6 +174,30 @@ const Map<DiagnosticCode, String> englishMessages = {
   DiagnosticCode.functionWithoutReturn: 'Function {0} has no Return, so it '
       'always gives back the default value. Add Return with the value to '
       'give back.',
+  DiagnosticCode.settingsNotAvailable: '{0} is not available yet. For now, '
+      'keep the value in a form-level variable while the program runs.',
+
+  // Run time
+  DiagnosticCode.integerOverflow: 'The result is too large for an Integer '
+      '(from -9223372036854775808 to 9223372036854775807). If an '
+      'approximate value is enough, calculate with Double instead.',
+  DiagnosticCode.divisionByZero: 'Division by zero. Check the divisor '
+      'first, for example If d <> 0 Then.',
+  DiagnosticCode.indexOutOfRange: 'There is no item number {0}: there are {1} '
+      'items, numbered from 0. Check the number.',
+  DiagnosticCode.nothingReference: 'This object is Nothing, so it has no '
+      'members or items. Create it first, for example with New.',
+  DiagnosticCode.conversionFailed: '"{0}" cannot be turned into {1}. Check '
+      'the value before converting it.',
+  DiagnosticCode.memberNotFound: 'A value of type {1} has no member "{0}". '
+      'Check what the Object variable holds.',
+  DiagnosticCode.invalidArgument: 'The value given to {0} is outside what it '
+      'accepts. Check the arguments.',
+  DiagnosticCode.unhandledException: 'An error was thrown and not caught: '
+      '{0}. Use Try ... Catch to handle it.',
+  DiagnosticCode.callsTooDeep: 'Procedures called each other too deeply '
+      '(more than {0} calls in a row). Check that the recursion stops.',
+
   DiagnosticCode.localHidesField: 'This local "{0}" hides the form-level '
       'variable of the same name declared on line {1}, which cannot be '
       'reached here. Rename one of them, or use Static if the value should '

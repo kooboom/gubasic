@@ -1,0 +1,25 @@
+' Lists and arrays count from 0; ReDim Preserve keeps values.
+Sub Main()
+    Dim names As New List(Of String)
+    names.Add("Kim")
+    names.Add("Lee")
+    names.Insert(0, "Park")
+    Debug.Print(names.Count & " " & names(0) & " " & names(2))
+    Debug.Print(names.Contains("Lee") & " " & names.IndexOf("Kim") & " " & names.IndexOf("X"))
+    names.Remove("Kim")
+    names.RemoveAt(0)
+    Debug.Print(names.Count & " " & names(0))
+    Dim a(3) As Integer
+    For i = 0 To UBound(a)
+        a(i) = i * i
+    Next
+    ReDim Preserve a(5)
+    Debug.Print(a(3) & " " & a(5) & " " & a.Length)
+    Try
+        Debug.Print(a(6))
+    Catch ex As Exception
+        Debug.Print("Out of range")
+    End Try
+    names(0) = "Choi"
+    Debug.Print(names(0))
+End Sub

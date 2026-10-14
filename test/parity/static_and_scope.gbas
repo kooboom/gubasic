@@ -1,0 +1,19 @@
+' Static keeps its value between calls; a Dim in a loop starts again (I1).
+Dim calls As Integer
+
+Function Counter() As Integer
+    Static count As Integer
+    count = count + 1
+    calls = calls + 1
+    Return count
+End Function
+
+Sub Main()
+    Debug.Print(Counter() & " " & Counter() & " " & Counter())
+    Debug.Print(calls)
+    For i = 1 To 3
+        Dim fresh As Integer
+        fresh = fresh + i
+        Debug.Print(fresh)
+    Next
+End Sub

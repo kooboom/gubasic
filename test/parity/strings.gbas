@@ -1,0 +1,22 @@
+' Text functions count from 1; String methods count from 0.
+Sub Main()
+    Dim s As String = "Hello, World"
+    Debug.Print(Len(s))
+    Debug.Print(Left(s, 5))
+    Debug.Print(Right(s, 5))
+    Debug.Print(Mid(s, 8))
+    Debug.Print(Mid(s, 8, 3))
+    Debug.Print(InStr(s, "World"))
+    Debug.Print(InStr(s, "xyz"))
+    Debug.Print(UCase(s) & " " & LCase(s))
+    Debug.Print("[" & Trim("  pad  ") & "]")
+    Debug.Print(Replace(s, "l", "L"))
+    Debug.Print(Join(Split("a,b,c", ","), "-"))
+    Debug.Print(s.Length)
+    Debug.Print(s.Substring(7))
+    Debug.Print(s.Substring(0, 5))
+    Debug.Print(s.IndexOf("o"))
+    Debug.Print(s.Contains("World") & " " & s.StartsWith("Hell") & " " & s.EndsWith("x"))
+    Debug.Print("한글 " & Len("한글"))
+    Debug.Print("say ""hi""")
+End Sub

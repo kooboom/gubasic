@@ -1,0 +1,9 @@
+Debug.Print: 3 4 -3 2
+Debug.Print: 2 -3 3
+Debug.Print: 3 -3 2.68 1.01
+Debug.Print: 42 7 3
+Debug.Print: 1.25 12 0 -350
+Debug.Print: True False True
+Debug.Print: 7 7.5 9 1.5
+Debug.Print: 4
+Debug.Print: Cannot convert

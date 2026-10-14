@@ -1,0 +1,16 @@
+' Integers above 2^53 are exact on every platform (D26).
+Sub Main()
+    Dim a As Integer = 9007199254740993
+    Debug.Print(a)
+    Debug.Print(a + 2)
+    Debug.Print(a * 1000)
+    Dim b As Integer = 123456789012345678
+    Debug.Print(b \ 7)
+    Debug.Print(b Mod 1000)
+    Debug.Print(Integer.MaxValue)
+    Debug.Print(Integer.MinValue)
+    Debug.Print(Integer.MaxValue - 1)
+    Debug.Print(Integer.MinValue + 1)
+    Debug.Print(Integer.MaxValue \ -1)
+    Debug.Print(-(Integer.MinValue + 1))
+End Sub

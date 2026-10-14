@@ -1,0 +1,11 @@
+' End stops the whole program at once.
+Sub Main()
+    Debug.Print("Start")
+    Stopper()
+    Debug.Print("Never printed")
+End Sub
+
+Sub Stopper()
+    Debug.Print("Stopping")
+    End
+End Sub

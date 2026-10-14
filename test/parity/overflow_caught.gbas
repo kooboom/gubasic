@@ -1,0 +1,23 @@
+' Run-time errors can be caught with Try.
+Sub Main()
+    Try
+        Debug.Print(Integer.MinValue * -1)
+    Catch ex As Exception
+        Debug.Print("Caught overflow")
+    End Try
+    Try
+        Debug.Print(-Integer.MinValue)
+    Catch
+        Debug.Print("Caught negation")
+    End Try
+    Try
+        Debug.Print(Integer.MinValue \ -1)
+    Catch
+        Debug.Print("Caught division")
+    End Try
+    Try
+        Debug.Print(CInt(10.0 ^ 19))
+    Catch
+        Debug.Print("Caught CInt")
+    End Try
+End Sub

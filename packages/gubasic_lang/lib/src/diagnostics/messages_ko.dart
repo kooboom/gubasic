@@ -31,10 +31,10 @@ const Map<DiagnosticCode, String> koreanMessages = {
       'Integer는 9223372036854775807까지 담을 수 있습니다. '
       '대략적인 값이면 충분할 때는 소수점을 붙여 Double로 쓸 수 있지만({0}.0), '
       '이때는 끝자리가 달라질 수 있습니다.',
-  DiagnosticCode.integerInexactOnWeb:
-      '웹 브라우저가 정확히 담을 수 있는 가장 큰 정수(9007199254740991)보다 큰 수입니다(입력한 수: {0}). '
-          'macOS·Windows·iOS·Android 앱에서는 그대로 쓸 수 있지만, 웹에서는 끝자리가 달라질 수 있습니다. '
-          '계산에 쓰지 않는 번호(주문 번호, 회원 ID 등)라면 문자열("...")로 담아 주세요. 앞자리 0도 그대로 남습니다.',
+  DiagnosticCode.integerTooLargeMinValue:
+      'Integer에 담기에는 너무 큰 수입니다(입력한 수: {0}). '
+          'Integer는 9223372036854775807까지 담을 수 있습니다. '
+          '가장 작은 Integer(-9223372036854775808)가 필요하면 Integer.MinValue를 쓰세요.',
 
   // Parser: structure
   DiagnosticCode.expectedExpression:
@@ -146,6 +146,30 @@ const Map<DiagnosticCode, String> koreanMessages = {
   DiagnosticCode.unusedLocal: '{0} 변수를 선언했지만 쓰지 않았습니다. 필요 없으면 지워 주세요.',
   DiagnosticCode.functionWithoutReturn:
       '{0} 함수에 Return 문이 없어서 항상 기본값을 돌려줍니다. 돌려줄 값과 함께 Return을 써 주세요.',
+  DiagnosticCode.settingsNotAvailable:
+      '{0} 기능은 아직 준비 중입니다. 지금은 프로그램이 도는 동안 폼 변수에 값을 담아 두세요.',
+
+  // Run time
+  DiagnosticCode.integerOverflow:
+      '계산 결과가 Integer 범위(-9223372036854775808부터 9223372036854775807까지)를 넘었습니다. '
+          '대략적인 값이면 충분할 때는 Double로 계산해 주세요.',
+  DiagnosticCode.divisionByZero:
+      '0으로 나눌 수 없습니다. If d <> 0 Then처럼 나누는 수를 먼저 확인해 주세요.',
+  DiagnosticCode.indexOutOfRange:
+      '번호 {0} 항목이 없습니다(항목 수: {1}, 번호는 0부터). 번호를 확인해 주세요.',
+  DiagnosticCode.nothingReference:
+      '이 객체는 Nothing이라서 멤버나 항목이 없습니다. New 등으로 먼저 만들어 주세요.',
+  DiagnosticCode.conversionFailed:
+      '"{0}" 값은 {1} 타입으로 바꿀 수 없습니다. 바꾸기 전에 값을 확인해 주세요.',
+  DiagnosticCode.memberNotFound:
+      '{1} 타입 값에는 {0} 멤버가 없습니다. Object 변수에 무엇이 들어 있는지 확인해 주세요.',
+  DiagnosticCode.invalidArgument:
+      '{0} 함수에 넘긴 값이 받을 수 있는 범위를 벗어났습니다. 인수를 확인해 주세요.',
+  DiagnosticCode.unhandledException:
+      '오류가 발생했지만 처리하지 않았습니다: {0}. Try ... Catch로 잡아서 처리해 주세요.',
+  DiagnosticCode.callsTooDeep:
+      '프로시저 호출이 너무 깊어졌습니다(연속 {0}번 초과). 재귀가 끝나는 조건을 확인해 주세요.',
+
   DiagnosticCode.localHidesField:
       '이 지역 변수 {0} 이름이 {1}번 줄에서 선언한 같은 이름의 폼 변수를 가립니다. '
           '여기서는 폼 변수를 쓸 수 없습니다. 둘 중 하나의 이름을 바꾸거나, 호출 사이에 값을 남기려면 Static을 써 주세요.',

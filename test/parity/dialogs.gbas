@@ -1,0 +1,9 @@
+' InputBox answers come from dialogs.in; MsgBox is recorded.
+Sub Main()
+    Dim name As String = InputBox("What is your name?", "Hello")
+    MsgBox("Hello, " & name & "!")
+    Dim age As String = InputBox("How old are you?")
+    MsgBox("Next year you will be " & (CInt(age) + 1), "Age")
+    Dim nothingTyped As String = InputBox("Cancel me")
+    Debug.Print("[" & nothingTyped & "]")
+End Sub

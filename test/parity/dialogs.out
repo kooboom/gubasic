@@ -1,0 +1,6 @@
+InputBox: What is your name? → Kim
+MsgBox: Hello, Kim!
+InputBox: How old are you? → 41
+MsgBox [Age]: Next year you will be 42
+InputBox: Cancel me → 
+Debug.Print: []

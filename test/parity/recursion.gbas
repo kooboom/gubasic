@@ -1,0 +1,20 @@
+' Recursion: every call has its own locals.
+Function Factorial(n As Integer) As Integer
+    If n <= 1 Then Return 1
+    Return n * Factorial(n - 1)
+End Function
+
+Function Fib(n As Integer) As Integer
+    If n < 2 Then Return n
+    Return Fib(n - 1) + Fib(n - 2)
+End Function
+
+Sub Main()
+    Debug.Print(Factorial(20))
+    Debug.Print(Fib(20))
+    Try
+        Debug.Print(Factorial(21))
+    Catch
+        Debug.Print("21! does not fit")
+    End Try
+End Sub

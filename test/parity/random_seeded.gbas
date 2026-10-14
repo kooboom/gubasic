@@ -1,0 +1,15 @@
+' Rnd with a fixed seed gives the same numbers everywhere (J2).
+Sub Main()
+    Randomize(42)
+    For i = 1 To 3
+        Debug.Print(Rnd())
+    Next
+    Randomize(42)
+    Debug.Print(Rnd())
+    Randomize(7)
+    Dim total As Integer = 0
+    For i = 1 To 1000
+        total = total + CInt(Int(Rnd() * 6) + 1)
+    Next
+    Debug.Print(total)
+End Sub

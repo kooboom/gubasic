@@ -1,0 +1,41 @@
+' For with Step, For Each, the four Do forms, Exit.
+Sub Main()
+    Dim line As String = ""
+    For i = 10 To 1 Step -3
+        line = line & i & " "
+    Next
+    Debug.Print(line)
+    For d = 0 To 1 Step 0.25
+        line = line & d & ";"
+    Next
+    Debug.Print(line)
+    Dim n As Integer = 0
+    Do While n < 3
+        n = n + 1
+    Loop
+    Do Until n = 0
+        n = n - 1
+    Loop
+    Do
+        n = n + 2
+    Loop While n < 5
+    Do
+        n = n + 1
+    Loop Until n >= 10
+    Debug.Print(n)
+    For i = 1 To 100
+        If i = 4 Then Exit For
+        Debug.Print("i=" & i)
+    Next
+    Do
+        Exit Do
+    Loop
+    Dim count As Integer
+    For Each word In Split("one two three", " ")
+        count = count + 1
+    Next
+    Debug.Print(count)
+    For i = 1 To 0
+        Debug.Print("never")
+    Next
+End Sub

@@ -1,0 +1,12 @@
+Debug.Print: 1
+Debug.Print: -0.5
+Debug.Print: 25
+Debug.Print: 0.6666666666666666
+Debug.Print: 1E+15
+Debug.Print: 1E+21
+Debug.Print: 123456789012345
+Debug.Print: 0.000001
+Debug.Print: 1E-7
+Debug.Print: True False
+Debug.Print: 424.57
+Debug.Print: Score: 90

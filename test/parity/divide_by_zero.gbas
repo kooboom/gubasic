@@ -1,0 +1,20 @@
+' Division by zero is an error for /, \ and Mod (R002).
+Sub Main()
+    Dim zero As Integer = 0
+    Try
+        Debug.Print(1 / zero)
+    Catch
+        Debug.Print("/ by zero")
+    End Try
+    Try
+        Debug.Print(1 \ zero)
+    Catch
+        Debug.Print("\ by zero")
+    End Try
+    Try
+        Debug.Print(1 Mod zero)
+    Catch
+        Debug.Print("Mod by zero")
+    End Try
+    Debug.Print(5.0 / 0)
+End Sub

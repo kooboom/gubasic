@@ -13,9 +13,13 @@ void main() {
   });
 
   test('codes are unique and numbered without gaps per prefix', () {
-    final all = DiagnosticCode.values.map((c) => c.code).toList();
+    // integerTooLargeMinValue is a second message for L006 on purpose.
+    final all = DiagnosticCode.values
+        .where((c) => c != DiagnosticCode.integerTooLargeMinValue)
+        .map((c) => c.code)
+        .toList();
     expect(all.toSet(), hasLength(all.length));
-    for (final prefix in ['L', 'P']) {
+    for (final prefix in ['L', 'P', 'A', 'R']) {
       final numbers = all
           .where((c) => c.startsWith(prefix))
           .map((c) => int.parse(c.substring(1)))

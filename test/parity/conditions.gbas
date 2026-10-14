@@ -1,0 +1,39 @@
+' If, ElseIf, single-line If, Select Case, And/Or short-circuit.
+Function Grade(score As Integer) As String
+    If score >= 90 Then
+        Return "A"
+    ElseIf score >= 80 Then
+        Return "B"
+    Else
+        Return "C"
+    End If
+End Function
+
+Function Kind(day As Integer) As String
+    Select Case day
+        Case 1, 7
+            Return "Weekend"
+        Case 2 To 6
+            Return "Weekday"
+        Case Is > 7
+            Return "Invalid"
+        Case Else
+            Return "?"
+    End Select
+End Function
+
+Function Noisy(value As Boolean) As Boolean
+    Debug.Print("evaluated")
+    Return value
+End Function
+
+Sub Main()
+    Debug.Print(Grade(95) & Grade(85) & Grade(10))
+    Debug.Print(Kind(1) & " " & Kind(3) & " " & Kind(9) & " " & Kind(0))
+    Dim x As Integer = 5
+    If x > 3 Then Debug.Print("big") Else Debug.Print("small")
+    If False And Noisy(True) Then Debug.Print("no")
+    If True Or Noisy(True) Then Debug.Print("short-circuit")
+    Debug.Print(True Xor True)
+    Debug.Print(Not (1 = 2))
+End Sub

@@ -1,0 +1,4 @@
+Debug.Print: / by zero
+Debug.Print: \ by zero
+Debug.Print: Mod by zero
+Error R002 @ 19

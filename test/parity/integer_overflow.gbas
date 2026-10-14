@@ -1,0 +1,7 @@
+' An Integer result outside 64 bits stops the program with R001.
+Sub Main()
+    Dim big As Integer = Integer.MaxValue
+    Debug.Print("Before")
+    big = big + 1
+    Debug.Print("Never printed")
+End Sub

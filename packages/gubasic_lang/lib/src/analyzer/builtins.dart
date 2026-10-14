@@ -123,7 +123,7 @@ const _builtins = <Callable>[
       [ParamSpec('value', _d), ParamSpec('digits', _i, optional: true)], _d),
   Callable('Sqr', [ParamSpec('value', _d)], _d),
   Callable('Rnd', [], _d),
-  Callable('Randomize', [], _v),
+  Callable('Randomize', [ParamSpec('seed', _i, optional: true)], _v),
   Callable(
       'Min',
       [ParamSpec.of('a', ArgKind.numeric), ParamSpec.of('b', ArgKind.numeric)],
@@ -169,4 +169,7 @@ const _builtins = <Callable>[
 ];
 
 /// Built-in objects, by lower-case name. Their members are in members.dart.
-const Map<String, String> builtinObjects = {'debug': 'Debug'};
+const Map<String, String> builtinObjects = {
+  'debug': 'Debug',
+  'integer': 'Integer',
+};

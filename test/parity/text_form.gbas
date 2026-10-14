@@ -1,0 +1,15 @@
+' The text form of values (LANGUAGE 2.2).
+Sub Main()
+    Debug.Print(1.0)
+    Debug.Print(-0.5)
+    Debug.Print(100 / 4)
+    Debug.Print(2 / 3)
+    Debug.Print(1000000000000000.0)
+    Debug.Print(10.0 ^ 21)
+    Debug.Print(123456789012345.0)
+    Debug.Print(0.000001)
+    Debug.Print(0.0000001)
+    Debug.Print(True & " " & False)
+    Debug.Print(CStr(42) & CStr(4.5) & Str(7))
+    Debug.Print("Score: " & 90)
+End Sub

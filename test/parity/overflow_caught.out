@@ -1,0 +1,4 @@
+Debug.Print: Caught overflow
+Debug.Print: Caught negation
+Debug.Print: Caught division
+Debug.Print: Caught CInt

@@ -27,8 +27,13 @@ enum DiagnosticCode {
   /// An integer literal that does not fit in 64 bits.
   integerTooLarge('L006'),
 
-  /// An integer literal above 2⁵³−1, which the web cannot store exactly.
-  integerInexactOnWeb('L007', DiagnosticSeverity.warning),
+  /// L006 for exactly 9223372036854775808 (one more than the largest
+  /// Integer): the message adds a pointer to Integer.MinValue. Same code,
+  /// a second message.
+  integerTooLargeMinValue('L006'),
+
+  // L007 (an integer the web could not store exactly) is retired: Integer
+  // is exact 64-bit on every platform (D26). The code is not reused.
 
   // Parser: structure
 
@@ -205,7 +210,42 @@ enum DiagnosticCode {
 
   /// A local that hides a form-level variable. Args: name, line of the
   /// form-level declaration.
-  localHidesField('A028', DiagnosticSeverity.warning);
+  localHidesField('A028', DiagnosticSeverity.warning),
+
+  /// SaveSetting / GetSetting: not available yet. Args: the name.
+  settingsNotAvailable('A029'),
+
+  // Run time (the interpreter)
+
+  /// An Integer result outside the 64-bit range.
+  integerOverflow('R001'),
+
+  /// Division by zero with /, \ or Mod.
+  divisionByZero('R002'),
+
+  /// An item number outside an array, list or text. Args: the number, the
+  /// item count.
+  indexOutOfRange('R003'),
+
+  /// A member or item of an object that is Nothing.
+  nothingReference('R004'),
+
+  /// Text that cannot be converted. Args: the text, the target type.
+  conversionFailed('R005'),
+
+  /// A member a value does not have (found at run time, through Object).
+  /// Args: member, the value's type.
+  memberNotFound('R006'),
+
+  /// An argument outside what a built-in function accepts. Args: the
+  /// function.
+  invalidArgument('R007'),
+
+  /// An exception that was thrown and not caught. Args: its message.
+  unhandledException('R008'),
+
+  /// Procedures calling each other too deeply. Args: the limit.
+  callsTooDeep('R009');
 
   const DiagnosticCode(this.code, [this.severity = DiagnosticSeverity.error]);
 

@@ -752,6 +752,10 @@ class _Analyzer {
     if (symbol != null) {
       symbol.used = true;
       _result.symbols[e] = symbol;
+      if (symbol.kind == SymbolKind.builtinFunction &&
+          (symbol.name == 'SaveSetting' || symbol.name == 'GetSetting')) {
+        _reportAt(e, DiagnosticCode.settingsNotAvailable, [symbol.name]);
+      }
       return symbol;
     }
     _unknownName(e, beforeDot: beforeDot);

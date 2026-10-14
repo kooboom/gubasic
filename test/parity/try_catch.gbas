@@ -1,0 +1,19 @@
+' Throw, Catch, Finally, and an exception that nobody catches (R008).
+Sub Risky(fail As Boolean)
+    Try
+        If fail Then Throw New Exception("Something broke")
+        Debug.Print("Risky worked")
+    Finally
+        Debug.Print("Finally runs")
+    End Try
+End Sub
+
+Sub Main()
+    Try
+        Risky(False)
+        Risky(True)
+    Catch ex As Exception
+        Debug.Print("Caught: " & ex.Message)
+    End Try
+    Throw New Exception("Nobody catches this")
+End Sub

@@ -140,8 +140,9 @@ void main() {
     expect(
         DiagnosticCode.values
             .map((c) => c.code)
-            .where((c) => c.startsWith('L')),
-        ['L001', 'L002', 'L003', 'L004', 'L005', 'L006', 'L007']);
+            .where((c) => c.startsWith('L'))
+            .toSet(),
+        {'L001', 'L002', 'L003', 'L004', 'L005', 'L006'});
   });
 
   test('several errors: lexing reaches the end and collects them all', () {

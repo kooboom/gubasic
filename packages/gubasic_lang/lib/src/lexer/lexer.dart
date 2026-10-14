@@ -240,22 +240,21 @@ class _Lexer {
     }
     final text = _src.substring(start, _pos);
     if (_exceeds(text, _maxInt64)) {
-      _report(DiagnosticCode.integerTooLarge, start, [text]);
+      final digits = text.replaceFirst(RegExp('^0+(?=.)'), '');
+      _report(
+          digits == '9223372036854775808'
+              ? DiagnosticCode.integerTooLargeMinValue
+              : DiagnosticCode.integerTooLarge,
+          start,
+          [text]);
       _emit(TokenKind.integerLiteral, start);
       return;
-    }
-    if (_exceeds(text, _maxSafeOnWeb)) {
-      _report(DiagnosticCode.integerInexactOnWeb, start, [text]);
     }
     _emit(TokenKind.integerLiteral, start, value: int.parse(text));
   }
 
   /// 2⁶³−1, the largest Integer.
   static const _maxInt64 = '9223372036854775807';
-
-  /// 2⁵³−1, JavaScript's `Number.MAX_SAFE_INTEGER`: above it, the web
-  /// cannot tell neighbouring integers apart.
-  static const _maxSafeOnWeb = '9007199254740991';
 
   /// Whether the digits in [text] are greater than [limit]. Compared as
   /// text rather than with `int.tryParse`, which never fails on the web

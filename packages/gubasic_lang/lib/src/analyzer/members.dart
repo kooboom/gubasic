@@ -93,5 +93,9 @@ Map<String, MemberSpec> builtinObjectMembers(String name) => switch (name) {
           'print': MemberSpec.method(
               'Print', [const ParamSpec.of('value', ArgKind.anyValue)], _v),
         },
+      'Integer' => {
+          'maxvalue': const MemberSpec.property('MaxValue', _i),
+          'minvalue': const MemberSpec.property('MinValue', _i),
+        },
       _ => const {},
     };
