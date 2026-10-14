@@ -100,7 +100,107 @@ enum DiagnosticCode {
   byRefNotAvailable('P021'),
 
   /// `Handles`: not available yet (planned for stage 2).
-  handlesNotAvailable('P022');
+  handlesNotAvailable('P022'),
+
+  // Analyzer: names
+
+  /// A name that is not declared. Args: the name.
+  unknownName('A001'),
+
+  /// A name that is not declared, with a similar visible name. Args: the
+  /// name, the suggestion.
+  unknownNameDidYouMean('A002'),
+
+  /// An undeclared name used with `.` (likely a control), or `Me`.
+  /// Args: the name.
+  unknownNameMaybeControl('A003'),
+
+  /// A type name that does not exist. Args: the name.
+  unknownType('A004'),
+
+  /// A name declared twice in the same scope. Args: name, first line.
+  duplicateDeclaration('A005'),
+
+  /// A local used above its declaration. Args: name, declaration line.
+  usedBeforeDeclaration('A006'),
+
+  /// `Dim x` with neither a type nor an initial value. Args: the name.
+  missingTypeAndValue('A007'),
+
+  // Analyzer: types
+
+  /// A value that cannot be stored where another type is expected.
+  /// Args: the value's type, the expected type.
+  typeMismatch('A008'),
+
+  /// Text where a number is expected.
+  stringToNumber('A009'),
+
+  /// A Double where an Integer is expected.
+  doubleToInteger('A010'),
+
+  /// Text and a number joined with `+`.
+  stringPlusNumber('A011'),
+
+  /// A condition that is not Boolean. Args: its type.
+  conditionNotBoolean('A012'),
+
+  /// A binary operator used with types it does not support.
+  /// Args: operator, left type, right type.
+  binaryOperatorNotApplicable('A013'),
+
+  /// A unary operator used with a type it does not support.
+  /// Args: operator, type.
+  unaryOperatorNotApplicable('A014'),
+
+  // Analyzer: calls, members, assignment
+
+  /// Wrong number of arguments. Args: callee, expected, given.
+  wrongArgumentCount('A015'),
+
+  /// Something that is not a Sub or Function, called. Args: its name.
+  notCallable('A016'),
+
+  /// A Sub used where a value is needed. Args: its name.
+  subHasNoValue('A017'),
+
+  /// `(index)` on something without numbered items. Args: its type.
+  notIndexable('A018'),
+
+  /// A member a known type does not have. Args: type, member.
+  unknownMember('A019'),
+
+  /// Something that cannot be on the left of `=`. Args: its source text.
+  notAssignable('A020'),
+
+  /// VB6 style `FunctionName = value`. Args: the function name.
+  assignToFunctionName('A021'),
+
+  /// `Return value` in a Sub.
+  returnValueInSub('A022'),
+
+  /// `Return` without a value in a Function.
+  returnWithoutValue('A023'),
+
+  /// `Exit For/Do/Sub/Function` outside a matching block. Args: the
+  /// statement (`Exit For`).
+  exitOutsideBlock('A024'),
+
+  /// `For Each` over something that is not a List or an array.
+  /// Args: its type.
+  cannotLoopOver('A025'),
+
+  // Analyzer: warnings
+
+  /// A local variable that is never used. Args: its name.
+  unusedLocal('A026', DiagnosticSeverity.warning),
+
+  /// A Function with no Return statement. Args: its name.
+  functionWithoutReturn('A027', DiagnosticSeverity.warning),
+
+  /// A local that hides a form-level variable. Args: name, line of the
+  /// form-level declaration.
+  localHidesField('A028', DiagnosticSeverity.warning);
 
   const DiagnosticCode(this.code, [this.severity = DiagnosticSeverity.error]);
 

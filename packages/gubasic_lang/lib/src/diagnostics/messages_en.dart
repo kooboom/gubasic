@@ -94,4 +94,88 @@ const Map<DiagnosticCode, String> englishMessages = {
   DiagnosticCode.handlesNotAvailable: 'Handles is not available yet. '
       'For now, write a Sub named ControlName_EventName, such as '
       'btnSave_Click.',
+
+  // Analyzer: names
+  DiagnosticCode.unknownName: '"{0}" is not declared. '
+      'Declare it with Dim first, or check the spelling.',
+  DiagnosticCode.unknownNameDidYouMean: '"{0}" is not declared. '
+      'There is a similar name, "{1}"; check the spelling.',
+  DiagnosticCode.unknownNameMaybeControl: '"{0}" is not declared. '
+      'If it is a control or the form, it becomes available once the form '
+      'designer exists; for now, use variables declared with Dim.',
+  DiagnosticCode.unknownType: 'There is no type named "{0}". Check the '
+      'spelling; control types such as Button become available once the '
+      'form designer exists.',
+  DiagnosticCode.duplicateDeclaration:
+      '"{0}" is already declared on line {1}. Use a different name.',
+  DiagnosticCode.usedBeforeDeclaration:
+      '"{0}" is used before its declaration on line {1}. '
+          'Move the declaration above this line.',
+  DiagnosticCode.missingTypeAndValue: '"{0}" needs a type or an initial value. '
+      'Write Dim {0} As Integer (or another type), or Dim {0} = value.',
+
+  // Analyzer: types
+  DiagnosticCode.typeMismatch:
+      'A value of type {0} cannot be stored where {1} is expected. '
+          'Convert it with a function such as CInt, CDbl, CStr or CBool if '
+          'that is what you mean.',
+  DiagnosticCode.stringToNumber:
+      'Text is not turned into a number automatically. '
+          'Use CInt (whole number), CDbl or Val to convert it.',
+  DiagnosticCode.doubleToInteger:
+      'A Double is not turned into an Integer automatically, because the '
+          'fraction would be lost. Use CInt to round (2.5 becomes 3, -2.5 '
+          'becomes -3), or Int to round down to the smaller whole number '
+          '(Int(-2.5) is -3).',
+  DiagnosticCode.stringPlusNumber:
+      'Text and a number cannot be joined with "+". Use "&" to join them as '
+          'text, or convert the text with CInt or CDbl to add numbers.',
+  DiagnosticCode.conditionNotBoolean:
+      'A condition must be True or False, but this is a {0}. '
+          'Compare it instead, for example x <> 0.',
+  DiagnosticCode.binaryOperatorNotApplicable:
+      'The operator {0} cannot be used with {1} and {2}. Check both sides: '
+          'And, Or and Xor need True/False values, and Is compares objects '
+          '(use = for values).',
+  DiagnosticCode.unaryOperatorNotApplicable:
+      'The operator {0} cannot be used with {1}. '
+          '"-" and "+" need a number; Not needs True or False.',
+
+  // Analyzer: calls, members, assignment
+  DiagnosticCode.wrongArgumentCount:
+      '{0} expects {1} argument(s), but {2} were given. Check the call.',
+  DiagnosticCode.notCallable: '"{0}" is not a Sub or Function, so it cannot '
+      'be called. Check the name.',
+  DiagnosticCode.subHasNoValue: '{0} is a Sub and gives back no value. Call '
+      'it on its own line, or make it a Function that uses Return.',
+  DiagnosticCode.notIndexable: 'A value of type {0} has no numbered items. '
+      'Only arrays and lists can be used with (index); for text, use Mid.',
+  DiagnosticCode.unknownMember:
+      '{0} has no member named "{1}". Check the spelling.',
+  DiagnosticCode.notAssignable: '"{0}" cannot be given a value. Only '
+      'variables, items of arrays or lists, and properties can be on the '
+      'left of "=" (constants, procedures and call results cannot change).',
+  DiagnosticCode.assignToFunctionName:
+      'In GuBASIC a Function gives back its value with Return. '
+          'Write Return value instead of {0} = value.',
+  DiagnosticCode.returnValueInSub:
+      'A Sub gives back no value, so Return must stand alone here. Remove '
+          'the value, or make this procedure a Function.',
+  DiagnosticCode.returnWithoutValue: 'A Function must give back a value. '
+      'Write the value after Return.',
+  DiagnosticCode.exitOutsideBlock: '{0} can only be used inside a matching '
+      'loop or procedure. Remove it, or move it inside.',
+  DiagnosticCode.cannotLoopOver: 'For Each cannot go through a value of '
+      'type {0}. Use a List or an array.',
+
+  // Analyzer: warnings
+  DiagnosticCode.unusedLocal:
+      '"{0}" is declared but never used. Remove it if it is not needed.',
+  DiagnosticCode.functionWithoutReturn: 'Function {0} has no Return, so it '
+      'always gives back the default value. Add Return with the value to '
+      'give back.',
+  DiagnosticCode.localHidesField: 'This local "{0}" hides the form-level '
+      'variable of the same name declared on line {1}, which cannot be '
+      'reached here. Rename one of them, or use Static if the value should '
+      'be kept between calls.',
 };

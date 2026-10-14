@@ -82,4 +82,69 @@ const Map<DiagnosticCode, String> koreanMessages = {
       '바뀐 값을 돌려받으려면 Function을 만들어 Return으로 돌려주세요.',
   DiagnosticCode.handlesNotAvailable: 'Handles는 아직 준비 중입니다. '
       "지금은 btnSave_Click처럼 '컨트롤이름_이벤트이름'으로 Sub 프로시저를 만들어 주세요.",
+
+  // Analyzer: names
+  DiagnosticCode.unknownName: '{0} 이름이 선언되지 않았습니다. 먼저 Dim으로 선언하거나 철자를 확인해 주세요.',
+  DiagnosticCode.unknownNameDidYouMean:
+      '{0} 이름이 선언되지 않았습니다. 비슷한 이름으로 {1} 이름이 있으니 철자를 확인해 주세요.',
+  DiagnosticCode.unknownNameMaybeControl: '{0} 이름이 선언되지 않았습니다. '
+      '컨트롤이나 폼이라면 폼 디자이너가 생기면 쓸 수 있습니다. 지금은 Dim으로 선언한 변수를 써 주세요.',
+  DiagnosticCode.unknownType: '{0} 타입이 없습니다. 철자를 확인해 주세요. '
+      'Button 같은 컨트롤 타입은 폼 디자이너가 생기면 쓸 수 있습니다.',
+  DiagnosticCode.duplicateDeclaration:
+      '{0} 이름은 {1}번 줄에서 이미 선언했습니다. 다른 이름을 써 주세요.',
+  DiagnosticCode.usedBeforeDeclaration:
+      '{0} 이름을 선언하기 전에 썼습니다(선언: {1}번 줄). 선언을 이 줄보다 위로 옮겨 주세요.',
+  DiagnosticCode.missingTypeAndValue: '{0} 변수에는 타입이나 초깃값이 필요합니다. '
+      'Dim {0} As Integer처럼 타입을 쓰거나, Dim {0} = 값처럼 초깃값을 주세요.',
+
+  // Analyzer: types
+  DiagnosticCode.typeMismatch: '{1} 타입이 필요한 자리에 {0} 타입 값을 넣을 수 없습니다. '
+      '의도한 것이라면 CInt, CDbl, CStr, CBool 같은 변환 함수로 바꿔 주세요.',
+  DiagnosticCode.stringToNumber:
+      '문자열은 숫자로 자동으로 바뀌지 않습니다. CInt(정수), CDbl, Val 중 하나로 바꿔 주세요.',
+  DiagnosticCode.doubleToInteger:
+      'Double 값은 소수 부분이 사라지므로 Integer로 자동으로 바뀌지 않습니다. '
+          '반올림하려면 CInt를(2.5는 3, -2.5는 -3), 더 작은 쪽 정수로 내리려면 Int를 써 주세요. '
+          '예를 들어 Int(-2.5)는 -3입니다.',
+  DiagnosticCode.stringPlusNumber: '문자열과 숫자는 +로 이을 수 없습니다. '
+      '글자로 이으려면 &를 쓰고, 숫자로 더하려면 CInt나 CDbl로 문자열을 바꿔 주세요.',
+  DiagnosticCode.conditionNotBoolean:
+      '조건에는 True 또는 False 값이 와야 하는데, 이 식은 {0} 타입입니다. x <> 0처럼 비교식으로 써 주세요.',
+  DiagnosticCode.binaryOperatorNotApplicable:
+      '{0} 연산자는 {1} 타입과 {2} 타입에 쓸 수 없습니다. 양쪽 값을 확인해 주세요. '
+          'And, Or, Xor에는 True/False 값이 필요하고, Is 연산자는 객체를 비교합니다(값은 =로 비교).',
+  DiagnosticCode.unaryOperatorNotApplicable:
+      '{0} 연산자는 {1} 타입에 쓸 수 없습니다. - 기호와 + 기호에는 숫자가, Not에는 True 또는 False 값이 필요합니다.',
+
+  // Analyzer: calls, members, assignment
+  DiagnosticCode.wrongArgumentCount:
+      '{0} 호출의 인수 개수가 맞지 않습니다(필요한 개수: {1}, 넘긴 개수: {2}). 호출을 확인해 주세요.',
+  DiagnosticCode.notCallable:
+      '{0} 이름은 Sub 또는 Function이 아니라서 호출할 수 없습니다. 이름을 확인해 주세요.',
+  DiagnosticCode.subHasNoValue: '{0} 프로시저는 값을 돌려주지 않는 Sub 프로시저입니다. '
+      '따로 한 줄에 호출하거나, Return을 쓰는 Function으로 바꿔 주세요.',
+  DiagnosticCode.notIndexable: '{0} 타입 값에는 번호로 꺼낼 항목이 없습니다. '
+      '(번호)는 배열과 List에만 쓸 수 있고, 문자열에는 Mid 함수를 써 주세요.',
+  DiagnosticCode.unknownMember: '{0} 타입에는 {1} 멤버가 없습니다. 철자를 확인해 주세요.',
+  DiagnosticCode.notAssignable: '{0} 부분에는 값을 넣을 수 없습니다. '
+      '= 왼쪽에는 변수, 배열이나 List의 항목, 속성만 올 수 있습니다(상수, 프로시저, 호출 결과는 바꿀 수 없음).',
+  DiagnosticCode.assignToFunctionName: 'GuBASIC의 Function은 Return으로 값을 돌려줍니다. '
+      '{0} = 값 대신 Return 값으로 써 주세요.',
+  DiagnosticCode.returnValueInSub: 'Sub 프로시저는 값을 돌려주지 않으므로 여기서는 Return만 씁니다. '
+      '값을 지우거나, 이 프로시저를 Function으로 바꿔 주세요.',
+  DiagnosticCode.returnWithoutValue:
+      'Function은 값을 돌려줘야 합니다. Return 뒤에 돌려줄 값을 써 주세요.',
+  DiagnosticCode.exitOutsideBlock:
+      '{0} 문은 짝이 맞는 반복문이나 프로시저 안에서만 쓸 수 있습니다. 지우거나 안쪽으로 옮겨 주세요.',
+  DiagnosticCode.cannotLoopOver:
+      'For Each 문은 {0} 타입 값을 차례로 돌 수 없습니다. List나 배열을 써 주세요.',
+
+  // Analyzer: warnings
+  DiagnosticCode.unusedLocal: '{0} 변수를 선언했지만 쓰지 않았습니다. 필요 없으면 지워 주세요.',
+  DiagnosticCode.functionWithoutReturn:
+      '{0} 함수에 Return 문이 없어서 항상 기본값을 돌려줍니다. 돌려줄 값과 함께 Return을 써 주세요.',
+  DiagnosticCode.localHidesField:
+      '이 지역 변수 {0} 이름이 {1}번 줄에서 선언한 같은 이름의 폼 변수를 가립니다. '
+          '여기서는 폼 변수를 쓸 수 없습니다. 둘 중 하나의 이름을 바꾸거나, 호출 사이에 값을 남기려면 Static을 써 주세요.',
 };

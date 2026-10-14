@@ -2,11 +2,17 @@ import 'package:gubasic_lang/gubasic_lang.dart';
 import 'package:test/test.dart';
 
 void main() {
-  test('only L007 is a warning; every other code is an error', () {
+  test('exactly these codes are warnings; every other code is an error', () {
+    const warnings = {
+      DiagnosticCode.integerInexactOnWeb,
+      DiagnosticCode.unusedLocal,
+      DiagnosticCode.functionWithoutReturn,
+      DiagnosticCode.localHidesField,
+    };
     for (final code in DiagnosticCode.values) {
       expect(
           code.severity,
-          code == DiagnosticCode.integerInexactOnWeb
+          warnings.contains(code)
               ? DiagnosticSeverity.warning
               : DiagnosticSeverity.error,
           reason: code.code);

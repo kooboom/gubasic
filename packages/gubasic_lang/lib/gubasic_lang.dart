@@ -13,3 +13,7 @@ export 'src/ast/ast_printer.dart';
 export 'src/ast/line_map.dart';
 export 'src/parser/parse_result.dart';
 export 'src/parser/parser.dart';
+export 'src/analyzer/builtins.dart';
+export 'src/analyzer/conversions.dart';
+export 'src/analyzer/members.dart';
+export 'src/analyzer/types.dart';
