@@ -6,11 +6,11 @@ Problems we know about and have **deliberately** left unfixed for now. Each entr
 
 ---
 
-## The smallest Integer cannot be written as a literal
+## Settings are not available yet
 
-- **What:** `-9223372036854775808` (the smallest `Integer`) is reported as too large (L006). The minus sign is an operator, so the literal itself is `9223372036854775808`, one more than the largest `Integer`.
-- **Why deferred:** the lexer cannot know whether a minus sign belongs to the number (`-5`) or is a subtraction (`x -5`). Rarely needed; `Integer.MinValue`-style constants can cover it later.
-- **Revisit:** in the analyzer stage, consider treating an integer literal with a leading minus sign as a single value.
+- **What:** `SaveSetting` and `GetSetting` are reported before running (A029) and cannot be used.
+- **Why deferred:** where settings are stored differs between platforms (shared_preferences in apps, the browser's storage in the playground). It belongs with `gubasic_runtime`, so that the interpreter and generated apps store them the same way (D11).
+- **Revisit:** when `gubasic_runtime` arrives.
 
 ## Controls and the form cannot be used yet
 

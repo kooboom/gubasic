@@ -65,8 +65,8 @@ Every diagnostic is an **error** unless marked as a **warning** below. Errors mu
 | L003 | `:` used to put several statements on one line | Treated as the end of a statement |
 | L004 | A character with no meaning in GuBASIC (`@`, `#`, `$`, …) | Error token |
 | L005 | `_` that is not the last thing on its line | Error token |
-| L006 | An integer too large for `Integer` (64-bit) | Integer token with no value |
-| L007 | **Warning.** An integer above 9007199254740991 (2⁵³−1), which the web cannot store exactly | Integer token as usual; decided on the digits, so reported the same on every platform |
+| L006 | An integer too large for `Integer` (64-bit) | Integer token with no value. For exactly 9223372036854775808 the message points to `Integer.MinValue` |
+| L007 | **Retired** (D26 made it unnecessary): it warned about integers the web could not store exactly; Integer is now exact on every platform. The code is not reused | — |
 
 **Parser**
 
@@ -136,6 +136,23 @@ The analyzer checks names and types (§2.1, §3.2, §5.2). It runs even when the
 | A026 | **Warning.** A local variable that is never used |
 | A027 | **Warning.** A `Function` with no `Return` |
 | A028 | **Warning.** A local that hides a form-level variable of the same name |
+| A029 | `SaveSetting` / `GetSetting`: not available yet (reported before running) |
+
+**Run time**
+
+Errors found while a program runs. Each stops the program and points at its line, unless a `Try` catches it (§9).
+
+| Code | Problem |
+|---|---|
+| R001 | An `Integer` result outside the 64-bit range (`+ - *`, unary `-`, `\`, `CInt`, `Int`, `Round`, a `For` counter) |
+| R002 | Division by zero with `/`, `\` or `Mod` |
+| R003 | An item number outside an array, a list or a text (`Substring`, `Insert`, `RemoveAt`) |
+| R004 | A member or item of an object that is `Nothing` |
+| R005 | Text that cannot be converted (`CInt("abc")`, `CBool("maybe")`) |
+| R006 | A member a value does not have, found through an `Object` variable |
+| R007 | An argument outside what a built-in function accepts (`Sqr(-1)`, `Mid(s, 0)`, `Round(x, 16)`) |
+| R008 | An exception that was thrown and not caught |
+| R009 | Procedures calling each other more than 10,000 deep (endless recursion) |
 
 ## 2. Types
 
@@ -150,7 +167,7 @@ The analyzer checks names and types (§2.1, §3.2, §5.2). It runs even when the
 | `List(Of T)` | `List<T>` | empty list (when declared with `New`) |
 | Control / component types (`Button`, `Label`, …) | runtime classes | `Nothing` |
 
-- **`Integer` is 64-bit** on native platforms. On the web it is a JavaScript number, exact only up to 2⁵³ (about 9 × 10¹⁵). Ordinary apps never reach this. The source text of an integer literal is always kept exactly, and the transpiler writes it as written, so a native app gets the exact value even above 2⁵³. A literal above 2⁵³−1 gets warning L007 on every platform; for numbers you do not calculate with (order numbers, member IDs), use a `String`, which also keeps leading zeros.
+- **`Integer` is an exact 64-bit integer on every platform**, the web included (D26): from `Integer.MinValue` (−9223372036854775808) to `Integer.MaxValue` (9223372036854775807). A result outside this range is a run-time error (R001), never a silently wrong number.
 - **`Nothing` (null) exists only for objects.** Value types always have a value, so beginners rarely meet null errors.
 - **To check whether an object is `Nothing`, compare with `Is`:** `If player Is Nothing Then`. For the opposite, write `If Not player Is Nothing Then`. (`=` compares values, not objects.)
 - There is **no `Variant`**. Use `Object` when a variable really must hold anything.
@@ -222,6 +239,7 @@ Dart has no static locals; the transpiler turns each `Static` into a hidden form
 - Within one procedure, a name can be declared only once, even in different blocks (A005).
 - A local may have the same name as a form-level variable, but this is a warning (A028): the form-level one cannot be reached there, a common mistake with counters that should be `Static`.
 - A local can be used only below its declaration (A006). Form-level variables and procedures can be used anywhere in the file.
+- **A `Dim` starts its variable again every time it runs** (with its initial value, or the type's default). So a `Dim` inside a loop begins each round fresh. Use `Static`, or a `Dim` above the loop, to keep a value between rounds. This differs from Visual Basic, where a variable declared in a block is initialized once, when the procedure starts ([Lifetime](https://learn.microsoft.com/en-us/dotnet/visual-basic/programming-guide/language-features/declared-elements/lifetime)).
 
 ### 3.3 Constants
 
@@ -312,6 +330,13 @@ From highest to lowest, as in VB.NET. Operators on the same level are evaluated 
 - `"1" + 1` is an error (A011): text is never turned into a number automatically, and turning the number into text would silently give `"11"`. Use `&` to join, or `CInt` to add.
 - `And`, `Or`, `Xor` and `Not` work only on `True`/`False` in GuBASIC 1.0, so they always mean logic, never bit operations.
 - **Conditions** (`If`, `ElseIf`, `Do While`, `Loop Until`, …) must be `True` or `False`. Write `If count <> 0 Then`, not `If count Then` (A012).
+
+### 5.3 Arithmetic at run time
+
+- **Integer overflow is an error (R001).** Visual Basic checks integer overflow by default as well ([-removeintchecks](https://learn.microsoft.com/en-us/dotnet/visual-basic/reference/command-line-compiler/removeintchecks)).
+- **Division by zero is an error (R002) for `/`, `\` and `Mod`.** For `\` Visual Basic does the same ([\ Operator](https://learn.microsoft.com/en-us/dotnet/visual-basic/language-reference/operators/integer-division-operator)); for `/` with `Double` values Visual Basic returns infinity or NaN instead ([/ Operator](https://learn.microsoft.com/en-us/dotnet/visual-basic/language-reference/operators/floating-point-division-operator)). GuBASIC reports it, because a beginner rarely means to divide by zero.
+- `\` truncates toward zero (`-7 \ 2` is −3); the sign of `Mod` follows the left operand (`-7 Mod 3` is −1).
+- A `Double` that grows too large becomes `Infinity`; that is not an error.
 
 ## 6. Control flow
 
@@ -434,6 +459,14 @@ End Try
 - `Throw New Exception("message")` raises an error.
 - `On Error GoTo` and `On Error Resume Next` are **not** supported.
 - An unhandled error stops the program and highlights the line in the IDE with a plain-language explanation.
+- **Run-time errors (R codes) can be caught with `Try`** like a thrown exception. `ex.Message` is the error's explanation, in the language chosen when the program started. An exception nobody catches stops the program with R008.
+
+### 9.1 Running a program
+
+- A program starts at `Sub Main()`, or at `Sub Form_Load()` if there is no `Main`. Form-level variables get their initial values first.
+- A program with errors does not run; one with only warnings does (D23).
+- Calls may nest 10,000 deep; one more is R009. The limit is the same on every platform. It catches endless recursion within a fraction of a second; the interpreter itself was measured to stay safe beyond a million calls on the VM and in Chrome.
+- While a program runs, the interpreter lets the screen update every 1,000 loop rounds or calls, so that the Stop button works. This never changes what the program computes. `DoEvents` does the same on request.
 
 ## 10. Built-in functions (initial set)
 
@@ -443,7 +476,7 @@ String functions follow classic BASIC and **count from 1**. String *methods* (`.
 |---|---|
 | String | `Len`, `Left`, `Right`, `Mid`, `InStr`, `UCase`, `LCase`, `Trim`, `Replace`, `Split`, `Join` |
 | Conversion | `CInt`, `CDbl`, `CStr`, `CBool`, `Val`, `Str` |
-| Math | `Abs`, `Int`, `Round`, `Sqr`, `Rnd`, `Randomize`, `Min`, `Max` |
+| Math | `Abs`, `Int`, `Round`, `Sqr`, `Rnd`, `Randomize`, `Min`, `Max`; constants `Integer.MaxValue`, `Integer.MinValue` |
 | Date | `Now`, `Today`, `Year`, `Month`, `Day`, `Hour`, `Minute`, `Second` |
 | Dialogs | `MsgBox`, `InputBox` |
 | Output for developers | `Debug.Print(value)`: writes a line to the playground's output window (VB6's Immediate window) |
@@ -452,6 +485,22 @@ String functions follow classic BASIC and **count from 1**. String *methods* (`.
 
 - `Debug.Print` needs parentheses like any call with arguments: `Debug.Print("x")`, not `Debug.Print "x"` (P011).
 - `CInt`, `Round` and `Int` round as described in §2.1; `Int` returns an `Integer`.
+- `Mid(text, start[, length])`, `Left`, `Right`: a start below 1 or a negative length is R007; a length past the end takes what is there. `InStr` gives 0 when the text is not found.
+- `CInt(text)` reads whole numbers exactly (also above 2⁵³) and other numbers through `Double`, rounding as §2.1. `CBool` takes numbers (0 is `False`) and the texts `True` / `False` in any case. `Val` reads the number at the start of the text and gives 0 if there is none. `Str` is the text form of a number, with no leading space.
+- `Round(x, digits)`: `digits` from 0 to 15. It rounds the shortest decimal text of `x` half away from zero, so `Round(2.675, 2)` is 2.68 as written.
+- `Rnd()` gives a `Double` from 0 (inclusive) to 1 (exclusive) and is the same on every platform: the 64-bit state starts at 0 when the program starts, `Randomize(seed)` sets it to `seed`, and `Randomize` without a seed uses the current time. Each `Rnd()` computes, with 64-bit wrapping arithmetic and `>>>` the unsigned right shift (SplitMix64):
+
+  ```
+  state = state + 0x9E3779B97F4A7C15
+  z = state
+  z = (z Xor (z >>> 30)) * 0xBF58476D1CE4E5B9
+  z = (z Xor (z >>> 27)) * 0x94D049BB133111EB
+  z = z Xor (z >>> 31)
+  Rnd = (z >>> 11) / 2^53
+  ```
+
+- `Now` and `Today` use the device's local time.
+- `SaveSetting` and `GetSetting` are not available yet (A029).
 
 ## 11. Forms and controls
 

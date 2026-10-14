@@ -65,8 +65,8 @@ Handles ReDim Preserve Optional Of ByVal
 | L003 | `:`로 한 줄에 여러 문장을 씀 | 문장의 끝으로 처리 |
 | L004 | GuBASIC에서 의미가 없는 문자(`@`, `#`, `$` 등) | 오류 토큰 |
 | L005 | 줄의 맨 끝이 아닌 곳의 `_` | 오류 토큰 |
-| L006 | `Integer`(64비트)에 담기지 않는 큰 정수 | 값이 없는 정수 토큰 |
-| L007 | **경고.** 웹이 정확히 담을 수 없는 9007199254740991(2⁵³−1)보다 큰 정수 | 보통의 정수 토큰. 숫자 문자열로 판단하므로 모든 플랫폼에서 똑같이 알림 |
+| L006 | `Integer`(64비트)에 담기지 않는 큰 정수 | 값이 없는 정수 토큰. 정확히 9223372036854775808이면 메시지가 `Integer.MinValue`를 안내 |
+| L007 | **폐지됨**(D26으로 불필요): 웹이 정확히 담지 못하는 정수를 경고했지만, 이제 Integer는 모든 플랫폼에서 정확합니다. 코드는 다시 쓰지 않습니다 | — |
 
 **파서**
 
@@ -136,6 +136,23 @@ Handles ReDim Preserve Optional Of ByVal
 | A026 | **경고.** 쓰지 않는 지역 변수 |
 | A027 | **경고.** `Return`이 없는 `Function` |
 | A028 | **경고.** 같은 이름의 폼 변수를 가리는 지역 변수 |
+| A029 | `SaveSetting` / `GetSetting`: 아직 준비 중 (실행 전에 알림) |
+
+**실행 중**
+
+프로그램이 도는 동안 발견하는 오류입니다. `Try`로 잡지 않으면(9절) 프로그램을 멈추고 그 줄을 알려 줍니다.
+
+| 코드 | 문제 |
+|---|---|
+| R001 | `Integer` 결과가 64비트 범위를 넘음 (`+ - *`, 단항 `-`, `\`, `CInt`, `Int`, `Round`, `For` 카운터) |
+| R002 | `/`, `\`, `Mod`로 0으로 나눔 |
+| R003 | 배열, 목록, 문자열의 범위를 벗어난 번호 (`Substring`, `Insert`, `RemoveAt`) |
+| R004 | `Nothing`인 객체의 멤버나 항목을 씀 |
+| R005 | 바꿀 수 없는 문자열 (`CInt("abc")`, `CBool("maybe")`) |
+| R006 | `Object` 변수에 든 값에 없는 멤버를 씀 |
+| R007 | 내장 함수가 받을 수 없는 인수 (`Sqr(-1)`, `Mid(s, 0)`, `Round(x, 16)`) |
+| R008 | 던졌지만 아무도 잡지 않은 예외 |
+| R009 | 프로시저 호출이 10,000단계보다 깊어짐 (끝나지 않는 재귀) |
 
 ## 2. 타입
 
@@ -150,7 +167,7 @@ Handles ReDim Preserve Optional Of ByVal
 | `List(Of T)` | `List<T>` | 빈 목록 (`New`로 선언할 때) |
 | 컨트롤·컴포넌트 타입 (`Button`, `Label` 등) | 런타임 클래스 | `Nothing` |
 
-- **`Integer`는 네이티브 플랫폼에서 64비트**입니다. 웹에서는 자바스크립트 숫자라서 2⁵³(약 9천조)까지만 정확합니다. 일반 앱은 이 범위에 닿지 않습니다. 정수 리터럴의 원문은 언제나 그대로 보존되고 트랜스파일러도 쓴 그대로 옮기므로, 네이티브 앱에서는 2⁵³을 넘는 수도 정확합니다. 2⁵³−1보다 큰 리터럴에는 모든 플랫폼에서 경고 L007이 나옵니다. 계산에 쓰지 않는 번호(주문 번호, 회원 ID 등)는 `String`으로 담으면 앞자리 0도 그대로 남습니다.
+- **`Integer`는 모든 플랫폼에서 정확한 64비트 정수**이며, 웹도 마찬가지입니다(D26). 범위는 `Integer.MinValue`(-9223372036854775808)부터 `Integer.MaxValue`(9223372036854775807)까지입니다. 이 범위를 넘는 결과는 조용히 틀린 수가 되지 않고 실행 중 오류(R001)가 됩니다.
 - **`Nothing`(null)은 객체에만 있습니다.** 값 타입은 항상 값이 있으므로 초보자가 null 오류를 만날 일이 거의 없습니다.
 - **객체가 `Nothing`인지는 `Is`로 비교합니다:** `If player Is Nothing Then`. 반대는 `If Not player Is Nothing Then`으로 씁니다. (`=`는 객체가 아니라 값을 비교합니다.)
 - **`Variant`는 없습니다.** 정말 아무 값이나 담아야 하면 `Object`를 씁니다.
@@ -222,6 +239,7 @@ Dart에는 정적 지역 변수가 없어서, 트랜스파일러가 `Static`을 
 - 한 프로시저 안에서는 블록이 달라도 같은 이름을 한 번만 선언할 수 있습니다(A005).
 - 폼 변수와 같은 이름의 지역 변수는 쓸 수 있지만 경고합니다(A028). 그 자리에서는 폼 변수를 쓸 수 없게 되어, `Static`이어야 할 카운터에서 흔히 실수하기 때문입니다.
 - 지역 변수는 선언한 줄 아래에서만 쓸 수 있습니다(A006). 폼 변수와 프로시저는 파일 어디서나 쓸 수 있습니다.
+- **`Dim`은 실행될 때마다 변수를 새로 시작합니다**(초깃값이나 타입의 기본값으로). 그래서 반복문 안의 `Dim`은 돌 때마다 처음부터 시작합니다. 반복 사이에 값을 남기려면 `Static`이나 반복문 위의 `Dim`을 씁니다. 이는 Visual Basic과 다릅니다. Visual Basic에서는 블록 안에서 선언한 변수를 프로시저가 시작될 때 한 번만 초기화합니다([Lifetime](https://learn.microsoft.com/en-us/dotnet/visual-basic/programming-guide/language-features/declared-elements/lifetime)).
 
 ### 3.3 상수
 
@@ -312,6 +330,13 @@ VB.NET과 같고, 위쪽이 먼저 계산됩니다. 같은 단계의 연산자�
 - `"1" + 1`은 오류입니다(A011). 문자열은 숫자로 자동으로 바뀌지 않고, 숫자를 문자열로 바꾸면 소리 없이 `"11"`이 되기 때문입니다. 이으려면 `&`를, 더하려면 `CInt`를 씁니다.
 - GuBASIC 1.0에서 `And`, `Or`, `Xor`, `Not`은 `True`/`False`에만 쓰므로, 비트 연산이 아니라 항상 논리 연산입니다.
 - **조건**(`If`, `ElseIf`, `Do While`, `Loop Until` 등)은 `True`나 `False`여야 합니다. `If count Then`이 아니라 `If count <> 0 Then`으로 씁니다(A012).
+
+### 5.3 실행 중 계산
+
+- **정수 넘침은 오류입니다(R001).** Visual Basic도 기본으로 정수 넘침을 검사합니다([-removeintchecks](https://learn.microsoft.com/en-us/dotnet/visual-basic/reference/command-line-compiler/removeintchecks)).
+- **0으로 나누기는 `/`, `\`, `Mod` 모두 오류입니다(R002).** `\`는 Visual Basic도 같습니다([\ Operator](https://learn.microsoft.com/en-us/dotnet/visual-basic/language-reference/operators/integer-division-operator)). `/`에 `Double` 값을 쓰면 Visual Basic은 무한대나 NaN을 돌려주지만([/ Operator](https://learn.microsoft.com/en-us/dotnet/visual-basic/language-reference/operators/floating-point-division-operator)), GuBASIC은 오류로 알립니다. 초보자가 일부러 0으로 나누는 일은 드물기 때문입니다.
+- `\`는 0 쪽으로 버립니다(`-7 \ 2`는 -3). `Mod`의 부호는 왼쪽 값을 따릅니다(`-7 Mod 3`은 -1).
+- 너무 커진 `Double`은 `Infinity`가 되며, 오류가 아닙니다.
 
 ## 6. 제어 구조
 
@@ -434,6 +459,14 @@ End Try
 - `Throw New Exception("메시지")`로 오류를 일으킵니다.
 - `On Error GoTo`와 `On Error Resume Next`는 **지원하지 않습니다.**
 - 처리되지 않은 오류가 나면 프로그램이 멈추고, IDE가 해당 줄을 강조하며 쉬운 말로 설명합니다.
+- **실행 중 오류(R 코드)도 던진 예외처럼 `Try`로 잡을 수 있습니다.** `ex.Message`에는 오류 설명이 프로그램을 시작할 때 고른 언어로 들어 있습니다. 아무도 잡지 않은 예외는 R008로 프로그램을 멈춥니다.
+
+### 9.1 프로그램 실행
+
+- 프로그램은 `Sub Main()`에서, `Main`이 없으면 `Sub Form_Load()`에서 시작합니다. 폼 변수의 초깃값을 먼저 계산합니다.
+- 오류가 있는 프로그램은 실행되지 않고, 경고만 있으면 실행됩니다(D23).
+- 호출은 10,000단계까지 이어질 수 있고, 그보다 깊으면 R009입니다. 이 제한은 모든 플랫폼에서 같습니다. 끝나지 않는 재귀를 1초도 안 돼 잡아내며, 인터프리터 자체는 VM과 Chrome에서 100만 단계 넘게도 안전한 것을 측정으로 확인했습니다.
+- 프로그램이 도는 동안 인터프리터는 반복 1,000번이나 호출 1,000번마다 화면이 갱신될 틈을 주어 중지 버튼이 동작하게 합니다. 이는 프로그램이 계산하는 결과를 바꾸지 않습니다. `DoEvents`도 요청할 때 같은 일을 합니다.
 
 ## 10. 내장 함수 (첫 묶음)
 
@@ -443,7 +476,7 @@ End Try
 |---|---|
 | 문자열 | `Len`, `Left`, `Right`, `Mid`, `InStr`, `UCase`, `LCase`, `Trim`, `Replace`, `Split`, `Join` |
 | 변환 | `CInt`, `CDbl`, `CStr`, `CBool`, `Val`, `Str` |
-| 수학 | `Abs`, `Int`, `Round`, `Sqr`, `Rnd`, `Randomize`, `Min`, `Max` |
+| 수학 | `Abs`, `Int`, `Round`, `Sqr`, `Rnd`, `Randomize`, `Min`, `Max`. 상수 `Integer.MaxValue`, `Integer.MinValue` |
 | 날짜 | `Now`, `Today`, `Year`, `Month`, `Day`, `Hour`, `Minute`, `Second` |
 | 대화상자 | `MsgBox`, `InputBox` |
 | 개발자용 출력 | `Debug.Print(값)`: 놀이터의 직접 실행 창(VB6의 직접 실행 창)에 한 줄 씀 |
@@ -452,6 +485,22 @@ End Try
 
 - `Debug.Print`도 인수가 있는 다른 호출처럼 괄호가 필요합니다. `Debug.Print "x"`가 아니라 `Debug.Print("x")`로 씁니다(P011).
 - `CInt`, `Round`, `Int`는 2.1절처럼 반올림하고, `Int`는 `Integer`를 돌려줍니다.
+- `Mid(text, start[, length])`, `Left`, `Right`: 시작 위치가 1보다 작거나 길이가 음수이면 R007입니다. 길이가 끝을 넘으면 있는 만큼만 가져옵니다. `InStr`은 못 찾으면 0입니다.
+- `CInt(문자열)`은 정수는 정확히(2⁵³을 넘어도) 읽고, 그 밖의 수는 `Double`을 거쳐 2.1절처럼 반올림합니다. `CBool`은 숫자(0은 `False`)와 대소문자에 상관없는 문자열 `True` / `False`를 받습니다. `Val`은 문자열 맨 앞의 수를 읽고, 없으면 0입니다. `Str`은 수의 글자 모양이며 앞에 공백을 붙이지 않습니다.
+- `Round(x, 자릿수)`: 자릿수는 0부터 15까지입니다. `x`의 가장 짧은 소수 표기를 기준으로 0에서 먼 쪽으로 반올림하므로, `Round(2.675, 2)`는 쓴 그대로 2.68입니다.
+- `Rnd()`는 0 이상 1 미만의 `Double`을 돌려주며 모든 플랫폼에서 같습니다. 64비트 상태는 프로그램이 시작할 때 0이고, `Randomize(seed)`는 상태를 `seed`로 정하며, 시드 없는 `Randomize`는 현재 시각을 씁니다. `Rnd()`는 매번 64비트 넘침 무시 연산과 부호 없는 오른쪽 이동(`>>>`)으로 다음을 계산합니다(SplitMix64).
+
+  ```
+  state = state + 0x9E3779B97F4A7C15
+  z = state
+  z = (z Xor (z >>> 30)) * 0xBF58476D1CE4E5B9
+  z = (z Xor (z >>> 27)) * 0x94D049BB133111EB
+  z = z Xor (z >>> 31)
+  Rnd = (z >>> 11) / 2^53
+  ```
+
+- `Now`와 `Today`는 기기의 현지 시각을 씁니다.
+- `SaveSetting`과 `GetSetting`은 아직 쓸 수 없습니다(A029).
 
 ## 11. 폼과 컨트롤
 

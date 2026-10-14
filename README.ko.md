@@ -5,7 +5,7 @@
 
 [English](README.md)
 
-> **상태:** 개발 초기입니다. 렉서가 동작하며, 브라우저에서 [**놀이터**](https://kooboom.github.io/gubasic)로 써 볼 수 있습니다.
+> **상태:** 개발 초기입니다. 이제 브라우저의 [**놀이터**](https://kooboom.github.io/gubasic)에서 GuBASIC 프로그램이 **실행됩니다**: 변수, 반복, 프로시저, `Try`, `Debug.Print`, `MsgBox`, `InputBox`. 폼과 컨트롤은 다음 단계입니다.
 
 ---
 
