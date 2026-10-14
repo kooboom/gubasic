@@ -14,7 +14,7 @@ Problems we know about and have **deliberately** left unfixed for now. Each entr
 
 ## The smallest Integer cannot be written as a literal
 
-- **What:** `-9223372036854775808` (the smallest `Integer`) is reported as too large (L006). The minus sign is an operator, so the literal itself is `9223372036854775808`, one more than the largest `Integer`. VB.NET behaves the same way.
+- **What:** `-9223372036854775808` (the smallest `Integer`) is reported as too large (L006). The minus sign is an operator, so the literal itself is `9223372036854775808`, one more than the largest `Integer`.
 - **Why deferred:** the lexer cannot know whether a minus sign belongs to the number (`-5`) or is a subtraction (`x -5`). Rarely needed; `Integer.MinValue`-style constants can cover it later.
 - **Revisit:** in the analyzer stage, consider treating an integer literal with a leading minus sign as a single value.
 

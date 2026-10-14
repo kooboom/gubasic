@@ -53,6 +53,7 @@ test/parity/             Interpreter-vs-transpiler parity tests
 - After a fixed English word, choose the Korean particle by how the word is read (Sub [섭] → 이나/과/을). If it reads awkwardly, join with "또는" instead ("Sub 또는 Function").
 - Messages never suggest a fix that silently changes the program's meaning; if a fix has a trade-off, say so.
 - English and Korean are both first-class: change and review both in the same commit.
+- Claims about other languages or tools in docs need a source link; if none can be found, leave the claim out.
 - Anything deliberately left unfixed goes into `docs/KNOWN_ISSUES.md` (what, why deferred, when to revisit).
 - Merge only when the author says so: fast-forward locally (rebase onto `main` first if needed), push `main`, then delete the branch locally and remotely. Never merge on GitHub: fast-forward keeps the history linear, with every commit authored exactly as configured.
 
