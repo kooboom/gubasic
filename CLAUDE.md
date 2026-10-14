@@ -56,6 +56,7 @@ test/parity/             Interpreter-vs-transpiler parity tests
 - Claims about other languages or tools in docs need a source link; if none can be found, leave the claim out.
 - Anything deliberately left unfixed goes into `docs/KNOWN_ISSUES.md` (what, why deferred, when to revisit).
 - Merge only when the author says so: fast-forward locally (rebase onto `main` first if needed), push `main`, then delete the branch locally and remotely. Never merge on GitHub: fast-forward keeps the history linear, with every commit authored exactly as configured.
+- After merging, verify that local and remote `main` point to the same commit, and that CI and the Pages deploy on `main` succeeded, before reporting done. If a command reports failure, check the actual repository state before retrying.
 
 ## Before you finish a task
 
