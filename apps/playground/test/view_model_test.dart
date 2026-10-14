@@ -119,4 +119,41 @@ void main() {
       expect(s.unit.members.single.label, 'Sub A');
     });
   });
+
+  group('severity', () {
+    test('counts errors and warnings', () {
+      final s = Snapshot('Sub A()\nx = 1234567890123456789\ny = 1 @ 2\n'
+          'z = 9007199254740993\nEnd Sub');
+      expect(severityCounts(s.diagnostics), (1, 2));
+      expect(severityCounts(const []), (0, 0));
+    });
+
+    test('summary text in both languages, singular and plural', () {
+      expect(diagnosticSummary(Locale.en, 2, 1), '2 errors · 1 warning');
+      expect(diagnosticSummary(Locale.en, 1, 0), '1 error');
+      expect(diagnosticSummary(Locale.en, 0, 3), '3 warnings');
+      expect(diagnosticSummary(Locale.ko, 2, 1), '오류 2 · 경고 1');
+      expect(diagnosticSummary(Locale.ko, 0, 1), '경고 1');
+      expect(diagnosticSummary(Locale.en, 0, 0), '');
+    });
+
+    test('badge tone: red with any error, amber with warnings only', () {
+      const tab = DiagnosticsTab();
+      expect(tab.badgeTone(Snapshot('Sub A()\nEnd Sub')), BadgeTone.neutral);
+      expect(tab.badgeTone(Snapshot('Sub A()\nx = 9007199254740993\nEnd Sub')),
+          BadgeTone.warning);
+      expect(
+          tab.badgeTone(
+              Snapshot('Sub A()\nx = 9007199254740993\ny = "open\nEnd Sub')),
+          BadgeTone.error);
+      expect(const TokensTab().badgeTone(Snapshot('x @')), BadgeTone.neutral);
+    });
+
+    test('a gutter line is amber only when all its problems are warnings', () {
+      final warning = lex('9007199254740993').diagnostics;
+      final error = lex('@').diagnostics;
+      expect(onlyWarnings(warning), isTrue);
+      expect(onlyWarnings([...warning, ...error]), isFalse);
+    });
+  });
 }

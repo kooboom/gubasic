@@ -47,10 +47,12 @@ class Editor implements SourceNavigator {
       final here = byLine[line];
       if (here != null) {
         row.classList.add('has-diagnostic');
+        if (onlyWarnings(here)) row.classList.add('warning-only');
         row.title = [
           locale[UiText.diagnosticsOnLine],
           for (final d in here)
-            '${d.code.code}: ${d.formatMessage(locale.diagnosticMessages)}',
+            '${locale[d.isWarning ? UiText.severityWarning : UiText.severityError]} '
+                '${d.code.code}: ${d.formatMessage(locale.diagnosticMessages)}',
         ].join('\n');
         onClick(row, () => jumpTo(here.first));
       }

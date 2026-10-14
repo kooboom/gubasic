@@ -86,6 +86,19 @@ String rangeText(LineMap lines, int start, int end) {
   return '$sl:$sc–$el:$ec';
 }
 
+/// The number of errors and of warnings in [diagnostics].
+(int errors, int warnings) severityCounts(List<Diagnostic> diagnostics) {
+  var errors = 0;
+  for (final d in diagnostics) {
+    if (d.isError) errors++;
+  }
+  return (errors, diagnostics.length - errors);
+}
+
+/// Whether a gutter line shows only warnings (amber) rather than at least
+/// one error (red).
+bool onlyWarnings(List<Diagnostic> onLine) => onLine.every((d) => d.isWarning);
+
 /// Diagnostics grouped by line, for the editor gutter.
 Map<int, List<Diagnostic>> diagnosticsByLine(List<Diagnostic> diagnostics) {
   final map = <int, List<Diagnostic>>{};

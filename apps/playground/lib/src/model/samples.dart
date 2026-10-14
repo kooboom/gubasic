@@ -14,9 +14,9 @@ Sub btnHello_Click()
 End Sub
 ''';
 
-/// One mistake for every lexer diagnostic (L001–L006) and a few parser
-/// ones, followed by a correct procedure to show that reading continues to
-/// the end.
+/// One mistake for every lexer diagnostic (L001–L007; L007 is a warning)
+/// and a few parser ones, followed by a correct procedure to show that
+/// reading continues to the end.
 const errorSample = r'''
 ' This example has mistakes on purpose.
 ' Click a problem to jump to it.
@@ -27,6 +27,7 @@ Sub Form_Load()
     price = 100 @ 2
     answer = 1 + _ 2
     big = 99999999999999999999
+    orderId = 1234567890123456789
     If total > 0 Then
         MsgBox "Hi"
     Next

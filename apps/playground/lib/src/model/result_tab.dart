@@ -1,5 +1,10 @@
 import 'i18n.dart';
 import 'snapshot.dart';
+import 'view_model.dart';
+
+/// The colour of a tab badge. Colour is never the only signal: the
+/// Diagnostics tab also spells out the counts per severity.
+enum BadgeTone { neutral, warning, error }
 
 /// A tab of the result panel.
 ///
@@ -14,6 +19,8 @@ abstract class ResultTab {
 
   /// A number shown next to the title, or null for none.
   int? badge(Snapshot snapshot) => null;
+
+  BadgeTone badgeTone(Snapshot snapshot) => BadgeTone.neutral;
 }
 
 class TokensTab extends ResultTab {
@@ -47,6 +54,15 @@ class DiagnosticsTab extends ResultTab {
 
   @override
   int? badge(Snapshot snapshot) => snapshot.diagnostics.length;
+
+  /// Red if there is any error, amber if there are only warnings.
+  @override
+  BadgeTone badgeTone(Snapshot snapshot) {
+    final (errors, warnings) = severityCounts(snapshot.diagnostics);
+    if (errors > 0) return BadgeTone.error;
+    if (warnings > 0) return BadgeTone.warning;
+    return BadgeTone.neutral;
+  }
 }
 
 /// The tabs of the result panel, in display order.

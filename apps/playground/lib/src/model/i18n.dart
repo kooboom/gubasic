@@ -35,6 +35,8 @@ enum UiText {
   tagUnsupported,
   tagStage2,
   noDiagnostics,
+  severityError,
+  severityWarning,
   diagnosticsOnLine,
   footerPreview,
   footerRepository,
@@ -56,6 +58,8 @@ const _en = {
   UiText.tagUnsupported: 'not supported',
   UiText.tagStage2: 'stage 2',
   UiText.noDiagnostics: 'No problems found.',
+  UiText.severityError: 'Error',
+  UiText.severityWarning: 'Warning',
   UiText.diagnosticsOnLine: 'Problems on this line',
   UiText.footerPreview: 'GuBASIC Playground — development preview',
   UiText.footerRepository: 'Source on GitHub',
@@ -77,6 +81,8 @@ const _ko = {
   UiText.tagUnsupported: '지원 안 함',
   UiText.tagStage2: '2단계 예정',
   UiText.noDiagnostics: '문제가 없습니다.',
+  UiText.severityError: '오류',
+  UiText.severityWarning: '경고',
   UiText.diagnosticsOnLine: '이 줄의 문제',
   UiText.footerPreview: 'GuBASIC 놀이터 — 개발 미리보기',
   UiText.footerRepository: 'GitHub 저장소',
@@ -89,4 +95,17 @@ const Map<Locale, Map<UiText, String>> uiTexts = {
 
 extension LocaleText on Locale {
   String operator [](UiText key) => uiTexts[this]![key]!;
+}
+
+/// "2 errors · 1 warning" / "오류 2 · 경고 1". Kinds with no diagnostics
+/// are left out; returns an empty string when there are none at all.
+String diagnosticSummary(Locale locale, int errors, int warnings) {
+  String part(int n, String one, String many, String ko) => switch (locale) {
+        Locale.en => '$n ${n == 1 ? one : many}',
+        Locale.ko => '$ko $n',
+      };
+  return [
+    if (errors > 0) part(errors, 'error', 'errors', '오류'),
+    if (warnings > 0) part(warnings, 'warning', 'warnings', '경고'),
+  ].join(' · ');
 }

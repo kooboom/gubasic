@@ -69,18 +69,28 @@ web.HTMLElement _diagnosticsView(
   if (diagnostics.isEmpty) {
     return el('p', className: 'empty', text: locale[UiText.noDiagnostics]);
   }
+  final (errors, warnings) = severityCounts(diagnostics);
+  final summary = el('p',
+      className: 'summary', text: diagnosticSummary(locale, errors, warnings));
   final list = el('ul', className: 'diagnostics');
   for (final d in diagnostics) {
+    final severity = d.isWarning ? 'warning' : 'error';
     final button = el('button')
       ..setAttribute('type', 'button')
+      ..append(el('span',
+          className: 'sev',
+          text: locale[
+              d.isWarning ? UiText.severityWarning : UiText.severityError]))
       ..append(el('span', className: 'code', text: d.code.code))
       ..append(el('span', className: 'pos', text: '${d.line}:${d.column}'))
       ..append(el('span',
           className: 'msg', text: d.formatMessage(locale.diagnosticMessages)));
     onClick(button, () => editor.jumpTo(d));
-    list.append(el('li')..append(button));
+    list.append(el('li', className: severity)..append(button));
   }
-  return list;
+  return el('div')
+    ..append(summary)
+    ..append(list);
 }
 
 /// The syntax tree as nested, foldable lists. Clicking a node's label

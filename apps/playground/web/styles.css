@@ -8,6 +8,8 @@
   --accent-text: #ffffff;
   --error: #c62f2f;
   --error-bg: #fdecec;
+  --warning: #9a6200;
+  --warning-strong: #e0a100;
   --tag-bg: #fff1d6;
   --tag-text: #8a5a00;
   --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "D2Coding", monospace;
@@ -26,6 +28,8 @@
     --accent-text: #0e1220;
     --error: #ff7a7a;
     --error-bg: #3a2023;
+    --warning: #f0c069;
+    --warning-strong: #e0a100;
     --tag-bg: #3b3020;
     --tag-text: #f0c069;
   }
@@ -167,7 +171,8 @@ textarea {
   font-size: 12px;
   text-align: center;
 }
-.badge.nonzero { background: var(--error); color: var(--accent-text); }
+.badge.error { background: var(--error); color: var(--accent-text); }
+.badge.warning { background: var(--warning-strong); color: #1d2330; }
 
 .tab-content { flex: 1; overflow: auto; padding: 8px 12px; }
 
@@ -200,13 +205,20 @@ table.tokens { border-collapse: collapse; width: 100%; font: 12.5px/1.5 var(--mo
 .diagnostics { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
 .diagnostics button {
   display: grid;
-  grid-template-columns: auto auto 1fr;
+  grid-template-columns: auto auto auto 1fr;
   gap: 4px 10px;
   width: 100%;
   text-align: left;
   border-left: 4px solid var(--error);
 }
 .diagnostics .code { font: 600 12.5px var(--mono); color: var(--error); }
+.diagnostics .sev { font-size: 12px; font-weight: 700; color: var(--error); }
+.diagnostics li.warning button { border-left-color: var(--warning-strong); }
+.diagnostics li.warning .sev,
+.diagnostics li.warning .code { color: var(--warning); }
+.summary { margin: 2px 0 10px; font-weight: 600; }
+.gutter .line.warning-only { color: var(--warning); }
+.gutter .line.warning-only::before { background: var(--warning-strong); border-radius: 0; transform: rotate(45deg); }
 .diagnostics .pos { font: 12.5px var(--mono); color: var(--muted); }
 .empty { color: var(--muted); }
 
@@ -226,7 +238,7 @@ table.tokens { border-collapse: collapse; width: 100%; font: 12.5px/1.5 var(--mo
   .editor-pane { height: 45vh; border-right: 0; border-bottom: 1px solid var(--border); }
   .results-pane { min-height: 50vh; }
   .tab-content { overflow: auto; max-height: 70vh; }
-  .diagnostics button { grid-template-columns: auto 1fr; }
+  .diagnostics button { grid-template-columns: auto auto 1fr; }
   .diagnostics .msg { grid-column: 1 / -1; }
 }
 

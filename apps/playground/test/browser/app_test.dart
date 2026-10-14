@@ -75,9 +75,13 @@ void main() {
     _click('#sample-errors');
     _click('#tabs button:nth-child(3)');
     expect(_texts('.diagnostics .code'), [
-      'L002', 'L001', 'L003', 'L004', 'L005', 'L006', //
+      'L002', 'L001', 'L003', 'L004', 'L005', 'L006', 'L007', //
       'P006', 'P011', 'P007', 'P013',
     ]);
+    expect(_texts('.summary'), ['10 errors · 1 warning']);
+    expect(_texts('.diagnostics li.warning .sev'), ['Warning']);
+    expect(_texts('.diagnostics li.error .sev'), everyElement('Error'));
+    expect(_texts('#tabs .badge.error'), ['11']);
 
     _click('.diagnostics li:nth-child(4) button'); // L004 at "@"
     final start = _source.selectionStart;
@@ -129,5 +133,17 @@ void main() {
     _type('Sub A()\nIf x Then\nEnd Sub');
     expect(_texts('.gutter .has-diagnostic'), ['2']);
     expect(_texts('#tabs button').last, 'Diagnostics1');
+  });
+
+  test('warnings alone: amber badge, diamond gutter mark, text labels', () {
+    _type('Sub A()\norderId = 1234567890123456789\nEnd Sub');
+    expect(_texts('#tabs .badge.warning'), ['1']);
+    expect(_texts('.gutter .warning-only'), ['2']);
+    _click('#tabs button:nth-child(3)');
+    expect(_texts('.summary'), ['1 warning']);
+    _click('#switch-language');
+    expect(_texts('.summary'), ['경고 1']);
+    expect(_texts('.diagnostics .sev'), ['경고']);
+    expect(_texts('.diagnostics .msg').single, contains('주문 번호, 회원 ID'));
   });
 }

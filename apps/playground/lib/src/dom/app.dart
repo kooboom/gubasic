@@ -96,8 +96,12 @@ class App {
         ..setAttribute('role', 'tab')
         ..setAttribute('aria-selected', '${tab.id == _activeTab}');
       if (tab.badge(_snapshot) case final count?) {
-        button.append(el('span',
-            className: count > 0 ? 'badge nonzero' : 'badge', text: '$count'));
+        final tone = switch (tab.badgeTone(_snapshot)) {
+          BadgeTone.error => 'badge error',
+          BadgeTone.warning => 'badge warning',
+          BadgeTone.neutral => 'badge',
+        };
+        button.append(el('span', className: tone, text: '$count'));
       }
       onClick(button, () {
         _activeTab = tab.id;
