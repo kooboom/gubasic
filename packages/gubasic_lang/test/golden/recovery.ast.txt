@@ -32,7 +32,7 @@ CompilationUnit [1:1-14:1]
 --- diagnostics
 P008 1:1 
 P006 3:5 If | 3 | End If
-P001 4:21 
+P023 4:21 
 P007 6:1 Next | For
 P010 9:10 j | i
 P011 10:12 

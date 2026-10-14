@@ -94,6 +94,9 @@ const Map<DiagnosticCode, String> englishMessages = {
   DiagnosticCode.handlesNotAvailable: 'Handles is not available yet. '
       'For now, write a Sub named ControlName_EventName, such as '
       'btnSave_Click.',
+  DiagnosticCode.expectedValueAndParen:
+      'A value and the symbol ")" are missing here. Write the value, then '
+          'close the parenthesis.',
 
   // Analyzer: names
   DiagnosticCode.unknownName: '"{0}" is not declared. '

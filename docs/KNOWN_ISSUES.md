@@ -6,12 +6,6 @@ Problems we know about and have **deliberately** left unfixed for now. Each entr
 
 ---
 
-## A missing closing parenthesis is not reported on its own
-
-- **What:** in `total = (1 +`, the parser reports only the missing value after `+` (P001). The missing `)` (P003) is not reported separately.
-- **Why deferred:** the parser reports one syntax error per statement, so that one mistake does not produce a cascade of follow-up errors. Fixing the reported problem and re-checking reveals the next one.
-- **Revisit:** in the analyzer stage, when we see how often this happens in real code and whether a combined message ("missing value and `)`") is worth it.
-
 ## The smallest Integer cannot be written as a literal
 
 - **What:** `-9223372036854775808` (the smallest `Integer`) is reported as too large (L006). The minus sign is an operator, so the literal itself is `9223372036854775808`, one more than the largest `Integer`.

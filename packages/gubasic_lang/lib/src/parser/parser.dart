@@ -177,6 +177,9 @@ class _Parser {
   /// Inside `If … Then <here> Else <here>` on one line.
   int _singleLineDepth = 0;
 
+  /// Parentheses opened (in an expression or a call) and not yet closed.
+  int _openParens = 0;
+
   // -------------------------------------------------------------------------
   // Tokens
 
@@ -1303,11 +1306,13 @@ class _Parser {
   List<Expr> _arguments() {
     _advance(); // (
     final arguments = <Expr>[];
+    _openParens++;
     if (!_is(TokenKind.rightParen)) {
       do {
         arguments.add(_expression());
       } while (_is(TokenKind.comma) && _advance().kind == TokenKind.comma);
     }
+    _openParens--;
     _expectSymbol(TokenKind.rightParen, ')');
     return arguments;
   }
@@ -1329,7 +1334,9 @@ class _Parser {
         return NameExpr(t.text, t.offset, t.end);
       case TokenKind.leftParen:
         _advance();
+        _openParens++;
         final inner = _expression();
+        _openParens--;
         _expectSymbol(TokenKind.rightParen, ')');
         return ParenExpr(inner, t.offset, _lastEnd);
       case TokenKind.error:
@@ -1356,7 +1363,12 @@ class _Parser {
         }
       default:
     }
-    _errorHere(DiagnosticCode.expectedExpression);
+    // The line ended inside an open parenthesis: both the value and ")"
+    // are missing. One diagnostic says both (P023), instead of P001 now and
+    // P003 after the first one is fixed.
+    _errorHere(_openParens > 0 && _atStatementEnd
+        ? DiagnosticCode.expectedValueAndParen
+        : DiagnosticCode.expectedExpression);
     return ErrorExpr(_lastEnd, _lastEnd);
   }
 }

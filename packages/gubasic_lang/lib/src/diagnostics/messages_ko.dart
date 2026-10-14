@@ -82,6 +82,8 @@ const Map<DiagnosticCode, String> koreanMessages = {
       '바뀐 값을 돌려받으려면 Function을 만들어 Return으로 돌려주세요.',
   DiagnosticCode.handlesNotAvailable: 'Handles는 아직 준비 중입니다. '
       "지금은 btnSave_Click처럼 '컨트롤이름_이벤트이름'으로 Sub 프로시저를 만들어 주세요.",
+  DiagnosticCode.expectedValueAndParen:
+      '여기에는 값과 ) 기호가 필요합니다. 값을 쓰고 괄호를 닫아 주세요.',
 
   // Analyzer: names
   DiagnosticCode.unknownName: '{0} 이름이 선언되지 않았습니다. 먼저 Dim으로 선언하거나 철자를 확인해 주세요.',

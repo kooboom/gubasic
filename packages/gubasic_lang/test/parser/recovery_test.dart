@@ -87,7 +87,7 @@ void main() {
         'x = 1\n' // 2  P008
         'Sub A()\n' // 3
         '    If a Then\n' // 4  P006 (never closed)
-        '        b = (1 +\n' // 5  P001
+        '        b = (1 +\n' // 5  P023
         '    c = "open\n' // 6  L001
         'End Sub\n' // 7
         'Next\n' // 8  P007
@@ -105,7 +105,7 @@ void main() {
       'L002@1',
       'P008@2',
       'P006@4',
-      'P001@5',
+      'P023@5',
       'L001@6',
       'P007@8',
       'P014@10',
@@ -139,5 +139,41 @@ void main() {
   test('statements cannot start with -, + or Not', () {
     final r = parse('Sub A()\n- x\nNot y\nEnd Sub');
     expect(codes(r), ['P005', 'P005']);
+  });
+
+  group('P023: a value and ")" both missing', () {
+    for (final body in [
+      'x = (1 +',
+      'x = (',
+      'x = ((1 + 2) *',
+      'MsgBox("a" &',
+      'x = Max(1,',
+      'x = f('
+    ]) {
+      test(body, () {
+        final r = parse('Sub A()\n$body\nEnd Sub');
+        expect(codes(r), ['P023']);
+        expect(r.diagnostics.single.line, 2);
+      });
+    }
+
+    test('only the value is missing when ")" is there: P001', () {
+      expect(codes(parse('Sub A()\nx = (1 + )\nEnd Sub')), ['P001']);
+      expect(codes(parse('Sub A()\nx = f(1, )\nEnd Sub')), ['P001']);
+    });
+
+    test('no parenthesis open: P001', () {
+      expect(codes(parse('Sub A()\nx = 1 +\nEnd Sub')), ['P001']);
+    });
+
+    test('only ")" is missing: P003', () {
+      expect(codes(parse('Sub A()\nx = (1 + 2\nEnd Sub')), ['P003']);
+    });
+
+    test('Korean message', () {
+      final d = parse('Sub A()\nx = (1 +\nEnd Sub').diagnostics.single;
+      expect(d.formatMessage(koreanMessages),
+          '여기에는 값과 ) 기호가 필요합니다. 값을 쓰고 괄호를 닫아 주세요.');
+    });
   });
 }

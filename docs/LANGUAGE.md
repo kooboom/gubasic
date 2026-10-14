@@ -100,6 +100,7 @@ How the parser recovers:
 | P020 | `Set`, `Let` | Reads a plain assignment |
 | P021 | `ByRef` (not available yet; stage 2) | Reads it normally; the message suggests a `Function` with `Return` |
 | P022 | `Handles` (not available yet; stage 2) | Reads it normally; the message suggests a `ControlName_EventName` Sub |
+| P023 | A line ends inside an open parenthesis with a value missing (`(1 +`, `f(1,`) | One diagnostic for both the value and `)` |
 
 **Analyzer**
 

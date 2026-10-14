@@ -102,6 +102,10 @@ enum DiagnosticCode {
   /// `Handles`: not available yet (planned for stage 2).
   handlesNotAvailable('P022'),
 
+  /// A line that ends inside an open parenthesis, with a value missing:
+  /// `(1 +`, `f(1,`. Says both what and `)` are missing.
+  expectedValueAndParen('P023'),
+
   // Analyzer: names
 
   /// A name that is not declared. Args: the name.
