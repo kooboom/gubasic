@@ -780,8 +780,12 @@ class _Analyzer {
 
   /// The closest visible name, if it is close enough to be a typo.
   String? _suggest(String name) {
+    // One- and two-letter names are too short for a useful guess (y → x).
+    if (name.length < 3) return null;
     final lower = name.toLowerCase();
-    final limit = name.length <= 4 ? 1 : 2;
+    // One edit for names up to 6 letters, two for longer ones: looser
+    // limits suggest unrelated names (total → Today).
+    final limit = name.length <= 6 ? 1 : 2;
     String? best;
     var bestDistance = limit + 1;
     final candidates = _scope.visible.map((s) => s.name).toSet().toList()

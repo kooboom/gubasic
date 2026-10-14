@@ -78,6 +78,10 @@ void main() {
       expect(d.args, ['MsgBx', 'MsgBox']);
     });
 
+    test('no guesses for one- and two-letter names', () {
+      expect(inMain('Dim x As Integer = 1\nx = x + y'), ['A001']);
+    });
+
     test('short names need a closer match', () {
       expect(inMain('Dim ab As Integer = 1\nab = ab + q'), ['A001']);
     });
