@@ -12,11 +12,11 @@ Problems we know about and have **deliberately** left unfixed for now. Each entr
 - **Why deferred:** the parser reports one syntax error per statement, so that one mistake does not produce a cascade of follow-up errors. Fixing the reported problem and re-checking reveals the next one.
 - **Revisit:** in the analyzer stage, when we see how often this happens in real code and whether a combined message ("missing value and `)`") is worth it.
 
-## Integers above 2⁵³ are approximate on the web
+## The smallest Integer cannot be written as a literal
 
-- **What:** when `gubasic_lang` runs as JavaScript (the playground, later the web IDE), an integer literal between 2⁵³ and 2⁶³−1 gets an approximate value: `9223372036854775807` becomes `9223372036854776000`. The literal's text is kept exactly, and the lexer's diagnostics are the same on every platform.
-- **Why deferred:** reporting it needs a *warning* severity, which diagnostics do not have yet. It belongs in its own small change.
-- **Revisit:** the next pull request (a warning for integer literals above 2⁵³, reported identically on every platform).
+- **What:** `-9223372036854775808` (the smallest `Integer`) is reported as too large (L006). The minus sign is an operator, so the literal itself is `9223372036854775808`, one more than the largest `Integer`. VB.NET behaves the same way.
+- **Why deferred:** the lexer cannot know whether a minus sign belongs to the number (`-5`) or is a subtraction (`x -5`). Rarely needed; `Integer.MinValue`-style constants can cover it later.
+- **Revisit:** in the analyzer stage, consider treating an integer literal with a leading minus sign as a single value.
 
 ## Undeclared loop variables
 

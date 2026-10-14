@@ -54,6 +54,8 @@ After a dot, a keyword can be used as a member name: `obj.End`, `list.Next` (as 
 
 Neither the lexer nor the parser stops at an error: they report it and keep reading, so that one mistake does not hide the rest. Codes are stable and never reused.
 
+Every diagnostic is an **error** unless marked as a **warning** below. Errors must be fixed. Warnings point out something that works but may surprise; they **never stop a program from running or being built** (D23). The code's prefix says who reports it (L lexer, P parser), not how serious it is.
+
 **Lexer**
 
 | Code | Problem | What the lexer does |
@@ -64,6 +66,7 @@ Neither the lexer nor the parser stops at an error: they report it and keep read
 | L004 | A character with no meaning in GuBASIC (`@`, `#`, `$`, …) | Error token |
 | L005 | `_` that is not the last thing on its line | Error token |
 | L006 | An integer too large for `Integer` (64-bit) | Integer token with no value |
+| L007 | **Warning.** An integer above 9007199254740991 (2⁵³−1), which the web cannot store exactly | Integer token as usual; decided on the digits, so reported the same on every platform |
 
 **Parser**
 
@@ -111,7 +114,7 @@ How the parser recovers:
 | `List(Of T)` | `List<T>` | empty list (when declared with `New`) |
 | Control / component types (`Button`, `Label`, …) | runtime classes | `Nothing` |
 
-- **`Integer` is 64-bit** on native platforms. On the web it is a JavaScript number, exact only up to 2⁵³ (about 9 × 10¹⁵). Ordinary apps never reach this. The source text of an integer literal is always kept exactly, and the transpiler writes it as written, so a native app gets the exact value even above 2⁵³.
+- **`Integer` is 64-bit** on native platforms. On the web it is a JavaScript number, exact only up to 2⁵³ (about 9 × 10¹⁵). Ordinary apps never reach this. The source text of an integer literal is always kept exactly, and the transpiler writes it as written, so a native app gets the exact value even above 2⁵³. A literal above 2⁵³−1 gets warning L007 on every platform; for numbers you do not calculate with (order numbers, member IDs), use a `String`, which also keeps leading zeros.
 - **`Nothing` (null) exists only for objects.** Value types always have a value, so beginners rarely meet null errors.
 - **To check whether an object is `Nothing`, compare with `Is`:** `If player Is Nothing Then`. For the opposite, write `If Not player Is Nothing Then`. (`=` compares values, not objects.)
 - There is **no `Variant`**. Use `Object` when a variable really must hold anything.
