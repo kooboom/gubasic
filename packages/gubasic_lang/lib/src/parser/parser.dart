@@ -15,7 +15,7 @@ ParseResult parse(String source) {
   final lexResult = lex(source);
   final parser = _Parser(source, lexResult.tokens);
   final unit = parser.compilationUnit();
-  return ParseResult(lexResult, unit, parser.diagnostics);
+  return ParseResult(source, lexResult, unit, parser.diagnostics);
 }
 
 /// A block that is still open while its body is parsed.

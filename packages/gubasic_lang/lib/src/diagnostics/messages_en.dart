@@ -111,8 +111,9 @@ const Map<DiagnosticCode, String> englishMessages = {
   DiagnosticCode.usedBeforeDeclaration:
       '"{0}" is used before its declaration on line {1}. '
           'Move the declaration above this line.',
-  DiagnosticCode.missingTypeAndValue: '"{0}" needs a type or an initial value. '
-      'Write Dim {0} As Integer (or another type), or Dim {0} = value.',
+  DiagnosticCode.missingTypeAndValue: '"{0}" needs a type. Add As and a type, '
+      'for example {0} As Integer; a Dim can give an initial value instead '
+      '(Dim {0} = 0).',
 
   // Analyzer: types
   DiagnosticCode.typeMismatch:
@@ -130,9 +131,9 @@ const Map<DiagnosticCode, String> englishMessages = {
   DiagnosticCode.stringPlusNumber:
       'Text and a number cannot be joined with "+". Use "&" to join them as '
           'text, or convert the text with CInt or CDbl to add numbers.',
-  DiagnosticCode.conditionNotBoolean:
-      'A condition must be True or False, but this is a {0}. '
-          'Compare it instead, for example x <> 0.',
+  DiagnosticCode.conditionNotBoolean: 'A condition must be True or False, '
+      'but this expression is of type {0}. Compare it instead, for example '
+      'x <> 0.',
   DiagnosticCode.binaryOperatorNotApplicable:
       'The operator {0} cannot be used with {1} and {2}. Check both sides: '
           'And, Or and Xor need True/False values, and Is compares objects '

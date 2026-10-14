@@ -124,7 +124,8 @@ enum DiagnosticCode {
   /// A local used above its declaration. Args: name, declaration line.
   usedBeforeDeclaration('A006'),
 
-  /// `Dim x` with neither a type nor an initial value. Args: the name.
+  /// `Dim x` with neither a type nor an initial value, or a parameter or
+  /// Function without `As`. Args: the name.
   missingTypeAndValue('A007'),
 
   // Analyzer: types
@@ -252,4 +253,18 @@ class Diagnostic {
 
   @override
   String toString() => '${code.code} @$line:$column $message';
+}
+
+/// [diagnostics] in source order. Diagnostics at the same offset keep
+/// their order in the list (callers list lexer before parser before
+/// analyzer).
+List<Diagnostic> sortDiagnostics(List<Diagnostic> diagnostics) {
+  final indexed = [
+    for (var i = 0; i < diagnostics.length; i++) (i, diagnostics[i]),
+  ];
+  indexed.sort((a, b) {
+    final byOffset = a.$2.offset.compareTo(b.$2.offset);
+    return byOffset != 0 ? byOffset : a.$1.compareTo(b.$1);
+  });
+  return [for (final (_, d) in indexed) d];
 }

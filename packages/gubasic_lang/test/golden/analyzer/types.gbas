@@ -1,0 +1,14 @@
+Sub Main()
+    Dim i As Integer = 7
+    Dim d As Double = i
+    Dim s As String = d
+    Dim half = i / 2
+    Dim whole As Integer = i \ 2
+    Debug.Print(s & half & whole & (i < d))
+    Dim bad As Integer = 2.5
+    Dim text As Integer = "12"
+    Dim mixed = "1" + 1
+    If i Then
+        Debug.Print(bad & text & mixed)
+    End If
+End Sub

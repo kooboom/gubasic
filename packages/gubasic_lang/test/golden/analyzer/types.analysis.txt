@@ -1,0 +1,41 @@
+--- names
+1:5 Main: procedure (no value) (declared here)
+2:9 i: variable local Integer (declared here)
+3:9 d: variable local Double (declared here)
+3:23 i: variable local Integer (declared at 2:9)
+4:9 s: variable local String (declared here)
+4:23 d: variable local Double (declared at 3:9)
+5:9 half: variable local Double (declared here)
+5:16 i: variable local Integer (declared at 2:9)
+6:9 whole: variable local Integer (declared here)
+6:28 i: variable local Integer (declared at 2:9)
+7:5 Debug: builtinObject (built-in object) (built-in)
+7:17 s: variable local String (declared at 4:9)
+7:21 half: variable local Double (declared at 5:9)
+7:28 whole: variable local Integer (declared at 6:9)
+7:37 i: variable local Integer (declared at 2:9)
+7:41 d: variable local Double (declared at 3:9)
+8:9 bad: variable local Integer (declared here)
+9:9 text: variable local Integer (declared here)
+10:9 mixed: variable local ? (declared here)
+11:8 i: variable local Integer (declared at 2:9)
+12:9 Debug: builtinObject (built-in object) (built-in)
+12:21 bad: variable local Integer (declared at 8:9)
+12:27 text: variable local Integer (declared at 9:9)
+12:34 mixed: variable local ? (declared at 10:9)
+--- conversions
+3:23 i: Integer → Double
+4:23 d: Double → String
+5:16 i: Integer → Double
+5:20 2: Integer → Double
+7:21 half: Double → String
+7:28 whole: Integer → String
+7:36 (i < d): Boolean → String
+7:37 i: Integer → Double
+12:21 bad: Integer → String
+12:27 text: Integer → String
+--- diagnostics
+A010 8:26 Double | Integer
+A009 9:27 String | Integer
+A011 10:17 
+A012 11:8 Integer

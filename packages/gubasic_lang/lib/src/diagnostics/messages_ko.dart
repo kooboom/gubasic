@@ -95,8 +95,8 @@ const Map<DiagnosticCode, String> koreanMessages = {
       '{0} 이름은 {1}번 줄에서 이미 선언했습니다. 다른 이름을 써 주세요.',
   DiagnosticCode.usedBeforeDeclaration:
       '{0} 이름을 선언하기 전에 썼습니다(선언: {1}번 줄). 선언을 이 줄보다 위로 옮겨 주세요.',
-  DiagnosticCode.missingTypeAndValue: '{0} 변수에는 타입이나 초깃값이 필요합니다. '
-      'Dim {0} As Integer처럼 타입을 쓰거나, Dim {0} = 값처럼 초깃값을 주세요.',
+  DiagnosticCode.missingTypeAndValue: '{0} 이름에는 타입이 필요합니다. '
+      '{0} As Integer처럼 As와 타입을 써 주세요. Dim 문에서는 Dim {0} = 0처럼 초깃값을 주어도 됩니다.',
 
   // Analyzer: types
   DiagnosticCode.typeMismatch: '{1} 타입이 필요한 자리에 {0} 타입 값을 넣을 수 없습니다. '

@@ -1,0 +1,21 @@
+Dim clickCount As Integer
+Const Limit As Integer = 3
+
+Sub Main()
+    Static calls As Integer
+    calls = calls + 1
+    Dim total As Integer = 0
+    For i = 1 To Limit
+        total = total + i
+    Next
+    Dim names As New List(Of String)
+    names.Add("Kim")
+    For Each n In names
+        Debug.Print(n & total)
+    Next
+    clickCount = Twice(total)
+End Sub
+
+Function Twice(value As Integer) As Integer
+    Return value * 2
+End Function

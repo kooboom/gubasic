@@ -17,3 +17,7 @@ export 'src/analyzer/builtins.dart';
 export 'src/analyzer/conversions.dart';
 export 'src/analyzer/members.dart';
 export 'src/analyzer/types.dart';
+export 'src/analyzer/analysis_result.dart';
+export 'src/analyzer/analyzer.dart';
+export 'src/analyzer/compile.dart';
+export 'src/analyzer/symbols.dart';

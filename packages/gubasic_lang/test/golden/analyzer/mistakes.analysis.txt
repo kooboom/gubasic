@@ -1,0 +1,26 @@
+--- names
+1:5 count: variable field Integer (declared here)
+3:5 Form_Load: procedure (no value) (declared here)
+5:9 count: variable local Integer (declared here)
+6:12 count: variable local Integer (declared at 5:9)
+8:9 x: variable local Integer (declared here)
+9:9 unused: variable local String (declared here)
+13:10 Average: procedure Double (declared here)
+13:18 a: parameter local Integer (declared here)
+13:32 b: parameter local Integer (declared here)
+14:5 Average: procedure Double (declared at 13:10)
+14:16 a: parameter local Integer (declared at 13:18)
+14:20 b: parameter local Integer (declared at 13:32)
+17:10 Nothing2: procedure Integer (declared here)
+--- conversions
+14:15 (a + b): Integer → Double
+14:25 2: Integer → Double
+--- diagnostics
+A003 4:5 lblMessage
+A028 5:9 count | 1
+A001 6:5 totl
+A006 7:5 x | 8
+A026 9:9 unused
+A024 10:5 Exit For
+A021 14:5 Average
+A027 17:10 Nothing2

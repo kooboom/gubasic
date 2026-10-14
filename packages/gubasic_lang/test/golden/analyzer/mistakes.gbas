@@ -1,0 +1,18 @@
+Dim count As Integer
+
+Sub Form_Load()
+    lblMessage.Caption = "Hello"
+    Dim count As Integer = 1
+    totl = count
+    x = 1
+    Dim x As Integer
+    Dim unused As String
+    Exit For
+End Sub
+
+Function Average(a As Integer, b As Integer) As Double
+    Average = (a + b) / 2
+End Function
+
+Function Nothing2() As Integer
+End Function

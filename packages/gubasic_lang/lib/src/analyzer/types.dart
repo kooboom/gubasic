@@ -19,6 +19,9 @@ sealed class GbType {
   /// The "type" of a Sub call: there is no value.
   static const void_ = SpecialType._('(no value)');
 
+  /// A built-in object such as `Debug`: only its members can be used.
+  static const builtinObject = SpecialType._('(built-in object)');
+
   /// A type the analyzer could not work out because of an earlier problem.
   /// Nothing is checked against it, so one mistake is reported once.
   static const unknown = SpecialType._('?');
