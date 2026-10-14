@@ -54,7 +54,7 @@ test/parity/             Interpreter-vs-transpiler parity tests
 - Messages never suggest a fix that silently changes the program's meaning; if a fix has a trade-off, say so.
 - English and Korean are both first-class: change and review both in the same commit.
 - Anything deliberately left unfixed goes into `docs/KNOWN_ISSUES.md` (what, why deferred, when to revisit).
-- Merge only when the author says so: fast-forward locally (rebase onto `main` first if needed), push `main`, then delete the branch locally and remotely. Never merge on GitHub (a merge commit could carry a private email).
+- Merge only when the author says so: fast-forward locally (rebase onto `main` first if needed), push `main`, then delete the branch locally and remotely. Never merge on GitHub: fast-forward keeps the history linear, with every commit authored exactly as configured.
 
 ## Before you finish a task
 
