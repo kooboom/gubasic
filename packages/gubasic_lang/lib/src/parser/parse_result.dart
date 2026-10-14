@@ -12,6 +12,10 @@ class ParseResult {
   /// Diagnostics from the parser only (P codes), in the order found.
   final List<Diagnostic> parserDiagnostics;
 
+  /// Whether any lexer or parser diagnostic is an error. Warnings alone do
+  /// not count.
+  bool get hasErrors => diagnostics.any((d) => d.isError);
+
   /// Lexer and parser diagnostics together, in source order. Diagnostics at
   /// the same offset keep lexer-before-parser, then discovery order.
   late final List<Diagnostic> diagnostics = _stableSortByOffset([

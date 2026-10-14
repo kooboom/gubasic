@@ -1,7 +1,13 @@
 import 'messages_en.dart';
 
+/// How serious a diagnostic is. Errors must be fixed; warnings point out
+/// something that works but may surprise, and never stop a program from
+/// running or being built.
+enum DiagnosticSeverity { error, warning }
+
 /// Every diagnostic GuBASIC can report. Codes are stable: never reuse or
-/// renumber one. The full list is documented in docs/LANGUAGE.md.
+/// renumber one. The prefix says who reports it (L lexer, P parser); the
+/// severity is separate. The full list is documented in docs/LANGUAGE.md.
 enum DiagnosticCode {
   /// A string literal has no closing quote on its line.
   unterminatedString('L001'),
@@ -20,6 +26,9 @@ enum DiagnosticCode {
 
   /// An integer literal that does not fit in 64 bits.
   integerTooLarge('L006'),
+
+  /// An integer literal above 2⁵³−1, which the web cannot store exactly.
+  integerInexactOnWeb('L007', DiagnosticSeverity.warning),
 
   // Parser: structure
 
@@ -93,10 +102,12 @@ enum DiagnosticCode {
   /// `Handles`: not available yet (planned for stage 2).
   handlesNotAvailable('P022');
 
-  const DiagnosticCode(this.code);
+  const DiagnosticCode(this.code, [this.severity = DiagnosticSeverity.error]);
 
   /// The stable code shown to users, e.g. `L001`.
   final String code;
+
+  final DiagnosticSeverity severity;
 }
 
 /// A problem found in GuBASIC source.
@@ -115,6 +126,10 @@ class Diagnostic {
   });
 
   final DiagnosticCode code;
+  DiagnosticSeverity get severity => code.severity;
+  bool get isError => severity == DiagnosticSeverity.error;
+  bool get isWarning => severity == DiagnosticSeverity.warning;
+
   final int line;
   final int column;
   final int offset;

@@ -28,6 +28,13 @@ const Map<DiagnosticCode, String> englishMessages = {
       'which holds up to 9223372036854775807. '
       'If an approximate value is enough, you can add a decimal point to make '
       'it a Double ({0}.0), but its last digits may change.',
+  DiagnosticCode.integerInexactOnWeb:
+      'The number {0} is larger than 9007199254740991, the largest whole '
+          'number a web browser can store exactly. It works as written in '
+          'macOS, Windows, iOS and Android apps, but on the web its last '
+          'digits may change. If it is a number you do not calculate with '
+          '(an order number, a member ID, …), store it as a string ("...") '
+          'instead; that also keeps any leading zeros.',
 
   // Parser: structure
   DiagnosticCode.expectedExpression: 'A value or expression is missing here. '

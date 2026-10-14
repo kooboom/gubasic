@@ -16,7 +16,8 @@ class LexResult {
 
   final List<Diagnostic> diagnostics;
 
-  bool get hasErrors => diagnostics.isNotEmpty;
+  /// Whether any diagnostic is an error. Warnings alone do not count.
+  bool get hasErrors => diagnostics.any((d) => d.isError);
 }
 
 /// Turns GuBASIC source into tokens.
@@ -238,22 +239,31 @@ class _Lexer {
       return;
     }
     final text = _src.substring(start, _pos);
-    if (_exceedsInt64(text)) {
+    if (_exceeds(text, _maxInt64)) {
       _report(DiagnosticCode.integerTooLarge, start, [text]);
       _emit(TokenKind.integerLiteral, start);
-    } else {
-      _emit(TokenKind.integerLiteral, start, value: int.parse(text));
+      return;
     }
+    if (_exceeds(text, _maxSafeOnWeb)) {
+      _report(DiagnosticCode.integerInexactOnWeb, start, [text]);
+    }
+    _emit(TokenKind.integerLiteral, start, value: int.parse(text));
   }
 
-  /// Whether the digits in [text] exceed 2⁶³−1. Checked on the digits
-  /// rather than with `int.tryParse`, which never fails on the web
+  /// 2⁶³−1, the largest Integer.
+  static const _maxInt64 = '9223372036854775807';
+
+  /// 2⁵³−1, JavaScript's `Number.MAX_SAFE_INTEGER`: above it, the web
+  /// cannot tell neighbouring integers apart.
+  static const _maxSafeOnWeb = '9007199254740991';
+
+  /// Whether the digits in [text] are greater than [limit]. Compared as
+  /// text rather than with `int.tryParse`, which never fails on the web
   /// (numbers there are doubles), so the rule is the same on every platform.
-  static bool _exceedsInt64(String text) {
-    const max = '9223372036854775807';
+  static bool _exceeds(String text, String limit) {
     final digits = text.replaceFirst(RegExp('^0+(?=.)'), '');
-    if (digits.length != max.length) return digits.length > max.length;
-    return digits.compareTo(max) > 0;
+    if (digits.length != limit.length) return digits.length > limit.length;
+    return digits.compareTo(limit) > 0;
   }
 
   void _string(int start) {

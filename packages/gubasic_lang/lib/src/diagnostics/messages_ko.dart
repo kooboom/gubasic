@@ -31,6 +31,10 @@ const Map<DiagnosticCode, String> koreanMessages = {
       'Integer는 9223372036854775807까지 담을 수 있습니다. '
       '대략적인 값이면 충분할 때는 소수점을 붙여 Double로 쓸 수 있지만({0}.0), '
       '이때는 끝자리가 달라질 수 있습니다.',
+  DiagnosticCode.integerInexactOnWeb:
+      '웹 브라우저가 정확히 담을 수 있는 가장 큰 정수(9007199254740991)보다 큰 수입니다(입력한 수: {0}). '
+          'macOS·Windows·iOS·Android 앱에서는 그대로 쓸 수 있지만, 웹에서는 끝자리가 달라질 수 있습니다. '
+          '계산에 쓰지 않는 번호(주문 번호, 회원 ID 등)라면 문자열("...")로 담아 주세요. 앞자리 0도 그대로 남습니다.',
 
   // Parser: structure
   DiagnosticCode.expectedExpression:

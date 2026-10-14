@@ -141,7 +141,7 @@ void main() {
         DiagnosticCode.values
             .map((c) => c.code)
             .where((c) => c.startsWith('L')),
-        ['L001', 'L002', 'L003', 'L004', 'L005', 'L006']);
+        ['L001', 'L002', 'L003', 'L004', 'L005', 'L006', 'L007']);
   });
 
   test('several errors: lexing reaches the end and collects them all', () {
