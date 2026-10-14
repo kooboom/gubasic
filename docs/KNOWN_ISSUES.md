@@ -6,6 +6,12 @@ Problems we know about and have **deliberately** left unfixed for now. Each entr
 
 ---
 
+## Very long loops are slow
+
+- **What:** a loop of a million rounds (`total = total + i * 2 - 1`) takes about 3 seconds in the playground's optimized web build and about 0.8 seconds on the VM.
+- **Why deferred:** it is not a correctness problem, and programs of the size beginners write do not notice it.
+- **Revisit:** when someone finds the playground or the IDE noticeably slow in practice, or in the transpiler stage.
+
 ## Settings are not available yet
 
 - **What:** `SaveSetting` and `GetSetting` are reported before running (A029) and cannot be used.
