@@ -63,6 +63,12 @@ const parityCases = <(String, String, List<String>, String)>[
     "Debug.Print: Caught overflow\nDebug.Print: Caught negation\nDebug.Print: Caught division\nDebug.Print: Caught CInt\n",
   ),
   (
+    "overflow_edges",
+    "' Integer limits: which operations overflow (R001) and which do not.\n' 9.3E+18 is written as 9.3 * 10.0 ^ 18 (GuBASIC has no exponent literals).\nSub Main()\n    Try\n        Debug.Print(Integer.MinValue \\ -1)\n    Catch ex As Exception\n        Debug.Print(\"MinValue \\ -1: \" & ex.Message)\n    End Try\n    Try\n        Debug.Print(-Integer.MinValue)\n    Catch ex As Exception\n        Debug.Print(\"-MinValue: \" & ex.Message)\n    End Try\n    Try\n        Debug.Print(Abs(Integer.MinValue))\n    Catch ex As Exception\n        Debug.Print(\"Abs(MinValue): \" & ex.Message)\n    End Try\n    Try\n        Debug.Print(\"MinValue Mod -1 = \" & (Integer.MinValue Mod -1))\n    Catch ex As Exception\n        Debug.Print(\"MinValue Mod -1: \" & ex.Message)\n    End Try\n    Try\n        Debug.Print(CInt(9.3 * 10.0 ^ 18))\n    Catch ex As Exception\n        Debug.Print(\"CInt(9.3E+18): \" & ex.Message)\n    End Try\n    Debug.Print(\"Done\")\nEnd Sub\n",
+    [],
+    "Debug.Print: MinValue \\ -1: The result is too large for an Integer (from -9223372036854775808 to 9223372036854775807). If an approximate value is enough, calculate with Double instead.\nDebug.Print: -MinValue: The result is too large for an Integer (from -9223372036854775808 to 9223372036854775807). If an approximate value is enough, calculate with Double instead.\nDebug.Print: Abs(MinValue): The result is too large for an Integer (from -9223372036854775808 to 9223372036854775807). If an approximate value is enough, calculate with Double instead.\nDebug.Print: MinValue Mod -1 = 0\nDebug.Print: CInt(9.3E+18): The result is too large for an Integer (from -9223372036854775808 to 9223372036854775807). If an approximate value is enough, calculate with Double instead.\nDebug.Print: Done\n",
+  ),
+  (
     "random_seeded",
     "' Rnd with a fixed seed gives the same numbers everywhere (J2).\nSub Main()\n    Randomize(42)\n    For i = 1 To 3\n        Debug.Print(Rnd())\n    Next\n    Randomize(42)\n    Debug.Print(Rnd())\n    Randomize(7)\n    Dim total As Integer = 0\n    For i = 1 To 1000\n        total = total + CInt(Int(Rnd() * 6) + 1)\n    Next\n    Debug.Print(total)\nEnd Sub\n",
     [],

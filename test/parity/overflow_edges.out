@@ -1,0 +1,6 @@
+Debug.Print: MinValue \ -1: The result is too large for an Integer (from -9223372036854775808 to 9223372036854775807). If an approximate value is enough, calculate with Double instead.
+Debug.Print: -MinValue: The result is too large for an Integer (from -9223372036854775808 to 9223372036854775807). If an approximate value is enough, calculate with Double instead.
+Debug.Print: Abs(MinValue): The result is too large for an Integer (from -9223372036854775808 to 9223372036854775807). If an approximate value is enough, calculate with Double instead.
+Debug.Print: MinValue Mod -1 = 0
+Debug.Print: CInt(9.3E+18): The result is too large for an Integer (from -9223372036854775808 to 9223372036854775807). If an approximate value is enough, calculate with Double instead.
+Debug.Print: Done
