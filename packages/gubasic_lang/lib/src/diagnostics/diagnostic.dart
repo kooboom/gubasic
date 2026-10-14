@@ -87,8 +87,11 @@ enum DiagnosticCode {
   /// `Set`, `Let`. Args: the keyword.
   unsupportedSetLet('P020'),
 
-  /// A stage-2 feature (`Handles`, `ByRef`). Args: the keyword.
-  plannedForStage2('P021');
+  /// `ByRef`: not available yet (planned for stage 2).
+  byRefNotAvailable('P021'),
+
+  /// `Handles`: not available yet (planned for stage 2).
+  handlesNotAvailable('P022');
 
   const DiagnosticCode(this.code);
 

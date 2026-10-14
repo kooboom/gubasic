@@ -4,7 +4,8 @@ import 'diagnostic.dart';
 /// [Diagnostic.args].
 ///
 /// Each message says what is wrong and how to fix it, in one or two
-/// sentences.
+/// sentences. A suggested fix never silently changes what the program
+/// means; if it has a trade-off, the message says so.
 const Map<DiagnosticCode, String> englishMessages = {
   // Lexer
   DiagnosticCode.unterminatedString: 'This string has no closing quote ("). '
@@ -23,10 +24,10 @@ const Map<DiagnosticCode, String> englishMessages = {
       '"_" continues a statement only when it is the last thing on the line. '
           'Move it to the end of the line or remove it; '
           'names must start with a letter.',
-  DiagnosticCode.integerTooLarge: 'The number {0} is too large for an Integer '
-      '(the largest is 9223372036854775807). '
-      'If you need a larger number, add a decimal point to make it a Double '
-      '(for example {0}.0).',
+  DiagnosticCode.integerTooLarge: 'The number {0} is too large for an Integer, '
+      'which holds up to 9223372036854775807. '
+      'If an approximate value is enough, you can add a decimal point to make '
+      'it a Double ({0}.0), but its last digits may change.',
 
   // Parser: structure
   DiagnosticCode.expectedExpression: 'A value or expression is missing here. '
@@ -46,8 +47,9 @@ const Map<DiagnosticCode, String> englishMessages = {
   DiagnosticCode.unmatchedCloser: '"{0}" has no matching "{1}". '
       'Remove it, or add the "{1}" statement before it.',
   DiagnosticCode.statementOutsideProcedure:
-      'Statements must be inside a Sub or Function. '
-          'Only declarations (Dim, Const, Sub, Function) can be written here.',
+      'Statements must be inside a Sub or Function. Outside them, only '
+          'declarations (Dim, Private, Public, Const) and Sub or Function '
+          'can be written.',
   DiagnosticCode.declarationNotAllowedHere:
       '"{0}" cannot be used here. Inside a procedure, declare with Dim, '
           'Static or Const; outside, use Dim, Private, Public or Const.',
@@ -68,9 +70,10 @@ const Map<DiagnosticCode, String> englishMessages = {
       'Use Object when a variable must hold any kind of value.',
   DiagnosticCode.unsupportedClass:
       'User-defined classes are not available in GuBASIC 1.0. '
-          'Use a module with Sub and Function procedures instead.',
+          'Write Sub or Function procedures in a module instead.',
   DiagnosticCode.unsupportedShortCircuit: 'GuBASIC has no {0}. '
-      'Use {1}: it already skips the right side when the result is known.',
+      'Use {1} instead: And and Or also skip the right side when the left '
+      'side already decides the result.',
   DiagnosticCode.unsupportedWhile:
       'GuBASIC does not have While ... Wend. Use Do While ... Loop instead.',
   DiagnosticCode.unsupportedCall:
@@ -78,6 +81,10 @@ const Map<DiagnosticCode, String> englishMessages = {
           'for example ShowScore("Kim", 90).',
   DiagnosticCode.unsupportedSetLet:
       'GuBASIC does not use {0}. Remove it and assign directly: x = value.',
-  DiagnosticCode.plannedForStage2: '{0} is not available yet; it is planned '
-      'for stage 2. Remove it for now.',
+  DiagnosticCode.byRefNotAvailable: 'ByRef is not available yet. '
+      'To get a changed value back, write a Function and give the value '
+      'back with Return.',
+  DiagnosticCode.handlesNotAvailable: 'Handles is not available yet. '
+      'For now, write a Sub named ControlName_EventName, such as '
+      'btnSave_Click.',
 };

@@ -67,6 +67,7 @@ No `await`, no widgets, no build context. Just events and code, the way it used 
 | [docs/DESIGN.md](docs/DESIGN.md) | Architecture and every design decision, with the reasons |
 | [docs/LANGUAGE.md](docs/LANGUAGE.md) | Draft specification of the GuBASIC language |
 | [docs/ROADMAP.md](docs/ROADMAP.md) | Stages, milestones and what 1.0 will *not* do |
+| [docs/KNOWN_ISSUES.md](docs/KNOWN_ISSUES.md) | Problems deliberately left unfixed for now, and when they will be revisited |
 | [CLAUDE.md](CLAUDE.md) | Rules for AI coding assistants working on this repo |
 
 ## Platforms

@@ -4,14 +4,21 @@ import 'diagnostic.dart';
 /// [Diagnostic.args].
 ///
 /// Written in the same "~합니다" style as the Korean documents: what is
-/// wrong and how to fix it, in one or two sentences. A particle never
-/// follows a placeholder directly (it would depend on the inserted word);
-/// it attaches to a fixed word instead: "{0} 키워드가", not "{0}가".
+/// wrong and how to fix it, in one or two sentences. A suggested fix never
+/// silently changes what the program means; if it has a trade-off, the
+/// message says so.
+///
+/// Particles:
+/// - Never directly after a placeholder (it would depend on the inserted
+///   word); attach it to a fixed word instead: "{0} 키워드가", not "{0}가".
+/// - After a fixed English word, choose by how it is read: Sub [섭] takes
+///   이나/과/을. If that looks odd, join with "또는" or add a Korean word
+///   ("Sub 프로시저를").
 const Map<DiagnosticCode, String> koreanMessages = {
   // Lexer
   DiagnosticCode.unterminatedString: '문자열이 닫히지 않았습니다. 같은 줄 안에서 따옴표(")로 닫아 주세요.',
   DiagnosticCode.nonAsciiIdentifier:
-      '변수 이름에는 영문자, 숫자, _만 쓸 수 있습니다(문제가 된 이름: {0}). '
+      '이름에는 영문자, 숫자, _만 쓸 수 있습니다(문제가 된 이름: {0}). '
           '한글은 문자열("...")이나 주석(\')에 써 주세요.',
   DiagnosticCode.statementSeparator:
       'GuBASIC은 한 줄에 한 문장만 씁니다. ":" 대신 줄을 바꿔 다음 문장을 써 주세요.',
@@ -20,9 +27,10 @@ const Map<DiagnosticCode, String> koreanMessages = {
   DiagnosticCode.misplacedLineContinuation:
       '"_" 기호는 줄의 맨 끝에 있을 때만 다음 줄로 이어 씁니다. '
           '줄 끝으로 옮기거나 지워 주세요. 이름은 영문자로 시작해야 합니다.',
-  DiagnosticCode.integerTooLarge:
-      'Integer에 담기에는 너무 큰 수입니다(입력한 수: {0}, 가장 큰 값: 9223372036854775807). '
-          '더 큰 수가 필요하면 소수점을 붙여 Double로 써 주세요(예: {0}.0).',
+  DiagnosticCode.integerTooLarge: 'Integer에 담기에는 너무 큰 수입니다(입력한 수: {0}). '
+      'Integer는 9223372036854775807까지 담을 수 있습니다. '
+      '대략적인 값이면 충분할 때는 소수점을 붙여 Double로 쓸 수 있지만({0}.0), '
+      '이때는 끝자리가 달라질 수 있습니다.',
 
   // Parser: structure
   DiagnosticCode.expectedExpression:
@@ -36,8 +44,8 @@ const Map<DiagnosticCode, String> koreanMessages = {
       '{1}번 줄에서 시작한 {0} 블록이 닫히지 않았습니다. {2} 문장을 넣어 주세요.',
   DiagnosticCode.unmatchedCloser:
       '{0} 문장과 짝이 되는 {1} 문장이 없습니다. 지우거나, 앞에 {1} 문장을 써 주세요.',
-  DiagnosticCode.statementOutsideProcedure: '문장은 Sub나 Function 안에 써야 합니다. '
-      '이곳에는 선언(Dim, Const, Sub, Function)만 쓸 수 있습니다.',
+  DiagnosticCode.statementOutsideProcedure: '문장은 Sub 또는 Function 안에 써야 합니다. '
+      '그 밖에는 선언(Dim, Private, Public, Const)과 Sub, Function만 쓸 수 있습니다.',
   DiagnosticCode.declarationNotAllowedHere: '이 자리에는 {0} 선언을 쓸 수 없습니다. '
       '프로시저 안에서는 Dim, Static, Const를, 밖에서는 Dim, Private, Public, Const를 씁니다.',
   DiagnosticCode.nextVariableMismatch:
@@ -52,18 +60,22 @@ const Map<DiagnosticCode, String> koreanMessages = {
   DiagnosticCode.unsupportedOnError:
       'GuBASIC은 On Error를 지원하지 않습니다. 오류가 날 수 있는 코드를 Try ... Catch ... End Try로 감싸 주세요.',
   DiagnosticCode.unsupportedGoTo:
-      'GuBASIC은 {0} 문을 지원하지 않습니다. 반복문이나 Exit, 또는 별도의 Sub나 Function을 써 주세요.',
+      'GuBASIC은 {0} 문을 지원하지 않습니다. 반복문이나 Exit, 또는 별도의 Sub 또는 Function을 써 주세요.',
   DiagnosticCode.unsupportedVariant:
       'GuBASIC에는 Variant 타입이 없습니다. 아무 값이나 담아야 하면 Object를 써 주세요.',
   DiagnosticCode.unsupportedClass:
-      '사용자 정의 클래스는 GuBASIC 1.0에서 쓸 수 없습니다. 모듈에 Sub와 Function을 만들어 써 주세요.',
+      '사용자 정의 클래스는 GuBASIC 1.0에서 쓸 수 없습니다. 모듈에 Sub 또는 Function을 만들어 써 주세요.',
   DiagnosticCode.unsupportedShortCircuit:
-      'GuBASIC에는 {0} 연산자가 없습니다. {1} 연산자를 써 주세요. 결과가 정해지면 오른쪽은 이미 건너뜁니다.',
+      'GuBASIC에는 {0} 연산자가 없습니다. 대신 {1} 연산자를 써 주세요. '
+          'And와 Or도 왼쪽만으로 결과가 정해지면 오른쪽을 계산하지 않습니다.',
   DiagnosticCode.unsupportedWhile:
       'GuBASIC에는 While ... Wend 문이 없습니다. Do While ... Loop를 써 주세요.',
   DiagnosticCode.unsupportedCall:
       'GuBASIC에서는 Call을 쓰지 않습니다. Call을 지우고 ShowScore("Kim", 90)처럼 바로 호출해 주세요.',
   DiagnosticCode.unsupportedSetLet:
       'GuBASIC에서는 {0} 키워드를 쓰지 않습니다. 지우고 x = 값처럼 바로 대입해 주세요.',
-  DiagnosticCode.plannedForStage2: '{0} 기능은 아직 쓸 수 없습니다(2단계 예정). 지금은 지워 주세요.',
+  DiagnosticCode.byRefNotAvailable: 'ByRef는 아직 준비 중입니다. '
+      '바뀐 값을 돌려받으려면 Function을 만들어 Return으로 돌려주세요.',
+  DiagnosticCode.handlesNotAvailable: 'Handles는 아직 준비 중입니다. '
+      "지금은 btnSave_Click처럼 '컨트롤이름_이벤트이름'으로 Sub 프로시저를 만들어 주세요.",
 };

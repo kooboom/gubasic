@@ -53,11 +53,10 @@ void main() {
     expect(exprToSexp(p.parameters[1].defaultValue!), '"Info"');
   });
 
-  test('stage 2: ByRef and Handles are read but reported (P021)', () {
+  test('ByRef (P021) and Handles (P022) are read but reported', () {
     final r = parse('Sub F(ByRef a As Integer)\nEnd Sub\n'
         'Sub SaveData() Handles btnSave.Click, mnuSave.Click\nEnd Sub');
-    expect(codesAndLines(r), ['P021@1', 'P021@3']);
-    expect(r.diagnostics.map((d) => d.args.single), ['ByRef', 'Handles']);
+    expect(codesAndLines(r), ['P021@1', 'P022@3']);
     final procs = r.unit.members.cast<ProcedureDecl>().toList();
     expect(procs[0].parameters.single.passing, Keyword.kwByRef);
     expect(procs[1].handles!.events.map(exprToSexp),

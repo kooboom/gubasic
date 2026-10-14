@@ -35,8 +35,8 @@ CompilationUnit [1:1-11:1]
               Name count [8:17-8:22]
               Integer 1 [8:25-8:26]
 --- diagnostics
-P021 1:12 ByRef
-P021 1:36 Handles
+P021 1:12 
+P022 1:36 
 P013 2:5 
 P015 3:14 
 P020 4:5 Set

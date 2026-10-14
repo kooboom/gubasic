@@ -50,6 +50,10 @@ test/parity/             Interpreter-vs-transpiler parity tests
 - Commit messages in English, imperative mood.
 - Diagnostic messages say what is wrong and how to fix it, in one or two sentences; Korean ones use the documents' "~합니다" style.
 - In Korean messages, never put a particle right after a placeholder (`{0}가`): attach it to a fixed word instead (`{0} 키워드가`, `{0} 블록이`).
+- After a fixed English word, choose the Korean particle by how the word is read (Sub [섭] → 이나/과/을). If it reads awkwardly, join with "또는" instead ("Sub 또는 Function").
+- Messages never suggest a fix that silently changes the program's meaning; if a fix has a trade-off, say so.
+- English and Korean are both first-class: change and review both in the same commit.
+- Anything deliberately left unfixed goes into `docs/KNOWN_ISSUES.md` (what, why deferred, when to revisit).
 - Merge only when the author says so: fast-forward locally (rebase onto `main` first if needed), push `main`, then delete the branch locally and remotely. Never merge on GitHub (a merge commit could carry a private email).
 
 ## Before you finish a task

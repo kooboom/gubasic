@@ -71,7 +71,7 @@ How the parser recovers:
 - A syntax error is reported **once per statement**; the parser then skips to the next line.
 - A block that is never closed (`If` without `End If`, …) is reported **where it starts**, when the parser meets the end of an enclosing block, a new `Sub`/`Function`, or the end of the file.
 - A line on which the lexer already reported an error gets no syntax diagnostics from the parser.
-- Guidance about Visual Basic features (P013–P021) is always reported, and the code is read the GuBASIC way where possible, so that the rest can still be checked.
+- Guidance about Visual Basic features (P013–P022) is always reported, and the code is read the GuBASIC way where possible, so that the rest can still be checked.
 
 | Code | Problem | What the parser does |
 |---|---|---|
@@ -95,7 +95,8 @@ How the parser recovers:
 | P018 | `While … Wend` / `While … End While` | Reads it as `Do While … Loop` |
 | P019 | `Call` | Reads the call without it |
 | P020 | `Set`, `Let` | Reads a plain assignment |
-| P021 | A stage-2 feature (`Handles`, `ByRef`) | Reads it normally |
+| P021 | `ByRef` (not available yet; stage 2) | Reads it normally; the message suggests a `Function` with `Return` |
+| P022 | `Handles` (not available yet; stage 2) | Reads it normally; the message suggests a `ControlName_EventName` Sub |
 
 ## 2. Types
 

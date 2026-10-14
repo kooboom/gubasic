@@ -67,6 +67,7 @@ End Sub
 | [docs/DESIGN.ko.md](docs/DESIGN.ko.md) | 구조와 모든 설계 결정, 그리고 그 이유 |
 | [docs/LANGUAGE.ko.md](docs/LANGUAGE.ko.md) | GuBASIC 언어 명세 초안 |
 | [docs/ROADMAP.ko.md](docs/ROADMAP.ko.md) | 단계와 목표, 1.0에서 *하지 않을* 것 |
+| [docs/KNOWN_ISSUES.ko.md](docs/KNOWN_ISSUES.ko.md) | 지금은 일부러 고치지 않은 문제와 다시 볼 시점 |
 | [CLAUDE.md](CLAUDE.md) | 이 저장소에서 일하는 AI 코딩 도구의 규칙 (영문) |
 
 ## 플랫폼

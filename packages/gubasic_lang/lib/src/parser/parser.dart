@@ -250,7 +250,7 @@ class _Parser {
     ));
   }
 
-  /// Guidance about Visual Basic features (P013–P021). Each one is its own
+  /// Guidance about Visual Basic features (P013–P022). Each one is its own
   /// finding, not a consequence of an earlier error, so they are not
   /// limited to one per statement.
   static const _independent = {
@@ -262,7 +262,8 @@ class _Parser {
     DiagnosticCode.unsupportedWhile,
     DiagnosticCode.unsupportedCall,
     DiagnosticCode.unsupportedSetLet,
-    DiagnosticCode.plannedForStage2,
+    DiagnosticCode.byRefNotAvailable,
+    DiagnosticCode.handlesNotAvailable,
   };
 
   /// Reports at [start]..[end] unless the line has a lexer error or (for
@@ -547,7 +548,7 @@ class _Parser {
       final t = _advance();
       passing = t.keyword;
       if (passing == Keyword.kwByRef) {
-        _errorAt(t, DiagnosticCode.plannedForStage2, ['ByRef']);
+        _errorAt(t, DiagnosticCode.byRefNotAvailable);
       }
     }
     final name = _name();
@@ -583,7 +584,7 @@ class _Parser {
 
   HandlesClause _handles() {
     final handlesToken = _advance();
-    _errorAt(handlesToken, DiagnosticCode.plannedForStage2, ['Handles']);
+    _errorAt(handlesToken, DiagnosticCode.handlesNotAvailable);
     final events = <MemberExpr>[];
     do {
       final control = _name();

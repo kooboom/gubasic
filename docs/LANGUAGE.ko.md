@@ -71,7 +71,7 @@ Handles ReDim Preserve Optional Of ByVal
 - 문법 오류는 **문장 하나에 하나만** 알리고, 다음 줄로 넘어갑니다.
 - 닫히지 않은 블록(`End If`가 없는 `If` 등)은 바깥 블록의 끝, 새 `Sub`/`Function`, 파일 끝을 만났을 때 **블록이 시작한 줄**에 알립니다.
 - 렉서가 이미 오류를 알린 줄에는 파서가 문법 진단을 덧붙이지 않습니다.
-- Visual Basic 기능에 대한 안내(P013~P021)는 항상 알리고, 가능하면 GuBASIC 방식으로 읽어서 나머지 부분도 계속 검사합니다.
+- Visual Basic 기능에 대한 안내(P013~P022)는 항상 알리고, 가능하면 GuBASIC 방식으로 읽어서 나머지 부분도 계속 검사합니다.
 
 | 코드 | 문제 | 파서의 처리 |
 |---|---|---|
@@ -95,7 +95,8 @@ Handles ReDim Preserve Optional Of ByVal
 | P018 | `While … Wend` / `While … End While` | `Do While … Loop`로 읽음 |
 | P019 | `Call` | `Call` 없이 호출로 읽음 |
 | P020 | `Set`, `Let` | 그냥 대입으로 읽음 |
-| P021 | 2단계 기능 (`Handles`, `ByRef`) | 정상으로 읽음 |
+| P021 | `ByRef` (아직 준비 중, 2단계) | 정상으로 읽음. 메시지는 `Return`을 쓰는 `Function`을 안내 |
+| P022 | `Handles` (아직 준비 중, 2단계) | 정상으로 읽음. 메시지는 `컨트롤이름_이벤트이름` 형태의 Sub 프로시저를 안내 |
 
 ## 2. 타입
 
