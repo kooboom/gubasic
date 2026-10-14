@@ -48,9 +48,13 @@ These Visual Basic keywords are **reserved but not supported**, so that the edit
 
 Type names (`Integer`, `String`, …) and built-in functions (`MsgBox`, …) are ordinary identifiers, not keywords.
 
-### 1.2 Lexer diagnostics
+After a dot, a keyword can be used as a member name: `obj.End`, `list.Next` (as in VB.NET).
 
-The lexer never stops at an error: it reports it and keeps reading, so that one mistake does not hide the rest. Codes are stable and never reused.
+### 1.2 Diagnostics
+
+Neither the lexer nor the parser stops at an error: they report it and keep reading, so that one mistake does not hide the rest. Codes are stable and never reused.
+
+**Lexer**
 
 | Code | Problem | What the lexer does |
 |---|---|---|
@@ -60,6 +64,38 @@ The lexer never stops at an error: it reports it and keeps reading, so that one 
 | L004 | A character with no meaning in GuBASIC (`@`, `#`, `$`, …) | Error token |
 | L005 | `_` that is not the last thing on its line | Error token |
 | L006 | An integer too large for `Integer` (64-bit) | Integer token with no value |
+
+**Parser**
+
+How the parser recovers:
+- A syntax error is reported **once per statement**; the parser then skips to the next line.
+- A block that is never closed (`If` without `End If`, …) is reported **where it starts**, when the parser meets the end of an enclosing block, a new `Sub`/`Function`, or the end of the file.
+- A line on which the lexer already reported an error gets no syntax diagnostics from the parser.
+- Guidance about Visual Basic features (P013–P021) is always reported, and the code is read the GuBASIC way where possible, so that the rest can still be checked.
+
+| Code | Problem | What the parser does |
+|---|---|---|
+| P001 | A value or expression is missing | Puts an error node in its place |
+| P002 | A keyword is missing (`Then`, `To`, `In`, `Case`, …) | Reads on as if it were there |
+| P003 | A symbol is missing (`)`, `=`, `(`, `.`) | Reads on as if it were there |
+| P004 | A name is missing | Uses an empty name |
+| P005 | Something that does not belong here | Skips to the end of the line |
+| P006 | A block is not closed | Reported at the line where the block starts |
+| P007 | A closing statement with no open block (`End If` without `If`, …) | Skips the line |
+| P008 | A statement outside any `Sub` or `Function` | Keeps it in the tree |
+| P009 | A declaration that cannot appear here (`Public` inside a procedure, `Static` outside) | Reads it as `Dim` |
+| P010 | `Next j` closing `For i` | — |
+| P011 | Arguments without parentheses (`MsgBox "Hi"`) | Reads it as `MsgBox("Hi")` |
+| P012 | More than one variable in one declaration (`Dim a, b`) | Keeps the first |
+| P013 | `On Error` | Skips the line; use `Try … Catch` |
+| P014 | `GoTo`, `GoSub` | Skips the line; use loops, `Exit`, procedures |
+| P015 | `Variant` | Reads it as a type name; use `Object` |
+| P016 | `Class … End Class` | Skips the whole class |
+| P017 | `AndAlso`, `OrElse` | Reads them as `And`, `Or` |
+| P018 | `While … Wend` / `While … End While` | Reads it as `Do While … Loop` |
+| P019 | `Call` | Reads the call without it |
+| P020 | `Set`, `Let` | Reads a plain assignment |
+| P021 | A stage-2 feature (`Handles`, `ByRef`) | Reads it normally |
 
 ## 2. Types
 
@@ -74,7 +110,7 @@ The lexer never stops at an error: it reports it and keeps reading, so that one 
 | `List(Of T)` | `List<T>` | empty list (when declared with `New`) |
 | Control / component types (`Button`, `Label`, …) | runtime classes | `Nothing` |
 
-- **`Integer` is 64-bit** on native platforms. On the web it is a JavaScript number, exact only up to 2⁵³ (about 9 × 10¹⁵). Ordinary apps never reach this.
+- **`Integer` is 64-bit** on native platforms. On the web it is a JavaScript number, exact only up to 2⁵³ (about 9 × 10¹⁵). Ordinary apps never reach this. The source text of an integer literal is always kept exactly, and the transpiler writes it as written, so a native app gets the exact value even above 2⁵³.
 - **`Nothing` (null) exists only for objects.** Value types always have a value, so beginners rarely meet null errors.
 - **To check whether an object is `Nothing`, compare with `Is`:** `If player Is Nothing Then`. For the opposite, write `If Not player Is Nothing Then`. (`=` compares values, not objects.)
 - There is **no `Variant`**. Use `Object` when a variable really must hold anything.
@@ -90,6 +126,8 @@ Dim total As Integer = 100    ' type and initial value
 ```
 
 **Declaration is always required** (`Option Explicit` is permanently on). Using an undeclared name is a compile error — this catches typos.
+
+**One variable per declaration.** `Dim a, b As Integer` is not allowed (P012): in VB6 it made `a` a `Variant`, in VB.NET an `Integer`. Writing one variable per line removes the doubt.
 
 ### 3.2 Scope and lifetime
 
@@ -152,6 +190,36 @@ Const MaxScore As Integer = 100
 - **`And` and `Or` short-circuit.** There is no `AndAlso` / `OrElse`.
 - `&` converts numbers to strings automatically: `"Score: " & 90`.
 
+### 5.1 Precedence
+
+From highest to lowest, as in VB.NET. Operators on the same level are evaluated **left to right**.
+
+| Level | Operators |
+|---|---|
+| 1 | `^` |
+| 2 | unary `-`, unary `+` |
+| 3 | `*`, `/` |
+| 4 | `\` |
+| 5 | `Mod` |
+| 6 | `+`, `-` |
+| 7 | `&` |
+| 8 | `=`, `<>`, `<`, `>`, `<=`, `>=`, `Is` |
+| 9 | `Not` |
+| 10 | `And` |
+| 11 | `Or` |
+| 12 | `Xor` |
+
+| Expression | Means | Value |
+|---|---|---|
+| `1 + 2 * 3 ^ 2` | `1 + (2 * (3 ^ 2))` | 19 |
+| `-2 ^ 2` | `-(2 ^ 2)` | -4 |
+| `2 ^ 3 ^ 2` | `(2 ^ 3) ^ 2` | **64** |
+| `Not a = b And c` | `(Not (a = b)) And c` | |
+| `"n=" & n + 1` | `"n=" & (n + 1)` | |
+
+- **`^` is also left to right.** VB and Excel calculate `2 ^ 3 ^ 2` as `(2 ^ 3) ^ 2` = 64, unlike mathematical notation, where 2^3^2 means 2^(3^2) = 512. Write `2 ^ (3 ^ 2)` when you mean 512.
+- **`=` at the start of a statement assigns; anywhere else it compares.** `x = y = z` stores in `x` whether `y` equals `z`.
+
 ## 6. Control flow
 
 ```vb
@@ -190,6 +258,9 @@ Loop Until done
 
 `Exit For`, `Exit Do`, `Exit Sub`, `Exit Function` are supported. `GoTo` is not.
 
+- **Single-line `If`.** `If x > 0 Then y = 1 Else y = 2` is one statement and needs no `End If`. Only simple statements fit on the line (assignments, calls, `Exit`, `Return`, …); loops and other blocks need the block form.
+- **The loop variable may carry its type:** `For i As Integer = 1 To 10`, `For Each name As String In names`. Whether an undeclared loop variable is declared automatically is decided in the analyzer stage (§12).
+
 ## 7. Procedures
 
 ```vb
@@ -202,7 +273,7 @@ Function Average(a As Integer, b As Integer) As Double
 End Function
 ```
 
-- Parentheses are always used in calls: `ShowScore("Kim", 90)`.
+- Arguments are always written in parentheses: `ShowScore("Kim", 90)`. A call with no arguments may leave them out: `Form2.Show`, `DoEvents`. `MsgBox "Hi"` (VB6 style) is reported (P011).
 - **A function returns its result with `Return` only.** Assigning to the function's name (VB6 style: `Average = (a + b) / 2`) is not supported; the analyzer will point out the line and suggest `Return`.
 - Optional parameters: `Optional title As String = "Info"`.
 
@@ -309,5 +380,6 @@ End Sub
 ## 12. Open questions
 
 - File extension (`.gbas` is provisional).
+- Undeclared loop variables (§6). **Recommended:** if the variable of a `For` or `For Each` has not been declared, it is declared automatically, visible only inside that loop (as VB.NET does with `Option Infer`). To be confirmed in the analyzer stage.
 - User-defined classes (`Class … End Class`) — not in 1.0.
 - Exact syntax of the embedded-Dart escape hatch.

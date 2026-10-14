@@ -49,6 +49,7 @@ test/parity/             Interpreter-vs-transpiler parity tests
 - Small, focused changes. One feature per change, with its tests.
 - Commit messages in English, imperative mood.
 - Diagnostic messages say what is wrong and how to fix it, in one or two sentences; Korean ones use the documents' "~합니다" style.
+- In Korean messages, never put a particle right after a placeholder (`{0}가`): attach it to a fixed word instead (`{0} 키워드가`, `{0} 블록이`).
 - Merge only when the author says so: fast-forward locally (rebase onto `main` first if needed), push `main`, then delete the branch locally and remotely. Never merge on GitHub (a merge commit could carry a private email).
 
 ## Before you finish a task

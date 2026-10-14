@@ -21,7 +21,7 @@ The core Visual Basic experience, entirely inside the IDE.
 - [ ] Built-in components: `Form`, `Button`, `Label`, `TextBox`, `CheckBox`, `ListBox`, `Image`
 - [ ] Absolute layout with `Anchor`; form size presets (Phone / Tablet / Desktop)
 - [ ] Project files in plain text (`.gbproj`, `.form.yaml`, `.gbas`)
-- [ ] Lexer and **error-tolerant** parser (lexer done)
+- [x] Lexer and **error-tolerant** parser
 - [x] Web playground for development ([try it](https://kooboom.github.io/gubasic))
 - [ ] Code editor: syntax highlighting, double-click → handler stub, rename-safe handlers
 - [ ] Light autocompletion (keywords, controls, members, "did you mean")
