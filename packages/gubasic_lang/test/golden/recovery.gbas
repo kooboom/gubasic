@@ -1,0 +1,13 @@
+x = 1
+Sub A()
+    If ready Then
+        total = (1 +
+End Sub
+Next
+Sub B()
+    For i = 1 To 3
+    Next j
+    MsgBox "hi"
+End Sub
+Sub C()
+    Do

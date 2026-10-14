@@ -1,0 +1,36 @@
+Function Grade(score As Integer) As String
+    If score >= 90 Then
+        Return "A"
+    ElseIf score >= 80 Then
+        Return "B"
+    Else
+        Select Case score
+            Case 70 To 79
+                Return "C"
+            Case Is < 0
+                Throw New Exception("negative")
+            Case Else
+                Return "F"
+        End Select
+    End If
+End Function
+
+Sub Totals()
+    Dim names As New List(Of String)
+    Dim total As Integer = 0
+    For i = 1 To 10 Step 2
+        If i Mod 3 = 0 Then Exit For Else total = total + i
+    Next i
+    For Each n In names
+        Do While Len(n) > 0
+            n = Mid(n, 2)
+        Loop
+    Next
+    Try
+        ReDim Preserve scores(19)
+    Catch ex As Exception
+        MsgBox(ex.Message)
+    Finally
+        DoEvents
+    End Try
+End Sub

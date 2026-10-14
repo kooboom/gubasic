@@ -1,0 +1,10 @@
+Sub Legacy(ByRef count As Integer) Handles btn.Click
+    On Error Resume Next
+    Dim v As Variant
+    Set v = Nothing
+    Call Work()
+    If a AndAlso b Then GoTo Done
+    While count > 0
+        count = count - 1
+    Wend
+End Sub

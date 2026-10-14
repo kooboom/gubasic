@@ -19,7 +19,76 @@ enum DiagnosticCode {
   misplacedLineContinuation('L005'),
 
   /// An integer literal that does not fit in 64 bits.
-  integerTooLarge('L006');
+  integerTooLarge('L006'),
+
+  // Parser: structure
+
+  /// An expression is missing.
+  expectedExpression('P001'),
+
+  /// A keyword is missing. Args: the keyword (`Then`, `To`, …).
+  expectedKeyword('P002'),
+
+  /// A symbol is missing. Args: the symbol (`)`, `=`, …).
+  expectedSymbol('P003'),
+
+  /// A name is missing.
+  expectedName('P004'),
+
+  /// Something that does not belong here. Args: its text.
+  unexpectedToken('P005'),
+
+  /// A block is not closed. Args: block, line it started on, closing
+  /// statement (`If`, `3`, `End If`).
+  unclosedBlock('P006'),
+
+  /// A closing statement with no open block. Args: the closer, the opener
+  /// (`End If`, `If`).
+  unmatchedCloser('P007'),
+
+  /// A statement outside any `Sub` or `Function`.
+  statementOutsideProcedure('P008'),
+
+  /// A declaration that cannot appear here. Args: its keyword.
+  declarationNotAllowedHere('P009'),
+
+  /// `Next j` closing `For i`. Args: the two names.
+  nextVariableMismatch('P010'),
+
+  /// `MsgBox "Hi"`: a call with arguments but no parentheses.
+  callWithoutParentheses('P011'),
+
+  /// `Dim a, b`: more than one variable in one declaration.
+  oneVariablePerDeclaration('P012'),
+
+  // Parser: Visual Basic features GuBASIC does not support
+
+  /// `On Error`.
+  unsupportedOnError('P013'),
+
+  /// `GoTo`, `GoSub`. Args: the keyword.
+  unsupportedGoTo('P014'),
+
+  /// `Variant`.
+  unsupportedVariant('P015'),
+
+  /// `Class`.
+  unsupportedClass('P016'),
+
+  /// `AndAlso`, `OrElse`. Args: the keyword, the replacement.
+  unsupportedShortCircuit('P017'),
+
+  /// `While … Wend` / `While … End While`.
+  unsupportedWhile('P018'),
+
+  /// `Call`.
+  unsupportedCall('P019'),
+
+  /// `Set`, `Let`. Args: the keyword.
+  unsupportedSetLet('P020'),
+
+  /// A stage-2 feature (`Handles`, `ByRef`). Args: the keyword.
+  plannedForStage2('P021');
 
   const DiagnosticCode(this.code);
 

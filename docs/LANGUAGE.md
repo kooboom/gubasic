@@ -224,9 +224,11 @@ Sub Fill(items As List(Of String))
     items.Add("Lee")                  ' goes to the new list, which the caller never sees
 End Sub
 
-Dim names As New List(Of String)
-Fill(names)
-' names now contains "Kim" only
+Sub Form_Load()
+    Dim names As New List(Of String)
+    Fill(names)
+    ' names now contains "Kim" only
+End Sub
 ```
 
 ### 7.2 `ByRef` (stage 2)

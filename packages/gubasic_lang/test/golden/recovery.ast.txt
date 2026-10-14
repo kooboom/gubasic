@@ -1,0 +1,40 @@
+CompilationUnit [1:1-14:1]
+  InvalidMember [1:1-1:6]
+    Assign [1:1-1:6]
+      Name x [1:1-1:2]
+      Integer 1 [1:5-1:6]
+  Sub A [2:1-5:8]
+    Body [3:5-4:21]
+      If [3:5-4:21]
+        Branch [3:5-4:21]
+          Name ready [3:8-3:13]
+          Then [4:9-4:21]
+            Assign [4:9-4:21]
+              Name total [4:9-4:14]
+              Paren [4:17-4:21]
+                Binary + [4:18-4:21]
+                  Integer 1 [4:18-4:19]
+                  Error [4:21-4:21]
+  Sub B [7:1-11:8]
+    Body [8:5-10:16]
+      For i [8:5-9:11]
+        Integer 1 [8:13-8:14]
+        Integer 3 [8:18-8:19]
+        Body [8:19-8:19]
+      Call [10:5-10:16]
+        Invoke [10:5-10:16]
+          Name MsgBox [10:5-10:11]
+          String "hi" [10:12-10:16]
+  Sub C [12:1-13:7]
+    Body [13:5-13:7]
+      Do [13:5-13:7]
+        Body [13:7-13:7]
+--- diagnostics
+P008 1:1 
+P006 3:5 If | 3 | End If
+P001 4:21 
+P007 6:1 Next | For
+P010 9:10 j | i
+P011 10:12 
+P006 12:1 Sub | 12 | End Sub
+P006 13:5 Do | 13 | Loop

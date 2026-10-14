@@ -1,0 +1,9 @@
+Sub Calc()
+    a = 1 + 2 * 3 ^ 2
+    b = 2 ^ 3 ^ 2
+    c = -2 ^ 2
+    d = Not x = y And z Or w Xor v
+    e = "Total: " & n * 2 & "!"
+    f = obj Is Nothing
+    g = lst.Items(0).Text
+End Sub

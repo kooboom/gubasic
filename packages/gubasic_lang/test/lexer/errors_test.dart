@@ -137,7 +137,10 @@ void main() {
     for (final code in DiagnosticCode.values) {
       expect(englishMessages[code], isNotNull, reason: code.code);
     }
-    expect(DiagnosticCode.values.map((c) => c.code),
+    expect(
+        DiagnosticCode.values
+            .map((c) => c.code)
+            .where((c) => c.startsWith('L')),
         ['L001', 'L002', 'L003', 'L004', 'L005', 'L006']);
   });
 

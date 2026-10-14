@@ -8,3 +8,8 @@ export 'src/diagnostics/messages_ko.dart';
 export 'src/lexer/keyword.dart';
 export 'src/lexer/lexer.dart';
 export 'src/lexer/token.dart';
+export 'src/ast/ast.dart';
+export 'src/ast/ast_printer.dart';
+export 'src/ast/line_map.dart';
+export 'src/parser/parse_result.dart';
+export 'src/parser/parser.dart';

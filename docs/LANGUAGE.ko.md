@@ -224,9 +224,11 @@ Sub Fill(items As List(Of String))
     items.Add("Lee")                  ' 새 목록에 들어가며, 호출한 쪽은 이 목록을 보지 못함
 End Sub
 
-Dim names As New List(Of String)
-Fill(names)
-' 이제 names에는 "Kim"만 들어 있음
+Sub Form_Load()
+    Dim names As New List(Of String)
+    Fill(names)
+    ' 이제 names에는 "Kim"만 들어 있음
+End Sub
 ```
 
 ### 7.2 `ByRef` (2단계)
