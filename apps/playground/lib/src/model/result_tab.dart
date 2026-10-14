@@ -26,6 +26,16 @@ class TokensTab extends ResultTab {
   UiText get title => UiText.tabTokens;
 }
 
+class AstTab extends ResultTab {
+  const AstTab();
+
+  @override
+  String get id => 'ast';
+
+  @override
+  UiText get title => UiText.tabAst;
+}
+
 class DiagnosticsTab extends ResultTab {
   const DiagnosticsTab();
 
@@ -40,4 +50,4 @@ class DiagnosticsTab extends ResultTab {
 }
 
 /// The tabs of the result panel, in display order.
-const List<ResultTab> resultTabs = [TokensTab(), DiagnosticsTab()];
+const List<ResultTab> resultTabs = [TokensTab(), AstTab(), DiagnosticsTab()];

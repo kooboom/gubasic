@@ -85,7 +85,7 @@ class App {
     _editor.showDiagnostics(_snapshot.diagnostics, _locale);
     _renderTabBar();
     final view = tabViews[_activeTab]!;
-    _tabContent.replaceChildren(view(_snapshot, _locale, _editor.jumpTo));
+    _tabContent.replaceChildren(view(_snapshot, _locale, _editor));
   }
 
   void _renderTabBar() {

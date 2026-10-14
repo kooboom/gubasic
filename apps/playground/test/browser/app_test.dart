@@ -59,23 +59,25 @@ void main() {
 
   test('starts with the README example and no diagnostics', () {
     expect(_source.value, readmeSample);
-    expect(_texts('#tabs button'), ['Tokens', 'Diagnostics0']);
+    expect(_texts('#tabs button'), ['Tokens', 'AST', 'Diagnostics0']);
     expect(web.document.querySelectorAll('.tokens tbody tr').length,
         greaterThan(50));
     expect(web.document.querySelectorAll('.has-diagnostic').length, 0);
   });
 
   test('typing re-lexes immediately and marks the gutter', () {
-    _type('x = 1\ny = "open');
+    _type('Sub A()\nx = 1\ny = "open\nEnd Sub');
     expect(_texts('#tabs button').last, 'Diagnostics1');
-    expect(_texts('.gutter .has-diagnostic'), ['2']);
+    expect(_texts('.gutter .has-diagnostic'), ['3']);
   });
 
   test('the error example shows every diagnostic; clicking one jumps', () {
     _click('#sample-errors');
-    _click('#tabs button:nth-child(2)');
-    expect(_texts('.diagnostics .code'),
-        ['L002', 'L001', 'L003', 'L004', 'L005', 'L006']);
+    _click('#tabs button:nth-child(3)');
+    expect(_texts('.diagnostics .code'), [
+      'L002', 'L001', 'L003', 'L004', 'L005', 'L006', //
+      'P006', 'P011', 'P007', 'P013',
+    ]);
 
     _click('.diagnostics li:nth-child(4) button'); // L004 at "@"
     final start = _source.selectionStart;
@@ -84,7 +86,7 @@ void main() {
   });
 
   test('clicking a marked line in the gutter jumps to its problem', () {
-    _type('ok\nDim 점수');
+    _type('Sub A()\nDim 점수\nEnd Sub');
     _click('.gutter .has-diagnostic');
     expect(
         _source.value.substring(_source.selectionStart, _source.selectionEnd),
@@ -97,8 +99,35 @@ void main() {
     expect(web.document.documentElement!.getAttribute('lang'), 'ko');
     expect(_texts('#switch-language'), ['English']);
     expect(_texts('#tabs button').first, '토큰');
-    _click('#tabs button:nth-child(2)');
+    _click('#tabs button:nth-child(3)');
     expect(_texts('.diagnostics .msg').first, contains('한글은 문자열'));
+    expect(_texts('#tabs button:nth-child(2)'), ['구문 트리']);
     expect(_texts('[data-i18n="footerPreview"]'), ['GuBASIC 놀이터 — 개발 미리보기']);
+  });
+
+  test('the AST tab shows the tree; clicking a node selects its source', () {
+    _click('#tabs button:nth-child(2)');
+    final labels = _texts('.ast .label');
+    expect(labels.first, 'CompilationUnit');
+    expect(labels, containsAll(['Sub Form_Load', 'Sub btnHello_Click']));
+
+    final buttons = web.document.querySelectorAll('.ast button.node');
+    for (var i = 0; i < buttons.length; i++) {
+      final b = buttons.item(i)! as web.HTMLElement;
+      if (b.textContent!.startsWith('Sub btnHello_Click')) {
+        b.click();
+        break;
+      }
+    }
+    final selected =
+        _source.value.substring(_source.selectionStart, _source.selectionEnd);
+    expect(selected, startsWith('Sub btnHello_Click()'));
+    expect(selected, endsWith('End Sub'));
+  });
+
+  test('parser problems mark the gutter too', () {
+    _type('Sub A()\nIf x Then\nEnd Sub');
+    expect(_texts('.gutter .has-diagnostic'), ['2']);
+    expect(_texts('#tabs button').last, 'Diagnostics1');
   });
 }

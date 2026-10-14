@@ -6,19 +6,25 @@ import '../model/snapshot.dart';
 import '../model/view_model.dart';
 import 'html.dart';
 
-typedef JumpTo = void Function(Diagnostic d);
+/// What a tab can ask the editor to do.
+abstract interface class SourceNavigator {
+  void jumpTo(Diagnostic d);
+  void select(int start, int end);
+}
 
 /// Draws the content of one result tab.
 typedef TabView = web.HTMLElement Function(
-    Snapshot snapshot, Locale locale, JumpTo jumpTo);
+    Snapshot snapshot, Locale locale, SourceNavigator editor);
 
 /// DOM views, keyed by [ResultTab.id]. Every tab in `resultTabs` needs one.
 const Map<String, TabView> tabViews = {
   'tokens': _tokensView,
+  'ast': _astView,
   'diagnostics': _diagnosticsView,
 };
 
-web.HTMLElement _tokensView(Snapshot snapshot, Locale locale, JumpTo _) {
+web.HTMLElement _tokensView(
+    Snapshot snapshot, Locale locale, SourceNavigator _) {
   final table = el('table', className: 'tokens');
   final head = el('tr');
   for (final title in [
@@ -58,7 +64,7 @@ web.HTMLElement _tokensView(Snapshot snapshot, Locale locale, JumpTo _) {
 }
 
 web.HTMLElement _diagnosticsView(
-    Snapshot snapshot, Locale locale, JumpTo jumpTo) {
+    Snapshot snapshot, Locale locale, SourceNavigator editor) {
   final diagnostics = snapshot.diagnostics;
   if (diagnostics.isEmpty) {
     return el('p', className: 'empty', text: locale[UiText.noDiagnostics]);
@@ -71,8 +77,44 @@ web.HTMLElement _diagnosticsView(
       ..append(el('span', className: 'pos', text: '${d.line}:${d.column}'))
       ..append(el('span',
           className: 'msg', text: d.formatMessage(locale.diagnosticMessages)));
-    onClick(button, () => jumpTo(d));
+    onClick(button, () => editor.jumpTo(d));
     list.append(el('li')..append(button));
   }
   return list;
+}
+
+/// The syntax tree as nested, foldable lists. Clicking a node's label
+/// selects its source.
+web.HTMLElement _astView(
+    Snapshot snapshot, Locale locale, SourceNavigator editor) {
+  final lines = snapshot.lineMap;
+
+  web.HTMLElement label(Node node) {
+    final button = el('button', className: 'node')
+      ..setAttribute('type', 'button')
+      ..append(el('span', className: 'label', text: node.label))
+      ..append(el('span',
+          className: 'range', text: rangeText(lines, node.start, node.end)));
+    if (node is ErrorExpr || node is ErrorStmt) button.classList.add('error');
+    onClick(button, () => editor.select(node.start, node.end));
+    return button;
+  }
+
+  web.HTMLElement build(Node node) {
+    if (node.children.isEmpty) {
+      return el('li', className: 'leaf')..append(label(node));
+    }
+    final details = el('details')..setAttribute('open', '');
+    final summary = el('summary')..append(label(node));
+    final list = el('ul');
+    for (final child in node.children) {
+      list.append(build(child));
+    }
+    details
+      ..append(summary)
+      ..append(list);
+    return el('li')..append(details);
+  }
+
+  return el('ul', className: 'ast')..append(build(snapshot.unit));
 }

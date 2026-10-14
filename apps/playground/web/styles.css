@@ -229,3 +229,19 @@ table.tokens { border-collapse: collapse; width: 100%; font: 12.5px/1.5 var(--mo
   .diagnostics button { grid-template-columns: auto 1fr; }
   .diagnostics .msg { grid-column: 1 / -1; }
 }
+
+/* AST tab */
+.ast, .ast ul { list-style: none; margin: 0; padding-left: 16px; }
+.ast { padding-left: 0; font: 12.5px/1.5 var(--mono); }
+.ast summary { cursor: default; }
+.ast li.leaf { padding-left: 14px; }
+.ast button.node {
+  border: 0;
+  background: transparent;
+  padding: 0 4px;
+  font: inherit;
+  text-align: left;
+}
+.ast button.node:hover { background: var(--panel); }
+.ast .range { margin-left: 8px; color: var(--muted); font-size: 11.5px; }
+.ast button.node.error .label { color: var(--error); font-weight: 600; }

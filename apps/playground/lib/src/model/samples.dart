@@ -14,16 +14,26 @@ Sub btnHello_Click()
 End Sub
 ''';
 
-/// One mistake for every lexer diagnostic (L001–L006), followed by a
-/// correct line to show that reading continues to the end.
+/// One mistake for every lexer diagnostic (L001–L006) and a few parser
+/// ones, followed by a correct procedure to show that reading continues to
+/// the end.
 const errorSample = r'''
 ' This example has mistakes on purpose.
 ' Click a problem to jump to it.
-Dim 점수 As Integer
-Dim greeting = "Hello
-total = 1 : count = 2
-price = 100 @ 2
-answer = 1 + _ 2
-big = 99999999999999999999
-MsgBox("Reading reached the end")
+Sub Form_Load()
+    Dim 점수 As Integer
+    Dim greeting = "Hello
+    total = 1 : count = 2
+    price = 100 @ 2
+    answer = 1 + _ 2
+    big = 99999999999999999999
+    If total > 0 Then
+        MsgBox "Hi"
+    Next
+    On Error Resume Next
+End Sub
+
+Sub Later()
+    MsgBox("Reading reached the end")
+End Sub
 ''';

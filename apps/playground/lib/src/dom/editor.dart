@@ -6,10 +6,11 @@ import 'package:web/web.dart' as web;
 import '../model/i18n.dart';
 import '../model/view_model.dart';
 import 'html.dart';
+import 'tab_views.dart';
 
 /// The source textarea plus a gutter of line numbers that marks lines
 /// with diagnostics.
-class Editor {
+class Editor implements SourceNavigator {
   Editor(this.pane, this.textarea, this.gutter) {
     textarea.addEventListener(
         'scroll',
@@ -61,14 +62,22 @@ class Editor {
   }
 
   /// Selects the text of [d] and scrolls it into view.
+  @override
   void jumpTo(Diagnostic d) {
     final (start, end) = selectionFor(d, source.length);
+    select(start, end);
+  }
+
+  /// Selects [start]..[end] and scrolls its first line into view.
+  @override
+  void select(int start, int end) {
+    final (line, _) = LineMap(source).locate(start);
     if (web.window.matchMedia('(max-width: 799px)').matches) {
       pane.scrollIntoView();
     }
     textarea.focus();
     textarea.setSelectionRange(start, end);
-    final target = (d.line - 1) * lineHeight - textarea.clientHeight / 3;
+    final target = (line - 1) * lineHeight - textarea.clientHeight / 3;
     textarea.scrollTop = target < 0 ? 0 : target;
   }
 }

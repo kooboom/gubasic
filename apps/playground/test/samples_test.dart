@@ -17,18 +17,34 @@ void main() {
     expect(readmeSample, match![1]);
   });
 
-  test('readmeSample lexes without diagnostics', () {
-    expect(lex(readmeSample).diagnostics, isEmpty);
+  test('readmeSample lexes and parses without diagnostics', () {
+    expect(parse(readmeSample).diagnostics, isEmpty);
   });
 
-  test('errorSample triggers every lexer diagnostic and reaches the end', () {
-    final r = lex(errorSample);
-    expect(r.diagnostics.map((d) => d.code.code),
-        ['L002', 'L001', 'L003', 'L004', 'L005', 'L006']);
-    expect(DiagnosticCode.values.length, 6,
-        reason: 'add the new code to errorSample');
-    final tokens = r.tokens;
-    expect(tokens[tokens.length - 6].text, 'MsgBox');
-    expect(tokens.last.kind, TokenKind.eof);
+  test('errorSample shows every lexer diagnostic and some parser ones', () {
+    final r = parse(errorSample);
+    expect(r.diagnostics.map((d) => '${d.code.code}@${d.line}'), [
+      'L002@4',
+      'L001@5',
+      'L003@6',
+      'L004@7',
+      'L005@8',
+      'L006@9',
+      'P006@10',
+      'P011@11',
+      'P007@12',
+      'P013@13',
+    ]);
+    final lexerCodes =
+        DiagnosticCode.values.where((c) => c.code.startsWith('L'));
+    expect(lexerCodes, hasLength(6), reason: 'add the new code to errorSample');
+  });
+
+  test('errorSample is read to the end', () {
+    final names = [
+      for (final m in parse(errorSample).unit.members)
+        if (m is ProcedureDecl) m.name.name,
+    ];
+    expect(names, ['Form_Load', 'Later']);
   });
 }

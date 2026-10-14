@@ -58,6 +58,12 @@ void main() {
     });
   });
 
+  test('rangeText shows line:col–line:col', () {
+    final lines = LineMap('ab\ncd');
+    expect(rangeText(lines, 0, 2), '1:1–1:3');
+    expect(rangeText(lines, 3, 5), '2:1–2:3');
+  });
+
   group('diagnostics in the gutter', () {
     test('grouped by line, several on one line', () {
       final r = lex('ok\nx = 1 @ 2 # 3\n\ny = "open');
@@ -92,17 +98,25 @@ void main() {
   });
 
   group('result tabs', () {
-    test('Tokens first, then Diagnostics, with unique ids', () {
-      expect(resultTabs.map((t) => t.id), ['tokens', 'diagnostics']);
+    test('Tokens, AST, then Diagnostics, with unique ids', () {
+      expect(resultTabs.map((t) => t.id), ['tokens', 'ast', 'diagnostics']);
       expect(resultTabs.map((t) => t.title),
-          [UiText.tabTokens, UiText.tabDiagnostics]);
+          [UiText.tabTokens, UiText.tabAst, UiText.tabDiagnostics]);
     });
 
-    test('only Diagnostics has a badge, counting diagnostics', () {
-      final s = Snapshot('a @ b # c');
+    test('only Diagnostics has a badge, counting lexer and parser problems',
+        () {
+      final s = Snapshot('Sub A()\nx = 1 @ 2\nIf y Then\nEnd Sub');
       expect(const TokensTab().badge(s), isNull);
+      expect(const AstTab().badge(s), isNull);
+      expect(s.diagnostics.map((d) => d.code.code), ['L004', 'P006']);
       expect(const DiagnosticsTab().badge(s), 2);
-      expect(const DiagnosticsTab().badge(Snapshot('ok')), 0);
+      expect(const DiagnosticsTab().badge(Snapshot('Sub A()\nEnd Sub')), 0);
+    });
+
+    test('the snapshot exposes the parsed tree', () {
+      final s = Snapshot('Sub A()\nEnd Sub');
+      expect(s.unit.members.single.label, 'Sub A');
     });
   });
 }

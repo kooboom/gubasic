@@ -79,6 +79,13 @@ String displayText(String text) {
       .replaceAll('\t', '→');
 }
 
+/// `line:col–line:col` for a source range, shown next to AST nodes.
+String rangeText(LineMap lines, int start, int end) {
+  final (sl, sc) = lines.locate(start);
+  final (el, ec) = lines.locate(end);
+  return '$sl:$sc–$el:$ec';
+}
+
 /// Diagnostics grouped by line, for the editor gutter.
 Map<int, List<Diagnostic>> diagnosticsByLine(List<Diagnostic> diagnostics) {
   final map = <int, List<Diagnostic>>{};
