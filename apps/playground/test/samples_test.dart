@@ -17,12 +17,20 @@ void main() {
     expect(readmeSample, match![1]);
   });
 
-  test('readmeSample lexes and parses without diagnostics', () {
-    expect(parse(readmeSample).diagnostics, isEmpty);
+  test('the starter example passes every check', () {
+    expect(compile(starterSample).diagnostics, isEmpty);
   });
 
-  test('errorSample shows every lexer diagnostic and some parser ones', () {
-    final r = parse(errorSample);
+  test('the README example parses cleanly; the analyzer reports the control',
+      () {
+    expect(parse(readmeSample).diagnostics, isEmpty);
+    expect(compile(readmeSample).diagnostics.map((d) => d.code.code), ['A003']);
+  });
+
+  test(
+      'errorSample shows every lexer diagnostic and some parser and '
+      'analyzer ones', () {
+    final r = compile(errorSample);
     expect(r.diagnostics.map((d) => '${d.code.code}@${d.line}'), [
       'L002@4',
       'L001@5',
@@ -35,6 +43,9 @@ void main() {
       'P011@12',
       'P007@13',
       'P013@14',
+      'A010@15',
+      'L002@16',
+      'A002@16',
     ]);
     final lexerCodes =
         DiagnosticCode.values.where((c) => c.code.startsWith('L'));
@@ -46,6 +57,6 @@ void main() {
       for (final m in parse(errorSample).unit.members)
         if (m is ProcedureDecl) m.name.name,
     ];
-    expect(names, ['Form_Load', 'Later']);
+    expect(names, ['Main', 'Later']);
   });
 }

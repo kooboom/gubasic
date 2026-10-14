@@ -19,6 +19,7 @@ enum Locale {
 /// Every piece of text the playground shows.
 enum UiText {
   title,
+  sampleStarter,
   sampleReadme,
   sampleErrors,
 
@@ -44,6 +45,7 @@ enum UiText {
 
 const _en = {
   UiText.title: 'GuBASIC Playground',
+  UiText.sampleStarter: 'Starter example',
   UiText.sampleReadme: 'README example',
   UiText.sampleErrors: 'Example with errors',
   UiText.switchLanguage: '한국어',
@@ -67,6 +69,7 @@ const _en = {
 
 const _ko = {
   UiText.title: 'GuBASIC 놀이터',
+  UiText.sampleStarter: '기본 예제',
   UiText.sampleReadme: 'README 예제',
   UiText.sampleErrors: '오류가 섞인 예제',
   UiText.switchLanguage: 'English',

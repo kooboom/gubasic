@@ -36,9 +36,10 @@ class App {
     _languageButton = byId<web.HTMLElement>('switch-language');
 
     _locale = Locale.fromCode(loadSetting(_localeKey));
-    _editor.source = loadSetting(_sourceKey) ?? readmeSample;
+    _editor.source = loadSetting(_sourceKey) ?? starterSample;
 
     _editor.onInput(_update);
+    onClick(byId('sample-starter'), () => _loadSample(starterSample));
     onClick(byId('sample-readme'), () => _loadSample(readmeSample));
     onClick(byId('sample-errors'), () => _loadSample(errorSample));
     onClick(_languageButton, () {

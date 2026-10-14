@@ -104,13 +104,13 @@ void main() {
           [UiText.tabTokens, UiText.tabAst, UiText.tabDiagnostics]);
     });
 
-    test('only Diagnostics has a badge, counting lexer and parser problems',
-        () {
-      final s = Snapshot('Sub A()\nx = 1 @ 2\nIf y Then\nEnd Sub');
+    test('only Diagnostics has a badge, counting every kind of problem', () {
+      final s = Snapshot('Sub A()\nDim x As Integer = 1 @ 2\nIf True Then\n'
+          'Debug.Print(x + y)\nEnd Sub');
       expect(const TokensTab().badge(s), isNull);
       expect(const AstTab().badge(s), isNull);
-      expect(s.diagnostics.map((d) => d.code.code), ['L004', 'P006']);
-      expect(const DiagnosticsTab().badge(s), 2);
+      expect(s.diagnostics.map((d) => d.code.code), ['L004', 'P006', 'A001']);
+      expect(const DiagnosticsTab().badge(s), 3);
       expect(const DiagnosticsTab().badge(Snapshot('Sub A()\nEnd Sub')), 0);
     });
 
@@ -122,8 +122,9 @@ void main() {
 
   group('severity', () {
     test('counts errors and warnings', () {
-      final s = Snapshot('Sub A()\nx = 1234567890123456789\ny = 1 @ 2\n'
-          'z = 9007199254740993\nEnd Sub');
+      final s = Snapshot('Sub A()\nDim x As Integer = 1234567890123456789\n'
+          'Dim y As Integer = 1 @ 2\nDim z As Integer = 9007199254740993\n'
+          'Debug.Print(x & y & z)\nEnd Sub');
       expect(severityCounts(s.diagnostics), (1, 2));
       expect(severityCounts(const []), (0, 0));
     });
@@ -140,11 +141,10 @@ void main() {
     test('badge tone: red with any error, amber with warnings only', () {
       const tab = DiagnosticsTab();
       expect(tab.badgeTone(Snapshot('Sub A()\nEnd Sub')), BadgeTone.neutral);
-      expect(tab.badgeTone(Snapshot('Sub A()\nx = 9007199254740993\nEnd Sub')),
-          BadgeTone.warning);
-      expect(
-          tab.badgeTone(
-              Snapshot('Sub A()\nx = 9007199254740993\ny = "open\nEnd Sub')),
+      const warn = 'Sub A()\nDim x As Integer = 9007199254740993\n'
+          'Debug.Print(x)\n';
+      expect(tab.badgeTone(Snapshot('${warn}End Sub')), BadgeTone.warning);
+      expect(tab.badgeTone(Snapshot('${warn}Debug.Print("open\nEnd Sub')),
           BadgeTone.error);
       expect(const TokensTab().badgeTone(Snapshot('x @')), BadgeTone.neutral);
     });
