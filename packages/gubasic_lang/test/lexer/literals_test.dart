@@ -47,6 +47,15 @@ void main() {
       expect(r.diagnostics.single.length, 19);
       expect(r.diagnostics.single.message, contains('9223372036854775808'));
     });
+    test('L006 is decided on the digits, the same on every platform', () {
+      // The web has no 64-bit int, so int.tryParse there never fails.
+      expect(lex('9223372036854775807').diagnostics, isEmpty);
+      expect(lex('00009223372036854775807').diagnostics, isEmpty);
+      expect(lex('000').tokens.first.value, 0);
+      expect(codesOf(lex('9223372036854775808')), ['L006']);
+      expect(codesOf(lex('10000000000000000000')), ['L006']);
+      expect(codesOf(lex('99999999999999999999999999')), ['L006']);
+    });
   });
 
   group('strings', () {

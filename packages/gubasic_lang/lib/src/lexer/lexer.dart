@@ -238,11 +238,22 @@ class _Lexer {
       return;
     }
     final text = _src.substring(start, _pos);
-    final value = int.tryParse(text);
-    if (value == null) {
+    if (_exceedsInt64(text)) {
       _report(DiagnosticCode.integerTooLarge, start, [text]);
+      _emit(TokenKind.integerLiteral, start);
+    } else {
+      _emit(TokenKind.integerLiteral, start, value: int.parse(text));
     }
-    _emit(TokenKind.integerLiteral, start, value: value);
+  }
+
+  /// Whether the digits in [text] exceed 2⁶³−1. Checked on the digits
+  /// rather than with `int.tryParse`, which never fails on the web
+  /// (numbers there are doubles), so the rule is the same on every platform.
+  static bool _exceedsInt64(String text) {
+    const max = '9223372036854775807';
+    final digits = text.replaceFirst(RegExp('^0+(?=.)'), '');
+    if (digits.length != max.length) return digits.length > max.length;
+    return digits.compareTo(max) > 0;
   }
 
   void _string(int start) {
