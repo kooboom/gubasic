@@ -42,6 +42,8 @@ jobs:
         run: dart format --output=none --set-exit-if-changed .
       - name: Analyze
         run: dart analyze --fatal-infos
+      - name: Check embedded parity cases are up to date
+        run: dart run tool/embed_parity.dart --check
       - name: Test (VM and Chrome)
         run: dart test -p vm,chrome
       - name: Build

@@ -98,10 +98,15 @@ void main() {
   });
 
   group('result tabs', () {
-    test('Tokens, AST, then Diagnostics, with unique ids', () {
-      expect(resultTabs.map((t) => t.id), ['tokens', 'ast', 'diagnostics']);
-      expect(resultTabs.map((t) => t.title),
-          [UiText.tabTokens, UiText.tabAst, UiText.tabDiagnostics]);
+    test('Tokens, AST, Diagnostics, then Run, with unique ids', () {
+      expect(
+          resultTabs.map((t) => t.id), ['tokens', 'ast', 'diagnostics', 'run']);
+      expect(resultTabs.map((t) => t.title), [
+        UiText.tabTokens,
+        UiText.tabAst,
+        UiText.tabDiagnostics,
+        UiText.tabRun
+      ]);
     });
 
     test('only Diagnostics has a badge, counting every kind of problem', () {
@@ -122,9 +127,9 @@ void main() {
 
   group('severity', () {
     test('counts errors and warnings', () {
-      final s = Snapshot('Sub A()\nDim x As Integer = 1234567890123456789\n'
-          'Dim y As Integer = 1 @ 2\nDim z As Integer = 9007199254740993\n'
-          'Debug.Print(x & y & z)\nEnd Sub');
+      final s = Snapshot('Sub A()\nDim x As Integer\n'
+          'Dim y As Integer = 1 @ 2\nDim z As Integer\n'
+          'Debug.Print(y)\nEnd Sub');
       expect(severityCounts(s.diagnostics), (1, 2));
       expect(severityCounts(const []), (0, 0));
     });
@@ -141,8 +146,7 @@ void main() {
     test('badge tone: red with any error, amber with warnings only', () {
       const tab = DiagnosticsTab();
       expect(tab.badgeTone(Snapshot('Sub A()\nEnd Sub')), BadgeTone.neutral);
-      const warn = 'Sub A()\nDim x As Integer = 9007199254740993\n'
-          'Debug.Print(x)\n';
+      const warn = 'Sub A()\nDim unused As Integer\n';
       expect(tab.badgeTone(Snapshot('${warn}End Sub')), BadgeTone.warning);
       expect(tab.badgeTone(Snapshot('${warn}Debug.Print("open\nEnd Sub')),
           BadgeTone.error);
@@ -150,7 +154,8 @@ void main() {
     });
 
     test('a gutter line is amber only when all its problems are warnings', () {
-      final warning = lex('9007199254740993').diagnostics;
+      final warning =
+          compile('Sub A()\nDim unused As Integer\nEnd Sub').diagnostics;
       final error = lex('@').diagnostics;
       expect(onlyWarnings(warning), isTrue);
       expect(onlyWarnings([...warning, ...error]), isFalse);

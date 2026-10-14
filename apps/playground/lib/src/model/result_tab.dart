@@ -65,5 +65,20 @@ class DiagnosticsTab extends ResultTab {
   }
 }
 
+class RunTab extends ResultTab {
+  const RunTab();
+
+  @override
+  String get id => 'run';
+
+  @override
+  UiText get title => UiText.tabRun;
+}
+
 /// The tabs of the result panel, in display order.
-const List<ResultTab> resultTabs = [TokensTab(), AstTab(), DiagnosticsTab()];
+const List<ResultTab> resultTabs = [
+  TokensTab(),
+  AstTab(),
+  DiagnosticsTab(),
+  RunTab(),
+];

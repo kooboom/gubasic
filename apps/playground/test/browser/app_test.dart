@@ -43,6 +43,24 @@ void _type(String text) {
   _source.dispatchEvent(web.Event('input'));
 }
 
+/// Waits until [condition] holds (the interpreter runs asynchronously).
+Future<void> _until(bool Function() condition) async {
+  for (var i = 0; i < 500 && !condition(); i++) {
+    await Future<void>.delayed(const Duration(milliseconds: 10));
+  }
+  expect(condition(), isTrue, reason: 'timed out waiting');
+}
+
+String _status() => _texts('.run-status').join();
+
+Future<void> _runAndWait(String done) async {
+  _click('#run-button');
+  await _until(() => _status() == done);
+}
+
+web.HTMLInputElement? get _dialogInput =>
+    web.document.querySelector('.dialog-input') as web.HTMLInputElement?;
+
 void main() {
   setUp(() {
     try {
@@ -60,7 +78,7 @@ void main() {
 
   test('starts with the starter example and no diagnostics', () {
     expect(_source.value, starterSample);
-    expect(_texts('#tabs button'), ['Tokens', 'AST', 'Diagnostics0']);
+    expect(_texts('#tabs button'), ['Tokens', 'AST', 'Diagnostics0', 'Run']);
     expect(web.document.querySelectorAll('.tokens tbody tr').length,
         greaterThan(50));
     expect(web.document.querySelectorAll('.has-diagnostic').length, 0);
@@ -68,7 +86,7 @@ void main() {
 
   test('typing re-lexes immediately and marks the gutter', () {
     _type('Sub A()\nDim y As String = "open\nDebug.Print(y)\nEnd Sub');
-    expect(_texts('#tabs button').last, 'Diagnostics1');
+    expect(_texts('#tabs button')[2], 'Diagnostics1');
     expect(_texts('.gutter .has-diagnostic'), ['2']);
   });
 
@@ -76,7 +94,7 @@ void main() {
     _click('#sample-errors');
     _click('#tabs button:nth-child(3)');
     expect(_texts('.diagnostics .code'), [
-      'L002', 'L001', 'L003', 'L004', 'L005', 'L006', 'L007', //
+      'L002', 'L001', 'L003', 'L004', 'L005', 'L006', 'A026', //
       'P006', 'P011', 'P007', 'P013', 'A010', 'L002', 'A002',
     ]);
     expect(_texts('.summary'), ['13 errors · 1 warning']);
@@ -133,12 +151,11 @@ void main() {
   test('parser problems mark the gutter too', () {
     _type('Sub A()\nIf True Then\nEnd Sub');
     expect(_texts('.gutter .has-diagnostic'), ['2']);
-    expect(_texts('#tabs button').last, 'Diagnostics1');
+    expect(_texts('#tabs button')[2], 'Diagnostics1');
   });
 
   test('warnings alone: amber badge, diamond gutter mark, text labels', () {
-    _type('Sub A()\nDim orderId As Integer = 1234567890123456789\n'
-        'Debug.Print(orderId)\nEnd Sub');
+    _type('Sub A()\nDim unused As Integer\nEnd Sub');
     expect(_texts('#tabs .badge.warning'), ['1']);
     expect(_texts('.gutter .warning-only'), ['2']);
     _click('#tabs button:nth-child(3)');
@@ -146,7 +163,7 @@ void main() {
     _click('#switch-language');
     expect(_texts('.summary'), ['경고 1']);
     expect(_texts('.diagnostics .sev'), ['경고']);
-    expect(_texts('.diagnostics .msg').single, contains('주문 번호, 회원 ID'));
+    expect(_texts('.diagnostics .msg').single, contains('쓰지 않았습니다'));
   });
 
   test('analyzer problems are listed and marked too', () {
@@ -164,5 +181,118 @@ void main() {
     expect(_texts('.diagnostics .msg').single, contains('form designer'));
     _click('#sample-starter');
     expect(_source.value, starterSample);
+  });
+
+  group('Run tab', () {
+    test('the starter example runs and prints its results', () async {
+      _click('#tabs button:nth-child(4)');
+      expect(_status(), 'Press Run to start the program (Ctrl+Enter).');
+      await _runAndWait('Finished.');
+      expect(_texts('.out-line'), [
+        'Sum of 1 to 10: 55',
+        'Average of 3 and 4: 3.5',
+        'Hello, Kim',
+        'Hello, Lee',
+      ]);
+    });
+
+    test('errors block Run and say why; warnings do not (D23)', () async {
+      _click('#sample-errors');
+      _click('#tabs button:nth-child(4)');
+      expect(
+          web.document.querySelector('#run-button')!.hasAttribute('disabled'),
+          isTrue);
+      expect(
+          _texts('.run-blocked').single, startsWith('Fix the 13 errors first'));
+      _click('.run-blocked button');
+      expect(_texts('#tabs button[aria-selected="true"]').single,
+          startsWith('Diagnostics'));
+
+      _type('Sub Main()\nDim unused As Integer\nDebug.Print("ran")\nEnd Sub');
+      _click('#tabs button:nth-child(4)');
+      await _runAndWait('Finished.');
+      expect(_texts('.out-line'), ['ran']);
+    });
+
+    test('MsgBox and InputBox open a dialog inside the page', () async {
+      _type('Sub Main()\nDim name As String = InputBox("Name?", "Hi", "Kim")\n'
+          'MsgBox("Hello, " & name)\nDebug.Print("done")\nEnd Sub');
+      _click('#tabs button:nth-child(4)');
+      _click('#run-button');
+      await _until(() => _dialogInput != null);
+      expect(_texts('.dialog-title'), ['Hi']);
+      expect(_dialogInput!.value, 'Kim');
+      _dialogInput!.value = 'Lee';
+      _click('.dialog .primary');
+      await _until(() => _texts('.dialog-message').join() == 'Hello, Lee');
+      _click('.dialog .primary');
+      await _until(() => _status() == 'Finished.');
+      expect(_texts('.out-line'), ['done']);
+      expect(web.document.querySelector('.dialog-backdrop'), isNull);
+    });
+
+    test('Stop ends an endless loop; Stop also closes a waiting dialog',
+        () async {
+      _type('Sub Main()\nDo\nLoop\nEnd Sub');
+      _click('#tabs button:nth-child(4)');
+      _click('#run-button');
+      await _until(() => _status() == 'Running…');
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+      _click('#stop-button');
+      await _until(() => _status() == 'Stopped.');
+
+      _type('Sub Main()\nMsgBox("wait")\nEnd Sub');
+      _click('#run-button');
+      await _until(() => web.document.querySelector('.dialog') != null);
+      _click('#stop-button');
+      await _until(() => _status() != 'Running…');
+      expect(web.document.querySelector('.dialog-backdrop'), isNull);
+    });
+
+    test('a run-time error is shown; clicking it selects the line', () async {
+      _type('Sub Main()\nDim zero As Integer = 0\nDebug.Print("a")\n'
+          'Debug.Print(1 \\ zero)\nEnd Sub');
+      _click('#tabs button:nth-child(4)');
+      await _runAndWait('Stopped by an error. Click it to see the line.');
+      expect(_texts('.out-line'), ['a']);
+      expect(_texts('.out-error .code'), ['R002']);
+      expect(_texts('.out-error .pos'), ['4:13']);
+      _click('.out-error');
+      expect(
+          _source.value.substring(_source.selectionStart, _source.selectionEnd),
+          '1 \\ zero');
+    });
+
+    test('I5: editing the code stops a running program', () async {
+      _type('Sub Main()\nDo\nLoop\nEnd Sub');
+      _click('#tabs button:nth-child(4)');
+      _click('#run-button');
+      await _until(() => _status() == 'Running…');
+      _type('Sub Main()\nDo\nLoop\nEnd Sub\n');
+      await _until(() => _status() == 'Stopped.');
+    });
+
+    test('without Sub Main or Form_Load it says what to add', () async {
+      _type('Sub Other()\nEnd Sub');
+      _click('#tabs button:nth-child(4)');
+      await _runAndWait('Add Sub Main() to run the program.');
+    });
+
+    test('Ctrl+Enter runs', () async {
+      web.document.dispatchEvent(web.KeyboardEvent(
+          'keydown', web.KeyboardEventInit(key: 'Enter', ctrlKey: true)));
+      await _until(() => _status() == 'Finished.');
+      expect(_texts('#tabs button[aria-selected="true"]').single, 'Run');
+    });
+
+    test('in Korean: labels and run-time messages', () async {
+      _click('#switch-language');
+      _type(
+          'Sub Main()\nDim big As Integer = Integer.MaxValue\nbig = big + 1\nEnd Sub');
+      _click('#tabs button:nth-child(4)');
+      expect(_texts('#run-button'), ['▶ 실행']);
+      await _runAndWait('오류로 멈췄습니다. 오류를 누르면 그 줄로 갑니다.');
+      expect(_texts('.out-error .msg').single, startsWith('계산 결과가 Integer 범위'));
+    });
   });
 }

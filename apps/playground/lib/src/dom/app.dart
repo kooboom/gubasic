@@ -1,11 +1,15 @@
+import 'dart:js_interop';
+
 import 'package:web/web.dart' as web;
 
 import '../model/i18n.dart';
 import '../model/result_tab.dart';
+import '../model/run_state.dart';
 import '../model/samples.dart';
 import '../model/snapshot.dart';
 import 'editor.dart';
 import 'html.dart';
+import 'run_controller.dart';
 import 'tab_views.dart';
 
 const _localeKey = 'gubasic.playground.locale';
@@ -20,6 +24,14 @@ class App {
   Locale _locale = Locale.en;
   Snapshot _snapshot = Snapshot('');
   String _activeTab = resultTabs.first.id;
+  web.HTMLElement? _outputBox;
+
+  late final RunController _run = RunController(
+    onStatus: () {
+      if (_activeTab == 'run') _render();
+    },
+    onOutput: _appendOutput,
+  );
 
   void start() {
     for (final tab in resultTabs) {
@@ -48,9 +60,48 @@ class App {
       _applyLocale();
     });
 
+    // Ctrl+Enter (⌘+Enter on a Mac) runs the program.
+    web.document.addEventListener(
+        'keydown',
+        ((web.KeyboardEvent e) {
+          if (e.key == 'Enter' && (e.ctrlKey || e.metaKey)) {
+            e.preventDefault();
+            _startRun();
+          }
+        }).toJS);
+
     _applyLocale();
     _update();
   }
+
+  void _startRun() {
+    if (_run.isRunning) return;
+    _activeTab = 'run';
+    _render();
+    _run.run(_snapshot, _locale);
+  }
+
+  void _showTab(String id) {
+    _activeTab = id;
+    _render();
+  }
+
+  void _appendOutput(OutputEntry entry) {
+    final box = _outputBox;
+    if (_activeTab != 'run' || box == null || !box.isConnected) return;
+    box.append(outputLine(entry, _context()));
+    box.scrollTop = box.scrollHeight.toDouble();
+  }
+
+  TabContext _context() => TabContext(
+        snapshot: _snapshot,
+        locale: _locale,
+        editor: _editor,
+        run: _run,
+        startRun: _startRun,
+        showTab: _showTab,
+        setOutputBox: (box) => _outputBox = box,
+      );
 
   void _loadSample(String sample) {
     _editor.source = sample;
@@ -59,6 +110,8 @@ class App {
 
   /// Re-lexes the source and redraws everything that depends on it.
   void _update() {
+    // I5: editing stops a running program; run again to use the new code.
+    if (_run.isRunning) _run.stop();
     _snapshot = Snapshot(_editor.source);
     saveSetting(_sourceKey, _snapshot.source);
     _render();
@@ -86,7 +139,7 @@ class App {
     _editor.showDiagnostics(_snapshot.diagnostics, _locale);
     _renderTabBar();
     final view = tabViews[_activeTab]!;
-    _tabContent.replaceChildren(view(_snapshot, _locale, _editor));
+    _tabContent.replaceChildren(view(_context()));
   }
 
   void _renderTabBar() {

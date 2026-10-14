@@ -5,15 +5,16 @@ import 'package:test/test.dart';
 /// could differ between the two (no 64-bit integers on the web, different
 /// toString of doubles) must give the same results on both.
 void main() {
+  // L007 is retired (D26): large Integers are exact everywhere.
   const cases = {
     '9007199254740991': <String>[], // 2^53 - 1
-    '9007199254740992': ['L007'], // 2^53
-    '9007199254740993': ['L007'],
-    '1234567890123456789': ['L007'],
-    '9223372036854775807': ['L007'], // 2^63 - 1
+    '9007199254740992': <String>[], // 2^53
+    '9007199254740993': <String>[],
+    '1234567890123456789': <String>[],
+    '9223372036854775807': <String>[], // 2^63 - 1
     '9223372036854775808': ['L006'], // 2^63
     '99999999999999999999': ['L006'],
-    '0009007199254740992': ['L007'],
+    '0009007199254740992': <String>[],
     '9007199254740993.0': <String>[],
   };
 
@@ -65,4 +66,65 @@ void main() {
       expect(roundToInteger(1e19), isNull);
     });
   });
+
+  group('exact 64-bit Integer (D26), same as checked_math_test', () {
+    GbInt p(String s) => GbInt.parse(s)!;
+    test('limits and overflow', () {
+      expect(GbInt.maxValue.format(), '9223372036854775807');
+      expect(GbInt.minValue.format(), '-9223372036854775808');
+      expect(GbInt.maxValue + GbInt.one, isNull);
+      expect(GbInt.minValue - GbInt.one, isNull);
+      expect(GbInt.minValue.negate(), isNull);
+      expect(GbInt.minValue.quotient(p('-1')), isNull);
+      expect(p('3037000500') * p('3037000500'), isNull);
+      expect(
+          (p('3037000499') * p('3037000499'))!.format(), '9223372030926249001');
+    });
+
+    test('exact above 2^53', () {
+      expect((p('9007199254740993') + p('2'))!.format(), '9007199254740995');
+      expect((p('123456789012345678').quotient(p('7')))!.format(),
+          '17636684144620811');
+      expect(p('123456789012345678').remainder(p('1000')).format(), '678');
+      expect(p('-7').remainder(p('3')).format(), '-1');
+    });
+
+    test('random numbers', () {
+      final r = GbRandom()..seed(GbInt.of(42));
+      expect([r.next(), r.next(), r.next()],
+          [0.7415648787718233, 0.1599103928769201, 0.27860113025513866]);
+    });
+  });
+
+  group('J3: deep calls', () {
+    test('R009 at the default limit, on this platform too', () async {
+      final result = await Interpreter(
+              compile('Sub Main()\nF(1)\nEnd Sub\n'
+                  'Sub F(n As Integer)\nF(n + 1)\nEnd Sub'),
+              _QuietHost())
+          .run();
+      expect((result as RunFailed).error.code, DiagnosticCode.callsTooDeep);
+      expect(result.error.args, ['$maxCallDepth']);
+    });
+
+    test('an error 9,999 calls deep reaches the top', () async {
+      final result = await Interpreter(
+              compile('Sub Main()\nF(1)\nEnd Sub\nSub F(n As Integer)\n'
+                  'If n = 9999 Then Debug.Print(1 \\ 0)\nF(n + 1)\nEnd Sub'),
+              _QuietHost())
+          .run();
+      expect((result as RunFailed).error.code, DiagnosticCode.divisionByZero);
+    });
+  });
+}
+
+class _QuietHost implements Host {
+  @override
+  void debugPrint(String line) {}
+  @override
+  Future<void> msgBox(String prompt, String title) async {}
+  @override
+  Future<String> inputBox(String p, String t, String d) async => '';
+  @override
+  Future<void> yieldNow() => Future<void>.delayed(Duration.zero);
 }
