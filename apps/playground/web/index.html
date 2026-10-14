@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>GuBASIC Playground</title>
+  <link rel="stylesheet" href="styles.css">
+  <script defer src="main.dart.js"></script>
+</head>
+<body>
+  <header class="top">
+    <h1 data-i18n="title">GuBASIC Playground</h1>
+    <div class="actions">
+      <button type="button" id="sample-readme" data-i18n="sampleReadme">README example</button>
+      <button type="button" id="sample-errors" data-i18n="sampleErrors">Example with errors</button>
+      <button type="button" id="switch-language" class="lang" data-i18n="switchLanguage">한국어</button>
+    </div>
+  </header>
+
+  <main class="panes">
+    <section class="editor-pane" id="editor-pane">
+      <div class="gutter" id="gutter" aria-hidden="true"></div>
+      <textarea id="source" wrap="off" spellcheck="false" autocapitalize="off"
+                autocomplete="off" autocorrect="off" data-i18n-label="editorLabel"
+                aria-label="GuBASIC source"></textarea>
+    </section>
+
+    <section class="results-pane">
+      <div class="tabs" role="tablist" id="tabs"></div>
+      <div class="tab-content" role="tabpanel" id="tab-content"></div>
+    </section>
+  </main>
+
+  <footer class="bottom">
+    <span data-i18n="footerPreview">GuBASIC Playground — development preview</span>
+    ·
+    <a href="https://github.com/kooboom/gubasic" data-i18n="footerRepository">Source on GitHub</a>
+  </footer>
+
+  <noscript>This playground needs JavaScript.</noscript>
+</body>
+</html>

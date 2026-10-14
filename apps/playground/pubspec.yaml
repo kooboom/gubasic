@@ -1,0 +1,16 @@
+name: gubasic_playground
+description: Development playground for GuBASIC, running in the browser.
+version: 0.1.0
+publish_to: none
+
+environment:
+  sdk: ^3.5.0
+
+dependencies:
+  gubasic_lang:
+    path: ../../packages/gubasic_lang
+  web: ^1.1.0
+
+dev_dependencies:
+  lints: ^5.0.0
+  test: ^1.25.0
