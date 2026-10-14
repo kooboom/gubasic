@@ -5,7 +5,7 @@ Draw your interface, double-click a control, write a few lines of BASIC — and 
 
 [한국어](README.ko.md)
 
-> **Status:** design stage. Nothing runs yet. This repository currently contains the design documents that the first code will be built against.
+> **Status:** early development. The lexer works and can be tried in the [**playground**](https://kooboom.github.io/gubasic) in your browser.
 
 ---
 

@@ -18,6 +18,7 @@ If a request conflicts with these documents, **stop and say so** instead of sile
 ```
 apps/ide/                Flutter desktop IDE
 apps/player/             Phone player (stage 3)
+apps/playground/         Web playground for development (pure Dart, no Flutter)
 packages/gubasic_lang/   Pure Dart: lexer, parser, AST, analyzer, interpreter, transpiler
 packages/gubasic_runtime/ Flutter runtime used by BOTH interpreter and generated apps
 components/<Name>/       component.yaml + adapter
@@ -47,6 +48,8 @@ test/parity/             Interpreter-vs-transpiler parity tests
 - Documentation: English file first (`X.md`), Korean translation next to it (`X.ko.md`). Keep them in sync.
 - Small, focused changes. One feature per change, with its tests.
 - Commit messages in English, imperative mood.
+- Diagnostic messages say what is wrong and how to fix it, in one or two sentences; Korean ones use the documents' "~합니다" style.
+- Merge only when the author says so: fast-forward locally (rebase onto `main` first if needed), push `main`, then delete the branch locally and remotely. Never merge on GitHub (a merge commit could carry a private email).
 
 ## Before you finish a task
 

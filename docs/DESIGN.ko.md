@@ -8,6 +8,9 @@
 
 ## 1. 목표
 
+**GuBASIC은 VB.NET의 문법 위에 VB6의 작업 감각을 얹고, 둘의 불편한 부분은 덜어 낸 BASIC이다.**
+둘이 다를 때는, 헷갈리거나 위험한 부분은 VB.NET의 정리된 방식을, 손에 익은 편리함은 VB6에서 가져온다.
+
 중요한 순서대로입니다.
 
 1. **이벤트 드리븐 프로그래밍.** 코드는 컨트롤에 붙은 이벤트 처리기 안에 들어갑니다.
@@ -69,7 +72,8 @@ GuBASIC의 각 릴리스는 검증한 Flutter 버전에 고정됩니다. Flutter
 gubasic/
 ├── apps/
 │   ├── ide/                 Flutter 데스크톱 IDE (macOS, Windows)
-│   └── player/              폰용 GuBASIC Player (3단계)
+│   ├── player/              폰용 GuBASIC Player (3단계)
+│   └── playground/          개발용 웹 놀이터 (순수 Dart, Flutter 없음)
 ├── packages/
 │   ├── gubasic_lang/        순수 Dart: 렉서, 파서, AST, 분석기,
 │   │                        인터프리터, 트랜스파일러. Flutter 의존 없음.
@@ -324,3 +328,5 @@ iOS/macOS 요구 사항은 GuBASIC이 아니라 애플의 정책에서 옵니다
 | D18 | 언어 세부(타입, 범위, 배열, 연산자) | [LANGUAGE.ko.md](LANGUAGE.ko.md) 참조 |
 | D19 | 이름은 GuBASIC; 타사 상표를 이름에 넣지 않음 | 구글과 마이크로소프트의 상표 가이드라인 |
 | D20 | 만든 사람을 위한 도구, 초보자도 사용 가능 | 애매하면 단순함을 택함 |
+| D21 | 개발용 웹 놀이터(`apps/playground`): Flutter 없이 순수 Dart를 자바스크립트로 컴파일하고, `main`에서 GitHub Pages로 배포 | 언어의 각 단계(토큰, 나중에는 AST와 실행 결과)를 설치 없이 브라우저에서 보여 주고, `gubasic_lang`이 웹에서도 같게 동작하는지 확인함. IDE가 아니라 개발용 도구 |
+| D22 | `ByRef`로 넘긴 속성은 프로시저가 오류로 끝나면 값을 되돌려 쓰지 **않음** | 실패한 작업의 중간 값이 남지 않게 함. [LANGUAGE.ko.md](LANGUAGE.ko.md) 7.2절 참고 |

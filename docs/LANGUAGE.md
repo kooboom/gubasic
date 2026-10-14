@@ -236,6 +236,7 @@ Fill(names)
 - **A pair of closures.** A `ByRef` argument is passed as two closures, one that reads the caller's variable and one that writes it. Because every procedure is async (see DESIGN.md §3.1), the procedure may pause at any `await`; the closures keep pointing at the caller's variable across those pauses, and the interpreter and the transpiled Dart use the same scheme.
 - **Array elements are fixed at the call.** For `Swap(a(i), a(j))`, the array and the indexes are evaluated once, when the call is made. If `i` changes while the procedure runs, it still reads and writes the element that was originally passed.
 - **Properties are copied in and copied out.** For `Clean(txtName.Text)`, the property is read into a temporary before the call, the procedure works on the temporary, and the result is written back to the property when the procedure returns (as in VB.NET).
+- **No write-back after an error.** If the procedure ends with an error, the property is **not** written back, so that a failed operation does not leave a half-changed value behind (D22).
 
 ## 8. Events
 
@@ -306,6 +307,5 @@ End Sub
 ## 12. Open questions
 
 - File extension (`.gbas` is provisional).
-- `ByRef` details (§7.2): whether a property passed `ByRef` is written back when the procedure ends with an error.
 - User-defined classes (`Class … End Class`) — not in 1.0.
 - Exact syntax of the embedded-Dart escape hatch.

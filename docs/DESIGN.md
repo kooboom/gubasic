@@ -8,6 +8,9 @@ This document records the architecture of GuBASIC and every decision made so far
 
 ## 1. Goals
 
+**GuBASIC is VB.NET's syntax with VB6's workflow on top — with the awkward parts of both taken out.**
+When the two disagree, take VB.NET's cleaner rule wherever VB6 is confusing or risky, and VB6's convenience wherever it is what hands already know.
+
 In priority order:
 
 1. **Event-driven programming.** Code lives in event handlers attached to controls.
@@ -69,7 +72,8 @@ Each GuBASIC release is pinned to a Flutter version it has been verified against
 gubasic/
 ├── apps/
 │   ├── ide/                 Flutter desktop IDE (macOS, Windows)
-│   └── player/              GuBASIC Player for phones (stage 3)
+│   ├── player/              GuBASIC Player for phones (stage 3)
+│   └── playground/          Web playground for development (pure Dart, no Flutter)
 ├── packages/
 │   ├── gubasic_lang/        Pure Dart: lexer, parser, AST, analyzer,
 │   │                        interpreter, transpiler. No Flutter dependency.
@@ -324,3 +328,5 @@ The iOS/macOS requirement comes from Apple's policy, not from GuBASIC.
 | D18 | Language details (types, scope, arrays, operators) | See [LANGUAGE.md](LANGUAGE.md) |
 | D19 | Name GuBASIC; no third-party marks in the name | Trademark guidelines of Google and Microsoft |
 | D20 | Built for the author, usable by beginners | Simplicity wins ties |
+| D21 | Web playground for development (`apps/playground`): pure Dart compiled to JavaScript, no Flutter; published to GitHub Pages from `main` | Shows each language stage (tokens, later AST and output) in a browser with no install; keeps `gubasic_lang` honest on the web platform. It is a development tool, not the IDE |
+| D22 | A property passed `ByRef` is **not** written back when the procedure ends with an error | A failed operation must not leave a half-changed value behind. See [LANGUAGE.md](LANGUAGE.md) §7.2 |
