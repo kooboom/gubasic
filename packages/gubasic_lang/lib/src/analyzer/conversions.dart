@@ -145,3 +145,26 @@ int? floorToInteger(double value) {
 }
 
 bool _fits(double whole) => whole >= -_int64Limit && whole < _int64Limit;
+
+/// `Round(value, digits)`: rounds half away from zero at [digits] places
+/// after the decimal point (0 to 15), working on the shortest decimal text
+/// of [value] rather than its binary value, so Round(2.675, 2) is 2.68 as
+/// written, not 2.67. Returns null for digits outside 0–15.
+double? roundToDigits(double value, int digits) {
+  if (digits < 0 || digits > 15) return null;
+  if (!value.isFinite || value == 0) return value;
+  final exp = value.toStringAsExponential();
+  final negative = exp.startsWith('-');
+  final eAt = exp.indexOf('e');
+  final mantissa = exp.substring(negative ? 1 : 0, eAt).replaceFirst('.', '');
+  final exponent = int.parse(exp.substring(eAt + 1));
+  // value = 0.d1 d2 … dn × 10^(exponent + 1); keep this many digits:
+  final keep = exponent + 1 + digits;
+  if (keep >= mantissa.length) return value; // nothing to round
+  if (keep < 0) return negative ? -0.0 : 0.0;
+  var kept = BigInt.parse(keep == 0 ? '0' : mantissa.substring(0, keep));
+  if (mantissa.codeUnitAt(keep) >= 0x35) kept += BigInt.one; // '5'..'9'
+  // kept × 10^(exponent + 1 - keep) = kept × 10^(-digits)
+  final text = '${negative ? '-' : ''}${kept}e-$digits';
+  return double.parse(text);
+}
