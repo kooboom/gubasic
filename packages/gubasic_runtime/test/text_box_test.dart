@@ -189,6 +189,34 @@ void main() {
         expectRecorded('click_composing');
       });
 
+      // Recordings made before scenario 5 existed do not have it.
+      testWidgets(
+        'erasing committed text: 닭값, erased, then 닭 값',
+        skip: !scenarios.containsKey('erase_retype'),
+        (tester) async {
+          await show(tester);
+          await replay(tester, last('erase_retype'));
+          expectNoLoneJamo();
+          expect(changes(), contains('[]'), reason: 'erased to empty');
+          expect(text(), '닭 값 ');
+          expectRecorded('erase_retype');
+        },
+      );
+
+      testWidgets(
+        'erasing committed text: 한글, 한긂, erased to empty',
+        skip: !scenarios.containsKey('erase_jamo'),
+        (tester) async {
+          await show(tester);
+          await replay(tester, last('erase_jamo'));
+          // 긂 was only ever being composed.
+          expectNoLoneJamo();
+          expect(changes(), everyElement(isNot(contains('긂'))));
+          expect(text(), '');
+          expectRecorded('erase_jamo');
+        },
+      );
+
       testWidgets('a click after the browser committed: Click sees 한글', (
         tester,
       ) async {

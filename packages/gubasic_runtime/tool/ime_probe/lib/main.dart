@@ -7,7 +7,7 @@ import 'package:web/web.dart' as web;
 
 /// Records what a real input method sends to a Flutter TextField: every
 /// value (text, composing range, selection), key, focus change and click,
-/// for four Korean typing scenarios. "Save" downloads one JSON file; the
+/// for five Korean typing scenarios. "Save" downloads one JSON file; the
 /// files become test input for gubasic_runtime's TextBox
 /// (test/ime_logs/).
 ///
@@ -45,6 +45,18 @@ const scenarios = [
     'ㅎ ㅏ ㄴ ㄱ ㅡ ㄹ (g k s r m f)을 스페이스 없이 치고 바로 버튼 A를 누릅니다. '
         '"다시"를 누른 뒤 같은 것을 치고 이번에는 버튼 B를 누릅니다.',
     withButtons: true,
+  ),
+  Scenario(
+    'erase_retype',
+    '5-1. 확정된 글자 지우기: 닭값 → 닭 값',
+    'ㄷ ㅏ ㄹ ㄱ ㄱ ㅏ ㅂ ㅅ (e k f r r k q t)를 스페이스 없이 치고, 백스페이스로 '
+        '칸이 빌 때까지 지웁니다. 이어서 2번처럼 닭, 스페이스, 값, 스페이스를 칩니다.',
+  ),
+  Scenario(
+    'erase_jamo',
+    '5-2. 확정된 글자 지우기: 한글 → 한긂 → 빈 칸',
+    'ㅎ ㅏ ㄴ ㄱ ㅡ ㄹ (g k s r m f)을 치고 ㅁ (a)을 쳐서 한긂을 만든 뒤, '
+        '백스페이스로 칸이 빌 때까지 지웁니다.',
   ),
 ];
 
@@ -175,7 +187,8 @@ class _ProbeState extends State<Probe> {
       children: [
         const Text(
           '위에서부터 차례로 하고, 끝나면 오른쪽 위 "저장"을 누릅니다. '
-          '두벌식 한글 입력기를 씁니다.',
+          '두벌식 한글 입력기를 씁니다. 틀렸거나 한 번 더 하려면 반드시 '
+          '"다시"를 먼저 누릅니다. 시험에는 마지막 "다시" 다음만 쓰입니다.',
         ),
         for (final s in scenarios) _scenario(s),
       ],

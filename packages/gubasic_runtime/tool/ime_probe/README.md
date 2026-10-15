@@ -17,7 +17,10 @@ flutter run -d chrome --release
 ```
 
 1. Switch the system input method to Korean (2-set, 두벌식).
-2. Do the four scenarios on the page in order. The page is in Korean; each scenario says which keys to type. If you make a mistake, press **다시** (again) and repeat that scenario: the tests use what comes after the last 다시. Scenario 4 asks for 다시 once on purpose (button A, then button B).
+2. Do the five scenarios on the page in order. The page is in Korean; each scenario says which keys to type. The tests use only what comes after the last **다시** (again) of each scenario. Scenario 4 asks for 다시 once on purpose (button A, then button B).
+
+   > **Before every new try, press 다시.** A mistake erased by hand stays in the recording and becomes part of what the tests check: the first Windows recording has two such tries mixed in.
+
 3. Press **저장 (Save)** at the top right. The browser downloads `ime-log-macos-chrome.json` on a Mac, `ime-log-windows-chrome.json` on Windows.
 4. Copy it into the tests without the `ime-log-` prefix:
 
