@@ -1,0 +1,22 @@
+name: gubasic_runtime
+description: >-
+  Controls, forms and dialogs that GuBASIC programs run on: used both by the
+  interpreter in the IDE and by generated apps (docs/DESIGN.md §2.3, D11).
+version: 0.1.0
+publish_to: none
+
+# The one place that names the Flutter version of this repository (D29).
+# CI installs exactly this version; tool/check_flutter.dart compares it with
+# the Flutter on this machine.
+environment:
+  sdk: ^3.13.5
+  flutter: 3.47.7
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0

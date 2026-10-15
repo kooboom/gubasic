@@ -64,7 +64,14 @@ IDE를 C로 만드는 방안도 검토했지만 제외했습니다. C로 GUI를 
 - 인터프리터와 생성된 앱이 **같은 런타임**으로 화면을 그리므로, 구조적으로 동작이 같아집니다.
 - 예전 VB 런타임 DLL과 같은 역할입니다.
 
-GuBASIC의 각 릴리스는 검증한 Flutter 버전에 고정됩니다. Flutter 업그레이드는 업데이트마다 따라가는 일이 아니라, 원할 때 하는 별도 작업입니다. 런타임은 기본적이고 안정적인 Flutter 위젯만 씁니다.
+GuBASIC의 각 릴리스는 검증한 Flutter 버전에 고정됩니다(D29). Flutter 업그레이드는 업데이트마다 따라가는 일이 아니라, 원할 때 하는 별도 작업입니다. 런타임은 기본적이고 안정적인 Flutter 위젯만 씁니다.
+
+구조는 이렇습니다.
+- **`GbFormModel`**은 폼과 컨트롤의 현재 속성(`GbControlState`, 이름과 타입은 `component.yaml`과 같음)을 담습니다. **`GbFormView`**가 이를 보여 줍니다: 각 컨트롤을 `Stack` 안의 `Left`, `Top` 위치에 둡니다(6절). 사용자가 한 일은 이벤트로 돌아옵니다: `Click`, 그리고 사용자가 TextBox의 확정된 글자를 바꿀 때의 `Changed`.
+- **`GbDialogs`**는 `MsgBox`와 `InputBox`를 모달로 보여 주고(D28), 프로그램이 끝나면 모두 닫습니다.
+- **`gubasic_runtime`은 `gubasic_lang`에 의존하지 않습니다.** 둘은 IDE가 이어 줍니다(인터프리터의 `FormHost`). 그래서 생성된 앱에는 인터프리터가 들어가지 않습니다.
+- **런타임은 글꼴을 정하지 않습니다.** 런타임을 감싼 앱이 테마로 정합니다. 그래서 데스크톱과 휴대폰 앱은 계속 운영체제 글꼴을 씁니다.
+- `packages/gubasic_runtime/example`은 폼을 손으로 그린 예제입니다. CI가 변경마다 웹과 Windows로, PR에서는 macOS로도 빌드합니다.
 
 ### 2.4 저장소 구조 (계획)
 
@@ -248,7 +255,8 @@ IDE 메시지와 오류 설명은 **영어와 한국어**로 제공됩니다.
 
 ## 9. 테스트
 
-- `gubasic_lang`은 일반 `dart test`로 테스트합니다.
+- `gubasic_lang`은 일반 `dart test`로, `gubasic_runtime`은 `flutter test`로 테스트합니다.
+- **실제 입력기로 입력하기.** `packages/gubasic_runtime/tool/ime_probe`는 실제 입력기가 입력 칸에 보내는 것(조합 중인 부분을 포함한 모든 값)을 기록합니다. 기록은 `packages/gubasic_runtime/test/ime_logs/`에 두고 TextBox 테스트가 그대로 재생하므로, 한글 입력을 지어낸 신호가 아니라 실제 신호로 시험합니다.
 - **동일성 테스트 (처음부터 필수):** `test/parity/`의 예제 프로그램을 인터프리터로 한 번, 변환된 Dart로 한 번 실행해서 기록된 출력이 같아야 합니다. 동일성을 깨는 변경은 병합하지 않습니다.
 - 같은 동일성 프로그램을 Chrome(`apps/playground`)에서도 실행해서, 인터프리터가 VM과 웹에서 같은 출력을 내는지 확인합니다.
 
@@ -356,3 +364,4 @@ iOS/macOS 요구 사항은 GuBASIC이 아니라 애플의 정책에서 옵니다
 | D26 | **`Integer`는 모든 플랫폼에서 정확한 64비트 정수** — 웹의 인터프리터도, 나중에 생성되는 웹 앱도 마찬가지. VM은 Dart의 `int`, 웹은 package:fixnum의 `Int64`를 쓰며, 둘 다 넘침 검사와 함께 하나의 API 뒤에 있음(`checked_math.dart`). 같은 동일성 프로그램을 VM과 Chrome에서 돌림 | 프로그램은 어디서 돌든 같은 수를 계산해야 함. 웹에서의 비용: 마이크로 벤치마크에서 Chrome의 `Int64` 덧셈 500만 번은 97ms, 일반 숫자는 3ms(약 30배). 인터프리터에서는 차이가 드러나지 않음(100만 번 반복이 `Integer`와 `Double`에서 같은 시간). 해석 비용이 대부분이기 때문이며, 생성된 웹 앱의 정수 계산이 많은 코드는 이 비용을 치르게 됨. 렉서 경고 L007(웹이 정확히 담지 못하는 정수)은 불필요해져서 폐지함 |
 | D27 | 폼 파일(`.form.yaml`)과 프로젝트 파일(`.gbproj`)은 `formatVersion: 1`인 YAML이며 `gubasic_lang`이 읽습니다. 기본 컴포넌트의 `component.yaml`은 생성기가 `gubasic_lang` 안으로 복사합니다. 이 파일들의 문제는 F 진단으로 그 자리에 알리고, 나머지는 계속 읽습니다. 코드는 폼과 함께 분석하므로 컨트롤, `Me`, 이벤트 처리기를 실행 전에 검사합니다 | 분석기는 웹을 포함한 모든 플랫폼에서 컨트롤을 알아야 하고, `gubasic_lang`은 계속 일반 `dart test`로 돌아야 합니다(CLAUDE.md 규칙 1). 파서처럼(D14) 문제 뒤에도 계속 읽어서 실수 하나가 다른 실수를 가리지 않게 합니다. 이벤트와 다르게 쓴 처리기는 실행되지 않는 보통 프로시저로 조용히 넘기지 않고 오류로 알립니다(A032) |
 | D28 | **폼이 있는 프로그램은 한 번에 이벤트 처리기 하나만 실행합니다.** 다른 처리기는 실행 중인 처리기가 끝나거나 `DoEvents`에서 기다릴 때 시작하고, 그 사이의 이벤트는 순서대로 기다립니다. 같은 처리기는 다시 시작하지 않습니다(D5). `MsgBox`와 `InputBox`는 모달입니다: 차례를 넘기지 않으며, 떠 있는 동안의 이벤트는 버립니다. 긴 반복 중의 자동 화면 갱신으로는 다른 처리기가 실행되지 않습니다. 변경 이벤트가 있는 속성(`TextBox.Text`)에 프로그램이 값을 넣으면 처리기를 그 대입의 일부로 바로 실행합니다. 기다릴 수 있는 대입은 이것뿐이라서, 다른 속성 대입은 모두 D25의 동기 경로를 그대로 씁니다 | 처리기가 서로의 일을 볼 수 있는 곳이 코드에 보이는 곳(`DoEvents`)뿐이라서, 실행이 결정적이고 모든 플랫폼에서 같습니다. 대화상자는 데스크톱과 휴대폰에서처럼, 그리고 기본으로 응용 프로그램 모달인 Visual Basic .NET의 `MsgBox`처럼 동작합니다([Interaction.MsgBox](https://learn.microsoft.com/en-us/dotnet/api/microsoft.visualbasic.interaction.msgbox)). VM에서 잰 값: `Label.Left`에 1,000,000번 대입하는 데 0.29초, `TextBox.Text`에 0.66초가 걸리며, 속성을 쓰지 않는 반복은 전과 같은 속도입니다 |
+| D29 | **저장소 전체에 Flutter 버전 하나, 적는 곳도 하나:** `packages/gubasic_runtime/pubspec.yaml`의 `environment: flutter: 3.47.7`. CI는 모든 작업에서(순수 Dart 작업도 그 Flutter의 Dart를 씀) `subosito/flutter-action`(`flutter-version-file`)으로 정확히 그 버전을 설치합니다. 개발 컴퓨터에서는 `dart tool/check_flutter.dart`(`packages/gubasic_runtime`에서)가 설치된 Flutter와 비교합니다 | 맥과 Windows PC가 같은 Flutter로 빌드하고 시험해야 합니다. pub은 그 줄을 하한으로만 검사합니다: "The Flutter SDK only enforces the lower bound of the flutter constraint" ([pubspec](https://dart.dev/tools/pub/pubspec)). 그래서 정확히 비교하는 검사가 따로 필요합니다. flutter-action은 pubspec에서 정확한 버전을 읽습니다([flutter-action](https://github.com/subosito/flutter-action)). Flutter를 올릴 때는 그 줄을 바꾸고, 입력기 기록과 동일성 테스트를 다시 확인합니다 |

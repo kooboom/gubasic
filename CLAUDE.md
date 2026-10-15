@@ -62,6 +62,8 @@ test/parity/             Interpreter-vs-transpiler parity tests
 
 ## Before you finish a task
 
+- `dart tool/check_flutter.dart` in `packages/gubasic_runtime` passes (the pinned Flutter, D29)
 - `dart test` in `packages/gubasic_lang` passes
+- `flutter test` in `packages/gubasic_runtime` passes
 - Parity tests pass
 - Docs updated if behavior or a decision changed

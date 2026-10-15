@@ -4,6 +4,8 @@ on:
   push:
   pull_request:
 
+# Every job uses the one Flutter version this repository is pinned to
+# (packages/gubasic_runtime/pubspec.yaml, D29), and its Dart.
 jobs:
   gubasic_lang:
     name: gubasic_lang (format, analyze, test)
@@ -13,9 +15,10 @@ jobs:
         working-directory: packages/gubasic_lang
     steps:
       - uses: actions/checkout@v5
-      - uses: dart-lang/setup-dart@v1
+      - uses: subosito/flutter-action@v2
         with:
-          sdk: stable
+          flutter-version-file: packages/gubasic_runtime/pubspec.yaml
+          cache: true
       - name: Install dependencies
         run: dart pub get
       - name: Check formatting
@@ -35,9 +38,10 @@ jobs:
         working-directory: apps/playground
     steps:
       - uses: actions/checkout@v5
-      - uses: dart-lang/setup-dart@v1
+      - uses: subosito/flutter-action@v2
         with:
-          sdk: stable
+          flutter-version-file: packages/gubasic_runtime/pubspec.yaml
+          cache: true
       - name: Install dependencies
         run: dart pub get
       - name: Check formatting
@@ -50,3 +54,66 @@ jobs:
         run: dart test -p vm,chrome
       - name: Build
         run: tool/build.sh
+
+  gubasic_runtime:
+    name: gubasic_runtime (format, analyze, test, web build)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: packages/gubasic_runtime
+    steps:
+      - uses: actions/checkout@v5
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version-file: packages/gubasic_runtime/pubspec.yaml
+          cache: true
+      - name: Check the pinned Flutter version
+        run: dart tool/check_flutter.dart
+      - name: Install dependencies
+        run: |
+          flutter pub get
+          (cd example && flutter pub get)
+          (cd tool/ime_probe && flutter pub get)
+      - name: Check formatting
+        run: dart format --output=none --set-exit-if-changed .
+      - name: Analyze
+        run: |
+          flutter analyze --fatal-infos
+          (cd example && flutter analyze --fatal-infos)
+          (cd tool/ime_probe && flutter analyze --fatal-infos)
+      - name: Test
+        run: flutter test
+      - name: Build the example for the web
+        run: flutter build web --release
+        working-directory: packages/gubasic_runtime/example
+
+  # The runtime's example must keep building as a desktop app.
+  windows:
+    name: gubasic_runtime example (Windows build)
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: packages/gubasic_runtime/example
+    steps:
+      - uses: actions/checkout@v5
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version-file: packages/gubasic_runtime/pubspec.yaml
+          cache: true
+      - run: flutter build windows --release
+
+  # macOS runners are slow and scarce: build on pull requests only.
+  macos:
+    name: gubasic_runtime example (macOS build)
+    if: github.event_name == 'pull_request'
+    runs-on: macos-latest
+    defaults:
+      run:
+        working-directory: packages/gubasic_runtime/example
+    steps:
+      - uses: actions/checkout@v5
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version-file: packages/gubasic_runtime/pubspec.yaml
+          cache: true
+      - run: flutter build macos --release
