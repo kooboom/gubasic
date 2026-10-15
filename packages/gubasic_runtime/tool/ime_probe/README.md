@@ -33,3 +33,13 @@ flutter run -d chrome --release
    - **The exact events this recording made**, pinned in `recorded` at the end of `test/text_box_test.dart`. A new recording fails here with the events it made: check them by hand against what you typed, then add them. Input methods may differ here (on macOS the space goes into the composition, so 닭 is never committed alone); a later failure means a Flutter upgrade changed what that input method does.
 
    Keep every recording; never edit one by hand.
+
+## What the recordings show
+
+Behaviour seen in the recordings so far, with the scenario that shows it. The Windows recording does not have scenario 5 yet.
+
+- **Backspace while composing is handled inside the input method.** 한 becomes 하 (scenario 3), 값 becomes 갑, 가, ㄱ (5-1), and 긂 becomes 글, 그, ㄱ (5-2): the text being composed shrinks one jamo at a time, nothing is committed, and `Changed` does not run. Windows and macOS.
+- **A committed syllable is deleted in one step, and `Changed` runs once.** After the composition is gone, Backspace removes 닭 (5-1) or 한 (5-2) as a whole, never 달 or 하, and `Changed` runs once with the shorter text. macOS.
+- **What was only being composed never reaches `Changed`.** 긂 in 5-2 and 값 while it is being erased in 5-1 are never committed, so `Changed` never shows them: in 5-2 it runs only for 한 and for the empty text. macOS.
+- **A space goes into the composition on macOS.** After 닭, the space is committed together with it, so `Changed` sees `닭 ` but never `닭` alone (scenario 2); Windows commits `닭` first.
+- **Leaving the field commits.** Both input methods commit what is being composed when the field loses the focus; on the web this happens about 150 to 180 ms before a click arrives (scenario 4).

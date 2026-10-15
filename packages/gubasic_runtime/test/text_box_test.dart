@@ -309,6 +309,16 @@ const recorded = <String, Map<String, List<String>>>{
       'txtName.Changed [한글]',
       'btnOk.Click [한글]',
     ],
+    // Backspace takes 값 apart inside the input method (no Changed), then
+    // deletes the committed 닭 in one step.
+    'erase_retype': [
+      'txtName.Changed [닭]',
+      'txtName.Changed []',
+      'txtName.Changed [닭 ]',
+      'txtName.Changed [닭 값 ]',
+    ],
+    // 긂 and its jamo are only ever being composed; 한 goes in one step.
+    'erase_jamo': ['txtName.Changed [한]', 'txtName.Changed []'],
   },
   'windows-chrome.json': {
     'dokkaebi': ['txtName.Changed [갈]', 'txtName.Changed [갈가]'],
