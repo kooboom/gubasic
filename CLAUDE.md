@@ -46,6 +46,7 @@ test/parity/             Interpreter-vs-transpiler parity tests
 - Dart: `dart format`, `flutter analyze` clean, null-safe.
 - User-facing messages exist in English and Korean (`en`, `ko`).
 - Documentation: English file first (`X.md`), Korean translation next to it (`X.ko.md`). Keep them in sync.
+- Text files are LF everywhere (`.gitattributes`), so golden files and byte-for-byte test comparisons match on Windows and macOS alike.
 - Small, focused changes. One feature per change, with its tests.
 - Commit messages in English, imperative mood.
 - Diagnostic messages say what is wrong and how to fix it, in one or two sentences; Korean ones use the documents' "~합니다" style.

@@ -1,0 +1,28 @@
+# Every text file is stored and checked out with LF, on Windows and macOS
+# alike, so golden files and byte-for-byte comparisons in tests match
+# wherever the repository is cloned.
+* text=auto eol=lf
+
+*.gbas     text eol=lf
+*.out      text eol=lf
+*.in       text eol=lf
+*.ast.txt  text eol=lf
+*.txt      text eol=lf
+*.dart     text eol=lf
+*.md       text eol=lf
+*.yaml     text eol=lf
+*.yml      text eol=lf
+*.html     text eol=lf
+*.css      text eol=lf
+*.sh       text eol=lf
+
+*.png      binary
+*.jpg      binary
+*.gif      binary
+*.ico      binary
+*.webp     binary
+*.ttf      binary
+*.otf      binary
+*.woff     binary
+*.woff2    binary
+*.wasm     binary
