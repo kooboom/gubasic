@@ -1,6 +1,8 @@
 import '../ast/ast.dart';
 import '../ast/line_map.dart';
 import '../diagnostics/diagnostic.dart';
+import '../forms/component.dart';
+import '../forms/form_file.dart';
 import '../lexer/keyword.dart';
 import '../parser/parse_result.dart';
 import 'analysis_result.dart';
@@ -10,12 +12,17 @@ import 'members.dart';
 import 'symbols.dart';
 import 'types.dart';
 
-/// Checks names and types of a parsed program (docs/LANGUAGE.md §2–§7).
+/// Checks names and types of a parsed program (docs/LANGUAGE.md §2–§8).
+///
+/// [form] is the form the code belongs to: its controls and `Me` can then
+/// be used, and event handlers are checked. Without it (the playground),
+/// they cannot.
 ///
 /// Never throws. Runs even when the parser found errors: anything it cannot
 /// work out gets the unknown type, which is never checked again, so one
 /// mistake is reported once.
-AnalysisResult analyze(ParseResult parsed) => _Analyzer(parsed).run();
+AnalysisResult analyze(ParseResult parsed, {FormFile? form}) =>
+    _Analyzer(parsed, form).run();
 
 /// A procedure being analyzed.
 class _ProcedureContext {
@@ -41,7 +48,7 @@ class _ProcedureContext {
 }
 
 class _Analyzer {
-  _Analyzer(this.parsed)
+  _Analyzer(this.parsed, this.form)
       : _lines = LineMap(parsed.source),
         _builtins = Scope(ScopeKind.builtins, null) {
     for (final f in builtinFunctions.values) {
@@ -57,11 +64,25 @@ class _Analyzer {
           kind: SymbolKind.builtinObject,
           type: GbType.builtinObject));
     }
-    _file = Scope(ScopeKind.file, _builtins);
-    _result = AnalysisResult(diagnostics: _diagnostics, fileScope: _file);
+    Scope outer = _builtins;
+    final form = this.form;
+    if (form != null) {
+      _controls = outer = Scope(ScopeKind.form, _builtins);
+      for (final c in form.controls) {
+        _controls!.declare(Symbol(
+            name: c.name, kind: SymbolKind.control, type: c.component.type));
+      }
+    }
+    _file = Scope(ScopeKind.file, outer);
+    _result =
+        AnalysisResult(diagnostics: _diagnostics, fileScope: _file, form: form);
   }
 
   final ParseResult parsed;
+  final FormFile? form;
+
+  /// The form's controls, when there is a form.
+  Scope? _controls;
   final LineMap _lines;
   final Scope _builtins;
   late final Scope _file;
@@ -156,6 +177,15 @@ class _Analyzer {
         ..callable = Callable(member.name.name, parameters, returnType);
     }
 
+    // 2b. Event handlers.
+    if (form != null) {
+      for (final member in unit.members.whereType<ProcedureDecl>()) {
+        if (_result.symbols[member.name]?.procedure == member) {
+          _handler(member);
+        }
+      }
+    }
+
     // 3. Field types and initial values, in order.
     for (final member in unit.members.whereType<FieldDecl>()) {
       final symbol = _result.symbols[member.declarator.name];
@@ -182,9 +212,48 @@ class _Analyzer {
           [name.name, '${_line(existing.declaration ?? name)}']);
       return false;
     }
+    if (scope == _file && _controls?.symbols[name.name.toLowerCase()] != null) {
+      // Declared anyway, so that its uses in the code are checked as the
+      // code means them.
+      _reportAt(name, DiagnosticCode.nameIsControl, [name.name]);
+    }
     scope.declare(symbol);
     _result.symbols[name] = symbol;
     return true;
+  }
+
+  /// Records [decl] as an event handler if its name is `Control_Event`
+  /// (or `Form_Event`) for an event that exists, and checks that it is
+  /// written as the event expects (A032).
+  void _handler(ProcedureDecl decl) {
+    final name = decl.name.name.toLowerCase();
+    final targets = [
+      (null as ControlDecl?, 'Form', formComponent),
+      for (final c in form!.controls) (c, c.name, c.component),
+    ];
+    for (final (control, owner, component) in targets) {
+      if (!name.startsWith('${owner.toLowerCase()}_')) continue;
+      final event = component.events[name.substring(owner.length + 1)];
+      if (event == null) continue;
+      final callable = _result.symbols[decl.name]!.callable!;
+      final ok = !decl.isFunction &&
+          callable.parameters.length == event.parameters.length &&
+          [
+            for (var i = 0; i < event.parameters.length; i++)
+              callable.parameters[i].type == event.parameters[i].type &&
+                  !callable.parameters[i].optional
+          ].every((same) => same);
+      if (ok) {
+        _result.handlers[decl] = EventHandler(control, event);
+      } else {
+        _reportAt(decl.name, DiagnosticCode.handlerSignature, [
+          decl.name.name,
+          '$owner.${event.name}',
+          'Sub ${event.handlerSignature(owner)}',
+        ]);
+      }
+      return;
+    }
   }
 
   GbType _parameterType(Parameter p) {
@@ -209,7 +278,7 @@ class _Analyzer {
           : _resolveType(ref.typeArguments.first);
       return ListType(element);
     }
-    final named = namedTypes[lower];
+    final named = lookupNamedType(lower);
     if (named != null) return named;
     _reportAt(ref.name, DiagnosticCode.unknownType, [name]);
     return GbType.unknown;
@@ -395,6 +464,10 @@ class _Analyzer {
       _reportAt(name, DiagnosticCode.duplicateDeclaration,
           [name.name, '${_line(clash.declaration ?? name)}']);
       return false;
+    }
+    if (_controls?.symbols[name.name.toLowerCase()] != null &&
+        _file.symbols[name.name.toLowerCase()] == null) {
+      _reportAt(name, DiagnosticCode.localHidesControl, [name.name]);
     }
     final field = _file.symbols[name.name.toLowerCase()];
     if (field != null &&
@@ -742,6 +815,7 @@ class _Analyzer {
   }
 
   GbType _me(MeExpr e) {
+    if (form != null) return formComponent.type;
     _reportAt(e, DiagnosticCode.unknownNameMaybeControl, ['Me']);
     return GbType.unknown;
   }
@@ -770,7 +844,7 @@ class _Analyzer {
           e, DiagnosticCode.usedBeforeDeclaration, [e.name, '${_line(later)}']);
       return;
     }
-    if (beforeDot) {
+    if (beforeDot && form == null) {
       _reportAt(e, DiagnosticCode.unknownNameMaybeControl, [e.name]);
       return;
     }
@@ -1000,6 +1074,12 @@ class _Analyzer {
   }
 
   void _newArguments(GbType type, List<Expr> args, Node at) {
+    if (type is ControlType) {
+      // Stage 2 (docs/ROADMAP.md): controls created at run time.
+      _reportAt(at, DiagnosticCode.newControlNotAvailable, [type.displayName]);
+      _analyzeArguments(args);
+      return;
+    }
     final params = switch (type) {
       ListType() => const <ParamSpec>[],
       GbType.exception => const [

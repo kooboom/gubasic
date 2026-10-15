@@ -128,7 +128,12 @@ void main() {
 
     test('A004: unknown type names', () {
       expect(inMain('Dim b As Buton'), ['A026', 'A004']);
-      expect(inMain('Dim b As New Button\nb = Nothing'), ['A004']);
+    });
+
+    test('control types exist; New with one is not available yet (A033)', () {
+      expect(inMain('Dim b As Button\nb = Nothing'), isEmpty);
+      expect(inMain('Dim b As New Button\nb = Nothing'), ['A033']);
+      expect(inMain('Dim b As Label = New Label\nb = Nothing'), ['A033']);
     });
 
     test('inferred types', () {

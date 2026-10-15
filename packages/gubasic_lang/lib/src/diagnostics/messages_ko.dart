@@ -94,9 +94,9 @@ const Map<DiagnosticCode, String> koreanMessages = {
   DiagnosticCode.unknownNameDidYouMean:
       '{0} 이름이 선언되지 않았습니다. 비슷한 이름으로 {1} 이름이 있으니 철자를 확인해 주세요.',
   DiagnosticCode.unknownNameMaybeControl: '{0} 이름이 선언되지 않았습니다. '
-      '컨트롤이나 폼이라면 폼 디자이너가 생기면 쓸 수 있습니다. 지금은 Dim으로 선언한 변수를 써 주세요.',
-  DiagnosticCode.unknownType: '{0} 타입이 없습니다. 철자를 확인해 주세요. '
-      'Button 같은 컨트롤 타입은 폼 디자이너가 생기면 쓸 수 있습니다.',
+      '이 코드에는 폼이 없어서 컨트롤과 Me를 쓸 수 없습니다(놀이터는 폼 없이 코드만 실행합니다). '
+      'Dim으로 선언한 변수를 쓰거나, 폼이 있는 프로젝트로 열어 주세요.',
+  DiagnosticCode.unknownType: '{0} 타입이 없습니다. 철자를 확인해 주세요.',
   DiagnosticCode.duplicateDeclaration:
       '{0} 이름은 {1}번 줄에서 이미 선언했습니다. 다른 이름을 써 주세요.',
   DiagnosticCode.usedBeforeDeclaration:
@@ -152,6 +152,39 @@ const Map<DiagnosticCode, String> koreanMessages = {
       '{0} 함수에 Return 문이 없어서 항상 기본값을 돌려줍니다. 돌려줄 값과 함께 Return을 써 주세요.',
   DiagnosticCode.settingsNotAvailable:
       '{0} 기능은 아직 준비 중입니다. 지금은 프로그램이 도는 동안 폼 변수에 값을 담아 두세요.',
+
+  // Analyzer: forms and controls
+  DiagnosticCode.nameIsControl:
+      '{0} 이름은 이미 폼에 있는 컨트롤의 이름입니다. 여기서 다른 이름을 쓰거나 컨트롤의 이름을 바꿔 주세요.',
+  DiagnosticCode.localHidesControl:
+      '이 지역 변수 {0} 이름이 같은 이름의 컨트롤을 가려서, 여기서는 컨트롤을 쓸 수 없습니다. 지역 변수의 이름을 바꿔 주세요.',
+  DiagnosticCode.handlerSignature:
+      '{0} 프로시저는 {1} 이벤트 때 실행되므로 첫 줄이 {2} 형태여야 합니다. '
+          '그렇게 고치거나, 이벤트를 처리할 프로시저가 아니라면 이름을 바꿔 주세요.',
+  DiagnosticCode.newControlNotAvailable:
+      '{0} 컨트롤은 아직 코드로 만들 수 없습니다. 폼에 컨트롤을 올려 주세요.',
+
+  // Form and project files
+  DiagnosticCode.fileSyntax:
+      '이 파일을 여기부터 읽을 수 없습니다. 내용이 정해진 형식과 다릅니다. 들여쓰기와 각 키 뒤의 콜론(:)을 확인해 주세요.',
+  DiagnosticCode.formatVersionMissing:
+      '파일에 formatVersion 줄이 필요합니다. formatVersion: 1처럼 정수로 써 주세요.',
+  DiagnosticCode.formatVersionTooNew:
+      '이 파일은 더 새로운 GuBASIC으로 만들었습니다(formatVersion {0}). 이 GuBASIC은 {1} 버전까지 읽습니다. '
+          'GuBASIC을 업데이트한 뒤 열어 주세요.',
+  DiagnosticCode.unknownKey: '{0} 키는 GuBASIC이 모르는 키라서 무시합니다. 철자를 확인해 주세요.',
+  DiagnosticCode.wrongValueForm: '{0} 키의 값이 정해진 형태가 아닙니다. {1} 형태로 써 주세요.',
+  DiagnosticCode.invalidControlName: '"{0}" 값은 이름으로 쓸 수 없습니다. '
+      '이름은 영문자로 시작하고 영문자, 숫자, _만 쓸 수 있으며 키워드나 Form은 쓸 수 없습니다.',
+  DiagnosticCode.duplicateControlName:
+      '{0} 이름은 {1}번 줄에서 이미 썼습니다. 컨트롤과 폼마다 다른 이름을 붙여 주세요.',
+  DiagnosticCode.unknownControlType:
+      '{0} 컨트롤 타입이 없습니다. 철자를 확인해 주세요(쓸 수 있는 타입: {1}).',
+  DiagnosticCode.unknownProperty:
+      '{1} 컨트롤에는 {0} 속성이 없습니다. 철자를 확인해 주세요(쓸 수 있는 속성: {2}).',
+  DiagnosticCode.wrongPropertyType: '{0} 속성의 값은 {1} 타입이어야 합니다. 값을 확인해 주세요.',
+  DiagnosticCode.unknownStartupForm:
+      '시작 폼으로 정한 {0} 폼이 폼 목록에 없습니다. forms 목록에 추가하거나 목록에 있는 폼을 골라 주세요.',
 
   // Run time
   DiagnosticCode.integerOverflow:

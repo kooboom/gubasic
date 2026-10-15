@@ -1,5 +1,5 @@
-/// The GuBASIC language: lexer (and, later, parser, analyzer,
-/// interpreter and transpiler). Pure Dart, no Flutter dependency.
+/// The GuBASIC language: lexer, parser, analyzer, form and project files,
+/// interpreter (and, later, transpiler). Pure Dart, no Flutter dependency.
 library;
 
 export 'src/diagnostics/diagnostic.dart';
@@ -21,6 +21,9 @@ export 'src/analyzer/analysis_result.dart';
 export 'src/analyzer/analyzer.dart';
 export 'src/analyzer/compile.dart';
 export 'src/analyzer/symbols.dart';
+export 'src/forms/component.dart';
+export 'src/forms/form_file.dart';
+export 'src/forms/project_file.dart';
 export 'src/interpreter/checked_math.dart';
 export 'src/interpreter/host.dart';
 export 'src/interpreter/interpreter.dart';

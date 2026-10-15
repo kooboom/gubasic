@@ -1,8 +1,19 @@
 import '../ast/ast.dart';
 import '../diagnostics/diagnostic.dart';
+import '../forms/component.dart';
+import '../forms/form_file.dart';
 import 'members.dart';
 import 'symbols.dart';
 import 'types.dart';
+
+/// A procedure that runs when an event happens (docs/LANGUAGE.md §8).
+class EventHandler {
+  const EventHandler(this.control, this.event);
+
+  /// The control, or null for the form's own events (`Form_Load`).
+  final ControlDecl? control;
+  final EventSpec event;
+}
 
 /// Whether `target(arguments)` calls something or picks an item.
 enum InvokeKind { call, item }
@@ -16,7 +27,12 @@ class AnalysisResult {
   AnalysisResult({
     required this.diagnostics,
     required this.fileScope,
+    this.form,
   });
+
+  /// The form the code belongs to, or null for code without a form (the
+  /// playground).
+  final FormFile? form;
 
   /// Analyzer diagnostics only (A codes).
   final List<Diagnostic> diagnostics;
@@ -47,6 +63,10 @@ class AnalysisResult {
 
   /// The variable each loop counts with.
   final Map<Stmt, Symbol> loopVariables = Map.identity();
+
+  /// The procedures that handle events of the form and its controls, when
+  /// they are written as the event expects.
+  final Map<ProcedureDecl, EventHandler> handlers = Map.identity();
 
   bool get hasErrors => diagnostics.any((d) => d.isError);
 }

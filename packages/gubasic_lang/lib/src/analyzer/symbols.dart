@@ -12,6 +12,9 @@ enum SymbolKind {
   procedure,
   builtinFunction,
   builtinObject,
+
+  /// A control on the form (`btnSave`). Its type is a [ControlType].
+  control,
 }
 
 /// Where a variable lives.
@@ -44,7 +47,7 @@ class Symbol {
   GbType type;
 
   /// The declaring node: an [Identifier] for variables, the
-  /// [ProcedureDecl] for procedures; null for built-ins.
+  /// [ProcedureDecl] for procedures; null for built-ins and controls.
   final Node? declaration;
   final Storage? storage;
 
@@ -71,7 +74,9 @@ class Symbol {
   String toString() => '${kind.name} $name: ${type.displayName}';
 }
 
-enum ScopeKind { builtins, file, procedure, block }
+/// From the outside in: built-ins, the form's controls (only when the code
+/// belongs to a form), the file's own names, a procedure, a block.
+enum ScopeKind { builtins, form, file, procedure, block }
 
 class Scope {
   Scope(this.kind, this.parent);

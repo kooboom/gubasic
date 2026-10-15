@@ -54,7 +54,7 @@ After a dot, a keyword can be used as a member name: `obj.End`, `list.Next` (as 
 
 Neither the lexer, the parser nor the analyzer stops at an error: they report it and keep reading, so that one mistake does not hide the rest. Codes are stable and never reused.
 
-Every diagnostic is an **error** unless marked as a **warning** below. Errors must be fixed. Warnings point out something that works but may surprise; they **never stop a program from running or being built** (D23). The code's prefix says who reports it (L lexer, P parser, A analyzer), not how serious it is.
+Every diagnostic is an **error** unless marked as a **warning** below. Errors must be fixed. Warnings point out something that works but may surprise; they **never stop a program from running or being built** (D23). The code's prefix says who reports it (L lexer, P parser, A analyzer, F form and project files, R run time), not how serious it is.
 
 **Lexer**
 
@@ -112,7 +112,7 @@ The analyzer checks names and types (§2.1, §3.2, §5.2). It runs even when the
 |---|---|
 | A001 | A name is not declared |
 | A002 | A name is not declared, and a similar visible name exists ("did you mean") |
-| A003 | An undeclared name used with `.` (`lblMessage.Caption`), or `Me`: controls and forms are not available yet |
+| A003 | An undeclared name used with `.` (`lblMessage.Caption`), or `Me`, in code without a form (the playground): controls and `Me` need a form (§11) |
 | A004 | A type name does not exist |
 | A005 | A name is already declared in the same scope or procedure |
 | A006 | A local is used above its declaration |
@@ -139,6 +139,28 @@ The analyzer checks names and types (§2.1, §3.2, §5.2). It runs even when the
 | A027 | **Warning.** A `Function` with no `Return` |
 | A028 | **Warning.** A local that hides a form-level variable of the same name |
 | A029 | `SaveSetting` / `GetSetting`: not available yet (reported before running) |
+| A030 | A form-level variable or procedure with the name of a control (§11) |
+| A031 | **Warning.** A local with the name of a control, which it hides |
+| A032 | An event handler not written as its event expects (§8) |
+| A033 | `New` with a control type: controls cannot be created by code yet (stage 2) |
+
+**Form and project files**
+
+Form files and project files (§11.2, §11.3) are checked the same way: a problem is reported at its place in the file, and the rest is still read.
+
+| Code | Problem |
+|---|---|
+| F001 | The text is not in the expected layout (YAML) from this point on |
+| F002 | `formatVersion` is missing or not a whole number (the file is read as version 1) |
+| F003 | The file was written by a newer GuBASIC; nothing else in it is read |
+| F004 | **Warning.** A key GuBASIC does not know; it is ignored |
+| F005 | A value in the wrong form (`controls` that is not a list, a control without `type`, …) |
+| F006 | A missing or unusable control or form name |
+| F007 | Two controls, or two forms of a project, with the same name (in any case) |
+| F008 | A control type that does not exist |
+| F009 | A property the control type does not have |
+| F010 | A property value of the wrong type |
+| F011 | `startup` names a form that is not in `forms` |
 
 **Run time**
 
@@ -173,6 +195,7 @@ Errors found while a program runs. Each stops the program and points at its line
 - **`Nothing` (null) exists only for objects.** Value types always have a value, so beginners rarely meet null errors.
 - **To check whether an object is `Nothing`, compare with `Is`:** `If player Is Nothing Then`. For the opposite, write `If Not player Is Nothing Then`. (`=` compares values, not objects.)
 - There is **no `Variant`**. Use `Object` when a variable really must hold anything.
+- **Control types** (`Form`, `Button`, `Label`, `TextBox`; §11.1) can be written after `As`, and controls are objects: `Dim b As Button = btnSave`, `If b Is Nothing Then`. A control cannot be created with `New` yet (A033); the controls are the ones on the form.
 
 ### 2.1 Automatic conversions
 
@@ -434,7 +457,8 @@ End Sub
 
 ## 8. Events
 
-- A handler is a `Sub` named `ControlName_EventName`: `btnSave_Click`, `txtName_Changed`, `Form_Load`.
+- A handler is a `Sub` named `ControlName_EventName`: `btnSave_Click`, `txtName_Changed`. The form's own events use `Form`, whatever the form is called: `Form_Load`. Case does not matter.
+- A procedure is a handler only when the control (or `Form`) has an event of that name; `btnSave_Clicked` is an ordinary procedure. A handler must be a `Sub` with exactly the event's parameters (the events of §11.1 have none). Anything else is reported (A032) instead of being quietly treated as an ordinary procedure that never runs.
 - Double-clicking a control in the designer creates the handler for its default event.
 - Renaming a control renames its handlers.
 - Stage 2: `Handles` lets one procedure handle several events.
@@ -517,7 +541,9 @@ Sub btnNext_Click()
 End Sub
 ```
 
-- `Me` refers to the current form.
+- `Me` refers to the current form; its properties are those of `Form` (§11.1).
+- The controls are the ones in the form file (§11.2). Their names can be used anywhere in the form's code, like form-level variables. A form-level variable or procedure cannot have a control's name (A030); a local can, but then hides the control (warning A031).
+- Code without a form, such as a program in the playground, cannot use controls or `Me` (A003).
 - Stage 2: controls can be created at run time.
 
   ```vb
@@ -525,6 +551,68 @@ End Sub
   b.Caption = "New"
   Me.Controls.Add(b)
   ```
+
+### 11.1 Built-in controls
+
+| Control | Properties | Events |
+|---|---|---|
+| `Form` | `Caption` (`String`); `Width`, `Height` (`Integer`) | `Load` |
+| `Button` | `Caption` (`String`); `Left`, `Top`, `Width`, `Height` (`Integer`) | `Click` |
+| `Label` | `Caption` (`String`); `Left`, `Top`, `Width`, `Height` (`Integer`) | `Click` |
+| `TextBox` | `Text` (`String`); `Left`, `Top`, `Width`, `Height` (`Integer`) | `Changed` |
+
+- Each control is a component, defined with its default values in `components/NAME/component.yaml` (DESIGN.md §5). The table above lists the events with the default one first: the one a double-click in the designer creates.
+- `Left`, `Top`, `Width` and `Height` are in logical pixels (the same size on screens of different densities), measured from the top-left corner of the inside of the form. A form's `Width` and `Height` are the size of that inside area, without the window's title bar and borders. Later stages add properties (`Anchor`, …) without changing these (D12).
+- **`TextBox.Changed`** runs after `Text` changes, whether the user typed or the program set `Text`. A handler that sets `Text` of its own TextBox is not started again by that change, because a running handler is not started again by the same event (§8).
+- **Typing with an input method.** While a character is still being composed — a Korean syllable such as 한 typed as ㅎ, 하, 한 — `Text` holds only the finished characters, and `Changed` runs when a character is finished (when the next one starts, or on a space, Enter, or leaving the box). A handler therefore never changes the text in the middle of a syllable, which is known to break typing in Flutter on Windows ([flutter/flutter#121376](https://github.com/flutter/flutter/issues/121376)). The cost: code that follows every keystroke, such as a character counter, sees the syllable being typed only once it is finished.
+
+### 11.2 Form files
+
+Form `Form1` is two files side by side: `Form1.form.yaml` (the form and its controls) and `Form1.gbas` (its code). The form's name comes from the file name.
+
+```yaml
+formatVersion: 1
+properties:
+  Caption: Hello
+  Width: 320
+  Height: 120
+controls:
+  - name: lblMessage
+    type: Label
+    properties:
+      Left: 16
+      Top: 16
+      Width: 288
+  - name: btnHello
+    type: Button
+    properties:
+      Caption: Say hello
+      Left: 16
+      Top: 56
+      Width: 120
+```
+
+- The file is YAML, so that it is plain text (D13). The designer writes it; it can also be edited by hand, and mistakes are reported with F codes (§1.2).
+- `formatVersion` is the version of this layout, 1 for now. A file with a newer version is not read (F003), so that an older GuBASIC never misreads it. A change that would read old files differently gets a new version and a converter (D12).
+- `properties` holds only the values that differ from the defaults. Keys and property names are not case-sensitive.
+- Each control has a `name`, a `type` and, if needed, `properties`. A name follows the rules for identifiers (§1): an English letter, then letters, digits or `_`. It cannot be a keyword or `Form`, and two controls cannot have the same name in any case.
+- A `String` property takes the value as it is written: `Caption: 2026` is the text `2026`. Use quotes for text that YAML would otherwise read differently, such as text starting with a quote, `-`, `[` or `{`, or containing `: ` or ` #`.
+
+### 11.3 Project files
+
+A project is a `.gbproj` file with its forms next to it:
+
+```yaml
+formatVersion: 1
+name: Hello
+startup: Form1
+forms:
+  - Form1
+```
+
+- `forms` lists the forms, each a pair of files as in §11.2. At least one is needed.
+- `startup` is the form the program starts with; without it, the first form in `forms`.
+- [examples/hello](../examples/hello) is the README example as a project.
 
 ## 12. Open questions
 

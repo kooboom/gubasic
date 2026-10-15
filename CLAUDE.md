@@ -22,6 +22,7 @@ apps/playground/         Web playground for development (pure Dart, no Flutter)
 packages/gubasic_lang/   Pure Dart: lexer, parser, AST, analyzer, interpreter, transpiler
 packages/gubasic_runtime/ Flutter runtime used by BOTH interpreter and generated apps
 components/<Name>/       component.yaml + adapter
+examples/                Sample projects
 test/parity/             Interpreter-vs-transpiler parity tests
 ```
 

@@ -58,7 +58,7 @@ Sub btnHello_Click()
 End Sub
 ```
 
-No `await`, no widgets, no build context. Just events and code, the way it used to be.
+No `await`, no widgets, no build context. Just events and code, the way it used to be. The same program, with its form, is in [examples/hello](examples/hello).
 
 ## Documents
 

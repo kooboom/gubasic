@@ -1,0 +1,13 @@
+name: Label
+version: 1
+visual: true
+defaultEvent: Click
+properties:
+  - { name: Caption, type: String, default: "" }
+  - { name: Left, type: Integer, default: 0 }
+  - { name: Top, type: Integer, default: 0 }
+  - { name: Width, type: Integer, default: 120 }
+  - { name: Height, type: Integer, default: 24 }
+events:
+  - Click()
+methods: []

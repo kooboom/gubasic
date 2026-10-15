@@ -1,0 +1,16 @@
+# Changed runs after the text changes, also when the program sets Text.
+# While a Korean (or other IME) syllable is still being composed, Text
+# holds only the finished part and Changed waits (docs/LANGUAGE.md §11.1).
+name: TextBox
+version: 1
+visual: true
+defaultEvent: Changed
+properties:
+  - { name: Text, type: String, default: "" }
+  - { name: Left, type: Integer, default: 0 }
+  - { name: Top, type: Integer, default: 0 }
+  - { name: Width, type: Integer, default: 160 }
+  - { name: Height, type: Integer, default: 32 }
+events:
+  - Changed()
+methods: []

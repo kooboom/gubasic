@@ -164,6 +164,8 @@ Why build the basic controls this way from the start: extending GuBASIC later be
 
 The same metadata powers the toolbox, the Properties window, autocompletion and the transpiler.
 
+The built-in components live in `components/` (`Form`, `Button`, `Label`, `TextBox`; see [LANGUAGE.md](LANGUAGE.md) §11.1). The analyzer needs their properties and events on every platform, the web included, where it cannot read files, so `tool/embed_components.dart` copies each `component.yaml` into `gubasic_lang`, and CI checks that the copy is up to date (D27).
+
 ### 5.1 Built-in vs extra components
 
 | | Interpreter (F5) | Build |
@@ -207,10 +209,12 @@ All project files are **plain text**, so that Git diffs are readable (like VB6's
 
 | File | Format | Contents |
 |---|---|---|
-| `App.gbproj` | YAML | Project settings: name, startup object, Flutter version, components used |
-| `Form1.form.yaml` | YAML | Controls and their properties |
+| `App.gbproj` | YAML | Project settings: name, startup form, forms (later also the Flutter version and the components used) |
+| `Form1.form.yaml` | YAML | The form's properties, its controls and their properties |
 | `Form1.gbas` | GuBASIC | Code behind `Form1` |
 | `Module1.gbas` | GuBASIC | Module code (globals, shared procedures) |
+
+Every file carries a `formatVersion`. The layouts of form and project files are in [LANGUAGE.md](LANGUAGE.md) §11.2–§11.3; [examples/hello](../examples/hello) is a complete project.
 
 ---
 
@@ -334,3 +338,4 @@ The iOS/macOS requirement comes from Apple's policy, not from GuBASIC.
 | D24 | Until `gubasic_runtime` and the form designer exist, the playground runs **the language only** (variables, expressions, conditions, loops, procedures, `Try`). Output goes through `Debug.Print` (VB6's Immediate window), `MsgBox` and `InputBox`. Controls and forms are **not** imitated in HTML; they arrive with `gubasic_runtime`, and moving the playground to Flutter web will be considered then | A second, HTML-based runtime would break D11 (one runtime for interpreter and generated apps) and would have to be thrown away later |
 | D25 | The interpreter follows the analyzer's results exactly. Every call to a user procedure is awaited; expressions without such calls are evaluated synchronously. Each call starts in a fresh microtask and an error travels up one call per microtask, so recursion depth uses the heap, never the platform stack; R009 stops calls nested deeper than 10,000. A `Dim` runs again every time it is reached (LANGUAGE §3.2). Run-time errors can be caught with `Try` | Same names and conversions as the analyzer, and therefore as the transpiler later. Synchronous expressions: about 3 s instead of 9 s for a million loop rounds in an optimized web build, with the same results. Measured: without the per-call microtask an error raised about 1,000 calls deep overflowed the VM stack; with it, a million calls deep is safe on the VM and in Chrome, so 10,000 is a limit for endless recursion, not for safety |
 | D26 | **`Integer` is an exact 64-bit integer on every platform** — the interpreter on the web included, and generated web apps later. The VM uses Dart's `int`; the web uses `Int64` from package:fixnum; both sit behind one API with the overflow checks (`checked_math.dart`). The same parity programs run on the VM and in Chrome | A program must compute the same numbers wherever it runs. Cost on the web: in a micro-benchmark, 5 million `Int64` additions took 97 ms against 3 ms for plain numbers in Chrome (about 30×). In the interpreter the difference does not show (a million loop rounds take the same time with `Integer` or `Double`), because interpreting dominates; integer-heavy code in generated web apps will pay it. Lexer warning L007 (integers the web could not store exactly) became unnecessary and was retired |
+| D27 | Form files (`.form.yaml`) and project files (`.gbproj`) are YAML with `formatVersion: 1`, read by `gubasic_lang`. The built-in components' `component.yaml` files are copied into `gubasic_lang` by a generator. Problems in these files are F diagnostics, reported where they are, and the rest of the file is still read. Code is analyzed together with its form, so controls, `Me` and event handlers are checked before running | The analyzer must know the controls on every platform, the web included, and `gubasic_lang` must keep running with plain `dart test` (CLAUDE.md rule 1). Reading on after a problem, as the parser does (D14), keeps one mistake from hiding the others. A handler written differently from its event is an error (A032), not an ordinary procedure that silently never runs |

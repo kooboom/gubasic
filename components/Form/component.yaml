@@ -1,0 +1,13 @@
+# The form a program's controls sit on (docs/DESIGN.md §5).
+# Width and Height are the size of the area inside the window.
+name: Form
+version: 1
+visual: true
+defaultEvent: Load
+properties:
+  - { name: Caption, type: String, default: "" }
+  - { name: Width, type: Integer, default: 480 }
+  - { name: Height, type: Integer, default: 360 }
+events:
+  - Load()
+methods: []

@@ -6,8 +6,9 @@ import 'messages_en.dart';
 enum DiagnosticSeverity { error, warning }
 
 /// Every diagnostic GuBASIC can report. Codes are stable: never reuse or
-/// renumber one. The prefix says who reports it (L lexer, P parser); the
-/// severity is separate. The full list is documented in docs/LANGUAGE.md.
+/// renumber one. The prefix says who reports it (L lexer, P parser,
+/// A analyzer, F form and project files, R run time); the severity is
+/// separate. The full list is documented in docs/LANGUAGE.md.
 enum DiagnosticCode {
   /// A string literal has no closing quote on its line.
   unterminatedString('L001'),
@@ -220,6 +221,63 @@ enum DiagnosticCode {
 
   /// SaveSetting / GetSetting: not available yet. Args: the name.
   settingsNotAvailable('A029'),
+
+  // Analyzer: forms and controls
+
+  /// A form-level variable or procedure with the name of a control.
+  /// Args: the name.
+  nameIsControl('A030'),
+
+  /// A local with the name of a control, which it hides. Args: the name.
+  localHidesControl('A031', DiagnosticSeverity.warning),
+
+  /// An event handler written differently from its event. Args: the
+  /// handler's name, the event (`btnSave.Click`), the expected first line
+  /// (`Sub btnSave_Click()`).
+  handlerSignature('A032'),
+
+  /// `New Button`: controls cannot be created by code yet (stage 2).
+  /// Args: the type.
+  newControlNotAvailable('A033'),
+
+  // Form and project files (.form.yaml, .gbproj)
+
+  /// The file is not in the expected layout (YAML syntax).
+  fileSyntax('F001'),
+
+  /// `formatVersion` is missing or not a whole number.
+  formatVersionMissing('F002'),
+
+  /// The file was written by a newer GuBASIC. Args: its version, the
+  /// newest this GuBASIC reads.
+  formatVersionTooNew('F003'),
+
+  /// A key GuBASIC does not know; it is ignored. Args: the key.
+  unknownKey('F004', DiagnosticSeverity.warning),
+
+  /// A value written in the wrong form. Args: the key, an example of the
+  /// right form.
+  wrongValueForm('F005'),
+
+  /// A missing or unusable control or form name. Args: the name.
+  invalidControlName('F006'),
+
+  /// Two controls (or two forms of a project) with the same name. Args:
+  /// the name, the first one's line.
+  duplicateControlName('F007'),
+
+  /// A control type that does not exist. Args: the type, the known types.
+  unknownControlType('F008'),
+
+  /// A property the control type does not have. Args: property, type,
+  /// the type's properties.
+  unknownProperty('F009'),
+
+  /// A property value of the wrong type. Args: property, expected type.
+  wrongPropertyType('F010'),
+
+  /// `startup` names a form the project does not list. Args: the name.
+  unknownStartupForm('F011'),
 
   // Run time (the interpreter)
 

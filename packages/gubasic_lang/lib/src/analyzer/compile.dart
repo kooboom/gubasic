@@ -1,4 +1,5 @@
 import '../diagnostics/diagnostic.dart';
+import '../forms/form_file.dart';
 import '../parser/parse_result.dart';
 import '../parser/parser.dart';
 import 'analysis_result.dart';
@@ -23,8 +24,9 @@ class CompileResult {
   bool get hasErrors => diagnostics.any((d) => d.isError);
 }
 
-/// Lexes, parses and analyzes [source].
-CompileResult compile(String source) {
+/// Lexes, parses and analyzes [source]; [form] is the form the code
+/// belongs to, if any (see [analyze]).
+CompileResult compile(String source, {FormFile? form}) {
   final parsed = parse(source);
-  return CompileResult(parsed, analyze(parsed));
+  return CompileResult(parsed, analyze(parsed, form: form));
 }

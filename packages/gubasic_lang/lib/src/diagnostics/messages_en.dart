@@ -104,11 +104,11 @@ const Map<DiagnosticCode, String> englishMessages = {
   DiagnosticCode.unknownNameDidYouMean: '"{0}" is not declared. '
       'There is a similar name, "{1}"; check the spelling.',
   DiagnosticCode.unknownNameMaybeControl: '"{0}" is not declared. '
-      'If it is a control or the form, it becomes available once the form '
-      'designer exists; for now, use variables declared with Dim.',
-  DiagnosticCode.unknownType: 'There is no type named "{0}". Check the '
-      'spelling; control types such as Button become available once the '
-      'form designer exists.',
+      'This code has no form, so controls and Me cannot be used here (the '
+      'playground runs code without a form); use variables declared with '
+      'Dim, or open the code as a project with a form.',
+  DiagnosticCode.unknownType:
+      'There is no type named "{0}". Check the spelling.',
   DiagnosticCode.duplicateDeclaration:
       '"{0}" is already declared on line {1}. Use a different name.',
   DiagnosticCode.usedBeforeDeclaration:
@@ -180,6 +180,44 @@ const Map<DiagnosticCode, String> englishMessages = {
       'give back.',
   DiagnosticCode.settingsNotAvailable: '{0} is not available yet. For now, '
       'keep the value in a form-level variable while the program runs.',
+
+  // Analyzer: forms and controls
+  DiagnosticCode.nameIsControl: '"{0}" is already the name of a control on '
+      'the form. Use a different name here, or rename the control.',
+  DiagnosticCode.localHidesControl: 'This local "{0}" hides the control of '
+      'the same name, which cannot be reached here. Rename the local.',
+  DiagnosticCode.handlerSignature: '{0} runs for the event {1}, so its first '
+      'line must be {2}. Change it to that, or rename the procedure if it is '
+      'not meant to handle the event.',
+  DiagnosticCode.newControlNotAvailable: 'A {0} cannot be created by code '
+      'yet. Put the control on the form instead.',
+
+  // Form and project files
+  DiagnosticCode.fileSyntax: 'This file cannot be read from here on: the '
+      'text is not in the expected layout. Check the indentation and the '
+      'colon after each key.',
+  DiagnosticCode.formatVersionMissing: 'The file needs a formatVersion line '
+      'with a whole number, for example formatVersion: 1.',
+  DiagnosticCode.formatVersionTooNew: 'This file was written by a newer '
+      'GuBASIC (formatVersion {0}); this GuBASIC reads up to {1}. Update '
+      'GuBASIC to open it.',
+  DiagnosticCode.unknownKey:
+      '"{0}" is not a key GuBASIC knows, so it is ignored. Check the spelling.',
+  DiagnosticCode.wrongValueForm:
+      '"{0}" is not written in the expected form. Write it like {1}.',
+  DiagnosticCode.invalidControlName: '"{0}" cannot be used as a name. A name '
+      'starts with an English letter and goes on with letters, digits or _; '
+      'it cannot be a keyword or Form.',
+  DiagnosticCode.duplicateControlName: 'The name "{0}" is already used on '
+      'line {1}. Give each control and each form its own name.',
+  DiagnosticCode.unknownControlType: 'There is no control type "{0}". '
+      'Check the spelling (the types are: {1}).',
+  DiagnosticCode.unknownProperty: 'A {1} has no property "{0}". Check the '
+      'spelling (its properties are: {2}).',
+  DiagnosticCode.wrongPropertyType:
+      'The value of {0} must be of type {1}. Check the value.',
+  DiagnosticCode.unknownStartupForm: 'The startup form "{0}" is not in the '
+      'list of forms. Add it to forms, or choose a form that is listed.',
 
   // Run time
   DiagnosticCode.integerOverflow: 'The result is too large for an Integer '

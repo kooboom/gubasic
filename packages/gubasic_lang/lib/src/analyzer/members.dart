@@ -74,6 +74,11 @@ Map<String, MemberSpec>? membersOf(GbType type) {
       ];
     case GbType.exception:
       list = [const MemberSpec.property('Message', _s)];
+    case ControlType(:final component):
+      list = [
+        for (final p in component.properties.values)
+          MemberSpec.property(p.name, p.type, readOnly: false),
+      ];
     case GbType.integer ||
           GbType.double_ ||
           GbType.boolean ||

@@ -58,7 +58,7 @@ Sub btnHello_Click()
 End Sub
 ```
 
-`await`도, 위젯도, build context도 없습니다. 예전처럼 이벤트와 코드만 있습니다.
+`await`도, 위젯도, build context도 없습니다. 예전처럼 이벤트와 코드만 있습니다. 같은 프로그램을 폼과 함께 [examples/hello](examples/hello)에 넣어 두었습니다.
 
 ## 문서
 

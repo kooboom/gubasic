@@ -1,3 +1,5 @@
+import '../forms/component.dart';
+
 /// A GuBASIC type, as seen by the analyzer (and later the interpreter).
 sealed class GbType {
   const GbType();
@@ -41,7 +43,8 @@ sealed class GbType {
       this == object ||
       this == exception ||
       this is ListType ||
-      this is ArrayType;
+      this is ArrayType ||
+      this is ControlType;
 
   @override
   String toString() => displayName;
@@ -95,8 +98,20 @@ final class ArrayType extends GbType {
   int get hashCode => Object.hash(ArrayType, element);
 }
 
+/// A control or form: `Button`, `Label`, `Form`, … Its members are the
+/// properties of its component (docs/DESIGN.md §5).
+final class ControlType extends GbType {
+  ControlType(this.component);
+
+  final ComponentSpec component;
+
+  @override
+  String get displayName => component.name;
+}
+
 /// The type names a program can write after `As` or `New`, besides
-/// `List(Of T)`. Looked up ignoring case.
+/// `List(Of T)` and control types (see [lookupNamedType]). Looked up
+/// ignoring case.
 const Map<String, GbType> namedTypes = {
   'integer': GbType.integer,
   'double': GbType.double_,
@@ -106,3 +121,8 @@ const Map<String, GbType> namedTypes = {
   'object': GbType.object,
   'exception': GbType.exception,
 };
+
+/// A type name written after `As` or `New` (not `List`): a built-in type
+/// or a control type. Null if there is none. [name] is lower case.
+GbType? lookupNamedType(String name) =>
+    namedTypes[name] ?? builtinComponents[name]?.type;

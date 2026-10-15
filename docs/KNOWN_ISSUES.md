@@ -18,8 +18,8 @@ Problems we know about and have **deliberately** left unfixed for now. Each entr
 - **Why deferred:** where settings are stored differs between platforms (shared_preferences in apps, the browser's storage in the playground). It belongs with `gubasic_runtime`, so that the interpreter and generated apps store them the same way (D11).
 - **Revisit:** when `gubasic_runtime` arrives.
 
-## Controls and the form cannot be used yet
+## Programs with a form cannot run yet
 
-- **What:** names of controls (`lblMessage`, `btnSave`) and `Me` are reported as not declared (A003), with a note that controls become available once the form designer exists. Control types (`Button`) are unknown types (A004). The README example therefore shows one diagnostic.
-- **Why deferred:** controls come from form files and `gubasic_runtime`, which do not exist yet. Imitating them in the playground would create a second runtime (D24).
-- **Revisit:** when the form designer and `gubasic_runtime` arrive.
+- **What:** code is checked together with its form file (D27): controls, `Me` and event handlers are known, and the README example ([examples/hello](../examples/hello)) has no diagnostics. But nothing runs a program with a form yet: the interpreter does not deliver events, and nothing shows a form. The playground has no forms, so there controls and `Me` are still reported (A003).
+- **Why deferred:** running a form needs events in the interpreter and `gubasic_runtime` to show the controls. They come next, one change each. The playground will not imitate controls in HTML, which would create a second runtime (D24).
+- **Revisit:** when the IDE's run window exists.

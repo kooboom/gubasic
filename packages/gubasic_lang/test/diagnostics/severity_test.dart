@@ -8,6 +8,8 @@ void main() {
       DiagnosticCode.unusedLocal,
       DiagnosticCode.functionWithoutReturn,
       DiagnosticCode.localHidesField,
+      DiagnosticCode.localHidesControl,
+      DiagnosticCode.unknownKey,
     };
     for (final code in DiagnosticCode.values) {
       expect(

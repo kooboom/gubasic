@@ -178,7 +178,8 @@ void main() {
     expect(_source.value, readmeSample);
     _click('#tabs button:nth-child(3)');
     expect(_texts('.diagnostics .code'), ['A003']);
-    expect(_texts('.diagnostics .msg').single, contains('form designer'));
+    expect(
+        _texts('.diagnostics .msg').single, contains('This code has no form'));
     _click('#sample-starter');
     expect(_source.value, starterSample);
   });
