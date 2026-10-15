@@ -1,4 +1,4 @@
 formatVersion: 1
 controls:
   - { name: btnSize, type: Button }
-  - { name: btnBad, type: Button }
+  - { name: btnBad, type: Button, properties: { Top: 40 } }

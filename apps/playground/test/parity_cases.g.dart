@@ -57,7 +57,7 @@ const parityCases = <(String, String, List<String>, String, String?, String?)>[
     "' TextBox.Changed runs when the text changes, also when the program sets\n' Text: right away, as part of the assignment. Setting the same text again\n' does not run it, and a Changed handler that sets its own Text is not\n' started again by that (D5).\nSub Form_Load()\n    txtName.Text = \"Kim\"\n    Debug.Print(\"after setting: \" & lblEcho.Caption)\n    txtName.Text = txtName.Text\n    Debug.Print(\"same text again: no Changed\")\nEnd Sub\n\nSub txtName_Changed()\n    lblEcho.Caption = \"echo \" & txtName.Text\n    txtName.Text = UCase(txtName.Text)\nEnd Sub\n\nSub btnObject_Click()\n    ' Through an Object variable, the same rules apply.\n    Dim box As Object = txtName\n    box.Text = \"obj\"\n    Debug.Print(lblEcho.Caption)\nEnd Sub\n",
     [],
     "Set txtName.Text: Kim\nSet lblEcho.Caption: echo Kim\nSet txtName.Text: KIM\nDebug.Print: after setting: echo Kim\nSet txtName.Text: KIM\nDebug.Print: same text again: no Changed\n> txtName.Type \"lee\"\nSet lblEcho.Caption: echo lee\nSet txtName.Text: LEE\n> txtName.Type \"LEE\"\n> btnObject.Click\nSet txtName.Text: obj\nSet lblEcho.Caption: echo obj\nSet txtName.Text: OBJ\nDebug.Print: echo obj\n> Close\nClosed\n",
-    "formatVersion: 1\ncontrols:\n  - { name: txtName, type: TextBox }\n  - { name: lblEcho, type: Label }\n  - { name: btnObject, type: Button }\n",
+    "formatVersion: 1\ncontrols:\n  - { name: txtName, type: TextBox }\n  - { name: lblEcho, type: Label, properties: { Top: 40 } }\n  - { name: btnObject, type: Button, properties: { Top: 80 } }\n",
     "txtName.Type \"lee\"     ' the user types: Changed runs\ntxtName.Type \"LEE\"     ' no change, no Changed\nbtnObject.Click\nClose\n",
   ),
   (
@@ -65,7 +65,7 @@ const parityCases = <(String, String, List<String>, String, String?, String?)>[
     "' End in one handler ends the whole program: a handler waiting in\n' DoEvents does not go on.\nSub btnWait_Click()\n    Debug.Print(\"A waits\")\n    Do While True\n        DoEvents\n    Loop\n    Debug.Print(\"A goes on\")\nEnd Sub\n\nSub btnEnd_Click()\n    Debug.Print(\"B ends the program\")\n    End\nEnd Sub\n",
     [],
     "> btnWait.Click\nDebug.Print: A waits\n> btnEnd.Click\nDebug.Print: B ends the program\nEnded\n",
-    "formatVersion: 1\ncontrols:\n  - { name: btnWait, type: Button }\n  - { name: btnEnd, type: Button }\n",
+    "formatVersion: 1\ncontrols:\n  - { name: btnWait, type: Button }\n  - { name: btnEnd, type: Button, properties: { Top: 40 } }\n",
     "btnWait.Click\nbtnEnd.Click\n",
   ),
   (
@@ -73,7 +73,7 @@ const parityCases = <(String, String, List<String>, String, String?, String?)>[
     "' A run-time error that nothing catches stops the program, also inside an\n' event handler. Integer properties have a range (R010), which Try can\n' catch like any run-time error.\nSub btnSize_Click()\n    Try\n        btnSize.Width = -5\n    Catch ex As Exception\n        Debug.Print(\"caught: \" & ex.Message)\n    End Try\n    Dim o As Object = btnSize\n    Try\n        o.Left = \"far\"\n    Catch ex As Exception\n        Debug.Print(\"caught: \" & ex.Message)\n    End Try\n    btnSize.Left = 2147483647\n    Debug.Print(btnSize.Left)\nEnd Sub\n\nSub btnBad_Click()\n    Dim zero As Integer = 0\n    Debug.Print(1 \\ zero)\nEnd Sub\n",
     [],
     "> btnSize.Click\nDebug.Print: caught: The value of Width must be from 0 to 2147483647. Check the value before setting it.\nDebug.Print: caught: \"far\" cannot be turned into Integer. Check the value before converting it.\nSet btnSize.Left: 2147483647\nDebug.Print: 2147483647\n> btnBad.Click\nScript not finished: btnSize.Click was not run\nError R002 @ 22\n",
-    "formatVersion: 1\ncontrols:\n  - { name: btnSize, type: Button }\n  - { name: btnBad, type: Button }\n",
+    "formatVersion: 1\ncontrols:\n  - { name: btnSize, type: Button }\n  - { name: btnBad, type: Button, properties: { Top: 40 } }\n",
     "btnSize.Click\nbtnBad.Click\nbtnSize.Click     ' not run: the program has stopped\n",
   ),
   (
@@ -89,7 +89,7 @@ const parityCases = <(String, String, List<String>, String, String?, String?)>[
     "' MsgBox and InputBox are modal: while one is open, the form's controls\n' cannot be used and no other handler runs (D28).\nSub btnAsk_Click()\n    MsgBox(\"Wait\")\n    Dim answer = InputBox(\"Name?\")\n    Debug.Print(\"after the dialogs: \" & answer)\nEnd Sub\n\nSub btnOther_Click()\n    Debug.Print(\"other ran\")\nEnd Sub\n\nSub txtName_Changed()\n    Debug.Print(\"changed to \" & txtName.Text)\nEnd Sub\n",
     [],
     "> btnAsk.Click\nMsgBox: Wait\n> btnOther.Click\nBlocked: btnOther.Click\n> txtName.Type \"x\"\nBlocked: txtName.Type \"x\"\n> Close\nBlocked: Close\n> OK\nInputBox: Name?\n> btnOther.Click\nBlocked: btnOther.Click\n> Answer \"Kim\"\nDebug.Print: after the dialogs: Kim\n> btnOther.Click\nDebug.Print: other ran\n> txtName.Type \"Lee\"\nDebug.Print: changed to Lee\n> Close\nClosed\n",
-    "formatVersion: 1\ncontrols:\n  - { name: btnAsk, type: Button }\n  - { name: btnOther, type: Button }\n  - { name: txtName, type: TextBox }\n",
+    "formatVersion: 1\ncontrols:\n  - { name: btnAsk, type: Button }\n  - { name: btnOther, type: Button, properties: { Top: 40 } }\n  - { name: txtName, type: TextBox, properties: { Top: 80 } }\n",
     "btnAsk.Click\nbtnOther.Click      ' blocked by the MsgBox\ntxtName.Type \"x\"    ' blocked too\nClose               ' and so is closing the form\nOK\nbtnOther.Click      ' blocked by the InputBox\nAnswer \"Kim\"\nbtnOther.Click\ntxtName.Type \"Lee\"\nClose\n",
   ),
   (
@@ -97,7 +97,7 @@ const parityCases = <(String, String, List<String>, String, String?, String?)>[
     "' A handler that is still running is not started again by its event (D5):\n' the second click is ignored, not saved for later.\nDim done As Boolean\nDim starts As Integer\n\nSub btnA_Click()\n    starts = starts + 1\n    Debug.Print(\"A starts, time \" & starts)\n    Do While Not done\n        DoEvents\n    Loop\n    Debug.Print(\"A ends, time \" & starts)\nEnd Sub\n\nSub btnStop_Click()\n    done = True\nEnd Sub\n",
     [],
     "> btnA.Click\nDebug.Print: A starts, time 1\n> btnA.Click\nIgnored: btnA.Click\n> btnStop.Click\nDebug.Print: A ends, time 1\n> btnA.Click\nDebug.Print: A starts, time 2\nDebug.Print: A ends, time 2\n> Close\nClosed\n",
-    "formatVersion: 1\ncontrols:\n  - { name: btnA, type: Button }\n  - { name: btnStop, type: Button }\n",
+    "formatVersion: 1\ncontrols:\n  - { name: btnA, type: Button }\n  - { name: btnStop, type: Button, properties: { Top: 40 } }\n",
     "btnA.Click\nbtnA.Click      ' ignored: A is still running\nbtnStop.Click\nbtnA.Click      ' runs again: A had finished\nClose\n",
   ),
   (
@@ -105,7 +105,7 @@ const parityCases = <(String, String, List<String>, String, String?, String?)>[
     "' While A waits in DoEvents, B changes a form-level variable: A sees the\n' new value when it goes on. Each handler keeps its own locals (D28).\nDim count As Integer\nDim done As Boolean\n\nSub btnWait_Click()\n    Dim mine As String = \"A's local\"\n    count = 1\n    done = False\n    Debug.Print(\"A sees \" & count)\n    Do While Not done\n        DoEvents\n    Loop\n    Debug.Print(\"A sees \" & count & \" and \" & mine)\nEnd Sub\n\nSub btnChange_Click()\n    Dim mine As String = \"B's local\"\n    count = count + 41\n    done = True\n    Debug.Print(\"B set \" & count & \" with \" & mine & \" \" & Depth(3))\nEnd Sub\n\nFunction Depth(n As Integer) As Integer\n    If n = 0 Then Return 0\n    Return 1 + Depth(n - 1)\nEnd Function\n",
     [],
     "> btnWait.Click\nDebug.Print: A sees 1\n> btnChange.Click\nDebug.Print: B set 42 with B's local 3\nDebug.Print: A sees 42 and A's local\n> Close\nClosed\n",
-    "formatVersion: 1\ncontrols:\n  - { name: btnWait, type: Button }\n  - { name: btnChange, type: Button }\n",
+    "formatVersion: 1\ncontrols:\n  - { name: btnWait, type: Button }\n  - { name: btnChange, type: Button, properties: { Top: 40 } }\n",
     "btnWait.Click     ' A starts and waits in DoEvents\nbtnChange.Click   ' B runs while A waits\nClose\n",
   ),
   (
@@ -113,7 +113,7 @@ const parityCases = <(String, String, List<String>, String, String?, String?)>[
     "' A Static belongs to its procedure: NextTicket's ticket is shared by\n' every caller; the two handlers' \"calls\" are two different variables,\n' also while A waits in DoEvents and B runs.\nDim done As Boolean\n\nFunction NextTicket() As Integer\n    Static ticket As Integer\n    ticket = ticket + 1\n    Return ticket\nEnd Function\n\nSub btnA_Click()\n    Static calls As Integer\n    calls = calls + 1\n    Debug.Print(\"A: ticket \" & NextTicket() & \", call \" & calls)\n    done = False\n    Do While Not done\n        DoEvents\n    Loop\n    Debug.Print(\"A: ticket \" & NextTicket() & \", call \" & calls)\nEnd Sub\n\nSub btnB_Click()\n    Static calls As Integer\n    calls = calls + 10\n    Debug.Print(\"B: ticket \" & NextTicket() & \", calls \" & calls)\n    done = True\nEnd Sub\n",
     [],
     "> btnA.Click\nDebug.Print: A: ticket 1, call 1\n> btnB.Click\nDebug.Print: B: ticket 2, calls 10\nDebug.Print: A: ticket 3, call 1\n> btnA.Click\nDebug.Print: A: ticket 4, call 2\n> btnB.Click\nDebug.Print: B: ticket 5, calls 20\nDebug.Print: A: ticket 6, call 2\n> Close\nClosed\n",
-    "formatVersion: 1\ncontrols:\n  - { name: btnA, type: Button }\n  - { name: btnB, type: Button }\n",
+    "formatVersion: 1\ncontrols:\n  - { name: btnA, type: Button }\n  - { name: btnB, type: Button, properties: { Top: 40 } }\n",
     "btnA.Click\nbtnB.Click\nbtnA.Click\nbtnB.Click\nClose\n",
   ),
   (

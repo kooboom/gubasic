@@ -102,9 +102,24 @@ class _Dialog {
   final answer = Completer<Object?>();
 }
 
+/// The transcript lines for what a program shows. [ScriptedHost] and the
+/// IDE's run window both write them, so that one `.out` file checks both.
+abstract final class TranscriptLine {
+  static String debugPrint(String line) => 'Debug.Print: $line';
+
+  static String msgBox(String prompt, String title) =>
+      title.isEmpty ? 'MsgBox: $prompt' : 'MsgBox [$title]: $prompt';
+
+  static String inputBox(String prompt, String title) =>
+      title.isEmpty ? 'InputBox: $prompt' : 'InputBox [$title]: $prompt';
+
+  static String setProperty(String? control, String property, Object value) =>
+      'Set ${control ?? 'Form'}.$property: $value';
+}
+
 /// A [FormHost] for tests: properties start as in the form file, dialogs
 /// stay open until the script closes them, and everything the program
-/// shows is recorded:
+/// shows is recorded ([TranscriptLine]):
 ///
 ///     Debug.Print: <text>
 ///     MsgBox: <prompt>        (or "MsgBox [<title>]: <prompt>")
@@ -133,12 +148,12 @@ class ScriptedHost implements FormHost {
   bool get hasOpenDialog => _dialogs.isNotEmpty;
 
   @override
-  void debugPrint(String line) => transcript.add('Debug.Print: $line');
+  void debugPrint(String line) =>
+      transcript.add(TranscriptLine.debugPrint(line));
 
   @override
   Future<void> msgBox(String prompt, String title) {
-    transcript
-        .add(title.isEmpty ? 'MsgBox: $prompt' : 'MsgBox [$title]: $prompt');
+    transcript.add(TranscriptLine.msgBox(prompt, title));
     final d = _Dialog(false);
     _dialogs.add(d);
     return d.answer.future;
@@ -147,8 +162,7 @@ class ScriptedHost implements FormHost {
   @override
   Future<String> inputBox(
       String prompt, String title, String defaultValue) async {
-    transcript.add(
-        title.isEmpty ? 'InputBox: $prompt' : 'InputBox [$title]: $prompt');
+    transcript.add(TranscriptLine.inputBox(prompt, title));
     final d = _Dialog(true);
     _dialogs.add(d);
     return (await d.answer.future) as String;
@@ -164,7 +178,7 @@ class ScriptedHost implements FormHost {
   @override
   void setProperty(String? control, String property, Object value) {
     _properties[_key(control, property)] = value;
-    transcript.add('Set ${control ?? 'Form'}.$property: $value');
+    transcript.add(TranscriptLine.setProperty(control, property, value));
   }
 
   @override
@@ -190,85 +204,110 @@ class ScriptedHost implements FormHost {
   }
 }
 
+/// What an event script needs from whatever runs the program: [ScriptedHost]
+/// here, or the IDE's run window with its real widgets. [driveEventScript]
+/// takes the steps and writes the transcript the same way for both.
+abstract interface class ScriptDriver {
+  /// What the program showed so far ([TranscriptLine]).
+  List<String> get transcript;
+
+  /// How the run ended; null while it runs.
+  RunResult? get result;
+
+  /// Whether the program waits for the user: a dialog is open, or the form
+  /// is shown and no handler runs (see [Interpreter.isWaitingForUser]).
+  bool get waitsForUser;
+
+  /// Lets the program go on a little: a timer tick, or a frame.
+  Future<void> tick();
+
+  /// The user causes [event] of [control] (null: the form).
+  Future<EventOutcome> raise(String? control, String event);
+
+  /// The user changes the text of TextBox [control] to [value]. Null when
+  /// it already was [value], so that nothing happens.
+  Future<EventOutcome?> type(String control, String value);
+
+  /// Closes the open MsgBox; false if there is none.
+  Future<bool> ok();
+
+  /// Closes the open InputBox with [value], or cancels it when [value] is
+  /// null; false if there is none.
+  Future<bool> answer(String? value);
+
+  /// The user closes the form; false when an open dialog blocks it.
+  Future<bool> close();
+
+  /// Closes the form if it is still open, and waits for the run to end.
+  Future<RunResult> finish();
+}
+
 /// Runs [source] with [form] and drives it with [script] (an event
-/// script). Returns the transcript: each step echoed as `> step`, what the
-/// program showed, and a last line saying how it ended:
-///
-///     Closed | Ended | Stopped | Error <code> @ <line>
-///
-/// A step runs only when the program waits for the user (see
-/// [Interpreter.isWaitingForUser]), so the transcript is the same on every
-/// platform.
+/// script) on a [ScriptedHost]. See [driveEventScript] for the transcript.
 Future<List<String>> runEventScript(
     String source, FormFile form, String script) async {
   final steps = parseEventScript(script);
   final program = compile(source, form: form);
-  final host = ScriptedHost(form);
   if (program.hasErrors) {
     return [
       for (final d in program.diagnostics)
         if (d.isError) 'Not started: ${d.code.code} @ ${d.line}'
     ];
   }
-  final interpreter = Interpreter(program, host);
-  RunResult? result;
-  final run = interpreter.run().then((r) => result = r);
+  final host = ScriptedHost(form);
+  return driveEventScript(steps, _HostDriver(Interpreter(program, host), host));
+}
 
+/// Drives a running program with [steps]. Returns the transcript: each step
+/// echoed as `> step`, what the program showed, and a last line saying how
+/// it ended:
+///
+///     Closed | Ended | Stopped | Error <code> @ <line>
+///
+/// A step runs only when the program waits for the user, so the transcript
+/// is the same on every platform.
+Future<List<String>> driveEventScript(
+    List<ScriptStep> steps, ScriptDriver driver) async {
   // Waits until the program waits for the user. Each check comes after a
-  // timer, so that everything the last step started (a closed dialog
-  // lets its handler go on) has run as far as it can.
+  // tick, so that everything the last step started (a closed dialog lets
+  // its handler go on) has run as far as it can.
   Future<void> settle() async {
     for (var i = 0; i < 1000000; i++) {
-      await Future<void>.delayed(Duration.zero);
-      if (result != null) return;
-      if (host.hasOpenDialog || (host.shown && interpreter.isWaitingForUser)) {
-        return;
-      }
+      await driver.tick();
+      if (driver.result != null || driver.waitsForUser) return;
     }
     throw StateError('the program never waits for the user');
   }
 
-  final out = host.transcript;
+  final out = driver.transcript;
   for (final step in steps) {
     await settle();
-    if (result != null) {
+    if (driver.result != null) {
       out.add('Script not finished: ${step.text} was not run');
       break;
     }
     out.add('> ${step.text}');
     switch (step) {
       case EventStep(:final control, :final event):
-        _record(out, step.text, interpreter.raiseEvent(control, event));
+        _record(out, step.text, await driver.raise(control, event));
       case TypeStep(:final control, :final value):
-        if (host.hasOpenDialog) {
-          out.add('Blocked: ${step.text}');
-        } else if (host.getProperty(control, 'Text') != value) {
-          host.userSets(control, 'Text', value);
-          _record(out, step.text, interpreter.raiseEvent(control, 'Changed'));
-        }
+        final outcome = await driver.type(control, value);
+        if (outcome != null) _record(out, step.text, outcome);
       case OkStep():
-        if (!host.answer(inputBox: false)) {
+        if (!await driver.ok()) {
           throw StateError('"OK" but no MsgBox is open');
         }
       case AnswerStep(:final value):
-        if (!host.answer(inputBox: true, value: value ?? '')) {
+        if (!await driver.answer(value)) {
           throw StateError('"${step.text}" but no InputBox is open');
         }
       case CloseStep():
-        if (host.hasOpenDialog) {
-          out.add('Blocked: ${step.text}');
-        } else {
-          interpreter.closeForm();
-        }
+        if (!await driver.close()) out.add('Blocked: ${step.text}');
     }
   }
   await settle();
-  if (result == null) {
-    out.add('Still open');
-    interpreter.closeForm();
-  }
-  await run;
-  out.add(switch (result!) {
+  if (driver.result == null) out.add('Still open');
+  out.add(switch (await driver.finish()) {
     RunCompleted() => 'Closed',
     RunEnded() => 'Ended',
     RunStopped() => 'Stopped',
@@ -276,6 +315,63 @@ Future<List<String>> runEventScript(
     RunNotStarted(:final reason) => 'Not started: ${reason.name}',
   });
   return out;
+}
+
+/// Drives a [ScriptedHost]: the user's actions go straight to the
+/// interpreter.
+class _HostDriver implements ScriptDriver {
+  _HostDriver(this.interpreter, this.host) {
+    _run = interpreter.run().then((r) => result = r);
+  }
+
+  final Interpreter interpreter;
+  final ScriptedHost host;
+  late final Future<RunResult> _run;
+
+  @override
+  RunResult? result;
+
+  @override
+  List<String> get transcript => host.transcript;
+
+  @override
+  bool get waitsForUser =>
+      host.hasOpenDialog || (host.shown && interpreter.isWaitingForUser);
+
+  @override
+  Future<void> tick() => Future<void>.delayed(Duration.zero);
+
+  @override
+  Future<EventOutcome> raise(String? control, String event) async =>
+      interpreter.raiseEvent(control, event);
+
+  @override
+  Future<EventOutcome?> type(String control, String value) async {
+    if (host.hasOpenDialog) return EventOutcome.blocked;
+    if (host.getProperty(control, 'Text') == value) return null;
+    host.userSets(control, 'Text', value);
+    return interpreter.raiseEvent(control, 'Changed');
+  }
+
+  @override
+  Future<bool> ok() async => host.answer(inputBox: false);
+
+  @override
+  Future<bool> answer(String? value) async =>
+      host.answer(inputBox: true, value: value ?? '');
+
+  @override
+  Future<bool> close() async {
+    if (host.hasOpenDialog) return false;
+    interpreter.closeForm();
+    return true;
+  }
+
+  @override
+  Future<RunResult> finish() {
+    if (result == null) interpreter.closeForm();
+    return _run;
+  }
 }
 
 void _record(List<String> out, String step, EventOutcome outcome) {
