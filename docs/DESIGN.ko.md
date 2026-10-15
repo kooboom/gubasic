@@ -256,7 +256,7 @@ IDE 메시지와 오류 설명은 **영어와 한국어**로 제공됩니다.
 ## 9. 테스트
 
 - `gubasic_lang`은 일반 `dart test`로, `gubasic_runtime`은 `flutter test`로 테스트합니다.
-- **실제 입력기로 입력하기.** `packages/gubasic_runtime/tool/ime_probe`는 실제 입력기가 입력 칸에 보내는 것(조합 중인 부분을 포함한 모든 값)을 기록합니다. 기록은 `packages/gubasic_runtime/test/ime_logs/`에 두고 TextBox 테스트가 그대로 재생하므로, 한글 입력을 지어낸 신호가 아니라 실제 신호로 시험합니다. 기록하는 방법: [README](../packages/gubasic_runtime/tool/ime_probe/README.ko.md).
+- **실제 입력기로 입력하기.** `packages/gubasic_runtime/tool/ime_probe`는 실제 입력기가 입력 칸에 보내는 것(조합 중인 부분을 포함한 모든 값)을 기록합니다. 기록은 `packages/gubasic_runtime/test/ime_logs/`에 두고 TextBox 테스트가 그대로 재생하므로, 한글 입력을 지어낸 신호가 아니라 실제 신호로 시험합니다. 재생은 두 층으로 검사합니다. LANGUAGE 11.1절의 규칙은 모든 입력기에 똑같이 적용하고, 각 기록이 만든 이벤트는 순서 그대로 고정합니다. 그래서 Flutter를 올리면서 한 입력기의 동작이 바뀌면 알아챕니다. 기록하는 방법: [README](../packages/gubasic_runtime/tool/ime_probe/README.ko.md).
 - **동일성 테스트 (처음부터 필수):** `test/parity/`의 예제 프로그램을 인터프리터로 한 번, 변환된 Dart로 한 번 실행해서 기록된 출력이 같아야 합니다. 동일성을 깨는 변경은 병합하지 않습니다.
 - 같은 동일성 프로그램을 Chrome(`apps/playground`)에서도 실행해서, 인터프리터가 VM과 웹에서 같은 출력을 내는지 확인합니다.
 

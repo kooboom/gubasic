@@ -42,31 +42,55 @@ void main() {
     await tester.pump();
   }
 
-  Future<void> replay(
-    WidgetTester tester,
-    List<Map<String, Object?>> log,
-  ) async {
-    for (final e in log.where((e) => e['kind'] == 'value')) {
-      final composing = (e['composing']! as List).cast<int>();
-      final selection = (e['selection']! as List).cast<int>();
-      tester.testTextInput.updateEditingValue(
-        TextEditingValue(
-          text: e['text']! as String,
-          selection: TextSelection(
-            baseOffset: selection[0],
-            extentOffset: selection[1],
-          ),
-          composing: TextRange(start: composing[0], end: composing[1]),
-        ),
-      );
-      await tester.pump();
-    }
-  }
-
   List<String> changes() => [
     for (final e in events)
       if (e.startsWith('txtName.Changed')) e.substring(16),
   ];
+
+  /// Replays the recorded values in order and checks, after each one, what
+  /// LANGUAGE §11.1 promises for every input method:
+  /// - `Text` holds only the characters the input method has committed;
+  /// - `Changed` runs each time the committed text changes, and only then.
+  Future<void> replay(
+    WidgetTester tester,
+    Iterable<Map<String, Object?>> log,
+  ) async {
+    for (final e in log.where((e) => e['kind'] == 'value')) {
+      final composing = (e['composing']! as List).cast<int>();
+      final selection = (e['selection']! as List).cast<int>();
+      final value = TextEditingValue(
+        text: e['text']! as String,
+        selection: TextSelection(
+          baseOffset: selection[0],
+          extentOffset: selection[1],
+        ),
+        composing: TextRange(start: composing[0], end: composing[1]),
+      );
+      final before = text();
+      final changed = changes().length;
+      tester.testTextInput.updateEditingValue(value);
+      await tester.pump();
+      final at = 'at ${e['ms']} ms (${e['text']}, composing $composing)';
+      expect(text(), committedText(value), reason: 'only committed text $at');
+      expect(
+        changes().length,
+        changed + (text() == before ? 0 : 1),
+        reason: 'Changed once per commit $at',
+      );
+    }
+  }
+
+  /// No Changed shows a syllable in the middle of being typed: a lone jamo
+  /// (ㄱ, ㅏ) never comes out of a finished syllable in 2-set typing.
+  void expectNoLoneJamo() {
+    for (final c in changes()) {
+      expect(
+        c.runes.any((r) => r >= 0x3131 && r <= 0x318E),
+        isFalse,
+        reason: 'mid-syllable $c',
+      );
+    }
+  }
 
   for (final file in Directory('test/ime_logs').listSync().whereType<File>()) {
     final source = file.uri.pathSegments.last;
@@ -75,7 +99,9 @@ void main() {
       (k, v) => MapEntry(k, (v! as List).cast<Map<String, Object?>>()),
     );
 
-    /// The scenario's entries from its last reset (or the start) on.
+    /// The scenario's entries from its last reset (or the start) on: the
+    /// probe's 다시 starts a scenario over, and only the last try counts.
+    /// Every scenario is replayed through this.
     List<Map<String, Object?>> last(String id, {int skipResets = 0}) {
       final entries = scenarios[id]!;
       final resets = [
@@ -88,33 +114,52 @@ void main() {
       return entries.sublist(from);
     }
 
+    /// The events this recording made, pinned exactly (see [recorded]).
+    void expectRecorded(String scenario) {
+      final pinned = recorded[source]?[scenario];
+      if (pinned == null) {
+        fail(
+          'No pinned events for $source $scenario. If the rules above pass, '
+          'check these and add them to `recorded`: ${jsonEncode(events)}',
+        );
+      }
+      expect(events, pinned);
+    }
+
     group(source, () {
       testWidgets('dokkaebibul 갈가: 갈 is committed only when ㅏ is typed', (
         tester,
       ) async {
         await show(tester);
-        await replay(tester, scenarios['dokkaebi']!);
-        // 갈 and 갉 were still being composed: no Changed until 갈가.
-        expect(changes(), ['[갈]', '[갈가]']);
+        await replay(tester, last('dokkaebi'));
+        // 갉 was only ever being composed.
+        expectNoLoneJamo();
+        expect(changes(), everyElement(isNot(contains('갉'))));
         expect(text(), '갈가');
+        expectRecorded('dokkaebi');
       });
 
       testWidgets('double final consonants 닭 and 값', (tester) async {
         await show(tester);
-        await replay(tester, scenarios['double_final']!);
-        expect(changes().last, '[닭 값 ]');
-        expect(changes(), contains('[닭]'));
-        expect(changes(), isNot(contains('[달]')));
-        expect(changes(), isNot(contains('[닭ㄱ]')));
+        await replay(tester, last('double_final'));
+        // 달 and 갑 were only ever being composed.
+        expectNoLoneJamo();
+        expect(changes(), everyElement(isNot(contains('달'))));
+        expect(changes(), everyElement(isNot(contains('갑'))));
+        expect(text(), '닭 값 ');
+        expectRecorded('double_final');
       });
 
       testWidgets('Backspace while composing: 한 becomes 하, not empty', (
         tester,
       ) async {
         await show(tester);
-        await replay(tester, scenarios['backspace']!);
-        expect(changes(), ['[하]']);
+        await replay(tester, last('backspace'));
+        // 한 was only ever being composed.
+        expectNoLoneJamo();
+        expect(changes(), everyElement(isNot(contains('한'))));
         expect(text(), '하');
+        expectRecorded('backspace');
       });
 
       testWidgets('a click while composing: commit, Changed, then Click', (
@@ -125,37 +170,45 @@ void main() {
         // browser made when the field lost the focus: the runtime must
         // commit by itself on platforms that do not.
         final typed = last('click').takeWhile((e) => e['kind'] != 'click');
-        final composing = typed
-            .where(
-              (e) =>
-                  e['kind'] == 'value' && (e['composing']! as List).first != -1,
-            )
-            .toList();
-        await replay(tester, composing);
+        await replay(
+          tester,
+          typed.where(
+            (e) =>
+                e['kind'] == 'value' && (e['composing']! as List).first != -1,
+          ),
+        );
         expect(text(), '한', reason: '글 is still being composed');
-        events.clear();
+        final before = events.length;
         await tester.tap(find.text('OK'));
         await tester.pump();
-        expect(events, ['txtName.Changed [한글]', 'btnOk.Click [한글]']);
+        expect(events.sublist(before), [
+          'txtName.Changed [한글]',
+          'btnOk.Click [한글]',
+        ]);
+        expectNoLoneJamo();
+        expectRecorded('click_composing');
       });
 
       testWidgets('a click after the browser committed: Click sees 한글', (
         tester,
       ) async {
         await show(tester);
+        // Scenario 4 is done twice on purpose: button A, 다시, button B.
         for (final skip in [1, 0]) {
           final typed = last(
             'click',
             skipResets: skip,
           ).takeWhile((e) => e['kind'] != 'click');
-          await replay(tester, typed.toList());
-          events.clear();
+          await replay(tester, typed);
+          final before = events.length;
           await tester.tap(find.text('OK'));
           await tester.pump();
-          expect(events, ['btnOk.Click [한글]']);
+          expect(events.sublist(before), ['btnOk.Click [한글]']);
           await tester.tap(find.byType(TextField));
           await tester.pump();
         }
+        expectNoLoneJamo();
+        expectRecorded('click_committed');
       });
     });
   }
@@ -202,3 +255,61 @@ void main() {
     );
   });
 }
+
+/// What each recording made, event by event, with the committed text at
+/// that moment. The rules above hold for every input method; these pin
+/// down how each one got there, so a Flutter upgrade that changes what one
+/// input method does fails here. A new recording fails until its events
+/// are checked by hand and added.
+const recorded = <String, Map<String, List<String>>>{
+  'macos-chrome.json': {
+    'dokkaebi': ['txtName.Changed [갈]', 'txtName.Changed [갈가]'],
+    // The space goes into the composition, so 닭 is never committed alone.
+    'double_final': ['txtName.Changed [닭 ]', 'txtName.Changed [닭 값 ]'],
+    'backspace': ['txtName.Changed [하]'],
+    'click_composing': [
+      'txtName.Changed [한]',
+      'txtName.Changed [한글]',
+      'btnOk.Click [한글]',
+    ],
+    'click_committed': [
+      'txtName.Changed [한]',
+      'txtName.Changed [한글]',
+      'btnOk.Click [한글]',
+      'txtName.Changed []',
+      'txtName.Changed [한]',
+      'txtName.Changed [한글]',
+      'btnOk.Click [한글]',
+    ],
+  },
+  'windows-chrome.json': {
+    'dokkaebi': ['txtName.Changed [갈]', 'txtName.Changed [갈가]'],
+    // 닭값 typed first without spaces, erased, then typed again with them.
+    'double_final': [
+      'txtName.Changed [닭]',
+      'txtName.Changed [닭값]',
+      'txtName.Changed [닭]',
+      'txtName.Changed []',
+      'txtName.Changed [닭 ]',
+      'txtName.Changed [닭 값 ]',
+    ],
+    'backspace': ['txtName.Changed [하]'],
+    'click_composing': [
+      'txtName.Changed [한]',
+      'txtName.Changed [한글]',
+      'btnOk.Click [한글]',
+    ],
+    // Button A's try includes 한긂 typed and erased before 한글.
+    'click_committed': [
+      'txtName.Changed [한]',
+      'txtName.Changed []',
+      'txtName.Changed [한]',
+      'txtName.Changed [한글]',
+      'btnOk.Click [한글]',
+      'txtName.Changed []',
+      'txtName.Changed [한]',
+      'txtName.Changed [한글]',
+      'btnOk.Click [한글]',
+    ],
+  },
+};

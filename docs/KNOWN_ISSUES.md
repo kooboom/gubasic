@@ -24,10 +24,10 @@ Problems we know about and have **deliberately** left unfixed for now. Each entr
 - **Why deferred:** showing the controls needs `gubasic_runtime` and the IDE's run window, which come in the next change. The playground will not imitate controls in HTML, which would create a second runtime (D24).
 - **Revisit:** when the IDE's run window exists.
 
-## Korean typing is tested with one input method so far
+## Korean typing is tested in Chrome only so far
 
-- **What:** the TextBox tests replay what the Windows Korean input method sent in Chrome (`packages/gubasic_runtime/test/ime_logs/`). The macOS input method has not been recorded yet. Windows **desktop** apps have not been tried with a real input method at all: building them needs Visual Studio, which is not installed on the Windows PC.
-- **Known Flutter problems to check then:** on Windows desktop, syllables can be lost when typing fast ([flutter/flutter#189491](https://github.com/flutter/flutter/issues/189491), open). On the web, a composition dropped by the browser can leave a stale composing range ([flutter/flutter#193847](https://github.com/flutter/flutter/issues/193847)); it is fixed on Flutter's master branch but not in 3.47.7. The Windows Chrome recording did not show it: leaving the field committed the text cleanly.
+- **What:** the TextBox tests replay what the Windows and the macOS (2-set) Korean input methods sent in Chrome (`packages/gubasic_runtime/test/ime_logs/`). Desktop apps have not been tried with a real input method yet: on macOS this comes with the IDE run window; on Windows, building them needs Visual Studio, which is not installed on the Windows PC (by decision).
+- **What the two recordings showed:** both keep the promises of LANGUAGE §11.1. They differ in one place: on macOS a space goes into the composition and is committed together with the syllable before it, so after 닭 the text goes straight to `닭 ` and `Changed` never sees `닭` alone; on Windows `닭` is committed first. Both commit what is being composed when the field loses the focus, about 150 ms before a click on the web.
+- **Known Flutter problems to check then:** on Windows desktop, syllables can be lost when typing fast ([flutter/flutter#189491](https://github.com/flutter/flutter/issues/189491), open). On the web, a composition dropped by the browser can leave a stale composing range ([flutter/flutter#193847](https://github.com/flutter/flutter/issues/193847)); it is fixed on Flutter's master branch but not in 3.47.7. Neither Chrome recording showed it: leaving the field committed the text cleanly.
 - **Why deferred:** the recordings need a person typing on each system; Visual Studio is a large install that is not needed for the web.
-- **Revisit:** when the macOS recording is made (with the IDE run window), and when Visual Studio is installed on the Windows PC.
-
+- **Revisit:** when the IDE run window runs on macOS desktop (E1d), and when Visual Studio is installed on the Windows PC.

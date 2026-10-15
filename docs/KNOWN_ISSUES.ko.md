@@ -24,10 +24,10 @@
 - **왜 미뤘나:** 컨트롤을 보여 주려면 `gubasic_runtime`과 IDE의 실행 창이 필요하며, 다음 변경에서 들어옵니다. 놀이터에서 HTML로 컨트롤을 흉내 내면 두 번째 런타임이 생기므로 하지 않습니다(D24).
 - **다시 볼 때:** IDE의 실행 창이 생길 때.
 
-## 한글 입력은 아직 입력기 하나로만 시험함
+## 한글 입력은 아직 Chrome에서만 시험함
 
-- **무엇:** TextBox 테스트는 Chrome에서 Windows 한글 입력기가 보낸 신호를 재생합니다(`packages/gubasic_runtime/test/ime_logs/`). macOS 입력기는 아직 기록하지 않았습니다. Windows **데스크톱** 앱은 실제 입력기로 전혀 시험하지 않았습니다. 빌드하려면 Visual Studio가 필요한데 Windows PC에 설치하지 않았기 때문입니다.
-- **그때 확인할 Flutter 문제:** Windows 데스크톱에서 빠르게 치면 음절이 빠지는 문제([flutter/flutter#189491](https://github.com/flutter/flutter/issues/189491), 열림). 웹에서 브라우저가 조합을 버리면 조합 범위가 남는 문제([flutter/flutter#193847](https://github.com/flutter/flutter/issues/193847))는 Flutter master에서 고쳤지만 3.47.7에는 없습니다. Windows Chrome 기록에서는 생기지 않았습니다. 입력 칸을 떠날 때 글자가 깨끗하게 확정되었습니다.
+- **무엇:** TextBox 테스트는 Chrome에서 Windows 한글 입력기와 macOS 한글 입력기(두벌식)가 보낸 신호를 재생합니다(`packages/gubasic_runtime/test/ime_logs/`). 데스크톱 앱은 아직 실제 입력기로 시험하지 않았습니다. macOS는 IDE 실행 창과 함께 시험합니다. Windows는 빌드하려면 Visual Studio가 필요한데, 결정에 따라 Windows PC에 설치하지 않았습니다.
+- **두 기록에서 본 것:** 둘 다 LANGUAGE 11.1절의 약속을 지킵니다. 다른 점은 한 곳입니다. macOS는 스페이스를 조합 안에 넣어 앞 음절과 함께 확정합니다. 그래서 닭 다음에 글자가 바로 `닭 `이 되고, `Changed`는 `닭`만 따로 보지 못합니다. Windows는 `닭`을 먼저 확정합니다. 둘 다 입력 칸이 포커스를 잃을 때 조합 중인 글자를 확정하며, 웹에서는 클릭보다 150 ms쯤 먼저입니다.
+- **그때 확인할 Flutter 문제:** Windows 데스크톱에서 빠르게 치면 음절이 빠지는 문제([flutter/flutter#189491](https://github.com/flutter/flutter/issues/189491), 열림). 웹에서 브라우저가 조합을 버리면 조합 범위가 남는 문제([flutter/flutter#193847](https://github.com/flutter/flutter/issues/193847))는 Flutter master에서 고쳤지만 3.47.7에는 없습니다. 두 Chrome 기록 모두에서 생기지 않았습니다. 입력 칸을 떠날 때 글자가 깨끗하게 확정되었습니다.
 - **왜 미뤘나:** 기록하려면 사람이 시스템마다 직접 쳐야 하고, Visual Studio는 웹에는 필요 없는 큰 설치입니다.
-- **다시 볼 때:** macOS 기록을 만들 때(IDE 실행 창과 함께), 그리고 Windows PC에 Visual Studio를 설치할 때.
-
+- **다시 볼 때:** IDE 실행 창을 macOS 데스크톱에서 돌릴 때(E1d), 그리고 Windows PC에 Visual Studio를 설치할 때.

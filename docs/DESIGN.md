@@ -256,7 +256,7 @@ IDE messages and error explanations are available in **English and Korean**.
 ## 9. Testing
 
 - `gubasic_lang` is tested with plain `dart test`; `gubasic_runtime` with `flutter test`.
-- **Typing with real input methods.** `packages/gubasic_runtime/tool/ime_probe` records what a real input method sends to a text field (every value, with the part still being composed). The recordings are kept in `packages/gubasic_runtime/test/ime_logs/`, and the TextBox tests replay them, so Korean typing is tested with real signals, not invented ones. How to record: [its README](../packages/gubasic_runtime/tool/ime_probe/README.md).
+- **Typing with real input methods.** `packages/gubasic_runtime/tool/ime_probe` records what a real input method sends to a text field (every value, with the part still being composed). The recordings are kept in `packages/gubasic_runtime/test/ime_logs/`, and the TextBox tests replay them, so Korean typing is tested with real signals, not invented ones. Each replay is checked in two layers: the rules of LANGUAGE §11.1, the same for every input method, and the exact events that recording made, so a Flutter upgrade that changes what one input method does is noticed. How to record: [its README](../packages/gubasic_runtime/tool/ime_probe/README.md).
 - **Parity tests (mandatory from the start):** each sample program in `test/parity/` is run once through the interpreter and once through the transpiled Dart; recorded output must be identical. A change that breaks parity does not merge.
 - The same parity programs also run in Chrome (`apps/playground`), so the interpreter gives the same output on the VM and on the web.
 
