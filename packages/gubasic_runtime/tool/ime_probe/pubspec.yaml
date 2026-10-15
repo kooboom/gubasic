@@ -1,0 +1,19 @@
+name: ime_probe
+description: Records what a real input method (IME) sends to a Flutter TextField, as test input for gubasic_runtime.
+publish_to: none
+version: 1.0.0
+
+environment:
+  sdk: ^3.13.5
+  flutter: 3.47.7
+
+dependencies:
+  flutter:
+    sdk: flutter
+  web: ^1.1.1
+
+dev_dependencies:
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
