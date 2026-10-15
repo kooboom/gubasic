@@ -71,6 +71,11 @@ How it is built:
 - **`GbDialogs`** shows `MsgBox` and `InputBox`, modal (D28), and closes them all when a program ends.
 - **`gubasic_runtime` does not depend on `gubasic_lang`.** The IDE connects the two (the interpreter's `FormHost`), so that generated apps never carry the interpreter.
 - **The IDE's run window** (`apps/ide`): `RunHost` implements `FormHost` on a `GbFormModel` and `GbDialogs`. Properties live only in the model, which the program sets and the user changes; clicks and typing go to the interpreter as events. The run window fills the middle of the IDE and has its own navigator: a MsgBox or InputBox covers the form and its close button (D28), but not the IDE's toolbar, so Stop (Shift+F5) always works. The form appears when `Form_Load` has finished.
+  - **Dialogs are program-modal.** A MsgBox or InputBox blocks the running program's form only. The IDE stays usable, above all its Stop button: if dialogs blocked the IDE too, a program waiting in one could not be stopped.
+  - **Looking at a file during a run.** While a program runs, the file list starts with a "Run window" entry. Choosing a file shows the file; choosing the entry brings back the run window exactly as it was, an open dialog included, still waiting for its answer. The run window is never rebuilt while hidden, so a dialog cannot be lost.
+  - **Stop with a dialog open** closes the dialog and ends the program, wherever the user is looking.
+  - **Files are read-only while a program runs.** The program runs the code it started with; to change it, the user stops it first. The playground instead stops a program when its code is edited (I5 in `apps/playground/lib/src/dom/app.dart`); the IDE does not, because a stray keystroke in a file would end a program that may be waiting in a dialog, without the user asking. The code view is read-only in any case until the code editor arrives (ROADMAP); the editor keeps this rule.
+  - Tests: `apps/ide/test/ide_shell_test.dart`.
 - **The runtime does not choose fonts.** The app around it does, through its theme, so that desktop and phone apps keep using the system's fonts.
 - `packages/gubasic_runtime/example` draws a form by hand; CI builds it for the web and Windows on every change, and for macOS on pull requests.
 

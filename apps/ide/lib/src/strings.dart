@@ -10,6 +10,7 @@ class IdeStrings {
     required this.stop,
     required this.closeForm,
     required this.files,
+    required this.runWindow,
     required this.output,
     required this.cannotStart,
     required this.closed,
@@ -28,6 +29,9 @@ class IdeStrings {
   final String stop;
   final String closeForm;
   final String files;
+
+  /// The file list's entry that goes back to the running program.
+  final String runWindow;
   final String output;
   final String cannotStart;
   final String closed;
@@ -50,6 +54,7 @@ class IdeStrings {
     stop: 'Stop',
     closeForm: 'Close',
     files: 'Files',
+    runWindow: 'Run window',
     output: 'Output',
     cannotStart:
         'The program cannot start because of the errors below. '
@@ -67,6 +72,7 @@ class IdeStrings {
     stop: '중지',
     closeForm: '닫기',
     files: '파일',
+    runWindow: '실행 화면',
     output: '출력',
     cannotStart: '아래 오류 때문에 프로그램을 시작할 수 없습니다. 오류를 고친 뒤 다시 실행합니다.',
     closed: '폼을 닫아서 프로그램이 끝났습니다.',

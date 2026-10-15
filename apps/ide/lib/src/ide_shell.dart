@@ -9,6 +9,11 @@ import 'strings.dart';
 /// The IDE's main window: the project's files on the left, the selected
 /// file or the running program in the middle, the output below. F5 runs
 /// the project, Shift+F5 stops it.
+///
+/// While a program runs, the file list starts with its run window. The
+/// user can look at a file and come back: the run window, with any open
+/// MsgBox or InputBox, stays as it was. The files cannot be changed while
+/// the program runs.
 class IdeShell extends StatefulWidget {
   const IdeShell({
     super.key,
@@ -39,6 +44,9 @@ class _IdeShellState extends State<IdeShell> {
   );
   RunSession? _session;
 
+  /// Whether the middle shows the run window rather than [_file].
+  var _showRun = false;
+
   /// Shown instead of a run when the project cannot start.
   var _problems = <String>[];
 
@@ -64,6 +72,7 @@ class _IdeShellState extends State<IdeShell> {
     setState(() {
       _problems = [];
       _session = RunSession(startup, strings: s);
+      _showRun = true;
     });
   }
 
@@ -143,13 +152,24 @@ class _IdeShellState extends State<IdeShell> {
 
   Widget _fileList(BuildContext context) => ListView(
     children: [
+      if (_running)
+        ListTile(
+          dense: true,
+          leading: const Icon(Icons.play_arrow),
+          title: Text(widget.strings.runWindow),
+          selected: _showRun,
+          onTap: () => setState(() => _showRun = true),
+        ),
       ListTile(dense: true, title: Text(widget.strings.files)),
       for (final f in widget.project.files.keys)
         ListTile(
           dense: true,
           title: Text(f),
-          selected: f == _file,
-          onTap: () => setState(() => _file = f),
+          selected: f == _file && !(_running && _showRun),
+          onTap: () => setState(() {
+            _file = f;
+            _showRun = false;
+          }),
         ),
     ],
   );
@@ -166,14 +186,16 @@ class _IdeShellState extends State<IdeShell> {
     if (session == null || session.result != null) {
       return code;
     }
-    return Stack(
+    // The run window stays built while a file is shown, so that its
+    // dialogs are still there, unanswered, when the user comes back.
+    return IndexedStack(
+      index: _showRun ? 1 : 0,
+      sizing: StackFit.expand,
       children: [
         code,
-        Positioned.fill(
-          child: ColoredBox(
-            color: Theme.of(context).colorScheme.scrim.withValues(alpha: 0.2),
-            child: RunWindow(key: ObjectKey(session), session: session),
-          ),
+        ColoredBox(
+          color: Theme.of(context).colorScheme.scrim.withValues(alpha: 0.2),
+          child: RunWindow(key: ObjectKey(session), session: session),
         ),
       ],
     );

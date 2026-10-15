@@ -76,6 +76,69 @@ void main() {
     expect(find.text(IdeStrings.en.stopped), findsOneWidget);
   });
 
+  /// Runs hello up to its MsgBox: click, a name in the InputBox, OK.
+  Future<void> upToMsgBox(WidgetTester tester) async {
+    await open(tester, hello);
+    await tester.sendKeyEvent(LogicalKeyboardKey.f5);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Say hello'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField), 'Ann');
+    await tester.tap(find.text('OK'));
+    await tester.pumpAndSettle();
+    expect(find.text('Hello, Ann! (1)'), findsOneWidget, reason: 'MsgBox');
+  }
+
+  testWidgets('a MsgBox blocks the form, not the IDE', (tester) async {
+    await upToMsgBox(tester);
+    expect(find.text('Say hello').hitTestable(), findsNothing);
+    expect(find.text('Form1.gbas').hitTestable(), findsOneWidget);
+    expect(find.text('Stop (Shift+F5)').hitTestable(), findsOneWidget);
+  });
+
+  testWidgets('a MsgBox is still there after looking at a file', (
+    tester,
+  ) async {
+    await upToMsgBox(tester);
+    await tester.tap(find.text('Form1.form.yaml'));
+    await tester.pumpAndSettle();
+    expect(find.text('Hello, Ann! (1)'), findsNothing);
+    expect(find.textContaining('btnHello'), findsWidgets, reason: 'the file');
+
+    await tester.tap(find.text('Run window'));
+    await tester.pumpAndSettle();
+    expect(find.text('Hello, Ann! (1)'), findsOneWidget);
+    await tester.tap(find.text('OK'));
+    await tester.pumpAndSettle();
+    expect(find.text('Hello, Ann! (1)'), findsNothing);
+    expect(find.text('Say hello').hitTestable(), findsOneWidget);
+  });
+
+  for (final where in ['the run window', 'a file']) {
+    testWidgets('Stop with a MsgBox open, looking at $where', (tester) async {
+      await upToMsgBox(tester);
+      if (where == 'a file') {
+        await tester.tap(find.text('Form1.gbas'));
+        await tester.pumpAndSettle();
+      }
+      await tester.tap(find.text('Stop (Shift+F5)'));
+      await tester.pumpAndSettle();
+      expect(find.text('Hello, Ann! (1)', skipOffstage: false), findsNothing);
+      expect(find.byType(RunWindow, skipOffstage: false), findsNothing);
+      expect(find.text('Run window'), findsNothing);
+      expect(find.text(IdeStrings.en.stopped), findsOneWidget);
+    });
+  }
+
+  testWidgets('files are read-only while a program runs', (tester) async {
+    await upToMsgBox(tester);
+    await tester.tap(find.text('Form1.gbas'));
+    await tester.pumpAndSettle();
+    final shown = tester.widgetList<EditableText>(find.byType(EditableText));
+    expect(shown, isNotEmpty);
+    expect(shown.every((e) => e.readOnly), isTrue);
+  });
+
   testWidgets('Korean: dialog buttons and messages', (tester) async {
     await open(tester, hello, strings: IdeStrings.ko);
     await tester.tap(find.text('실행 (F5)'));
