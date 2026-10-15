@@ -70,6 +70,7 @@ GuBASIC의 각 릴리스는 검증한 Flutter 버전에 고정됩니다(D29). Fl
 - **`GbFormModel`**은 폼과 컨트롤의 현재 속성(`GbControlState`, 이름과 타입은 `component.yaml`과 같음)을 담습니다. **`GbFormView`**가 이를 보여 줍니다: 각 컨트롤을 `Stack` 안의 `Left`, `Top` 위치에 둡니다(6절). 사용자가 한 일은 이벤트로 돌아옵니다: `Click`, 그리고 사용자가 TextBox의 확정된 글자를 바꿀 때의 `Changed`.
 - **`GbDialogs`**는 `MsgBox`와 `InputBox`를 모달로 보여 주고(D28), 프로그램이 끝나면 모두 닫습니다.
 - **`gubasic_runtime`은 `gubasic_lang`에 의존하지 않습니다.** 둘은 IDE가 이어 줍니다(인터프리터의 `FormHost`). 그래서 생성된 앱에는 인터프리터가 들어가지 않습니다.
+- **IDE의 실행 창**(`apps/ide`): `RunHost`가 `GbFormModel`과 `GbDialogs` 위에 `FormHost`를 구현합니다. 속성 값은 모델 한 곳에만 있고, 프로그램이 넣고 사용자가 바꿉니다. 클릭과 입력은 이벤트로 인터프리터에 갑니다. 실행 창은 IDE 가운데를 채우고 자기 내비게이터를 가집니다. 그래서 MsgBox나 InputBox는 폼과 폼의 닫기 단추를 가리지만(D28) IDE의 도구 막대는 가리지 않아, 중지(Shift+F5)는 언제나 됩니다. 폼은 `Form_Load`가 끝나면 나타납니다.
 - **런타임은 글꼴을 정하지 않습니다.** 런타임을 감싼 앱이 테마로 정합니다. 그래서 데스크톱과 휴대폰 앱은 계속 운영체제 글꼴을 씁니다.
 - `packages/gubasic_runtime/example`은 폼을 손으로 그린 예제입니다. CI가 변경마다 웹과 Windows로, PR에서는 macOS로도 빌드합니다.
 
@@ -78,7 +79,7 @@ GuBASIC의 각 릴리스는 검증한 Flutter 버전에 고정됩니다(D29). Fl
 ```
 gubasic/
 ├── apps/
-│   ├── ide/                 Flutter 데스크톱 IDE (macOS, Windows)
+│   ├── ide/                 Flutter IDE (macOS, Windows, 웹)
 │   ├── player/              폰용 GuBASIC Player (3단계)
 │   └── playground/          개발용 웹 놀이터 (순수 Dart, Flutter 없음)
 ├── packages/
@@ -272,7 +273,7 @@ Answer "Kim"          ' 열린 InputBox에 답함 (Cancel은 "")
 Close                 ' 폼을 닫음
 ```
 
-각 줄은 프로그램이 사용자를 기다릴 때만 실행합니다: 실행 중인 처리기가 없거나, 실행 중인 처리기가 `DoEvents`에서 기다리거나, 대화상자가 열려 있을 때입니다. 그래서 출력이 모든 플랫폼에서 같습니다. `NAME.out`에는 각 줄을 `> 줄`로 적고, 이어서 프로그램이 보여 준 것(`Debug.Print`, `MsgBox`, `InputBox`), 프로그램이 넣은 속성 값(`Set lblMessage.Caption: Hello`), 이벤트가 어떻게 되었는지(`Ignored: …`, `Blocked: …`)를 적습니다. 마지막 줄은 실행이 어떻게 끝났는지입니다: `Closed`, `Ended`, `Stopped`, `Error R0xx @ 줄`. 실행 도구는 `package:gubasic_lang/testing.dart`이며, VM 테스트, Chrome 테스트, 나중에 IDE의 위젯 테스트가 함께 씁니다.
+각 줄은 프로그램이 사용자를 기다릴 때만 실행합니다: 실행 중인 처리기가 없거나, 실행 중인 처리기가 `DoEvents`에서 기다리거나, 대화상자가 열려 있을 때입니다. 그래서 출력이 모든 플랫폼에서 같습니다. `NAME.out`에는 각 줄을 `> 줄`로 적고, 이어서 프로그램이 보여 준 것(`Debug.Print`, `MsgBox`, `InputBox`), 프로그램이 넣은 속성 값(`Set lblMessage.Caption: Hello`), 이벤트가 어떻게 되었는지(`Ignored: …`, `Blocked: …`)를 적습니다. 마지막 줄은 실행이 어떻게 끝났는지입니다: `Closed`, `Ended`, `Stopped`, `Error R0xx @ 줄`. 실행 도구는 `package:gubasic_lang/testing.dart`이며, VM 테스트, Chrome 테스트, IDE의 위젯 테스트(`apps/ide/test/widget_parity_test.dart`)가 함께 씁니다. 위젯 테스트는 각 줄을 실제 실행 창에서 합니다. 단추를 누르고, TextBox에 치고, 대화상자의 단추와 창의 닫기 단추를 누릅니다. 위젯이 열린 대화상자에 가려졌거나 아직 화면에 없으면(`Form_Load` 중) 그 줄은 프로그램에 닿지 않고 `Blocked`가 됩니다. 사용자에게도 그렇기 때문입니다. 그래서 동일성 폼의 컨트롤은 서로 겹치면 안 됩니다.
 
 ---
 

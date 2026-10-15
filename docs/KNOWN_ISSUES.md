@@ -18,11 +18,17 @@ Problems we know about and have **deliberately** left unfixed for now. Each entr
 - **Why deferred:** where settings are stored differs between platforms (shared_preferences in apps, the browser's storage in the playground). It belongs with `gubasic_runtime`, so that the interpreter and generated apps store them the same way (D11).
 - **Revisit:** when `gubasic_runtime` arrives.
 
-## Forms run only in tests so far
+## The playground does not run forms
 
-- **What:** the interpreter runs programs with a form (D28), and the parity tests drive them with event scripts on the VM and in Chrome. But nothing shows a form on screen yet. The playground has no forms, so there controls and `Me` are still reported (A003).
-- **Why deferred:** showing the controls needs `gubasic_runtime` and the IDE's run window, which come in the next change. The playground will not imitate controls in HTML, which would create a second runtime (D24).
-- **Revisit:** when the IDE's run window exists.
+- **What:** forms run in the IDE's run window (`apps/ide`) and in the parity tests, but the playground runs only programs without a form: there, controls and `Me` are still reported (A003).
+- **Why deferred:** the playground is pure Dart without Flutter; imitating controls in HTML would create a second runtime (D24). The IDE's web build (E1e) runs forms in the browser instead.
+- **Revisit:** when the IDE's web build is published; then decide whether the playground still needs its Run tab.
+
+## The run window is inside the IDE's window
+
+- **What:** a running program's form is shown in the middle of the IDE's window, not in a window of its own. Moving it or running two programs side by side is not possible.
+- **Why deferred:** one window works the same on the desktop and on the web; separate windows need platform code for each desktop system.
+- **Revisit:** with the form designer, when the IDE's windows are laid out.
 
 ## Korean typing is tested in Chrome only so far
 

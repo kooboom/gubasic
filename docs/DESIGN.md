@@ -70,6 +70,7 @@ How it is built:
 - **`GbFormModel`** holds the form and its controls' current properties (`GbControlState`, named and typed as in `component.yaml`). **`GbFormView`** shows them: each control at `Left`, `Top` in a `Stack` (§6). What the user does comes back as events: `Click`, and `Changed` when the user changes a TextBox's committed text.
 - **`GbDialogs`** shows `MsgBox` and `InputBox`, modal (D28), and closes them all when a program ends.
 - **`gubasic_runtime` does not depend on `gubasic_lang`.** The IDE connects the two (the interpreter's `FormHost`), so that generated apps never carry the interpreter.
+- **The IDE's run window** (`apps/ide`): `RunHost` implements `FormHost` on a `GbFormModel` and `GbDialogs`. Properties live only in the model, which the program sets and the user changes; clicks and typing go to the interpreter as events. The run window fills the middle of the IDE and has its own navigator: a MsgBox or InputBox covers the form and its close button (D28), but not the IDE's toolbar, so Stop (Shift+F5) always works. The form appears when `Form_Load` has finished.
 - **The runtime does not choose fonts.** The app around it does, through its theme, so that desktop and phone apps keep using the system's fonts.
 - `packages/gubasic_runtime/example` draws a form by hand; CI builds it for the web and Windows on every change, and for macOS on pull requests.
 
@@ -78,7 +79,7 @@ How it is built:
 ```
 gubasic/
 ├── apps/
-│   ├── ide/                 Flutter desktop IDE (macOS, Windows)
+│   ├── ide/                 Flutter IDE (macOS, Windows, web)
 │   ├── player/              GuBASIC Player for phones (stage 3)
 │   └── playground/          Web playground for development (pure Dart, no Flutter)
 ├── packages/
@@ -272,7 +273,7 @@ Answer "Kim"          ' answers the open InputBox (Cancel gives "")
 Close                 ' closes the form
 ```
 
-A step runs only when the program waits for the user: no handler runs, the running ones wait in `DoEvents`, or a dialog is open. So the output is the same on every platform. `NAME.out` echoes each step as `> step`, then lists what the program showed (`Debug.Print`, `MsgBox`, `InputBox`), every property it set (`Set lblMessage.Caption: Hello`) and what happened to events (`Ignored: …`, `Blocked: …`). Its last line says how the run ended: `Closed`, `Ended`, `Stopped` or `Error R0xx @ line`. The runner is `package:gubasic_lang/testing.dart`, shared by the VM tests, the Chrome tests and, later, the IDE's widget tests.
+A step runs only when the program waits for the user: no handler runs, the running ones wait in `DoEvents`, or a dialog is open. So the output is the same on every platform. `NAME.out` echoes each step as `> step`, then lists what the program showed (`Debug.Print`, `MsgBox`, `InputBox`), every property it set (`Set lblMessage.Caption: Hello`) and what happened to events (`Ignored: …`, `Blocked: …`). Its last line says how the run ended: `Closed`, `Ended`, `Stopped` or `Error R0xx @ line`. The runner is `package:gubasic_lang/testing.dart`, shared by the VM tests, the Chrome tests and the IDE's widget tests (`apps/ide/test/widget_parity_test.dart`). The widget tests do each step on the real run window: they tap the button, type into the TextBox, press the dialog's buttons and the window's close button. A step whose widget is covered by an open dialog, or not on the screen yet (during `Form_Load`), does not reach the program and is `Blocked`, as it would be for the user. So the controls of a parity form must not overlap.
 
 ---
 

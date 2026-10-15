@@ -87,7 +87,32 @@ jobs:
         run: flutter build web --release
         working-directory: packages/gubasic_runtime/example
 
-  # The runtime's example must keep building as a desktop app.
+  ide:
+    name: ide (format, analyze, test, web build)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/ide
+    steps:
+      - uses: actions/checkout@v5
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version-file: packages/gubasic_runtime/pubspec.yaml
+          cache: true
+      - name: Install dependencies
+        run: flutter pub get
+      - name: Check formatting
+        run: dart format --output=none --set-exit-if-changed .
+      - name: Analyze
+        run: flutter analyze --fatal-infos
+      - name: Check embedded examples are up to date
+        run: dart run tool/embed_examples.dart --check
+      - name: Test (the parity scripts through the real widgets)
+        run: flutter test
+      - name: Build for the web
+        run: flutter build web --release
+
+  # The runtime's example and the IDE must keep building as desktop apps.
   windows:
     name: gubasic_runtime example (Windows build)
     runs-on: windows-latest
@@ -101,6 +126,8 @@ jobs:
           flutter-version-file: packages/gubasic_runtime/pubspec.yaml
           cache: true
       - run: flutter build windows --release
+      - run: flutter build windows --release
+        working-directory: apps/ide
 
   # macOS runners are slow and scarce: build on pull requests only.
   macos:
@@ -117,3 +144,5 @@ jobs:
           flutter-version-file: packages/gubasic_runtime/pubspec.yaml
           cache: true
       - run: flutter build macos --release
+      - run: flutter build macos --release
+        working-directory: apps/ide

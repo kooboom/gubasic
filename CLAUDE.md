@@ -16,7 +16,7 @@ If a request conflicts with these documents, **stop and say so** instead of sile
 ## Layout
 
 ```
-apps/ide/                Flutter desktop IDE
+apps/ide/                Flutter IDE, desktop and web
 apps/player/             Phone player (stage 3)
 apps/playground/         Web playground for development (pure Dart, no Flutter)
 packages/gubasic_lang/   Pure Dart: lexer, parser, AST, analyzer, interpreter, transpiler

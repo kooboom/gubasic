@@ -1,0 +1,20 @@
+' Typing in a TextBox: Changed runs each time the input method commits
+' a character (docs/LANGUAGE.md §11.1). Try it with a Korean input method.
+Dim clickCount As Integer
+
+Sub Form_Load()
+    lblMessage.Caption = "Type your name, or press the button"
+End Sub
+
+Sub txtName_Changed()
+    lblMessage.Caption = "Hello, " & txtName.Text
+End Sub
+
+Sub btnHello_Click()
+    clickCount = clickCount + 1
+    Dim name = txtName.Text
+    If name = "" Then
+        name = InputBox("What is your name?")
+    End If
+    MsgBox("Hello, " & name & "! (" & clickCount & ")")
+End Sub

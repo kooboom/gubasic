@@ -27,7 +27,7 @@ The core Visual Basic experience, entirely inside the IDE.
 - [ ] Code editor: syntax highlighting, double-click → handler stub, rename-safe handlers
 - [ ] Light autocompletion (keywords, controls, members, "did you mean")
 - [x] **Async interpreter**, running programs in the playground's Run tab
-- [ ] F5 runs the app inside the IDE
+- [x] F5 runs the app inside the IDE
 - [x] `MsgBox`, `InputBox`, `DoEvents`, `Try…Catch`
 - [ ] `Settings` (`SaveSetting`, `GetSetting`)
 - [x] Run-time errors with plain-language messages (English / Korean), click to jump to the line (playground)

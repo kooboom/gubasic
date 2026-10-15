@@ -1,0 +1,25 @@
+name: gubasic_ide
+description: >-
+  The GuBASIC IDE: opens a project and runs it in a run window, on the
+  desktop and on the web (docs/DESIGN.md §2).
+version: 0.1.0
+publish_to: none
+
+environment:
+  sdk: ^3.13.5
+
+dependencies:
+  flutter:
+    sdk: flutter
+  gubasic_lang:
+    path: ../../packages/gubasic_lang
+  gubasic_runtime:
+    path: ../../packages/gubasic_runtime
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
