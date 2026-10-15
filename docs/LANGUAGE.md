@@ -161,6 +161,7 @@ Form files and project files (§11.2, §11.3) are checked the same way: a proble
 | F009 | A property the control type does not have |
 | F010 | A property value of the wrong type |
 | F011 | `startup` names a form that is not in `forms` |
+| F012 | An `Integer` property value outside its range (§11.1) |
 
 **Run time**
 
@@ -177,6 +178,7 @@ Errors found while a program runs. Each stops the program and points at its line
 | R007 | An argument outside what a built-in function accepts (`Sqr(-1)`, `Mid(s, 0)`, `Round(x, 16)`) |
 | R008 | An exception that was thrown and not caught |
 | R009 | Procedures calling each other more than 10,000 deep (endless recursion) |
+| R010 | An `Integer` property set to a value outside its range (§11.1) |
 
 ## 2. Types
 
@@ -467,7 +469,33 @@ End Sub
   Sub SaveData() Handles btnSave.Click, mnuSave.Click
   ```
 
-- While a handler is still running (for example waiting on `MsgBox` or `Http.Get`), the same event will not start it again.
+### 8.1 When handlers run
+
+A program with a form runs **one handler at a time** (D28):
+
+- **A running handler is not started again by its own event.** While `btnSave_Click` runs, another click on `btnSave` is ignored, not saved for later (D5).
+- **Another handler waits for its turn.** It starts when the running handler finishes, or while that handler waits in `DoEvents`. Events that arrive in the meantime run in the order they came.
+- **`DoEvents` is the only place where another handler can run in the middle of one.** The screen still updates during long loops, and the Stop button works, but no other handler runs until the loop calls `DoEvents` or ends.
+- **`MsgBox` and `InputBox` are modal.** While one is open, the form's controls cannot be used, nothing else runs, and the form cannot be closed. Events in the meantime are dropped, not saved for later. The default `MsgBox` of Visual Basic for Applications behaves the same way: "the user must respond to the message box before continuing work in the current application" ([MsgBox function](https://learn.microsoft.com/en-us/office/vba/language/reference/user-interface-help/msgbox-function)).
+- **Form-level variables are shared.** A handler waiting in `DoEvents` sees, when it goes on, the values other handlers stored meanwhile. Its own locals are its own.
+- **`Static` belongs to its procedure.** Every call of a procedure, from any handler, uses that procedure's one `Static` variable. Two handlers that each declare a `Static` of the same name have two different variables.
+- **`End` ends the whole program.** Handlers waiting in `DoEvents` do not go on, and an open dialog is closed. An error that nothing catches does the same (§9).
+
+```vb
+Dim done As Boolean
+
+Sub btnStart_Click()
+    done = False
+    Do While Not done
+        DoEvents          ' btnStop_Click can run here
+    Loop
+    lblStatus.Caption = "Stopped"
+End Sub
+
+Sub btnStop_Click()
+    done = True
+End Sub
+```
 
 ## 9. Error handling
 
@@ -489,10 +517,11 @@ End Try
 
 ### 9.1 Running a program
 
-- A program starts at `Sub Main()`, or at `Sub Form_Load()` if there is no `Main`. Form-level variables get their initial values first.
+- Code without a form starts at `Sub Main()`, or at `Sub Form_Load()` if there is no `Main`, and ends when that procedure returns. Form-level variables get their initial values first.
+- A program with a form starts with its form: form-level variables get their initial values, `Form_Load` runs, and then the form is shown and waits for events (§8.1). `Sub Main` is then an ordinary procedure. The program ends when the form is closed, `End` runs, an error is not caught, or the Stop button is pressed.
 - A program with errors does not run; one with only warnings does (D23).
 - Calls may nest 10,000 deep; one more is R009. The limit is the same on every platform. It catches endless recursion within a fraction of a second; the interpreter itself was measured to stay safe beyond a million calls on the VM and in Chrome.
-- While a program runs, the interpreter lets the screen update every 1,000 loop rounds or calls, so that the Stop button works. This never changes what the program computes. `DoEvents` does the same on request.
+- While a program runs, the interpreter lets the screen update every 1,000 loop rounds or calls, so that the Stop button works. This never changes what the program computes and never lets another handler run. `DoEvents` updates the screen on request and also lets other handlers run (§8.1).
 
 ## 10. Built-in functions (initial set)
 
@@ -563,8 +592,9 @@ End Sub
 
 - Each control is a component, defined with its default values in `components/NAME/component.yaml` (DESIGN.md §5). The table above lists the events with the default one first: the one a double-click in the designer creates.
 - `Left`, `Top`, `Width` and `Height` are in logical pixels (the same size on screens of different densities), measured from the top-left corner of the inside of the form. A form's `Width` and `Height` are the size of that inside area, without the window's title bar and borders. Later stages add properties (`Anchor`, …) without changing these (D12).
-- **`TextBox.Changed`** runs after `Text` changes, whether the user typed or the program set `Text`. A handler that sets `Text` of its own TextBox is not started again by that change, because a running handler is not started again by the same event (§8).
-- **Typing with an input method.** While a character is still being composed — a Korean syllable such as 한 typed as ㅎ, 하, 한 — `Text` holds only the finished characters, and `Changed` runs when a character is finished (when the next one starts, or on a space, Enter, or leaving the box). A handler therefore never changes the text in the middle of a syllable, which is known to break typing in Flutter on Windows ([flutter/flutter#121376](https://github.com/flutter/flutter/issues/121376)). The cost: code that follows every keystroke, such as a character counter, sees the syllable being typed only once it is finished.
+- `Integer` properties are 32-bit: from −2147483648 to 2147483647, the same on every platform. `Width` and `Height` cannot be negative. A value outside the range is a run-time error (R010) when the program sets it, and F012 in a form file.
+- **`TextBox.Changed`** runs after `Text` changes, whether the user typed or the program set `Text`. When the program sets `Text`, the handler runs right away, as part of that assignment, so the next line already sees what it did. Setting the same text again does not run it. A handler that sets `Text` of its own TextBox is not started again by that change (§8.1).
+- **Typing with an input method (IME).** `Text` holds only the characters the input method has **committed**, and `Changed` runs each time it commits one. What is on the screen may not be committed yet: in Korean, a final consonant can still move to the next syllable. Typing 갈가 shows 갈, then 갉, then 갈가: 갈 is committed only when ㅏ is typed and the ㄱ moves on. A handler therefore never changes the text in the middle of a syllable, which is known to break typing in Flutter on Windows ([flutter/flutter#121376](https://github.com/flutter/flutter/issues/121376)). The cost: code that follows every keystroke, such as a character counter, sees the syllable being typed only once the input method commits it.
 
 ### 11.2 Form files
 

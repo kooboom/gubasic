@@ -102,8 +102,9 @@ Consequences and how they are handled:
 
 | Problem | Handling |
 |---|---|
-| A user clicks the same button again while its handler is still waiting (double execution) | **The same event handler cannot re-enter while it is running.** A second click is ignored. Other events still run. |
-| A long `Do While` loop freezes the UI (Flutter's UI runs on one thread) | **`DoEvents`** is provided, exactly as in VB. It compiles to a short yield (`await Future.delayed(Duration.zero)`). |
+| A user clicks the same button again while its handler is still waiting (double execution) | **The same event handler cannot re-enter while it is running.** A second click is ignored. |
+| Two handlers would interleave at every `await` and see each other's half-done work | **One handler runs at a time** (D28). Another one starts when it finishes, or while it waits in `DoEvents`. `MsgBox` and `InputBox` are modal: events while they are open are blocked. |
+| A long `Do While` loop freezes the UI (Flutter's UI runs on one thread) | **`DoEvents`** is provided, exactly as in VB. It compiles to a short yield (`await Future.delayed(Duration.zero)`) and lets other handlers run. |
 | The interpreter must be able to pause in the middle of a statement | **The interpreter is async from day one.** This is the hardest thing to change later, so it is fixed now. |
 
 ### 3.2 Startup
@@ -249,6 +250,21 @@ IDE messages and error explanations are available in **English and Korean**.
 
 - `gubasic_lang` is tested with plain `dart test`.
 - **Parity tests (mandatory from the start):** each sample program in `test/parity/` is run once through the interpreter and once through the transpiled Dart; recorded output must be identical. A change that breaks parity does not merge.
+- The same parity programs also run in Chrome (`apps/playground`), so the interpreter gives the same output on the VM and on the web.
+
+### 9.1 Event scripts
+
+A parity program with a form (`NAME.gbas` + `NAME.form.yaml`) is driven by an **event script**, `NAME.events`: one user action per line.
+
+```
+btnHello.Click        ' a click
+txtName.Type "Kim"    ' the user changes a TextBox's text; Changed runs
+OK                    ' closes the open MsgBox
+Answer "Kim"          ' answers the open InputBox (Cancel gives "")
+Close                 ' closes the form
+```
+
+A step runs only when the program waits for the user: no handler runs, the running ones wait in `DoEvents`, or a dialog is open. So the output is the same on every platform. `NAME.out` echoes each step as `> step`, then lists what the program showed (`Debug.Print`, `MsgBox`, `InputBox`), every property it set (`Set lblMessage.Caption: Hello`) and what happened to events (`Ignored: …`, `Blocked: …`). Its last line says how the run ended: `Closed`, `Ended`, `Stopped` or `Error R0xx @ line`. The runner is `package:gubasic_lang/testing.dart`, shared by the VM tests, the Chrome tests and, later, the IDE's widget tests.
 
 ---
 
@@ -339,3 +355,4 @@ The iOS/macOS requirement comes from Apple's policy, not from GuBASIC.
 | D25 | The interpreter follows the analyzer's results exactly. Every call to a user procedure is awaited; expressions without such calls are evaluated synchronously. Each call starts in a fresh microtask and an error travels up one call per microtask, so recursion depth uses the heap, never the platform stack; R009 stops calls nested deeper than 10,000. A `Dim` runs again every time it is reached (LANGUAGE §3.2). Run-time errors can be caught with `Try` | Same names and conversions as the analyzer, and therefore as the transpiler later. Synchronous expressions: about 3 s instead of 9 s for a million loop rounds in an optimized web build, with the same results. Measured: without the per-call microtask an error raised about 1,000 calls deep overflowed the VM stack; with it, a million calls deep is safe on the VM and in Chrome, so 10,000 is a limit for endless recursion, not for safety |
 | D26 | **`Integer` is an exact 64-bit integer on every platform** — the interpreter on the web included, and generated web apps later. The VM uses Dart's `int`; the web uses `Int64` from package:fixnum; both sit behind one API with the overflow checks (`checked_math.dart`). The same parity programs run on the VM and in Chrome | A program must compute the same numbers wherever it runs. Cost on the web: in a micro-benchmark, 5 million `Int64` additions took 97 ms against 3 ms for plain numbers in Chrome (about 30×). In the interpreter the difference does not show (a million loop rounds take the same time with `Integer` or `Double`), because interpreting dominates; integer-heavy code in generated web apps will pay it. Lexer warning L007 (integers the web could not store exactly) became unnecessary and was retired |
 | D27 | Form files (`.form.yaml`) and project files (`.gbproj`) are YAML with `formatVersion: 1`, read by `gubasic_lang`. The built-in components' `component.yaml` files are copied into `gubasic_lang` by a generator. Problems in these files are F diagnostics, reported where they are, and the rest of the file is still read. Code is analyzed together with its form, so controls, `Me` and event handlers are checked before running | The analyzer must know the controls on every platform, the web included, and `gubasic_lang` must keep running with plain `dart test` (CLAUDE.md rule 1). Reading on after a problem, as the parser does (D14), keeps one mistake from hiding the others. A handler written differently from its event is an error (A032), not an ordinary procedure that silently never runs |
+| D28 | **A program with a form runs one event handler at a time.** Another handler starts when the running one finishes or waits in `DoEvents`; events in between wait in order. The same handler is not restarted (D5). `MsgBox` and `InputBox` are modal: they keep the turn, and events while one is open are dropped. The automatic screen updates during long loops do not let other handlers run. When the program sets a property that has a change event (`TextBox.Text`), the handler runs right away as part of the assignment; only such assignments can wait, so all other property assignments keep D25's synchronous path | Handlers see each other's work only at places the code shows (`DoEvents`), so a run is deterministic and the same on every platform. Dialogs behave as on desktops and phones, and as Visual Basic for Applications' default `MsgBox` ([MsgBox function](https://learn.microsoft.com/en-us/office/vba/language/reference/user-interface-help/msgbox-function)). Measured on the VM: 1,000,000 assignments to `Label.Left` take 0.29 s, to `TextBox.Text` 0.66 s, and loops without properties are as fast as before |

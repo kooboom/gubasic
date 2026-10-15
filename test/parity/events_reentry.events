@@ -1,0 +1,5 @@
+btnA.Click
+btnA.Click      ' ignored: A is still running
+btnStop.Click
+btnA.Click      ' runs again: A had finished
+Close

@@ -1,0 +1,17 @@
+' A handler that is still running is not started again by its event (D5):
+' the second click is ignored, not saved for later.
+Dim done As Boolean
+Dim starts As Integer
+
+Sub btnA_Click()
+    starts = starts + 1
+    Debug.Print("A starts, time " & starts)
+    Do While Not done
+        DoEvents
+    Loop
+    Debug.Print("A ends, time " & starts)
+End Sub
+
+Sub btnStop_Click()
+    done = True
+End Sub

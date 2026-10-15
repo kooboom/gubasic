@@ -1,0 +1,14 @@
+Debug.Print: Hello from Save
+Debug.Print: Untitled 480x360
+Set Form.Caption: Score Book
+MsgBox [Score Book]: Welcome
+> btnSave.Click
+Blocked: btnSave.Click
+> OK
+Debug.Print: loaded
+> btnSave.Click
+Set btnSave.Left: 106
+Set btnSave.Caption: 106
+Debug.Print: 106 True
+> Close
+Closed

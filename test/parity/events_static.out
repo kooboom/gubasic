@@ -1,0 +1,12 @@
+> btnA.Click
+Debug.Print: A: ticket 1, call 1
+> btnB.Click
+Debug.Print: B: ticket 2, calls 10
+Debug.Print: A: ticket 3, call 1
+> btnA.Click
+Debug.Print: A: ticket 4, call 2
+> btnB.Click
+Debug.Print: B: ticket 5, calls 20
+Debug.Print: A: ticket 6, call 2
+> Close
+Closed

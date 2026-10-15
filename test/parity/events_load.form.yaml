@@ -1,0 +1,9 @@
+formatVersion: 1
+properties:
+  Caption: Untitled
+controls:
+  - name: btnSave
+    type: Button
+    properties:
+      Caption: Save
+      Left: 10

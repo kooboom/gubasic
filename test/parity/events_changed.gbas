@@ -1,0 +1,22 @@
+' TextBox.Changed runs when the text changes, also when the program sets
+' Text: right away, as part of the assignment. Setting the same text again
+' does not run it, and a Changed handler that sets its own Text is not
+' started again by that (D5).
+Sub Form_Load()
+    txtName.Text = "Kim"
+    Debug.Print("after setting: " & lblEcho.Caption)
+    txtName.Text = txtName.Text
+    Debug.Print("same text again: no Changed")
+End Sub
+
+Sub txtName_Changed()
+    lblEcho.Caption = "echo " & txtName.Text
+    txtName.Text = UCase(txtName.Text)
+End Sub
+
+Sub btnObject_Click()
+    ' Through an Object variable, the same rules apply.
+    Dim box As Object = txtName
+    box.Text = "obj"
+    Debug.Print(lblEcho.Caption)
+End Sub

@@ -65,6 +65,28 @@ void main() {
         'default Changed');
   });
 
+  test('ranges and change events', () {
+    final box = builtinComponents['textbox']!;
+    expect(box.properties['text']!.changeEvent, 'Changed');
+    expect(box.properties['left']!.changeEvent, isNull);
+    expect([box.properties['left']!.min, box.properties['left']!.max],
+        [integerPropertyMin, integerPropertyMax]);
+    for (final c in builtinComponents.values) {
+      expect(c.properties['width']!.min, 0, reason: c.name);
+      expect(c.properties['height']!.min, 0, reason: c.name);
+    }
+    expect(
+        () => readComponentFile('name: X\nversion: 1\ndefaultEvent: A\n'
+            'properties: [{name: P, type: String, default: "", '
+            'changeEvent: B}]\nevents: [A()]\n'),
+        throwsFormatException);
+    expect(
+        () => readComponentFile('name: X\nversion: 1\ndefaultEvent: A\n'
+            'properties: [{name: P, type: Integer, default: -1, min: 0}]\n'
+            'events: [A()]\n'),
+        throwsFormatException);
+  });
+
   test('a broken component.yaml is refused', () {
     expect(
         () => readComponentFile('name: X\nversion: 1\ndefaultEvent: A\n'

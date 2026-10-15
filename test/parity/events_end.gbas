@@ -1,0 +1,14 @@
+' End in one handler ends the whole program: a handler waiting in
+' DoEvents does not go on.
+Sub btnWait_Click()
+    Debug.Print("A waits")
+    Do While True
+        DoEvents
+    Loop
+    Debug.Print("A goes on")
+End Sub
+
+Sub btnEnd_Click()
+    Debug.Print("B ends the program")
+    End
+End Sub

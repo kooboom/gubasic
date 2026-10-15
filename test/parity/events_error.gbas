@@ -1,0 +1,23 @@
+' A run-time error that nothing catches stops the program, also inside an
+' event handler. Integer properties have a range (R010), which Try can
+' catch like any run-time error.
+Sub btnSize_Click()
+    Try
+        btnSize.Width = -5
+    Catch ex As Exception
+        Debug.Print("caught: " & ex.Message)
+    End Try
+    Dim o As Object = btnSize
+    Try
+        o.Left = "far"
+    Catch ex As Exception
+        Debug.Print("caught: " & ex.Message)
+    End Try
+    btnSize.Left = 2147483647
+    Debug.Print(btnSize.Left)
+End Sub
+
+Sub btnBad_Click()
+    Dim zero As Integer = 0
+    Debug.Print(1 \ zero)
+End Sub

@@ -1,0 +1,4 @@
+txtName.Type "lee"     ' the user types: Changed runs
+txtName.Type "LEE"     ' no change, no Changed
+btnObject.Click
+Close

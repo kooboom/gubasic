@@ -1,0 +1,15 @@
+' MsgBox and InputBox are modal: while one is open, the form's controls
+' cannot be used and no other handler runs (D28).
+Sub btnAsk_Click()
+    MsgBox("Wait")
+    Dim answer = InputBox("Name?")
+    Debug.Print("after the dialogs: " & answer)
+End Sub
+
+Sub btnOther_Click()
+    Debug.Print("other ran")
+End Sub
+
+Sub txtName_Changed()
+    Debug.Print("changed to " & txtName.Text)
+End Sub

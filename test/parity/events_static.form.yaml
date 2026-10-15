@@ -1,0 +1,4 @@
+formatVersion: 1
+controls:
+  - { name: btnA, type: Button }
+  - { name: btnB, type: Button }

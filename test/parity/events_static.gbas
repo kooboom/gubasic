@@ -1,0 +1,28 @@
+' A Static belongs to its procedure: NextTicket's ticket is shared by
+' every caller; the two handlers' "calls" are two different variables,
+' also while A waits in DoEvents and B runs.
+Dim done As Boolean
+
+Function NextTicket() As Integer
+    Static ticket As Integer
+    ticket = ticket + 1
+    Return ticket
+End Function
+
+Sub btnA_Click()
+    Static calls As Integer
+    calls = calls + 1
+    Debug.Print("A: ticket " & NextTicket() & ", call " & calls)
+    done = False
+    Do While Not done
+        DoEvents
+    Loop
+    Debug.Print("A: ticket " & NextTicket() & ", call " & calls)
+End Sub
+
+Sub btnB_Click()
+    Static calls As Integer
+    calls = calls + 10
+    Debug.Print("B: ticket " & NextTicket() & ", calls " & calls)
+    done = True
+End Sub

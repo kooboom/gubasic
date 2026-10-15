@@ -1,0 +1,5 @@
+> btnWait.Click
+Debug.Print: A waits
+> btnEnd.Click
+Debug.Print: B ends the program
+Ended

@@ -1,0 +1,7 @@
+> btnWait.Click
+Debug.Print: A sees 1
+> btnChange.Click
+Debug.Print: B set 42 with B's local 3
+Debug.Print: A sees 42 and A's local
+> Close
+Closed

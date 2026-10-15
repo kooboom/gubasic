@@ -1,0 +1,17 @@
+Set txtName.Text: Kim
+Set lblEcho.Caption: echo Kim
+Set txtName.Text: KIM
+Debug.Print: after setting: echo Kim
+Set txtName.Text: KIM
+Debug.Print: same text again: no Changed
+> txtName.Type "lee"
+Set lblEcho.Caption: echo lee
+Set txtName.Text: LEE
+> txtName.Type "LEE"
+> btnObject.Click
+Set txtName.Text: obj
+Set lblEcho.Caption: echo obj
+Set txtName.Text: OBJ
+Debug.Print: echo obj
+> Close
+Closed

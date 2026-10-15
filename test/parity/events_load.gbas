@@ -1,0 +1,19 @@
+' Form-level variables first, then Form_Load (which may show a MsgBox),
+' then the form waits for events. Me is the form; properties start as in
+' the form file.
+Dim greeting As String = "Hello from " & btnSave.Caption
+
+Sub Form_Load()
+    Debug.Print(greeting)
+    Debug.Print(Me.Caption & " " & Me.Width & "x" & Me.Height)
+    Me.Caption = "Score Book"
+    MsgBox("Welcome", Me.Caption)
+    Debug.Print("loaded")
+End Sub
+
+Sub btnSave_Click()
+    btnSave.Left = btnSave.Left + btnSave.Width
+    btnSave.Caption = btnSave.Left
+    Dim b As Button = btnSave
+    Debug.Print(b.Caption & " " & (b Is btnSave))
+End Sub

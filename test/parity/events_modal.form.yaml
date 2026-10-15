@@ -1,0 +1,5 @@
+formatVersion: 1
+controls:
+  - { name: btnAsk, type: Button }
+  - { name: btnOther, type: Button }
+  - { name: txtName, type: TextBox }

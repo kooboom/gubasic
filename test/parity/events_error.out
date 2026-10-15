@@ -1,0 +1,8 @@
+> btnSize.Click
+Debug.Print: caught: The value of Width must be from 0 to 2147483647. Check the value before setting it.
+Debug.Print: caught: "far" cannot be turned into Integer. Check the value before converting it.
+Set btnSize.Left: 2147483647
+Debug.Print: 2147483647
+> btnBad.Click
+Script not finished: btnSize.Click was not run
+Error R002 @ 22

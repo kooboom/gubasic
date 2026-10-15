@@ -279,6 +279,10 @@ enum DiagnosticCode {
   /// `startup` names a form the project does not list. Args: the name.
   unknownStartupForm('F011'),
 
+  /// An Integer property value outside its range. Args: property, the
+  /// smallest and the largest value allowed.
+  propertyOutOfRange('F012'),
+
   // Run time (the interpreter)
 
   /// An Integer result outside the 64-bit range.
@@ -309,7 +313,11 @@ enum DiagnosticCode {
   unhandledException('R008'),
 
   /// Procedures calling each other too deeply. Args: the limit.
-  callsTooDeep('R009');
+  callsTooDeep('R009'),
+
+  /// An Integer property set to a value outside its range. Args: the
+  /// property, the smallest and the largest value allowed.
+  propertyValueOutOfRange('R010');
 
   const DiagnosticCode(this.code, [this.severity = DiagnosticSeverity.error]);
 

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:collection';
 import 'dart:math' as math;
 
 import '../analyzer/analysis_result.dart';
@@ -11,6 +12,7 @@ import '../ast/ast.dart';
 import '../ast/line_map.dart';
 import '../diagnostics/diagnostic.dart';
 import '../diagnostics/messages_en.dart';
+import '../forms/component.dart';
 import '../lexer/keyword.dart';
 import 'checked_math.dart';
 import 'host.dart';
@@ -26,12 +28,35 @@ const int maxCallDepth = 10000;
 /// update (Host.yieldNow). It does not change what the program computes.
 const int _stepsPerYield = 1000;
 
+/// What became of an event passed to [Interpreter.raiseEvent].
+enum EventOutcome {
+  /// Its handler started, or waits for the running handler (D28).
+  started,
+
+  /// Its handler is still running, so the event is ignored (D5).
+  ignored,
+
+  /// A MsgBox or InputBox is open, so the event is blocked (D28).
+  blocked,
+
+  /// The control has no handler for it.
+  noHandler,
+
+  /// The program is not running.
+  notRunning,
+}
+
 /// Runs an analyzed program (docs/DESIGN.md §3.1).
 ///
 /// Follows the analyzer exactly: names, conversions, call/item decisions
 /// and loop variables come from [CompileResult.analysis]. Every call to a
 /// user procedure is awaited; expressions without such calls are evaluated
 /// synchronously, which computes the same values faster.
+///
+/// A program with a form runs its event handlers one at a time (D28):
+/// another handler starts, or one waiting in DoEvents goes on, only when
+/// the running one finishes or waits in DoEvents. MsgBox and InputBox keep
+/// the turn, and events while they are open are blocked.
 class Interpreter {
   Interpreter(
     this.program,
@@ -39,7 +64,17 @@ class Interpreter {
     this.messages = englishMessages,
     this.callDepthLimit = maxCallDepth,
   })  : _a = program.analysis,
-        _lines = LineMap(program.parseResult.source);
+        _lines = LineMap(program.parseResult.source) {
+    final form = _a.form;
+    if (form == null) return;
+    _controls[null] = GbControl(null, form.component);
+    for (final c in form.controls) {
+      _controls[c.name.toLowerCase()] = GbControl(c.name, c.component);
+    }
+    for (final MapEntry(key: decl, value: h) in _a.handlers.entries) {
+      _handlers[_eventKey(h.control?.name, h.event.name)] = decl;
+    }
+  }
 
   final CompileResult program;
   final Host host;
@@ -59,8 +94,58 @@ class Interpreter {
   var _steps = 0;
   var _stopRequested = false;
 
-  /// Asks a running program to stop at its next yield.
-  void stop() => _stopRequested = true;
+  // Forms and events (D28).
+  final _controls = <String?, GbControl>{};
+  final _handlers = <String, ProcedureDecl>{};
+
+  /// Handlers that are running or waiting for their turn (D5).
+  final _running = Set<ProcedureDecl>.identity();
+
+  /// The turn: only its holder runs program code. MsgBox and InputBox keep
+  /// it; DoEvents passes it on to the handlers waiting for it, in order.
+  var _turnTaken = false;
+  final _turnQueue = Queue<Completer<void>>();
+  var _openDialogs = 0;
+
+  /// How a program with a form ended; null while it runs.
+  RunResult? _ended;
+  Completer<RunResult>? _formRun;
+
+  static String _eventKey(String? control, String event) =>
+      '${(control ?? 'form').toLowerCase()}.${event.toLowerCase()}';
+
+  FormHost get _formHost => host as FormHost;
+
+  /// Asks a running program to stop: at its next yield, or at once when it
+  /// has a form.
+  void stop() {
+    _stopRequested = true;
+    if (_formRun != null) _finish(const RunStopped());
+  }
+
+  /// The user closed the form: the program ends (RunCompleted).
+  void closeForm() => _finish(const RunCompleted());
+
+  /// Whether the program is waiting for the user: no handler is running
+  /// (or the running ones wait in DoEvents), or a dialog is open. A test
+  /// script takes its next step only then.
+  bool get isWaitingForUser =>
+      _ended != null || _openDialogs > 0 || (!_turnTaken && _turnQueue.isEmpty);
+
+  /// Whether a MsgBox or InputBox is open.
+  bool get hasOpenDialog => _openDialogs > 0;
+
+  /// Runs the handler of [event] of [control] (null: the form), following
+  /// D5 and D28. Does not wait for the handler to finish.
+  EventOutcome raiseEvent(String? control, String event) {
+    if (_formRun == null || _ended != null) return EventOutcome.notRunning;
+    if (_openDialogs > 0) return EventOutcome.blocked;
+    final handler = _handlers[_eventKey(control, event)];
+    if (handler == null) return EventOutcome.noHandler;
+    if (_running.contains(handler)) return EventOutcome.ignored;
+    _runHandler(handler);
+    return EventOutcome.started;
+  }
 
   /// The procedure a run starts with: `Sub Main()`, or else
   /// `Sub Form_Load()`. Null if there is neither.
@@ -73,23 +158,22 @@ class Interpreter {
     return null;
   }
 
+  /// Runs the program. Without a form: `Sub Main` (or `Sub Form_Load`),
+  /// until it returns. With a form: form-level variables, `Form_Load`,
+  /// then the form's events, until the form is closed, `End` runs, an
+  /// error is not caught or [stop] is called (docs/LANGUAGE.md §9.1).
   Future<RunResult> run() async {
     if (program.hasErrors) {
       return const RunNotStarted(NotStartedReason.hasErrors);
     }
+    if (_a.form != null) return _runForm();
     final start = startProcedure;
     if (start == null) {
       return const RunNotStarted(NotStartedReason.noStartProcedure);
     }
+    await _takeTurn();
     try {
-      for (final member in program.parseResult.unit.members) {
-        if (member is FieldDecl) {
-          final symbol = _a.symbols[member.declarator.name];
-          if (symbol != null) {
-            _fields[symbol] = await _initialValue(member.declarator, symbol);
-          }
-        }
-      }
+      await _initFields();
       await _callUser(start, const [], start);
       return const RunCompleted();
     } on _EndProgram {
@@ -101,7 +185,131 @@ class Interpreter {
     } on _Thrown catch (t) {
       return RunFailed(_diagnostic(
           DiagnosticCode.unhandledException, t.node, [t.exception.message]));
+    } finally {
+      _passTurn();
     }
+  }
+
+  Future<void> _initFields() async {
+    for (final member in program.parseResult.unit.members) {
+      if (member is FieldDecl) {
+        final symbol = _a.symbols[member.declarator.name];
+        if (symbol != null) {
+          _fields[symbol] = await _initialValue(member.declarator, symbol);
+        }
+      }
+    }
+  }
+
+  Future<RunResult> _runForm() async {
+    if (host is! FormHost) {
+      throw ArgumentError('a program with a form needs a FormHost');
+    }
+    final done = _formRun = Completer<RunResult>();
+    await _takeTurn();
+    try {
+      await _guard(_initFields);
+    } finally {
+      _passTurn();
+    }
+    final load = _handlers[_eventKey(null, 'Load')];
+    if (load != null && _ended == null) await _runHandler(load);
+    if (_ended == null) _formHost.showForm();
+    return done.future;
+  }
+
+  /// Runs [handler] when it gets the turn (D28).
+  Future<void> _runHandler(ProcedureDecl handler) async {
+    _running.add(handler);
+    try {
+      await _takeTurn();
+      try {
+        if (_ended != null) return;
+        _frame = _Frame(null);
+        _depth = 0;
+        await _guard(() => _callUser(handler, const [], handler));
+      } finally {
+        _passTurn();
+      }
+    } finally {
+      _running.remove(handler);
+    }
+  }
+
+  /// Runs [body]; an End, a stop or an error that nothing caught ends the
+  /// program with a form.
+  Future<void> _guard(Future<void> Function() body) async {
+    try {
+      await body();
+    } on _EndProgram {
+      _finish(const RunEnded());
+    } on _Stop {
+      _finish(const RunStopped());
+    } on _Failure catch (f) {
+      _finish(RunFailed(_diagnostic(f.code, f.node, f.args)));
+    } on _Thrown catch (t) {
+      _finish(RunFailed(_diagnostic(
+          DiagnosticCode.unhandledException, t.node, [t.exception.message])));
+    } on _Abandoned {
+      // The program ended while this handler waited.
+    }
+  }
+
+  /// Ends a program with a form. Handlers still waiting are abandoned the
+  /// next time they would go on.
+  void _finish(RunResult result) {
+    final done = _formRun;
+    if (done == null || _ended != null) return;
+    _ended = result;
+    _formHost.endProgram();
+    done.complete(result);
+  }
+
+  Future<void> _takeTurn() async {
+    if (!_turnTaken) {
+      _turnTaken = true;
+      return;
+    }
+    final waiter = Completer<void>();
+    _turnQueue.add(waiter);
+    await waiter.future;
+  }
+
+  void _passTurn() {
+    if (_turnQueue.isNotEmpty) {
+      _turnQueue.removeFirst().complete(); // the turn goes straight on
+    } else {
+      _turnTaken = false;
+    }
+  }
+
+  /// `DoEvents`: the waiting handlers run (D28), then this one goes on
+  /// with its own procedure frames.
+  Future<Object?> _doEvents() async {
+    final frame = _frame;
+    final depth = _depth;
+    _passTurn();
+    await host.yieldNow();
+    await _takeTurn();
+    _frame = frame;
+    _depth = depth;
+    if (_ended != null) throw const _Abandoned();
+    if (_stopRequested) throw const _Stop();
+    return null;
+  }
+
+  /// MsgBox and InputBox keep the turn: nothing else runs, and events are
+  /// blocked, until the dialog is closed (D28).
+  Future<Object?> _dialog(Future<Object?> open) async {
+    _openDialogs++;
+    final Object? answer;
+    try {
+      answer = await open;
+    } finally {
+      _openDialogs--;
+    }
+    if (_ended != null) throw const _Abandoned();
+    return answer;
   }
 
   Diagnostic _diagnostic(DiagnosticCode code, Node node, List<String> args) {
@@ -123,8 +331,10 @@ class Interpreter {
   /// synchronous so that loops do not create a Future every round.
   bool _tick() => ++_steps % _stepsPerYield == 0;
 
+  /// Lets the screen update; other handlers do not run (D28).
   Future<void> _yield() async {
     await host.yieldNow();
+    if (_ended != null) throw const _Abandoned();
     if (_stopRequested) throw const _Stop();
   }
 
@@ -138,7 +348,8 @@ class Interpreter {
   Object? _read(Symbol symbol) => switch (symbol.storage) {
         Storage.field => _fields[symbol],
         Storage.staticLocal => _statics[symbol],
-        _ => _frame.vars[symbol],
+        Storage.local => _frame.vars[symbol],
+        null => _controls[symbol.name.toLowerCase()], // a control
       };
 
   void _write(Symbol symbol, Object? value) {
@@ -250,6 +461,9 @@ class Interpreter {
     switch (node) {
       case ForStmt() || ForEachStmt() || DoLoopStmt() || TryStmt():
         return true;
+      case AssignmentStmt(:final MemberExpr target)
+          when _assignmentMayRunEvent(target):
+        return true;
       case InvokeExpr():
         if (_a.invokeKinds[node] == InvokeKind.call &&
             _callWaits(node.target)) {
@@ -262,6 +476,18 @@ class Interpreter {
       default:
     }
     return node.children.any(_awaits);
+  }
+
+  /// Whether assigning to [target] may run a change event (TextBox.Text ->
+  /// Changed): known from the component, or decided at run time through
+  /// an Object. Other property assignments keep the fast path (D25).
+  bool _assignmentMayRunEvent(MemberExpr target) {
+    final type = _a.types[target.target];
+    if (type is ControlType) {
+      final p = type.component.properties[target.name.name.toLowerCase()];
+      return p?.changeEvent != null;
+    }
+    return type == GbType.object;
   }
 
   bool _callWaits(Expr target) {
@@ -294,7 +520,10 @@ class Interpreter {
       case LocalDeclStmt():
         _declareSync(s);
       case AssignmentStmt():
-        _assign(s.target, _valueSync(s.value), _indexSync);
+        final changed = _assign(s.target, _valueSync(s.value), _indexSync);
+        if (changed != null) {
+          throw StateError('a change event is always run asynchronously');
+        }
       case ExpressionStmt():
         _evalSync(s.expression);
       case IfStmt():
@@ -338,7 +567,8 @@ class Interpreter {
       case AssignmentStmt():
         final value = await _value(s.value);
         final index = await _indexAsync(s.target);
-        _assign(s.target, value, (_) => index);
+        final changed = _assign(s.target, value, (_) => index);
+        if (changed != null) await _runChangeEvent(changed);
       case ExpressionStmt():
         await _eval(s.expression);
       case IfStmt():
@@ -564,7 +794,10 @@ class Interpreter {
           ? await _value(target.arguments.first)
           : null;
 
-  void _assign(Expr target, Object? value, Object? Function(Expr) index) {
+  /// Assigns [value]. Returns the handler of a change event the
+  /// assignment has to run (TextBox.Text -> txtName_Changed), if any.
+  ProcedureDecl? _assign(
+      Expr target, Object? value, Object? Function(Expr) index) {
     switch (target) {
       case NameExpr():
         _write(_a.symbols[target]!, value);
@@ -573,6 +806,9 @@ class Interpreter {
         _setItem(container, index(target), value, target);
       case MemberExpr():
         final receiver = _evalSync(target.target);
+        if (receiver is GbControl) {
+          return _setProperty(receiver, target, value);
+        }
         _fail(
             receiver == null
                 ? DiagnosticCode.nothingReference
@@ -581,6 +817,77 @@ class Interpreter {
             [target.name.name, typeNameOf(receiver)]);
       default:
         throw StateError('not assignable: $target');
+    }
+    return null;
+  }
+
+  // -------------------------------------------------------------------------
+  // Controls (docs/LANGUAGE.md §11)
+
+  PropertySpec _property(GbControl c, MemberExpr e) =>
+      c.component.properties[e.name.name.toLowerCase()] ??
+      _fail(DiagnosticCode.memberNotFound, e, [e.name.name, c.component.name]);
+
+  Object? _getProperty(GbControl c, MemberExpr e) {
+    final spec = _property(c, e);
+    final value = _formHost.getProperty(c.name, spec.name);
+    if (spec.type == GbType.integer) return GbInt.of(value as int);
+    if (spec.type == GbType.double_) return (value as num).toDouble();
+    return value;
+  }
+
+  /// Sets a property; returns the handler of its change event if the value
+  /// changed and the handler is not already running (D5).
+  ProcedureDecl? _setProperty(GbControl c, MemberExpr e, Object? value) {
+    final spec = _property(c, e);
+    final v = _propertyValue(spec, value, e);
+    final old = _formHost.getProperty(c.name, spec.name);
+    _formHost.setProperty(c.name, spec.name, v);
+    final event = spec.changeEvent;
+    if (event == null || old == v) return null;
+    final handler = _handlers[_eventKey(c.name, event)];
+    return handler == null || _running.contains(handler) ? null : handler;
+  }
+
+  /// [value] as the host stores it. Through an Object variable the
+  /// analyzer could not check the type, so it is checked here.
+  Object _propertyValue(PropertySpec spec, Object? value, MemberExpr at) {
+    switch (spec.type) {
+      case GbType.integer:
+        if (!isGbInt(value)) break;
+        final n = (value as GbInt).toSmallInt();
+        if (n == null || !spec.accepts(n)) {
+          _fail(DiagnosticCode.propertyValueOutOfRange, at,
+              [spec.name, '${spec.min}', '${spec.max}']);
+        }
+        return n;
+      case GbType.double_:
+        if (isGbInt(value)) return (value as GbInt).toDouble();
+        if (isGbDouble(value)) return (value as num).toDouble();
+      case GbType.boolean:
+        if (value is bool) return value;
+      default: // String
+        if (value is String) return value;
+        if (value != null &&
+            (isGbInt(value) ||
+                isGbDouble(value) ||
+                value is bool ||
+                value is DateTime)) {
+          return formatValue(value);
+        }
+    }
+    _fail(DiagnosticCode.conversionFailed, at,
+        [formatValue(value), spec.type.displayName]);
+  }
+
+  /// Runs a change event's handler right away, as part of the statement
+  /// that changed the value (docs/LANGUAGE.md §11.1).
+  Future<void> _runChangeEvent(ProcedureDecl handler) async {
+    _running.add(handler);
+    try {
+      await _callUser(handler, const [], handler);
+    } finally {
+      _running.remove(handler);
     }
   }
 
@@ -645,7 +952,9 @@ class Interpreter {
         return _binary(e, left, _valueSync(e.right));
       case ParenExpr():
         return _valueSync(e.inner);
-      case MeExpr() || ErrorExpr():
+      case MeExpr():
+        return _controls[null];
+      case ErrorExpr():
         throw StateError('not runnable: $e'); // analyzer reported it
     }
   }
@@ -891,6 +1200,8 @@ class Interpreter {
         return _stringMember(s, name, args, node, e);
       case GbException ex when name == 'message':
         return ex.message;
+      case GbControl c when args.isEmpty:
+        return _getProperty(c, e);
       default:
     }
     _fail(DiagnosticCode.memberNotFound, node,
@@ -1104,15 +1415,12 @@ class Interpreter {
 
       // Dialogs and program
       case 'MsgBox':
-        return host.msgBox(s(0), args.length > 1 ? s(1) : '');
+        return _dialog(host.msgBox(s(0), args.length > 1 ? s(1) : ''));
       case 'InputBox':
-        return host.inputBox(
-            s(0), args.length > 1 ? s(1) : '', args.length > 2 ? s(2) : '');
+        return _dialog(host.inputBox(
+            s(0), args.length > 1 ? s(1) : '', args.length > 2 ? s(2) : ''));
       case 'DoEvents':
-        return host.yieldNow().then((_) {
-          if (_stopRequested) throw const _Stop();
-          return null;
-        });
+        return _doEvents();
     }
     // SaveSetting / GetSetting are refused by the analyzer (A029).
     throw StateError('built-in ${f.name} is not available');
@@ -1216,6 +1524,11 @@ class _EndProgram implements Exception {
 
 class _Stop implements Exception {
   const _Stop();
+}
+
+/// A handler that waited while the program ended: it does not go on.
+class _Abandoned implements Exception {
+  const _Abandoned();
 }
 
 /// Runs [source] (compile + interpret) with [host].

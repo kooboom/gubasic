@@ -1,0 +1,11 @@
+> btnA.Click
+Debug.Print: A starts, time 1
+> btnA.Click
+Ignored: btnA.Click
+> btnStop.Click
+Debug.Print: A ends, time 1
+> btnA.Click
+Debug.Print: A starts, time 2
+Debug.Print: A ends, time 2
+> Close
+Closed

@@ -1,4 +1,5 @@
 import 'package:gubasic_lang/gubasic_lang.dart';
+import 'package:gubasic_lang/testing.dart';
 import 'package:test/test.dart';
 
 import 'parity_cases.g.dart';
@@ -32,7 +33,15 @@ void main() {
     expect(parityCases.length, greaterThanOrEqualTo(12));
   });
 
-  for (final (name, source, answers, expected) in parityCases) {
+  for (final (name, source, answers, expected, form, events) in parityCases) {
+    if (form != null) {
+      test(name, () async {
+        final lines = await runEventScript(
+            source, readFormFile(form, name: 'Form1').form, events!);
+        expect('${lines.join('\n')}\n', expected);
+      });
+      continue;
+    }
     test(name, () async {
       final host = _Host(answers);
       final result = await runProgram(source, host);

@@ -218,6 +218,8 @@ const Map<DiagnosticCode, String> englishMessages = {
       'The value of {0} must be of type {1}. Check the value.',
   DiagnosticCode.unknownStartupForm: 'The startup form "{0}" is not in the '
       'list of forms. Add it to forms, or choose a form that is listed.',
+  DiagnosticCode.propertyOutOfRange: 'The value of {0} must be from {1} '
+      'to {2}. Check the value.',
 
   // Run time
   DiagnosticCode.integerOverflow: 'The result is too large for an Integer '
@@ -239,6 +241,8 @@ const Map<DiagnosticCode, String> englishMessages = {
       '{0}. Use Try ... Catch to handle it.',
   DiagnosticCode.callsTooDeep: 'Procedures called each other too deeply '
       '(more than {0} calls in a row). Check that the recursion stops.',
+  DiagnosticCode.propertyValueOutOfRange: 'The value of {0} must be from {1} '
+      'to {2}. Check the value before setting it.',
 
   DiagnosticCode.localHidesField: 'This local "{0}" hides the form-level '
       'variable of the same name declared on line {1}, which cannot be '

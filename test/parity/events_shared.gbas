@@ -1,0 +1,27 @@
+' While A waits in DoEvents, B changes a form-level variable: A sees the
+' new value when it goes on. Each handler keeps its own locals (D28).
+Dim count As Integer
+Dim done As Boolean
+
+Sub btnWait_Click()
+    Dim mine As String = "A's local"
+    count = 1
+    done = False
+    Debug.Print("A sees " & count)
+    Do While Not done
+        DoEvents
+    Loop
+    Debug.Print("A sees " & count & " and " & mine)
+End Sub
+
+Sub btnChange_Click()
+    Dim mine As String = "B's local"
+    count = count + 41
+    done = True
+    Debug.Print("B set " & count & " with " & mine & " " & Depth(3))
+End Sub
+
+Function Depth(n As Integer) As Integer
+    If n = 0 Then Return 0
+    Return 1 + Depth(n - 1)
+End Function

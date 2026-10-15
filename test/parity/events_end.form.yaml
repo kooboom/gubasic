@@ -1,0 +1,4 @@
+formatVersion: 1
+controls:
+  - { name: btnWait, type: Button }
+  - { name: btnEnd, type: Button }

@@ -185,6 +185,8 @@ const Map<DiagnosticCode, String> koreanMessages = {
   DiagnosticCode.wrongPropertyType: '{0} 속성의 값은 {1} 타입이어야 합니다. 값을 확인해 주세요.',
   DiagnosticCode.unknownStartupForm:
       '시작 폼으로 정한 {0} 폼이 폼 목록에 없습니다. forms 목록에 추가하거나 목록에 있는 폼을 골라 주세요.',
+  DiagnosticCode.propertyOutOfRange:
+      '{0} 속성의 값은 {1} 이상 {2} 이하여야 합니다. 값을 확인해 주세요.',
 
   // Run time
   DiagnosticCode.integerOverflow:
@@ -206,6 +208,8 @@ const Map<DiagnosticCode, String> koreanMessages = {
       '오류가 발생했지만 처리하지 않았습니다: {0}. Try ... Catch로 잡아서 처리해 주세요.',
   DiagnosticCode.callsTooDeep:
       '프로시저 호출이 너무 깊어졌습니다(연속 {0}번 초과). 재귀가 끝나는 조건을 확인해 주세요.',
+  DiagnosticCode.propertyValueOutOfRange:
+      '{0} 속성의 값은 {1} 이상 {2} 이하여야 합니다. 넣기 전에 값을 확인해 주세요.',
 
   DiagnosticCode.localHidesField:
       '이 지역 변수 {0} 이름이 {1}번 줄에서 선언한 같은 이름의 폼 변수를 가립니다. '

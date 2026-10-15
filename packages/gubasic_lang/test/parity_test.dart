@@ -3,6 +3,8 @@ library;
 
 import 'dart:io';
 
+import 'package:gubasic_lang/gubasic_lang.dart';
+import 'package:gubasic_lang/testing.dart';
 import 'package:test/test.dart';
 
 import 'interpreter/fake_host.dart';
@@ -15,6 +17,13 @@ import 'interpreter/fake_host.dart';
 /// - NAME.out   expected output: "Debug.Print: …", "MsgBox: …",
 ///              "InputBox: … → …", and a last line "Error R0xx @ line" or
 ///              "Ended" when the run ends that way
+///
+/// A program with a form also has (docs/DESIGN.md §9.1):
+///
+/// - NAME.form.yaml  its form
+/// - NAME.events     the event script: clicks, typing, dialog answers
+///
+/// and its output echoes each step as "> step" (see runEventScript).
 ///
 /// Today the programs run in the interpreter; when the transpiler exists,
 /// the same files run through it too and must give the same output. The
@@ -37,10 +46,23 @@ void main() {
 
   for (final program in programs) {
     test(program.uri.pathSegments.last, () async {
-      final input = File(program.path.replaceFirst('.gbas', '.in'));
-      final answers = input.existsSync() ? input.readAsLinesSync() : <String>[];
-      final lines =
-          await runAndRecord(program.readAsStringSync(), answers: answers);
+      final formFile = File(program.path.replaceFirst('.gbas', '.form.yaml'));
+      final List<String> lines;
+      if (formFile.existsSync()) {
+        final form = readFormFile(formFile.readAsStringSync(), name: 'Form1');
+        expect(form.diagnostics, isEmpty);
+        lines = await runEventScript(
+            program.readAsStringSync(),
+            form.form,
+            File(program.path.replaceFirst('.gbas', '.events'))
+                .readAsStringSync());
+      } else {
+        final input = File(program.path.replaceFirst('.gbas', '.in'));
+        final answers =
+            input.existsSync() ? input.readAsLinesSync() : <String>[];
+        lines =
+            await runAndRecord(program.readAsStringSync(), answers: answers);
+      }
       final actual = '${lines.join('\n')}\n';
       final expected = File(program.path.replaceFirst('.gbas', '.out'));
       if (update || !expected.existsSync()) {

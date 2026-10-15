@@ -175,6 +175,19 @@ controls:
     expect(r.form.controls.single.valueOf('Left'), 0);
   });
 
+  test('F012: an Integer property value outside its range', () {
+    final r = readFormFile(
+        'formatVersion: 1\ncontrols:\n'
+        '  - { name: b, type: Button, properties: { Width: -1, '
+        'Left: 2147483648, Top: -2147483648 } }\n',
+        name: 'F');
+    expect(r.diagnostics.map((d) => '${d.code.code} ${d.args}'), [
+      'F012 [Width, 0, 2147483647]',
+      'F012 [Left, -2147483648, 2147483647]',
+    ]);
+    expect(r.form.controls.single.properties, {'Top': -2147483648});
+  });
+
   test('messages exist in both languages', () {
     final d = readFormFile(
             'formatVersion: 1\ncontrols:\n'

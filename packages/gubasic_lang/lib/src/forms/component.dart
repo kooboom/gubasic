@@ -4,9 +4,21 @@ import '../analyzer/builtins.dart';
 import '../analyzer/types.dart';
 import 'components.g.dart';
 
+/// The range of an Integer property unless its component.yaml narrows it:
+/// 32 bits, the same on every platform.
+const int integerPropertyMin = -2147483648;
+const int integerPropertyMax = 2147483647;
+
 /// A property of a component, as declared in its component.yaml.
 class PropertySpec {
-  const PropertySpec(this.name, this.type, this.defaultValue);
+  const PropertySpec(
+    this.name,
+    this.type,
+    this.defaultValue, {
+    this.min = integerPropertyMin,
+    this.max = integerPropertyMax,
+    this.changeEvent,
+  });
 
   final String name;
 
@@ -15,6 +27,18 @@ class PropertySpec {
 
   /// An `int`, `double`, `bool` or `String`, matching [type].
   final Object defaultValue;
+
+  /// For Integer properties: the smallest and largest value allowed.
+  final int min;
+  final int max;
+
+  /// The event that runs after the value changes, also when the program
+  /// sets it (`Changed` for TextBox.Text). Null for most properties.
+  final String? changeEvent;
+
+  /// Whether [value] (an int for Integer properties) is in range.
+  bool accepts(Object value) =>
+      type != GbType.integer || (value is int && value >= min && value <= max);
 }
 
 /// An event of a component: `Click()`, later `Detected(code As String)`.
@@ -104,8 +128,26 @@ ComponentSpec readComponentFile(String text) {
       _ => value is String,
     };
     if (!ok) throw FormatException('$name: default does not match its type');
-    properties.add(PropertySpec(name, type,
-        type == GbType.double_ ? (value as num).toDouble() : value as Object));
+    final min = p['min'] ?? integerPropertyMin;
+    final max = p['max'] ?? integerPropertyMax;
+    if (min is! int ||
+        max is! int ||
+        min < integerPropertyMin ||
+        max > integerPropertyMax ||
+        (type != GbType.integer && (p['min'] != null || p['max'] != null))) {
+      throw FormatException('$name: bad min or max');
+    }
+    final changeEvent = p['changeEvent'];
+    if (changeEvent != null && changeEvent is! String) {
+      throw FormatException('$name: bad changeEvent');
+    }
+    final spec = PropertySpec(name, type,
+        type == GbType.double_ ? (value as num).toDouble() : value as Object,
+        min: min, max: max, changeEvent: changeEvent as String?);
+    if (!spec.accepts(spec.defaultValue)) {
+      throw FormatException('$name: default is out of range');
+    }
+    properties.add(spec);
   }
 
   final events = <EventSpec>[];
@@ -133,6 +175,13 @@ ComponentSpec readComponentFile(String text) {
   );
   if (!spec.events.containsKey(spec.defaultEvent.toLowerCase())) {
     throw FormatException('${spec.name}: defaultEvent is not an event');
+  }
+  for (final p in spec.properties.values) {
+    final e = p.changeEvent;
+    if (e != null && spec.events[e.toLowerCase()]?.parameters.isEmpty != true) {
+      throw FormatException('${p.name}: changeEvent is not an event '
+          'without parameters');
+    }
   }
   return spec;
 }

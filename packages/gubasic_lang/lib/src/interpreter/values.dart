@@ -1,5 +1,6 @@
 import '../analyzer/conversions.dart';
 import '../analyzer/types.dart';
+import '../forms/component.dart';
 import 'checked_math.dart';
 
 /// Values while a program runs:
@@ -15,6 +16,7 @@ import 'checked_math.dart';
 /// | List(Of T) | [GbList] |
 /// | array | [GbArray] |
 /// | Exception | [GbException] |
+/// | a control, the form | [GbControl] |
 
 class GbList {
   GbList(this.element, [List<Object?>? items]) : items = items ?? [];
@@ -28,6 +30,19 @@ class GbArray {
 
   final GbType element;
   List<Object?> items;
+}
+
+/// A control on the form, or the form itself (`btnSave`, `Me`). Its
+/// properties live in the [FormHost]; this only names it.
+class GbControl {
+  GbControl(this.name, this.component);
+
+  /// The control's name; null for the form.
+  final String? name;
+  final ComponentSpec component;
+
+  @override
+  String toString() => name ?? 'Form';
 }
 
 class GbException {
@@ -75,6 +90,7 @@ String typeNameOf(Object? value) {
     GbList l => 'List(Of ${l.element.displayName})',
     GbArray a => '${a.element.displayName}()',
     GbException() => 'Exception',
+    GbControl c => c.component.name,
     _ => 'Object',
   };
 }

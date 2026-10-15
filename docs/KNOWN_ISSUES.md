@@ -18,8 +18,8 @@ Problems we know about and have **deliberately** left unfixed for now. Each entr
 - **Why deferred:** where settings are stored differs between platforms (shared_preferences in apps, the browser's storage in the playground). It belongs with `gubasic_runtime`, so that the interpreter and generated apps store them the same way (D11).
 - **Revisit:** when `gubasic_runtime` arrives.
 
-## Programs with a form cannot run yet
+## Forms run only in tests so far
 
-- **What:** code is checked together with its form file (D27): controls, `Me` and event handlers are known, and the README example ([examples/hello](../examples/hello)) has no diagnostics. But nothing runs a program with a form yet: the interpreter does not deliver events, and nothing shows a form. The playground has no forms, so there controls and `Me` are still reported (A003).
-- **Why deferred:** running a form needs events in the interpreter and `gubasic_runtime` to show the controls. They come next, one change each. The playground will not imitate controls in HTML, which would create a second runtime (D24).
+- **What:** the interpreter runs programs with a form (D28), and the parity tests drive them with event scripts on the VM and in Chrome. But nothing shows a form on screen yet. The playground has no forms, so there controls and `Me` are still reported (A003).
+- **Why deferred:** showing the controls needs `gubasic_runtime` and the IDE's run window, which come in the next change. The playground will not imitate controls in HTML, which would create a second runtime (D24).
 - **Revisit:** when the IDE's run window exists.

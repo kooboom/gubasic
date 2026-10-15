@@ -15,3 +15,28 @@ abstract interface class Host {
   /// program computes.
   Future<void> yieldNow();
 }
+
+/// What a program with a form needs besides [Host]: the form and its
+/// controls (docs/LANGUAGE.md §8, §11). The IDE's run window implements it
+/// with gubasic_runtime; tests use a recording fake (testing.dart).
+///
+/// Controls are named as in the form file; null is the form itself.
+/// Properties are named as in their component.yaml, and their values are
+/// `int`, `double`, `bool` or `String`.
+abstract interface class FormHost implements Host {
+  /// The current value of a property: as the program last set it, or as
+  /// the user changed it (the text typed in a TextBox).
+  Object getProperty(String? control, String property);
+
+  /// The program sets a property. The interpreter runs the property's
+  /// change event itself (TextBox.Changed); the host runs it only for
+  /// changes the user makes.
+  void setProperty(String? control, String property, Object value);
+
+  /// Form_Load has finished: show the form.
+  void showForm();
+
+  /// The program has ended: close the form, and close any open dialog as
+  /// if it was cancelled.
+  void endProgram();
+}

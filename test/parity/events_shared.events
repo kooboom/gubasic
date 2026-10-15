@@ -1,0 +1,3 @@
+btnWait.Click     ' A starts and waits in DoEvents
+btnChange.Click   ' B runs while A waits
+Close

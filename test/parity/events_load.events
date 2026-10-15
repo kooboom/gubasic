@@ -1,0 +1,4 @@
+btnSave.Click   ' blocked: Form_Load's MsgBox is still open
+OK
+btnSave.Click
+Close

@@ -1,0 +1,3 @@
+btnSize.Click
+btnBad.Click
+btnSize.Click     ' not run: the program has stopped

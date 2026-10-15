@@ -1,0 +1,10 @@
+btnAsk.Click
+btnOther.Click      ' blocked by the MsgBox
+txtName.Type "x"    ' blocked too
+Close               ' and so is closing the form
+OK
+btnOther.Click      ' blocked by the InputBox
+Answer "Kim"
+btnOther.Click
+txtName.Type "Lee"
+Close

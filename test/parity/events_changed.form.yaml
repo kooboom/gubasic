@@ -1,0 +1,5 @@
+formatVersion: 1
+controls:
+  - { name: txtName, type: TextBox }
+  - { name: lblEcho, type: Label }
+  - { name: btnObject, type: Button }

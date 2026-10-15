@@ -1,0 +1,20 @@
+> btnAsk.Click
+MsgBox: Wait
+> btnOther.Click
+Blocked: btnOther.Click
+> txtName.Type "x"
+Blocked: txtName.Type "x"
+> Close
+Blocked: Close
+> OK
+InputBox: Name?
+> btnOther.Click
+Blocked: btnOther.Click
+> Answer "Kim"
+Debug.Print: after the dialogs: Kim
+> btnOther.Click
+Debug.Print: other ran
+> txtName.Type "Lee"
+Debug.Print: changed to Lee
+> Close
+Closed

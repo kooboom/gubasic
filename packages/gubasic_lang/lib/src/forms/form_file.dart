@@ -184,6 +184,11 @@ void _properties(YamlReader r, YamlNode node, ComponentSpec component,
           [spec.name, spec.type.displayName]);
       continue;
     }
+    if (!spec.accepts(v)) {
+      r.report(value.span, DiagnosticCode.propertyOutOfRange,
+          [spec.name, '${spec.min}', '${spec.max}']);
+      continue;
+    }
     into[spec.name] = v;
   }
 }
