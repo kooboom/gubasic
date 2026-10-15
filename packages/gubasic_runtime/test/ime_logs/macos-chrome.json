@@ -1,12 +1,12 @@
 {
   "probe": 1,
-  "recordedAt": "2026-10-15T10:33:09.201Z",
+  "recordedAt": "2026-10-15T11:39:03.044Z",
   "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36",
   "platform": "MacIntel",
   "scenarios": {
     "dokkaebi": [
       {
-        "ms": 101474,
+        "ms": 662644,
         "kind": "value",
         "text": "",
         "codes": [],
@@ -20,205 +20,19 @@
         ]
       },
       {
-        "ms": 101475,
+        "ms": 662646,
         "kind": "focus",
         "hasFocus": true
       },
       {
-        "ms": 113237,
-        "kind": "keyDown",
-        "key": "R",
-        "physical": null,
-        "character": "r"
-      },
-      {
-        "ms": 113242,
-        "kind": "value",
-        "text": "r",
-        "codes": [
-          "U+0072"
-        ],
-        "composing": [
-          -1,
-          -1
-        ],
-        "selection": [
-          1,
-          1
-        ]
-      },
-      {
-        "ms": 113295,
-        "kind": "keyUp",
-        "key": "R",
-        "physical": null,
-        "character": null
-      },
-      {
-        "ms": 114386,
-        "kind": "keyDown",
-        "key": "Backspace",
-        "physical": null,
-        "character": null
-      },
-      {
-        "ms": 114391,
-        "kind": "value",
-        "text": "",
-        "codes": [],
-        "composing": [
-          -1,
-          -1
-        ],
-        "selection": [
-          0,
-          0
-        ]
-      },
-      {
-        "ms": 114561,
-        "kind": "keyUp",
-        "key": "Backspace",
-        "physical": null,
-        "character": null
-      },
-      {
-        "ms": 115015,
-        "kind": "keyDown",
-        "key": "Meta Right",
-        "physical": null,
-        "character": null
-      },
-      {
-        "ms": 115085,
-        "kind": "keyUp",
-        "key": "Meta Right",
-        "physical": null,
-        "character": null
-      },
-      {
-        "ms": 118461,
-        "kind": "focus",
-        "hasFocus": false
-      },
-      {
-        "ms": 118603,
-        "kind": "reset"
-      },
-      {
-        "ms": 118603,
-        "kind": "focus",
-        "hasFocus": true
-      },
-      {
-        "ms": 120596,
-        "kind": "keyDown",
-        "key": "R",
-        "physical": null,
-        "character": "r"
-      },
-      {
-        "ms": 120597,
-        "kind": "value",
-        "text": "r",
-        "codes": [
-          "U+0072"
-        ],
-        "composing": [
-          -1,
-          -1
-        ],
-        "selection": [
-          1,
-          1
-        ]
-      },
-      {
-        "ms": 120721,
-        "kind": "keyUp",
-        "key": "R",
-        "physical": null,
-        "character": null
-      },
-      {
-        "ms": 121327,
-        "kind": "keyDown",
-        "key": "Backspace",
-        "physical": null,
-        "character": null
-      },
-      {
-        "ms": 121329,
-        "kind": "value",
-        "text": "",
-        "codes": [],
-        "composing": [
-          -1,
-          -1
-        ],
-        "selection": [
-          0,
-          0
-        ]
-      },
-      {
-        "ms": 121476,
-        "kind": "keyUp",
-        "key": "Backspace",
-        "physical": null,
-        "character": null
-      },
-      {
-        "ms": 125570,
-        "kind": "focus",
-        "hasFocus": false
-      },
-      {
-        "ms": 125762,
-        "kind": "reset"
-      },
-      {
-        "ms": 125762,
-        "kind": "focus",
-        "hasFocus": true
-      },
-      {
-        "ms": 126239,
-        "kind": "keyDown",
-        "key": "Caps Lock",
-        "physical": null,
-        "character": null
-      },
-      {
-        "ms": 126248,
-        "kind": "keyUp",
-        "key": "Caps Lock",
-        "physical": null,
-        "character": null
-      },
-      {
-        "ms": 126378,
-        "kind": "keyDown",
-        "key": "Caps Lock",
-        "physical": null,
-        "character": null
-      },
-      {
-        "ms": 126386,
-        "kind": "keyUp",
-        "key": "Caps Lock",
-        "physical": null,
-        "character": null
-      },
-      {
-        "ms": 127822,
+        "ms": 666627,
         "kind": "keyDown",
         "key": "R",
         "physical": null,
         "character": "ㄱ"
       },
       {
-        "ms": 127825,
+        "ms": 666632,
         "kind": "value",
         "text": "ㄱ",
         "codes": [
@@ -234,21 +48,21 @@
         ]
       },
       {
-        "ms": 127903,
+        "ms": 666766,
         "kind": "keyUp",
         "key": "R",
         "physical": null,
         "character": null
       },
       {
-        "ms": 128003,
+        "ms": 667141,
         "kind": "keyDown",
         "key": "K",
         "physical": null,
         "character": "ㅏ"
       },
       {
-        "ms": 128006,
+        "ms": 667144,
         "kind": "value",
         "text": "가",
         "codes": [
@@ -264,21 +78,21 @@
         ]
       },
       {
-        "ms": 128085,
+        "ms": 667231,
         "kind": "keyUp",
         "key": "K",
         "physical": null,
         "character": null
       },
       {
-        "ms": 128218,
+        "ms": 667683,
         "kind": "keyDown",
         "key": "F",
         "physical": null,
         "character": "ㄹ"
       },
       {
-        "ms": 128221,
+        "ms": 667685,
         "kind": "value",
         "text": "갈",
         "codes": [
@@ -294,21 +108,21 @@
         ]
       },
       {
-        "ms": 128330,
+        "ms": 667755,
         "kind": "keyUp",
         "key": "F",
         "physical": null,
         "character": null
       },
       {
-        "ms": 128606,
+        "ms": 669833,
         "kind": "keyDown",
         "key": "R",
         "physical": null,
         "character": "ㄱ"
       },
       {
-        "ms": 128607,
+        "ms": 669834,
         "kind": "value",
         "text": "갉",
         "codes": [
@@ -324,21 +138,21 @@
         ]
       },
       {
-        "ms": 128702,
+        "ms": 669965,
         "kind": "keyUp",
         "key": "R",
         "physical": null,
         "character": null
       },
       {
-        "ms": 129171,
+        "ms": 670220,
         "kind": "keyDown",
         "key": "K",
         "physical": null,
         "character": "ㅏ"
       },
       {
-        "ms": 129172,
+        "ms": 670222,
         "kind": "value",
         "text": "갈",
         "codes": [
@@ -354,7 +168,7 @@
         ]
       },
       {
-        "ms": 129174,
+        "ms": 670223,
         "kind": "value",
         "text": "갈가",
         "codes": [
@@ -371,35 +185,19 @@
         ]
       },
       {
-        "ms": 129254,
+        "ms": 670366,
         "kind": "keyUp",
         "key": "K",
         "physical": null,
         "character": null
       },
       {
-        "ms": 133410,
-        "kind": "keyDown",
-        "key": "Enter",
-        "physical": null,
-        "character": null
+        "ms": 672813,
+        "kind": "focus",
+        "hasFocus": false
       },
       {
-        "ms": 133412,
-        "kind": "keyUp",
-        "key": "Enter",
-        "physical": null,
-        "character": null
-      },
-      {
-        "ms": 133413,
-        "kind": "keyDown",
-        "key": "Enter",
-        "physical": null,
-        "character": null
-      },
-      {
-        "ms": 133414,
+        "ms": 672814,
         "kind": "value",
         "text": "갈가",
         "codes": [
@@ -414,23 +212,11 @@
           2,
           2
         ]
-      },
-      {
-        "ms": 133415,
-        "kind": "focus",
-        "hasFocus": false
-      },
-      {
-        "ms": 133486,
-        "kind": "keyUp",
-        "key": "Enter",
-        "physical": null,
-        "character": null
       }
     ],
     "double_final": [
       {
-        "ms": 135620,
+        "ms": 672813,
         "kind": "value",
         "text": "",
         "codes": [],
@@ -444,19 +230,19 @@
         ]
       },
       {
-        "ms": 135621,
+        "ms": 672814,
         "kind": "focus",
         "hasFocus": true
       },
       {
-        "ms": 137831,
+        "ms": 676129,
         "kind": "keyDown",
         "key": "E",
         "physical": null,
         "character": "ㄷ"
       },
       {
-        "ms": 137833,
+        "ms": 676129,
         "kind": "value",
         "text": "ㄷ",
         "codes": [
@@ -472,21 +258,21 @@
         ]
       },
       {
-        "ms": 137912,
+        "ms": 676244,
         "kind": "keyUp",
         "key": "E",
         "physical": null,
         "character": null
       },
       {
-        "ms": 138020,
+        "ms": 676341,
         "kind": "keyDown",
         "key": "K",
         "physical": null,
         "character": "ㅏ"
       },
       {
-        "ms": 138021,
+        "ms": 676342,
         "kind": "value",
         "text": "다",
         "codes": [
@@ -502,21 +288,21 @@
         ]
       },
       {
-        "ms": 138096,
+        "ms": 676440,
         "kind": "keyUp",
         "key": "K",
         "physical": null,
         "character": null
       },
       {
-        "ms": 138311,
+        "ms": 676566,
         "kind": "keyDown",
         "key": "F",
         "physical": null,
         "character": "ㄹ"
       },
       {
-        "ms": 138313,
+        "ms": 676566,
         "kind": "value",
         "text": "달",
         "codes": [
@@ -532,21 +318,21 @@
         ]
       },
       {
-        "ms": 138396,
+        "ms": 676665,
         "kind": "keyUp",
         "key": "F",
         "physical": null,
         "character": null
       },
       {
-        "ms": 139078,
+        "ms": 677033,
         "kind": "keyDown",
         "key": "R",
         "physical": null,
         "character": "ㄱ"
       },
       {
-        "ms": 139081,
+        "ms": 677035,
         "kind": "value",
         "text": "닭",
         "codes": [
@@ -562,21 +348,21 @@
         ]
       },
       {
-        "ms": 139170,
+        "ms": 677180,
         "kind": "keyUp",
         "key": "R",
         "physical": null,
         "character": null
       },
       {
-        "ms": 140654,
+        "ms": 679244,
         "kind": "keyDown",
         "key": " ",
         "physical": null,
         "character": " "
       },
       {
-        "ms": 140656,
+        "ms": 679252,
         "kind": "value",
         "text": "닭 ",
         "codes": [
@@ -593,7 +379,7 @@
         ]
       },
       {
-        "ms": 140672,
+        "ms": 679270,
         "kind": "value",
         "text": "닭 ",
         "codes": [
@@ -610,21 +396,21 @@
         ]
       },
       {
-        "ms": 140729,
+        "ms": 679320,
         "kind": "keyUp",
         "key": " ",
         "physical": null,
         "character": null
       },
       {
-        "ms": 141354,
+        "ms": 681371,
         "kind": "keyDown",
         "key": "R",
         "physical": null,
         "character": "ㄱ"
       },
       {
-        "ms": 141355,
+        "ms": 681372,
         "kind": "value",
         "text": "닭 ㄱ",
         "codes": [
@@ -642,21 +428,21 @@
         ]
       },
       {
-        "ms": 141453,
+        "ms": 681467,
         "kind": "keyUp",
         "key": "R",
         "physical": null,
         "character": null
       },
       {
-        "ms": 141528,
+        "ms": 682073,
         "kind": "keyDown",
         "key": "K",
         "physical": null,
         "character": "ㅏ"
       },
       {
-        "ms": 141529,
+        "ms": 682074,
         "kind": "value",
         "text": "닭 가",
         "codes": [
@@ -674,21 +460,21 @@
         ]
       },
       {
-        "ms": 141617,
+        "ms": 682154,
         "kind": "keyUp",
         "key": "K",
         "physical": null,
         "character": null
       },
       {
-        "ms": 141731,
+        "ms": 682324,
         "kind": "keyDown",
         "key": "Q",
         "physical": null,
         "character": "ㅂ"
       },
       {
-        "ms": 141732,
+        "ms": 682326,
         "kind": "value",
         "text": "닭 갑",
         "codes": [
@@ -706,21 +492,21 @@
         ]
       },
       {
-        "ms": 141876,
+        "ms": 682475,
         "kind": "keyUp",
         "key": "Q",
         "physical": null,
         "character": null
       },
       {
-        "ms": 142107,
+        "ms": 682706,
         "kind": "keyDown",
         "key": "T",
         "physical": null,
         "character": "ㅅ"
       },
       {
-        "ms": 142108,
+        "ms": 682707,
         "kind": "value",
         "text": "닭 값",
         "codes": [
@@ -738,21 +524,21 @@
         ]
       },
       {
-        "ms": 142190,
+        "ms": 682816,
         "kind": "keyUp",
         "key": "T",
         "physical": null,
         "character": null
       },
       {
-        "ms": 144062,
+        "ms": 684275,
         "kind": "keyDown",
         "key": " ",
         "physical": null,
         "character": " "
       },
       {
-        "ms": 144064,
+        "ms": 684276,
         "kind": "value",
         "text": "닭 값 ",
         "codes": [
@@ -771,7 +557,7 @@
         ]
       },
       {
-        "ms": 144079,
+        "ms": 684286,
         "kind": "value",
         "text": "닭 값 ",
         "codes": [
@@ -790,35 +576,21 @@
         ]
       },
       {
-        "ms": 144119,
+        "ms": 684390,
         "kind": "keyUp",
         "key": " ",
         "physical": null,
         "character": null
       },
       {
-        "ms": 145693,
-        "kind": "keyDown",
-        "key": "Enter",
-        "physical": null,
-        "character": null
-      },
-      {
-        "ms": 145694,
+        "ms": 686980,
         "kind": "focus",
         "hasFocus": false
-      },
-      {
-        "ms": 145753,
-        "kind": "keyUp",
-        "key": "Enter",
-        "physical": null,
-        "character": null
       }
     ],
     "backspace": [
       {
-        "ms": 147407,
+        "ms": 686979,
         "kind": "value",
         "text": "",
         "codes": [],
@@ -832,19 +604,19 @@
         ]
       },
       {
-        "ms": 147408,
+        "ms": 686981,
         "kind": "focus",
         "hasFocus": true
       },
       {
-        "ms": 149557,
+        "ms": 689918,
         "kind": "keyDown",
         "key": "G",
         "physical": null,
         "character": "ㅎ"
       },
       {
-        "ms": 149558,
+        "ms": 689919,
         "kind": "value",
         "text": "ㅎ",
         "codes": [
@@ -860,21 +632,21 @@
         ]
       },
       {
-        "ms": 149684,
+        "ms": 690064,
         "kind": "keyUp",
         "key": "G",
         "physical": null,
         "character": null
       },
       {
-        "ms": 149878,
+        "ms": 690142,
         "kind": "keyDown",
         "key": "K",
         "physical": null,
         "character": "ㅏ"
       },
       {
-        "ms": 149880,
+        "ms": 690143,
         "kind": "value",
         "text": "하",
         "codes": [
@@ -890,21 +662,21 @@
         ]
       },
       {
-        "ms": 149990,
+        "ms": 690230,
         "kind": "keyUp",
         "key": "K",
         "physical": null,
         "character": null
       },
       {
-        "ms": 150161,
+        "ms": 690399,
         "kind": "keyDown",
         "key": "S",
         "physical": null,
         "character": "ㄴ"
       },
       {
-        "ms": 150163,
+        "ms": 690399,
         "kind": "value",
         "text": "한",
         "codes": [
@@ -920,21 +692,21 @@
         ]
       },
       {
-        "ms": 150257,
+        "ms": 690511,
         "kind": "keyUp",
         "key": "S",
         "physical": null,
         "character": null
       },
       {
-        "ms": 153027,
+        "ms": 692010,
         "kind": "keyDown",
         "key": "Backspace",
         "physical": null,
         "character": null
       },
       {
-        "ms": 153029,
+        "ms": 692012,
         "kind": "value",
         "text": "하",
         "codes": [
@@ -950,65 +722,37 @@
         ]
       },
       {
-        "ms": 153114,
+        "ms": 692088,
         "kind": "keyUp",
         "key": "Backspace",
         "physical": null,
         "character": null
       },
       {
-        "ms": 154858,
-        "kind": "keyDown",
-        "key": "Enter",
-        "physical": null,
-        "character": null
-      },
-      {
-        "ms": 154860,
-        "kind": "keyUp",
-        "key": "Enter",
-        "physical": null,
-        "character": null
-      },
-      {
-        "ms": 154861,
-        "kind": "keyDown",
-        "key": "Enter",
-        "physical": null,
-        "character": null
-      },
-      {
-        "ms": 154861,
-        "kind": "value",
-        "text": "하",
-        "codes": [
-          "U+D558"
-        ],
-        "composing": [
-          -1,
-          -1
-        ],
-        "selection": [
-          1,
-          1
-        ]
-      },
-      {
-        "ms": 154862,
+        "ms": 694398,
         "kind": "focus",
         "hasFocus": false
       },
       {
-        "ms": 154921,
-        "kind": "keyUp",
-        "key": "Enter",
-        "physical": null,
-        "character": null
+        "ms": 694398,
+        "kind": "value",
+        "text": "하",
+        "codes": [
+          "U+D558"
+        ],
+        "composing": [
+          -1,
+          -1
+        ],
+        "selection": [
+          1,
+          1
+        ]
       }
     ],
     "click": [
       {
-        "ms": 156498,
+        "ms": 694398,
         "kind": "value",
         "text": "",
         "codes": [],
@@ -1022,19 +766,19 @@
         ]
       },
       {
-        "ms": 156499,
+        "ms": 694398,
         "kind": "focus",
         "hasFocus": true
       },
       {
-        "ms": 157886,
+        "ms": 700858,
         "kind": "keyDown",
         "key": "G",
         "physical": null,
         "character": "ㅎ"
       },
       {
-        "ms": 157887,
+        "ms": 700860,
         "kind": "value",
         "text": "ㅎ",
         "codes": [
@@ -1050,21 +794,21 @@
         ]
       },
       {
-        "ms": 157948,
+        "ms": 701010,
         "kind": "keyUp",
         "key": "G",
         "physical": null,
         "character": null
       },
       {
-        "ms": 158175,
+        "ms": 701120,
         "kind": "keyDown",
         "key": "K",
         "physical": null,
         "character": "ㅏ"
       },
       {
-        "ms": 158176,
+        "ms": 701121,
         "kind": "value",
         "text": "하",
         "codes": [
@@ -1080,21 +824,21 @@
         ]
       },
       {
-        "ms": 158253,
+        "ms": 701189,
         "kind": "keyUp",
         "key": "K",
         "physical": null,
         "character": null
       },
       {
-        "ms": 159089,
+        "ms": 701323,
         "kind": "keyDown",
         "key": "S",
         "physical": null,
         "character": "ㄴ"
       },
       {
-        "ms": 159091,
+        "ms": 701324,
         "kind": "value",
         "text": "한",
         "codes": [
@@ -1110,21 +854,21 @@
         ]
       },
       {
-        "ms": 159181,
+        "ms": 701446,
         "kind": "keyUp",
         "key": "S",
         "physical": null,
         "character": null
       },
       {
-        "ms": 160333,
+        "ms": 701936,
         "kind": "keyDown",
         "key": "R",
         "physical": null,
         "character": "ㄱ"
       },
       {
-        "ms": 160335,
+        "ms": 701938,
         "kind": "value",
         "text": "한ㄱ",
         "codes": [
@@ -1141,21 +885,21 @@
         ]
       },
       {
-        "ms": 160429,
+        "ms": 702050,
         "kind": "keyUp",
         "key": "R",
         "physical": null,
         "character": null
       },
       {
-        "ms": 160655,
+        "ms": 702161,
         "kind": "keyDown",
         "key": "M",
         "physical": null,
         "character": "ㅡ"
       },
       {
-        "ms": 160655,
+        "ms": 702162,
         "kind": "value",
         "text": "한그",
         "codes": [
@@ -1172,21 +916,21 @@
         ]
       },
       {
-        "ms": 160738,
+        "ms": 702240,
         "kind": "keyUp",
         "key": "M",
         "physical": null,
         "character": null
       },
       {
-        "ms": 160990,
+        "ms": 702441,
         "kind": "keyDown",
         "key": "F",
         "physical": null,
         "character": "ㄹ"
       },
       {
-        "ms": 160993,
+        "ms": 702441,
         "kind": "value",
         "text": "한글",
         "codes": [
@@ -1203,19 +947,19 @@
         ]
       },
       {
-        "ms": 161087,
+        "ms": 702529,
         "kind": "keyUp",
         "key": "F",
         "physical": null,
         "character": null
       },
       {
-        "ms": 164604,
+        "ms": 706251,
         "kind": "focus",
         "hasFocus": false
       },
       {
-        "ms": 164605,
+        "ms": 706252,
         "kind": "value",
         "text": "한글",
         "codes": [
@@ -1232,7 +976,7 @@
         ]
       },
       {
-        "ms": 164751,
+        "ms": 706424,
         "kind": "click",
         "button": "A",
         "text": "한글",
@@ -1250,11 +994,11 @@
         ]
       },
       {
-        "ms": 169797,
+        "ms": 709725,
         "kind": "reset"
       },
       {
-        "ms": 169797,
+        "ms": 709725,
         "kind": "value",
         "text": "",
         "codes": [],
@@ -1268,19 +1012,19 @@
         ]
       },
       {
-        "ms": 169797,
+        "ms": 709726,
         "kind": "focus",
         "hasFocus": true
       },
       {
-        "ms": 171764,
+        "ms": 711353,
         "kind": "keyDown",
         "key": "G",
         "physical": null,
         "character": "ㅎ"
       },
       {
-        "ms": 171766,
+        "ms": 711354,
         "kind": "value",
         "text": "ㅎ",
         "codes": [
@@ -1296,21 +1040,21 @@
         ]
       },
       {
-        "ms": 171838,
+        "ms": 711435,
         "kind": "keyUp",
         "key": "G",
         "physical": null,
         "character": null
       },
       {
-        "ms": 171845,
+        "ms": 711454,
         "kind": "keyDown",
         "key": "K",
         "physical": null,
         "character": "ㅏ"
       },
       {
-        "ms": 171845,
+        "ms": 711454,
         "kind": "value",
         "text": "하",
         "codes": [
@@ -1326,14 +1070,21 @@
         ]
       },
       {
-        "ms": 171949,
+        "ms": 711540,
+        "kind": "keyUp",
+        "key": "K",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 711620,
         "kind": "keyDown",
         "key": "S",
         "physical": null,
         "character": "ㄴ"
       },
       {
-        "ms": 171950,
+        "ms": 711621,
         "kind": "value",
         "text": "한",
         "codes": [
@@ -1349,28 +1100,21 @@
         ]
       },
       {
-        "ms": 171984,
-        "kind": "keyUp",
-        "key": "K",
-        "physical": null,
-        "character": null
-      },
-      {
-        "ms": 172036,
+        "ms": 711750,
         "kind": "keyUp",
         "key": "S",
         "physical": null,
         "character": null
       },
       {
-        "ms": 172241,
+        "ms": 712006,
         "kind": "keyDown",
         "key": "R",
         "physical": null,
         "character": "ㄱ"
       },
       {
-        "ms": 172242,
+        "ms": 712008,
         "kind": "value",
         "text": "한ㄱ",
         "codes": [
@@ -1387,21 +1131,21 @@
         ]
       },
       {
-        "ms": 172325,
+        "ms": 712131,
         "kind": "keyUp",
         "key": "R",
         "physical": null,
         "character": null
       },
       {
-        "ms": 172364,
+        "ms": 712195,
         "kind": "keyDown",
         "key": "M",
         "physical": null,
         "character": "ㅡ"
       },
       {
-        "ms": 172364,
+        "ms": 712195,
         "kind": "value",
         "text": "한그",
         "codes": [
@@ -1418,14 +1162,21 @@
         ]
       },
       {
-        "ms": 172427,
+        "ms": 712290,
+        "kind": "keyUp",
+        "key": "M",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 712405,
         "kind": "keyDown",
         "key": "F",
         "physical": null,
         "character": "ㄹ"
       },
       {
-        "ms": 172428,
+        "ms": 712407,
         "kind": "value",
         "text": "한글",
         "codes": [
@@ -1442,26 +1193,19 @@
         ]
       },
       {
-        "ms": 172440,
-        "kind": "keyUp",
-        "key": "M",
-        "physical": null,
-        "character": null
-      },
-      {
-        "ms": 172530,
+        "ms": 712490,
         "kind": "keyUp",
         "key": "F",
         "physical": null,
         "character": null
       },
       {
-        "ms": 180592,
+        "ms": 714167,
         "kind": "focus",
         "hasFocus": false
       },
       {
-        "ms": 180593,
+        "ms": 714168,
         "kind": "value",
         "text": "한글",
         "codes": [
@@ -1478,7 +1222,7 @@
         ]
       },
       {
-        "ms": 180768,
+        "ms": 714345,
         "kind": "click",
         "button": "B",
         "text": "한글",
@@ -1494,6 +1238,1969 @@
           2,
           2
         ]
+      }
+    ],
+    "erase_retype": [
+      {
+        "ms": 717277,
+        "kind": "value",
+        "text": "",
+        "codes": [],
+        "composing": [
+          -1,
+          -1
+        ],
+        "selection": [
+          0,
+          0
+        ]
+      },
+      {
+        "ms": 717278,
+        "kind": "focus",
+        "hasFocus": true
+      },
+      {
+        "ms": 722394,
+        "kind": "keyDown",
+        "key": "E",
+        "physical": null,
+        "character": "ㄷ"
+      },
+      {
+        "ms": 722395,
+        "kind": "value",
+        "text": "ㄷ",
+        "codes": [
+          "U+3137"
+        ],
+        "composing": [
+          0,
+          1
+        ],
+        "selection": [
+          1,
+          1
+        ]
+      },
+      {
+        "ms": 722507,
+        "kind": "keyUp",
+        "key": "E",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 722664,
+        "kind": "keyDown",
+        "key": "K",
+        "physical": null,
+        "character": "ㅏ"
+      },
+      {
+        "ms": 722665,
+        "kind": "value",
+        "text": "다",
+        "codes": [
+          "U+B2E4"
+        ],
+        "composing": [
+          0,
+          1
+        ],
+        "selection": [
+          1,
+          1
+        ]
+      },
+      {
+        "ms": 722791,
+        "kind": "keyUp",
+        "key": "K",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 722982,
+        "kind": "keyDown",
+        "key": "F",
+        "physical": null,
+        "character": "ㄹ"
+      },
+      {
+        "ms": 722983,
+        "kind": "value",
+        "text": "달",
+        "codes": [
+          "U+B2EC"
+        ],
+        "composing": [
+          0,
+          1
+        ],
+        "selection": [
+          1,
+          1
+        ]
+      },
+      {
+        "ms": 723094,
+        "kind": "keyUp",
+        "key": "F",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 723435,
+        "kind": "keyDown",
+        "key": "R",
+        "physical": null,
+        "character": "ㄱ"
+      },
+      {
+        "ms": 723437,
+        "kind": "value",
+        "text": "닭",
+        "codes": [
+          "U+B2ED"
+        ],
+        "composing": [
+          0,
+          1
+        ],
+        "selection": [
+          1,
+          1
+        ]
+      },
+      {
+        "ms": 723556,
+        "kind": "keyUp",
+        "key": "R",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 728355,
+        "kind": "keyDown",
+        "key": "R",
+        "physical": null,
+        "character": "ㄱ"
+      },
+      {
+        "ms": 728355,
+        "kind": "value",
+        "text": "닭ㄱ",
+        "codes": [
+          "U+B2ED",
+          "U+3131"
+        ],
+        "composing": [
+          1,
+          2
+        ],
+        "selection": [
+          2,
+          2
+        ]
+      },
+      {
+        "ms": 728464,
+        "kind": "keyUp",
+        "key": "R",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 728557,
+        "kind": "keyDown",
+        "key": "K",
+        "physical": null,
+        "character": "ㅏ"
+      },
+      {
+        "ms": 728557,
+        "kind": "value",
+        "text": "닭가",
+        "codes": [
+          "U+B2ED",
+          "U+AC00"
+        ],
+        "composing": [
+          1,
+          2
+        ],
+        "selection": [
+          2,
+          2
+        ]
+      },
+      {
+        "ms": 728692,
+        "kind": "keyUp",
+        "key": "K",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 728924,
+        "kind": "keyDown",
+        "key": "Q",
+        "physical": null,
+        "character": "ㅂ"
+      },
+      {
+        "ms": 728925,
+        "kind": "value",
+        "text": "닭갑",
+        "codes": [
+          "U+B2ED",
+          "U+AC11"
+        ],
+        "composing": [
+          1,
+          2
+        ],
+        "selection": [
+          2,
+          2
+        ]
+      },
+      {
+        "ms": 729049,
+        "kind": "keyUp",
+        "key": "Q",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 729427,
+        "kind": "keyDown",
+        "key": "T",
+        "physical": null,
+        "character": "ㅅ"
+      },
+      {
+        "ms": 729428,
+        "kind": "value",
+        "text": "닭값",
+        "codes": [
+          "U+B2ED",
+          "U+AC12"
+        ],
+        "composing": [
+          1,
+          2
+        ],
+        "selection": [
+          2,
+          2
+        ]
+      },
+      {
+        "ms": 729513,
+        "kind": "keyUp",
+        "key": "T",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 753565,
+        "kind": "keyDown",
+        "key": "Backspace",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 753566,
+        "kind": "value",
+        "text": "닭갑",
+        "codes": [
+          "U+B2ED",
+          "U+AC11"
+        ],
+        "composing": [
+          1,
+          2
+        ],
+        "selection": [
+          2,
+          2
+        ]
+      },
+      {
+        "ms": 753648,
+        "kind": "keyUp",
+        "key": "Backspace",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 754017,
+        "kind": "keyDown",
+        "key": "Backspace",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 754019,
+        "kind": "value",
+        "text": "닭가",
+        "codes": [
+          "U+B2ED",
+          "U+AC00"
+        ],
+        "composing": [
+          1,
+          2
+        ],
+        "selection": [
+          2,
+          2
+        ]
+      },
+      {
+        "ms": 754082,
+        "kind": "keyUp",
+        "key": "Backspace",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 754508,
+        "kind": "keyDown",
+        "key": "Backspace",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 754509,
+        "kind": "value",
+        "text": "닭ㄱ",
+        "codes": [
+          "U+B2ED",
+          "U+3131"
+        ],
+        "composing": [
+          1,
+          2
+        ],
+        "selection": [
+          2,
+          2
+        ]
+      },
+      {
+        "ms": 754563,
+        "kind": "keyUp",
+        "key": "Backspace",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 754991,
+        "kind": "keyDown",
+        "key": "Backspace",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 754992,
+        "kind": "keyUp",
+        "key": "Backspace",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 754992,
+        "kind": "keyDown",
+        "key": "Backspace",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 754993,
+        "kind": "value",
+        "text": "닭",
+        "codes": [
+          "U+B2ED"
+        ],
+        "composing": [
+          -1,
+          -1
+        ],
+        "selection": [
+          1,
+          1
+        ]
+      },
+      {
+        "ms": 755057,
+        "kind": "keyUp",
+        "key": "Backspace",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 755467,
+        "kind": "keyDown",
+        "key": "Backspace",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 755468,
+        "kind": "value",
+        "text": "",
+        "codes": [],
+        "composing": [
+          -1,
+          -1
+        ],
+        "selection": [
+          0,
+          0
+        ]
+      },
+      {
+        "ms": 755535,
+        "kind": "keyUp",
+        "key": "Backspace",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 757179,
+        "kind": "keyDown",
+        "key": "E",
+        "physical": null,
+        "character": "ㄷ"
+      },
+      {
+        "ms": 757180,
+        "kind": "value",
+        "text": "ㄷ",
+        "codes": [
+          "U+3137"
+        ],
+        "composing": [
+          0,
+          1
+        ],
+        "selection": [
+          1,
+          1
+        ]
+      },
+      {
+        "ms": 757298,
+        "kind": "keyUp",
+        "key": "E",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 757603,
+        "kind": "keyDown",
+        "key": "K",
+        "physical": null,
+        "character": "ㅏ"
+      },
+      {
+        "ms": 757604,
+        "kind": "value",
+        "text": "다",
+        "codes": [
+          "U+B2E4"
+        ],
+        "composing": [
+          0,
+          1
+        ],
+        "selection": [
+          1,
+          1
+        ]
+      },
+      {
+        "ms": 757682,
+        "kind": "keyUp",
+        "key": "K",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 757853,
+        "kind": "keyDown",
+        "key": "F",
+        "physical": null,
+        "character": "ㄹ"
+      },
+      {
+        "ms": 757855,
+        "kind": "value",
+        "text": "달",
+        "codes": [
+          "U+B2EC"
+        ],
+        "composing": [
+          0,
+          1
+        ],
+        "selection": [
+          1,
+          1
+        ]
+      },
+      {
+        "ms": 757941,
+        "kind": "keyUp",
+        "key": "F",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 758174,
+        "kind": "keyDown",
+        "key": "R",
+        "physical": null,
+        "character": "ㄱ"
+      },
+      {
+        "ms": 758176,
+        "kind": "value",
+        "text": "닭",
+        "codes": [
+          "U+B2ED"
+        ],
+        "composing": [
+          0,
+          1
+        ],
+        "selection": [
+          1,
+          1
+        ]
+      },
+      {
+        "ms": 758268,
+        "kind": "keyUp",
+        "key": "R",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 758757,
+        "kind": "keyDown",
+        "key": " ",
+        "physical": null,
+        "character": " "
+      },
+      {
+        "ms": 758757,
+        "kind": "value",
+        "text": "닭 ",
+        "codes": [
+          "U+B2ED",
+          "U+0020"
+        ],
+        "composing": [
+          0,
+          2
+        ],
+        "selection": [
+          2,
+          2
+        ]
+      },
+      {
+        "ms": 758766,
+        "kind": "value",
+        "text": "닭 ",
+        "codes": [
+          "U+B2ED",
+          "U+0020"
+        ],
+        "composing": [
+          -1,
+          -1
+        ],
+        "selection": [
+          2,
+          2
+        ]
+      },
+      {
+        "ms": 758834,
+        "kind": "keyUp",
+        "key": " ",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 759551,
+        "kind": "keyDown",
+        "key": "R",
+        "physical": null,
+        "character": "ㄱ"
+      },
+      {
+        "ms": 759553,
+        "kind": "value",
+        "text": "닭 ㄱ",
+        "codes": [
+          "U+B2ED",
+          "U+0020",
+          "U+3131"
+        ],
+        "composing": [
+          2,
+          3
+        ],
+        "selection": [
+          3,
+          3
+        ]
+      },
+      {
+        "ms": 759663,
+        "kind": "keyUp",
+        "key": "R",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 759805,
+        "kind": "keyDown",
+        "key": "K",
+        "physical": null,
+        "character": "ㅏ"
+      },
+      {
+        "ms": 759806,
+        "kind": "value",
+        "text": "닭 가",
+        "codes": [
+          "U+B2ED",
+          "U+0020",
+          "U+AC00"
+        ],
+        "composing": [
+          2,
+          3
+        ],
+        "selection": [
+          3,
+          3
+        ]
+      },
+      {
+        "ms": 759885,
+        "kind": "keyUp",
+        "key": "K",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 760142,
+        "kind": "keyDown",
+        "key": "Q",
+        "physical": null,
+        "character": "ㅂ"
+      },
+      {
+        "ms": 760144,
+        "kind": "value",
+        "text": "닭 갑",
+        "codes": [
+          "U+B2ED",
+          "U+0020",
+          "U+AC11"
+        ],
+        "composing": [
+          2,
+          3
+        ],
+        "selection": [
+          3,
+          3
+        ]
+      },
+      {
+        "ms": 760251,
+        "kind": "keyUp",
+        "key": "Q",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 760660,
+        "kind": "keyDown",
+        "key": "T",
+        "physical": null,
+        "character": "ㅅ"
+      },
+      {
+        "ms": 760661,
+        "kind": "value",
+        "text": "닭 값",
+        "codes": [
+          "U+B2ED",
+          "U+0020",
+          "U+AC12"
+        ],
+        "composing": [
+          2,
+          3
+        ],
+        "selection": [
+          3,
+          3
+        ]
+      },
+      {
+        "ms": 760739,
+        "kind": "keyUp",
+        "key": "T",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 764685,
+        "kind": "focus",
+        "hasFocus": false
+      },
+      {
+        "ms": 764686,
+        "kind": "value",
+        "text": "닭 값",
+        "codes": [
+          "U+B2ED",
+          "U+0020",
+          "U+AC12"
+        ],
+        "composing": [
+          -1,
+          -1
+        ],
+        "selection": [
+          3,
+          3
+        ]
+      },
+      {
+        "ms": 2809198,
+        "kind": "reset"
+      },
+      {
+        "ms": 2809198,
+        "kind": "value",
+        "text": "",
+        "codes": [],
+        "composing": [
+          -1,
+          -1
+        ],
+        "selection": [
+          0,
+          0
+        ]
+      },
+      {
+        "ms": 2809198,
+        "kind": "focus",
+        "hasFocus": true
+      },
+      {
+        "ms": 2811376,
+        "kind": "focus",
+        "hasFocus": false
+      },
+      {
+        "ms": 2826709,
+        "kind": "focus",
+        "hasFocus": true
+      },
+      {
+        "ms": 2829214,
+        "kind": "keyDown",
+        "key": "E",
+        "physical": null,
+        "character": "ㄷ"
+      },
+      {
+        "ms": 2829219,
+        "kind": "value",
+        "text": "ㄷ",
+        "codes": [
+          "U+3137"
+        ],
+        "composing": [
+          0,
+          1
+        ],
+        "selection": [
+          1,
+          1
+        ]
+      },
+      {
+        "ms": 2829347,
+        "kind": "keyUp",
+        "key": "E",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 2829461,
+        "kind": "keyDown",
+        "key": "K",
+        "physical": null,
+        "character": "ㅏ"
+      },
+      {
+        "ms": 2829463,
+        "kind": "value",
+        "text": "다",
+        "codes": [
+          "U+B2E4"
+        ],
+        "composing": [
+          0,
+          1
+        ],
+        "selection": [
+          1,
+          1
+        ]
+      },
+      {
+        "ms": 2829572,
+        "kind": "keyUp",
+        "key": "K",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 2829746,
+        "kind": "keyDown",
+        "key": "F",
+        "physical": null,
+        "character": "ㄹ"
+      },
+      {
+        "ms": 2829748,
+        "kind": "value",
+        "text": "달",
+        "codes": [
+          "U+B2EC"
+        ],
+        "composing": [
+          0,
+          1
+        ],
+        "selection": [
+          1,
+          1
+        ]
+      },
+      {
+        "ms": 2829829,
+        "kind": "keyUp",
+        "key": "F",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 2829988,
+        "kind": "keyDown",
+        "key": "R",
+        "physical": null,
+        "character": "ㄱ"
+      },
+      {
+        "ms": 2829990,
+        "kind": "value",
+        "text": "닭",
+        "codes": [
+          "U+B2ED"
+        ],
+        "composing": [
+          0,
+          1
+        ],
+        "selection": [
+          1,
+          1
+        ]
+      },
+      {
+        "ms": 2830088,
+        "kind": "keyUp",
+        "key": "R",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 2830423,
+        "kind": "keyDown",
+        "key": "R",
+        "physical": null,
+        "character": "ㄱ"
+      },
+      {
+        "ms": 2830427,
+        "kind": "value",
+        "text": "닭ㄱ",
+        "codes": [
+          "U+B2ED",
+          "U+3131"
+        ],
+        "composing": [
+          1,
+          2
+        ],
+        "selection": [
+          2,
+          2
+        ]
+      },
+      {
+        "ms": 2830535,
+        "kind": "keyUp",
+        "key": "R",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 2830647,
+        "kind": "keyDown",
+        "key": "K",
+        "physical": null,
+        "character": "ㅏ"
+      },
+      {
+        "ms": 2830649,
+        "kind": "value",
+        "text": "닭가",
+        "codes": [
+          "U+B2ED",
+          "U+AC00"
+        ],
+        "composing": [
+          1,
+          2
+        ],
+        "selection": [
+          2,
+          2
+        ]
+      },
+      {
+        "ms": 2830697,
+        "kind": "keyUp",
+        "key": "K",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 2830840,
+        "kind": "keyDown",
+        "key": "Q",
+        "physical": null,
+        "character": "ㅂ"
+      },
+      {
+        "ms": 2830842,
+        "kind": "value",
+        "text": "닭갑",
+        "codes": [
+          "U+B2ED",
+          "U+AC11"
+        ],
+        "composing": [
+          1,
+          2
+        ],
+        "selection": [
+          2,
+          2
+        ]
+      },
+      {
+        "ms": 2830989,
+        "kind": "keyUp",
+        "key": "Q",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 2831216,
+        "kind": "keyDown",
+        "key": "T",
+        "physical": null,
+        "character": "ㅅ"
+      },
+      {
+        "ms": 2831217,
+        "kind": "value",
+        "text": "닭값",
+        "codes": [
+          "U+B2ED",
+          "U+AC12"
+        ],
+        "composing": [
+          1,
+          2
+        ],
+        "selection": [
+          2,
+          2
+        ]
+      },
+      {
+        "ms": 2831301,
+        "kind": "keyUp",
+        "key": "T",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 2834157,
+        "kind": "keyDown",
+        "key": "Backspace",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 2834158,
+        "kind": "value",
+        "text": "닭갑",
+        "codes": [
+          "U+B2ED",
+          "U+AC11"
+        ],
+        "composing": [
+          1,
+          2
+        ],
+        "selection": [
+          2,
+          2
+        ]
+      },
+      {
+        "ms": 2834223,
+        "kind": "keyUp",
+        "key": "Backspace",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 2834479,
+        "kind": "keyDown",
+        "key": "Backspace",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 2834480,
+        "kind": "value",
+        "text": "닭가",
+        "codes": [
+          "U+B2ED",
+          "U+AC00"
+        ],
+        "composing": [
+          1,
+          2
+        ],
+        "selection": [
+          2,
+          2
+        ]
+      },
+      {
+        "ms": 2834587,
+        "kind": "keyUp",
+        "key": "Backspace",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 2834850,
+        "kind": "keyDown",
+        "key": "Backspace",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 2834851,
+        "kind": "value",
+        "text": "닭ㄱ",
+        "codes": [
+          "U+B2ED",
+          "U+3131"
+        ],
+        "composing": [
+          1,
+          2
+        ],
+        "selection": [
+          2,
+          2
+        ]
+      },
+      {
+        "ms": 2834931,
+        "kind": "keyUp",
+        "key": "Backspace",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 2835209,
+        "kind": "keyDown",
+        "key": "Backspace",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 2835210,
+        "kind": "keyUp",
+        "key": "Backspace",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 2835210,
+        "kind": "keyDown",
+        "key": "Backspace",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 2835212,
+        "kind": "value",
+        "text": "닭",
+        "codes": [
+          "U+B2ED"
+        ],
+        "composing": [
+          -1,
+          -1
+        ],
+        "selection": [
+          1,
+          1
+        ]
+      },
+      {
+        "ms": 2835274,
+        "kind": "keyUp",
+        "key": "Backspace",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 2835579,
+        "kind": "keyDown",
+        "key": "Backspace",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 2835584,
+        "kind": "value",
+        "text": "",
+        "codes": [],
+        "composing": [
+          -1,
+          -1
+        ],
+        "selection": [
+          0,
+          0
+        ]
+      },
+      {
+        "ms": 2835646,
+        "kind": "keyUp",
+        "key": "Backspace",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 2841899,
+        "kind": "keyDown",
+        "key": "E",
+        "physical": null,
+        "character": "ㄷ"
+      },
+      {
+        "ms": 2841901,
+        "kind": "value",
+        "text": "ㄷ",
+        "codes": [
+          "U+3137"
+        ],
+        "composing": [
+          0,
+          1
+        ],
+        "selection": [
+          1,
+          1
+        ]
+      },
+      {
+        "ms": 2842057,
+        "kind": "keyUp",
+        "key": "E",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 2842109,
+        "kind": "keyDown",
+        "key": "K",
+        "physical": null,
+        "character": "ㅏ"
+      },
+      {
+        "ms": 2842110,
+        "kind": "value",
+        "text": "다",
+        "codes": [
+          "U+B2E4"
+        ],
+        "composing": [
+          0,
+          1
+        ],
+        "selection": [
+          1,
+          1
+        ]
+      },
+      {
+        "ms": 2842203,
+        "kind": "keyUp",
+        "key": "K",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 2842283,
+        "kind": "keyDown",
+        "key": "F",
+        "physical": null,
+        "character": "ㄹ"
+      },
+      {
+        "ms": 2842284,
+        "kind": "value",
+        "text": "달",
+        "codes": [
+          "U+B2EC"
+        ],
+        "composing": [
+          0,
+          1
+        ],
+        "selection": [
+          1,
+          1
+        ]
+      },
+      {
+        "ms": 2842337,
+        "kind": "keyUp",
+        "key": "F",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 2842826,
+        "kind": "keyDown",
+        "key": "R",
+        "physical": null,
+        "character": "ㄱ"
+      },
+      {
+        "ms": 2842826,
+        "kind": "value",
+        "text": "닭",
+        "codes": [
+          "U+B2ED"
+        ],
+        "composing": [
+          0,
+          1
+        ],
+        "selection": [
+          1,
+          1
+        ]
+      },
+      {
+        "ms": 2842922,
+        "kind": "keyUp",
+        "key": "R",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 2843743,
+        "kind": "keyDown",
+        "key": " ",
+        "physical": null,
+        "character": " "
+      },
+      {
+        "ms": 2843745,
+        "kind": "value",
+        "text": "닭 ",
+        "codes": [
+          "U+B2ED",
+          "U+0020"
+        ],
+        "composing": [
+          0,
+          2
+        ],
+        "selection": [
+          2,
+          2
+        ]
+      },
+      {
+        "ms": 2843761,
+        "kind": "value",
+        "text": "닭 ",
+        "codes": [
+          "U+B2ED",
+          "U+0020"
+        ],
+        "composing": [
+          -1,
+          -1
+        ],
+        "selection": [
+          2,
+          2
+        ]
+      },
+      {
+        "ms": 2843818,
+        "kind": "keyUp",
+        "key": " ",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 2844605,
+        "kind": "keyDown",
+        "key": "R",
+        "physical": null,
+        "character": "ㄱ"
+      },
+      {
+        "ms": 2844606,
+        "kind": "value",
+        "text": "닭 ㄱ",
+        "codes": [
+          "U+B2ED",
+          "U+0020",
+          "U+3131"
+        ],
+        "composing": [
+          2,
+          3
+        ],
+        "selection": [
+          3,
+          3
+        ]
+      },
+      {
+        "ms": 2844743,
+        "kind": "keyUp",
+        "key": "R",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 2844823,
+        "kind": "keyDown",
+        "key": "K",
+        "physical": null,
+        "character": "ㅏ"
+      },
+      {
+        "ms": 2844824,
+        "kind": "value",
+        "text": "닭 가",
+        "codes": [
+          "U+B2ED",
+          "U+0020",
+          "U+AC00"
+        ],
+        "composing": [
+          2,
+          3
+        ],
+        "selection": [
+          3,
+          3
+        ]
+      },
+      {
+        "ms": 2844887,
+        "kind": "keyUp",
+        "key": "K",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 2844998,
+        "kind": "keyDown",
+        "key": "Q",
+        "physical": null,
+        "character": "ㅂ"
+      },
+      {
+        "ms": 2845000,
+        "kind": "value",
+        "text": "닭 갑",
+        "codes": [
+          "U+B2ED",
+          "U+0020",
+          "U+AC11"
+        ],
+        "composing": [
+          2,
+          3
+        ],
+        "selection": [
+          3,
+          3
+        ]
+      },
+      {
+        "ms": 2845118,
+        "kind": "keyUp",
+        "key": "Q",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 2845227,
+        "kind": "keyDown",
+        "key": "T",
+        "physical": null,
+        "character": "ㅅ"
+      },
+      {
+        "ms": 2845228,
+        "kind": "value",
+        "text": "닭 값",
+        "codes": [
+          "U+B2ED",
+          "U+0020",
+          "U+AC12"
+        ],
+        "composing": [
+          2,
+          3
+        ],
+        "selection": [
+          3,
+          3
+        ]
+      },
+      {
+        "ms": 2845311,
+        "kind": "keyUp",
+        "key": "T",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 2846270,
+        "kind": "keyDown",
+        "key": " ",
+        "physical": null,
+        "character": " "
+      },
+      {
+        "ms": 2846271,
+        "kind": "value",
+        "text": "닭 값 ",
+        "codes": [
+          "U+B2ED",
+          "U+0020",
+          "U+AC12",
+          "U+0020"
+        ],
+        "composing": [
+          2,
+          4
+        ],
+        "selection": [
+          4,
+          4
+        ]
+      },
+      {
+        "ms": 2846288,
+        "kind": "value",
+        "text": "닭 값 ",
+        "codes": [
+          "U+B2ED",
+          "U+0020",
+          "U+AC12",
+          "U+0020"
+        ],
+        "composing": [
+          -1,
+          -1
+        ],
+        "selection": [
+          4,
+          4
+        ]
+      },
+      {
+        "ms": 2846353,
+        "kind": "keyUp",
+        "key": " ",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 2851563,
+        "kind": "focus",
+        "hasFocus": false
+      }
+    ],
+    "erase_jamo": [
+      {
+        "ms": 764685,
+        "kind": "value",
+        "text": "",
+        "codes": [],
+        "composing": [
+          -1,
+          -1
+        ],
+        "selection": [
+          0,
+          0
+        ]
+      },
+      {
+        "ms": 764686,
+        "kind": "focus",
+        "hasFocus": true
+      },
+      {
+        "ms": 769554,
+        "kind": "keyDown",
+        "key": "G",
+        "physical": null,
+        "character": "ㅎ"
+      },
+      {
+        "ms": 769555,
+        "kind": "value",
+        "text": "ㅎ",
+        "codes": [
+          "U+314E"
+        ],
+        "composing": [
+          0,
+          1
+        ],
+        "selection": [
+          1,
+          1
+        ]
+      },
+      {
+        "ms": 769665,
+        "kind": "keyUp",
+        "key": "G",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 769809,
+        "kind": "keyDown",
+        "key": "K",
+        "physical": null,
+        "character": "ㅏ"
+      },
+      {
+        "ms": 769810,
+        "kind": "value",
+        "text": "하",
+        "codes": [
+          "U+D558"
+        ],
+        "composing": [
+          0,
+          1
+        ],
+        "selection": [
+          1,
+          1
+        ]
+      },
+      {
+        "ms": 769925,
+        "kind": "keyUp",
+        "key": "K",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 770099,
+        "kind": "keyDown",
+        "key": "S",
+        "physical": null,
+        "character": "ㄴ"
+      },
+      {
+        "ms": 770100,
+        "kind": "value",
+        "text": "한",
+        "codes": [
+          "U+D55C"
+        ],
+        "composing": [
+          0,
+          1
+        ],
+        "selection": [
+          1,
+          1
+        ]
+      },
+      {
+        "ms": 770226,
+        "kind": "keyUp",
+        "key": "S",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 770711,
+        "kind": "keyDown",
+        "key": "R",
+        "physical": null,
+        "character": "ㄱ"
+      },
+      {
+        "ms": 770712,
+        "kind": "value",
+        "text": "한ㄱ",
+        "codes": [
+          "U+D55C",
+          "U+3131"
+        ],
+        "composing": [
+          1,
+          2
+        ],
+        "selection": [
+          2,
+          2
+        ]
+      },
+      {
+        "ms": 770838,
+        "kind": "keyUp",
+        "key": "R",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 770976,
+        "kind": "keyDown",
+        "key": "M",
+        "physical": null,
+        "character": "ㅡ"
+      },
+      {
+        "ms": 770977,
+        "kind": "value",
+        "text": "한그",
+        "codes": [
+          "U+D55C",
+          "U+ADF8"
+        ],
+        "composing": [
+          1,
+          2
+        ],
+        "selection": [
+          2,
+          2
+        ]
+      },
+      {
+        "ms": 771078,
+        "kind": "keyUp",
+        "key": "M",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 771283,
+        "kind": "keyDown",
+        "key": "F",
+        "physical": null,
+        "character": "ㄹ"
+      },
+      {
+        "ms": 771284,
+        "kind": "value",
+        "text": "한글",
+        "codes": [
+          "U+D55C",
+          "U+AE00"
+        ],
+        "composing": [
+          1,
+          2
+        ],
+        "selection": [
+          2,
+          2
+        ]
+      },
+      {
+        "ms": 771380,
+        "kind": "keyUp",
+        "key": "F",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 773897,
+        "kind": "keyDown",
+        "key": "A",
+        "physical": null,
+        "character": "ㅁ"
+      },
+      {
+        "ms": 773897,
+        "kind": "value",
+        "text": "한긂",
+        "codes": [
+          "U+D55C",
+          "U+AE02"
+        ],
+        "composing": [
+          1,
+          2
+        ],
+        "selection": [
+          2,
+          2
+        ]
+      },
+      {
+        "ms": 774093,
+        "kind": "keyUp",
+        "key": "A",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 789943,
+        "kind": "keyDown",
+        "key": "Backspace",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 789944,
+        "kind": "value",
+        "text": "한글",
+        "codes": [
+          "U+D55C",
+          "U+AE00"
+        ],
+        "composing": [
+          1,
+          2
+        ],
+        "selection": [
+          2,
+          2
+        ]
+      },
+      {
+        "ms": 790026,
+        "kind": "keyUp",
+        "key": "Backspace",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 790167,
+        "kind": "keyDown",
+        "key": "Backspace",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 790169,
+        "kind": "value",
+        "text": "한그",
+        "codes": [
+          "U+D55C",
+          "U+ADF8"
+        ],
+        "composing": [
+          1,
+          2
+        ],
+        "selection": [
+          2,
+          2
+        ]
+      },
+      {
+        "ms": 790233,
+        "kind": "keyUp",
+        "key": "Backspace",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 790354,
+        "kind": "keyDown",
+        "key": "Backspace",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 790355,
+        "kind": "value",
+        "text": "한ㄱ",
+        "codes": [
+          "U+D55C",
+          "U+3131"
+        ],
+        "composing": [
+          1,
+          2
+        ],
+        "selection": [
+          2,
+          2
+        ]
+      },
+      {
+        "ms": 790428,
+        "kind": "keyUp",
+        "key": "Backspace",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 790559,
+        "kind": "keyDown",
+        "key": "Backspace",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 790560,
+        "kind": "keyUp",
+        "key": "Backspace",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 790560,
+        "kind": "keyDown",
+        "key": "Backspace",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 790561,
+        "kind": "value",
+        "text": "한",
+        "codes": [
+          "U+D55C"
+        ],
+        "composing": [
+          -1,
+          -1
+        ],
+        "selection": [
+          1,
+          1
+        ]
+      },
+      {
+        "ms": 790623,
+        "kind": "keyUp",
+        "key": "Backspace",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 790752,
+        "kind": "keyDown",
+        "key": "Backspace",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 790754,
+        "kind": "value",
+        "text": "",
+        "codes": [],
+        "composing": [
+          -1,
+          -1
+        ],
+        "selection": [
+          0,
+          0
+        ]
+      },
+      {
+        "ms": 790815,
+        "kind": "keyUp",
+        "key": "Backspace",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 790940,
+        "kind": "keyDown",
+        "key": "Backspace",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 791013,
+        "kind": "keyUp",
+        "key": "Backspace",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 795059,
+        "kind": "focus",
+        "hasFocus": false
       }
     ]
   }
