@@ -52,6 +52,8 @@ class IdeStrings {
   final String run;
   final String stop;
   final String closeForm;
+
+  /// The heading of the file list: the files of the project.
   final String files;
 
   /// The file list's entry that goes back to the running program.
@@ -125,7 +127,7 @@ class IdeStrings {
     run: 'Run',
     stop: 'Stop',
     closeForm: 'Close',
-    files: 'Files',
+    files: 'Project',
     runWindow: 'Run window',
     output: 'Output',
     cannotStart:
@@ -169,7 +171,7 @@ class IdeStrings {
     run: '실행',
     stop: '중지',
     closeForm: '닫기',
-    files: '파일',
+    files: '프로젝트',
     runWindow: '실행 화면',
     output: '출력',
     cannotStart: '아래 오류 때문에 프로그램을 시작할 수 없습니다. 오류를 고친 뒤 다시 실행합니다.',

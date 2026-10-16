@@ -326,6 +326,15 @@ void main() {
     expect(find.text('열기…'), findsOneWidget);
     expect(find.text('저장'), findsOneWidget);
     expect(find.text('다른 이름으로 저장…'), findsOneWidget);
+    expect(find.text('프로젝트'), findsOneWidget, reason: 'the file list');
+  });
+
+  testWidgets('the File menu is at the top left', (tester) async {
+    await start(tester);
+    final menu = tester.getTopLeft(find.text(s.fileMenu));
+    final title = tester.getTopLeft(find.text('Hello').first);
+    expect(menu.dx, lessThan(title.dx));
+    expect(menu.dx, lessThan(100));
   });
 
   testWidgets('no File menu where there are no folders (the web)', (

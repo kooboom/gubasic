@@ -9,7 +9,7 @@ flutter run -d macos     # or -d windows, -d chrome
 flutter build web --no-web-resources-cdn   # as CI builds it (D30)
 ```
 
-- **File** (macOS and Windows): **Open…** (⌘O / Ctrl+O) opens a project folder, a folder with one `.gbproj` file; **Save** (⌘S / Ctrl+S) saves into it; **Save As…** (⇧⌘S / Ctrl+Shift+S) saves a copy in a new folder. The examples are read-only: Save on one saves a copy. A • after the project's name means unsaved changes (D32).
+- **File**, at the top left (macOS and Windows): **Open…** (⌘O / Ctrl+O) opens a project folder, a folder with one `.gbproj` file; **Save** (⌘S / Ctrl+S) saves into it; **Save As…** (⇧⌘S / Ctrl+Shift+S) saves a copy in a new folder. The examples are read-only: Save on one saves a copy. A • after the project's name means unsaved changes (D32).
 - **F5** runs the project, **Shift+F5** stops it. The words follow the system language (English or Korean).
 - The example projects are built into the app (`lib/src/project/examples.g.dart`), so the web build needs no files. After changing `examples/`, run `dart run tool/embed_examples.dart`; CI checks it with `--check`.
 - `test/widget_parity_test.dart` runs every event script of `test/parity/` through the real run window (DESIGN §9.1).

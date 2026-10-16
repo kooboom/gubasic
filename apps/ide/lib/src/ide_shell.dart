@@ -115,13 +115,19 @@ class _IdeShellState extends State<IdeShell> {
           ]),
           builder: (context, _) => Scaffold(
             appBar: AppBar(
+              // The File menu at the top left, where Visual Basic and most
+              // desktop programs have it.
+              leading: widget.controller.canUseFolders
+                  ? _fileMenu(context)
+                  : null,
+              leadingWidth: 96,
+              automaticallyImplyLeading: false,
               title: Text(
                 widget.controller.current.isDirty
                     ? '${_project.name} •'
                     : _project.name,
               ),
               actions: [
-                if (widget.controller.canUseFolders) _fileMenu(context),
                 if (widget.controller.menuEntries.length > 1)
                   DropdownButton<String>(
                     value: widget.controller.currentKey,
@@ -193,9 +199,12 @@ class _IdeShellState extends State<IdeShell> {
         item(s.save, _save, LogicalKeyboardKey.keyS),
         item(s.saveAs, _saveAs, LogicalKeyboardKey.keyS, shift: true),
       ],
-      builder: (context, menu, _) => TextButton(
-        onPressed: () => menu.isOpen ? menu.close() : menu.open(),
-        child: Text(s.fileMenu),
+      builder: (context, menu, _) => Padding(
+        padding: const EdgeInsets.only(left: 8),
+        child: TextButton(
+          onPressed: () => menu.isOpen ? menu.close() : menu.open(),
+          child: Text(s.fileMenu),
+        ),
       ),
     );
   }
