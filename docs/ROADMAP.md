@@ -47,7 +47,7 @@ The core Visual Basic experience, entirely inside the IDE.
 - [ ] Layout: `LayoutMode` (Vertical / Horizontal / Grid), `Dock`
 - [ ] `Handles` clause; run-time control creation
 - [ ] `Database` (SQLite) and `Http` + JSON
-- [ ] Multiple forms and `Form2.Show` platform behavior
+- [ ] Multiple forms and `Form2.Show` platform behavior; decide then whether one form can be saved on its own (Visual Basic 6's "Save Form1 As"; until then Save saves the whole project, D32)
 - [ ] `ByRef`
 
 **Done when:** one project ships to four platforms.

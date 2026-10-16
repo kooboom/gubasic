@@ -15,7 +15,7 @@ class ExampleLocation extends ProjectLocation {
   final String name;
 }
 
-/// A project folder on disk.
+/// A project on disk: the folder its `.gbproj` file is in.
 class FolderLocation extends ProjectLocation {
   const FolderLocation(this.path);
 

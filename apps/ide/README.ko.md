@@ -2,14 +2,19 @@
 
 [English](README.md)
 
-IDE입니다. `examples/`의 예제 프로젝트(`hello`, 그리고 입력기를 시험할 TextBox가 있는 `typing`)와 디스크의 프로젝트 폴더를 열고 실행 창에서 실행합니다(docs/DESIGN.ko.md 2.3절). 오른쪽 위 메뉴로 프로젝트를 바꿉니다. macOS, Windows, 웹에서 실행됩니다.
+IDE입니다. `examples/`의 예제 프로젝트(`hello`, 그리고 입력기를 시험할 TextBox가 있는 `typing`)와 디스크의 프로젝트를 열고 실행 창에서 실행합니다(docs/DESIGN.ko.md 2.3절). 오른쪽 위 메뉴로 프로젝트를 바꿉니다. macOS, Windows, 웹에서 실행됩니다.
 
 ```sh
 flutter run -d macos     # 또는 -d windows, -d chrome
 flutter build web --no-web-resources-cdn   # CI와 같은 빌드(D30)
 ```
 
-- **파일**, 왼쪽 위(macOS, Windows): **열기…**(⌘O / Ctrl+O)는 프로젝트 폴더, 곧 `.gbproj` 파일이 하나 있는 폴더를 엽니다. **저장**(⌘S / Ctrl+S)은 그 폴더에 저장하고, **다른 이름으로 저장…**(⇧⌘S / Ctrl+Shift+S)은 새 폴더에 복사본을 저장합니다. 예제는 읽기 전용이라 저장하면 복사본이 저장됩니다. 프로젝트 이름 뒤의 •는 저장하지 않은 변경이 있다는 뜻입니다(D32).
+- **파일**, 왼쪽 위(macOS, Windows; D32):
+  - **열기…**(⌘O / Ctrl+O)는 `.gbproj` 파일로 프로젝트를 엽니다.
+  - **저장**(⌘S / Ctrl+S)은 프로젝트 저장입니다: `.gbproj`, `.form.yaml`, `.gbas` 가운데 바뀐 파일을 모두 저장합니다.
+  - **다른 이름으로 저장…**(⇧⌘S / Ctrl+Shift+S)은 프로젝트 전체를 새 폴더에 복사합니다: 위치와 이름을 정하면 `NAME/NAME.gbproj`와 폼 파일들을 만듭니다. Visual Basic 6처럼 파일마다 묻지 않습니다.
+  - 폼의 `.form.yaml`과 `.gbas`는 이름이 같은 한 쌍이라 늘 함께 저장하고 함께 이름이 바뀝니다. 폼 하나만 따로 저장하는 기능은 여러 폼을 다루는 2단계에서 정합니다.
+  - 예제는 읽기 전용이라 저장하면 복사본이 저장됩니다. 프로젝트 이름 뒤의 "— 편집됨"은 저장하지 않은 변경이 있다는 뜻입니다.
 - **F5**는 프로젝트를 실행하고, **Shift+F5**는 중지합니다. 화면의 말은 시스템 언어(영어 또는 한국어)를 따릅니다.
 - 예제 프로젝트는 앱 안에 들어 있으므로(`lib/src/project/examples.g.dart`) 웹 빌드에 파일이 필요 없습니다. `examples/`를 바꾼 뒤에는 `dart run tool/embed_examples.dart`를 실행합니다. CI가 `--check`로 확인합니다.
 - `test/widget_parity_test.dart`는 `test/parity/`의 이벤트 스크립트를 모두 실제 실행 창에서 실행합니다(DESIGN 9.1절).

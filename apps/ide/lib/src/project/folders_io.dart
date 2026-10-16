@@ -53,6 +53,12 @@ class _DiskFolders implements ProjectFolders {
   @override
   String join(String folder, String name) =>
       '$folder${Platform.pathSeparator}$name';
+
+  @override
+  String parent(String path) => File(path).parent.path;
+
+  @override
+  String name(String path) => File(path).uri.pathSegments.last;
 }
 
 Future<T> _guard<T>(String path, Future<T> Function() action) async {

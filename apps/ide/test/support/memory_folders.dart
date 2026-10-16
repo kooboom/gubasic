@@ -51,4 +51,10 @@ class MemoryFolders implements ProjectFolders {
 
   @override
   String join(String folder, String name) => '$folder/$name';
+
+  @override
+  String parent(String path) => path.substring(0, path.lastIndexOf('/'));
+
+  @override
+  String name(String path) => path.substring(path.lastIndexOf('/') + 1);
 }

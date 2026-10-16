@@ -17,6 +17,12 @@ abstract interface class ProjectFolders {
   Future<bool> exists(String path);
   Future<void> createFolder(String path);
   String join(String folder, String name);
+
+  /// The folder [path] is in.
+  String parent(String path);
+
+  /// The last part of [path]: a file's or a folder's name.
+  String name(String path);
 }
 
 /// A file operation that failed: [path] and the system's reason.
@@ -40,16 +46,11 @@ sealed class FolderProblem implements Exception {
   const FolderProblem();
 }
 
-/// The chosen folder has no `.gbproj` file.
-class NoProjectFile extends FolderProblem {
-  const NoProjectFile();
-}
+/// The `.gbproj` file is gone (deleted after it was chosen).
+class MissingProjectFile extends FolderProblem {
+  const MissingProjectFile(this.file);
 
-/// The chosen folder has more than one `.gbproj` file.
-class ManyProjectFiles extends FolderProblem {
-  const ManyProjectFiles(this.files);
-
-  final List<String> files;
+  final String file;
 }
 
 /// A file could not be read or written.
@@ -70,7 +71,7 @@ class FolderExists extends FolderProblem {
   final String name;
 }
 
-/// A project read from a folder. [missing] lists the files its `.gbproj`
+/// A project read from disk. [missing] lists the files its `.gbproj`
 /// names that are not there.
 class ProjectOnDisk {
   const ProjectOnDisk(this.files, this.missing);
@@ -79,21 +80,11 @@ class ProjectOnDisk {
   final List<String> missing;
 }
 
-/// Reads the project in [folder]: its one `.gbproj` file and, for each
-/// form it lists, `FORM.form.yaml` and `FORM.gbas`. Other files are left
-/// alone. Throws a [FolderProblem].
-Future<ProjectOnDisk> readProjectFolder(
-  ProjectFolders fs,
-  String folder,
-) async {
-  final names = await _io('', writing: false, () => fs.list(folder));
-  final projectFiles = [
-    for (final n in names)
-      if (n.toLowerCase().endsWith('.gbproj')) n,
-  ]..sort();
-  if (projectFiles.isEmpty) throw const NoProjectFile();
-  if (projectFiles.length > 1) throw ManyProjectFiles(projectFiles);
-
+/// Reads the project whose `.gbproj` file is [projectFile]: that file
+/// and, for each form it lists, `FORM.form.yaml` and `FORM.gbas` next to
+/// it. Other files in the folder are left alone. Throws a [FolderProblem].
+Future<ProjectOnDisk> readProject(ProjectFolders fs, String projectFile) async {
+  final folder = fs.parent(projectFile);
   final files = <String, String>{};
   final missing = <String>[];
   Future<void> add(String name) async {
@@ -109,9 +100,10 @@ Future<ProjectOnDisk> readProjectFolder(
     }
   }
 
-  final projectFile = projectFiles.single;
-  await add(projectFile);
-  for (final form in readProjectFile(files[projectFile]!).project.forms) {
+  final projectName = fs.name(projectFile);
+  await add(projectName);
+  if (missing.isNotEmpty) throw MissingProjectFile(projectName);
+  for (final form in readProjectFile(files[projectName]!).project.forms) {
     await add('$form.form.yaml');
     await add('$form.gbas');
   }

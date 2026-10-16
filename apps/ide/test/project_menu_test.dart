@@ -7,6 +7,7 @@ import 'package:gubasic_ide/main.dart';
 import 'package:gubasic_ide/src/ide_shell.dart';
 import 'package:gubasic_ide/src/project/examples.g.dart';
 import 'package:gubasic_ide/src/project/open_project.dart';
+import 'package:gubasic_ide/src/project/project_controller.dart';
 import 'package:gubasic_ide/src/strings.dart';
 
 import 'support/memory_folders.dart';
@@ -16,8 +17,12 @@ void main() {
   const s = IdeStrings.en;
   late MemoryFolders fs;
 
-  /// The folders the folder dialog gives, in turn; null is Cancel.
-  late List<String?> picks;
+  /// What the open and save dialogs give, in turn; null is Cancel.
+  late List<String?> opens;
+  late List<String?> saves;
+
+  /// The names the save dialog offered.
+  late List<String> offered;
 
   Future<void> start(WidgetTester tester, {IdeStrings strings = s}) async {
     tester.view.physicalSize = const Size(1200, 800);
@@ -28,14 +33,22 @@ void main() {
         projects: exampleProjects,
         strings: strings,
         folders: fs,
-        pickFolder: (_) async => picks.removeAt(0),
+        pickers: ProjectPickers(
+          openProjectFile: (_) async => opens.removeAt(0),
+          saveLocation: (name, _) async {
+            offered.add(name);
+            return saves.removeAt(0);
+          },
+        ),
       ),
     );
   }
 
   setUp(() {
     fs = MemoryFolders()..folders.add('/home');
-    picks = [];
+    opens = [];
+    saves = [];
+    offered = [];
   });
 
   OpenProject current(WidgetTester tester) =>
@@ -49,14 +62,10 @@ void main() {
   }
 
   Future<void> saveHelloAs(WidgetTester tester, String name) async {
-    picks = ['/home'];
+    saves = ['/home/$name'];
     await menu(tester, s.saveAs);
     expect(find.text(s.exampleIsReadOnly), findsOneWidget);
-    await tester.tap(find.text(s.chooseFolderButton));
-    await tester.pumpAndSettle();
-    await tester.enterText(find.byType(TextField), name);
-    await tester.pump();
-    await tester.tap(find.widgetWithText(FilledButton, s.saveButton));
+    await tester.tap(find.text(s.saveCopyButton));
     await tester.pumpAndSettle();
   }
 
@@ -64,17 +73,12 @@ void main() {
     tester,
   ) async {
     await start(tester);
-    picks = ['/home'];
+    saves = ['/home/Quiz'];
     await menu(tester, s.save);
     expect(find.text(s.exampleIsReadOnly), findsOneWidget);
-    await tester.tap(find.text(s.chooseFolderButton));
+    await tester.tap(find.text(s.saveCopyButton));
     await tester.pumpAndSettle();
-    expect(find.text(s.saveAsTitle), findsOneWidget);
-    expect(find.text('Hello'), findsWidgets, reason: 'the name offered');
-    await tester.enterText(find.byType(TextField), 'Quiz');
-    await tester.pump();
-    await tester.tap(find.widgetWithText(FilledButton, s.saveButton));
-    await tester.pumpAndSettle();
+    expect(offered, ['Hello']);
 
     expect(fs.files.keys, {
       '/home/Quiz/Quiz.gbproj',
@@ -88,24 +92,29 @@ void main() {
     expect(find.text(s.saved.replaceAll('{0}', '/home/Quiz')), findsOneWidget);
   });
 
-  testWidgets('a bad name cannot be saved; a folder that is there is not '
-      'written into', (tester) async {
+  testWidgets('a name typed with .gbproj makes the same folder', (
+    tester,
+  ) async {
+    await start(tester);
+    saves = ['/home/Quiz.gbproj'];
+    await menu(tester, s.saveAs);
+    await tester.tap(find.text(s.saveCopyButton));
+    await tester.pumpAndSettle();
+    expect(fs.files.keys, contains('/home/Quiz/Quiz.gbproj'));
+  });
+
+  testWidgets('a bad name or a folder that is there asks again', (
+    tester,
+  ) async {
     fs.add('/home/Hello', {'keep.txt': 'mine'});
     await start(tester);
-    picks = ['/home'];
+    saves = ['/home/a:b', '/home/Hello', null];
     await menu(tester, s.saveAs);
-    await tester.tap(find.text(s.chooseFolderButton));
+    await tester.tap(find.text(s.saveCopyButton));
     await tester.pumpAndSettle();
 
-    await tester.enterText(find.byType(TextField), 'a/b');
-    await tester.pump();
     expect(find.text(s.badProjectName), findsOneWidget);
-    final save = find.widgetWithText(FilledButton, s.saveButton);
-    expect(tester.widget<FilledButton>(save).onPressed, isNull);
-
-    await tester.enterText(find.byType(TextField), 'Hello');
-    await tester.pump();
-    await tester.tap(save);
+    await tester.tap(find.text('OK'));
     await tester.pumpAndSettle();
     expect(
       find.text(s.folderExists.replaceAll('{0}', 'Hello')),
@@ -113,18 +122,17 @@ void main() {
     );
     await tester.tap(find.text('OK'));
     await tester.pumpAndSettle();
-    expect(find.text(s.saveAsTitle), findsOneWidget, reason: 'asked again');
-    await tester.tap(find.text('Cancel'));
-    await tester.pumpAndSettle();
+
+    expect(saves, isEmpty, reason: 'asked three times, then cancelled');
     expect(fs.written, isEmpty);
     expect(fs.files['/home/Hello/keep.txt'], 'mine');
     expect(current(tester).isExample, isTrue);
   });
 
-  testWidgets('Open reads a project folder and runs it', (tester) async {
+  testWidgets('Open reads a .gbproj file and runs it', (tester) async {
     fs.add('/home/Typing', exampleProjects['typing']!);
     await start(tester);
-    picks = ['/home/Typing'];
+    opens = ['/home/Typing/Typing.gbproj'];
     await menu(tester, s.open);
     expect(find.text('Typing'), findsWidgets);
     expect(current(tester).location, isA<FolderLocation>());
@@ -133,31 +141,10 @@ void main() {
     expect(find.byType(TextField), findsOneWidget, reason: 'the TextBox');
   });
 
-  testWidgets('Open explains a folder that is not a project', (tester) async {
-    fs.add('/home/empty', {});
-    fs.add('/home/two', {...hello, 'Other.gbproj': hello['Hello.gbproj']!});
+  testWidgets('Open names the files that are missing', (tester) async {
     fs.add('/home/half', {...hello}..remove('Form1.gbas'));
     await start(tester);
-
-    picks = ['/home/empty'];
-    await menu(tester, s.open);
-    expect(find.text(s.noProjectFile), findsOneWidget);
-    await tester.tap(find.text('OK'));
-    await tester.pumpAndSettle();
-
-    picks = ['/home/two'];
-    await menu(tester, s.open);
-    expect(
-      find.text(
-        s.manyProjectFiles.replaceAll('{0}', 'Hello.gbproj, Other.gbproj'),
-      ),
-      findsOneWidget,
-    );
-    await tester.tap(find.text('OK'));
-    await tester.pumpAndSettle();
-    expect(current(tester).isExample, isTrue);
-
-    picks = ['/home/half'];
+    opens = ['/home/half/Hello.gbproj'];
     await menu(tester, s.open);
     expect(
       find.text(s.missingFiles.replaceAll('{0}', 'Form1.gbas')),
@@ -170,11 +157,11 @@ void main() {
   ) async {
     fs.add('/home/Hello', hello);
     await start(tester);
-    picks = ['/home/Hello'];
+    opens = ['/home/Hello/Hello.gbproj'];
     await menu(tester, s.open);
     current(tester).setFile('Form1.gbas', "' changed\n");
     await tester.pump();
-    expect(find.text('Hello •'), findsOneWidget);
+    expect(find.text('Hello — Edited'), findsOneWidget);
 
     await tester.sendKeyEvent(LogicalKeyboardKey.controlLeft);
     await tester.sendKeyDownEvent(LogicalKeyboardKey.controlLeft);
@@ -184,7 +171,7 @@ void main() {
     expect(fs.written, ['/home/Hello/Form1.gbas']);
     expect(fs.files['/home/Hello/Form1.gbas'], "' changed\n");
     expect(find.text('Hello'), findsWidgets);
-    expect(find.text('Hello •'), findsNothing);
+    expect(find.text('Hello — Edited'), findsNothing);
   });
 
   testWidgets('Save asks before replacing a file changed on disk', (
@@ -192,7 +179,7 @@ void main() {
   ) async {
     fs.add('/home/Hello', hello);
     await start(tester);
-    picks = ['/home/Hello'];
+    opens = ['/home/Hello/Hello.gbproj'];
     await menu(tester, s.open);
     fs.files['/home/Hello/Form1.gbas'] = "' by another program\n";
     current(tester).setFile('Form1.gbas', "' mine\n");
@@ -219,7 +206,7 @@ void main() {
     fs.add('/home/Hello', hello);
     fs.failing.add('/home/Hello/Form1.gbas');
     await start(tester);
-    picks = ['/home/Hello'];
+    opens = ['/home/Hello/Hello.gbproj'];
     await menu(tester, s.open);
     current(tester).setFile('Form1.gbas', "' mine\n");
     await menu(tester, s.save);
@@ -236,15 +223,25 @@ void main() {
     expect(current(tester).isDirty, isTrue);
   });
 
+  testWidgets('Save with nothing changed says so', (tester) async {
+    fs.add('/home/Hello', hello);
+    await start(tester);
+    opens = ['/home/Hello/Hello.gbproj'];
+    await menu(tester, s.open);
+    await menu(tester, s.save);
+    expect(find.text(s.nothingToSave), findsOneWidget);
+    expect(fs.written, isEmpty);
+  });
+
   group('unsaved changes', () {
     Future<void> changeAndSwitch(WidgetTester tester) async {
       fs.add('/home/Hello', hello);
       await start(tester);
-      picks = ['/home/Hello'];
+      opens = ['/home/Hello/Hello.gbproj'];
       await menu(tester, s.open);
       current(tester).setFile('Form1.gbas', "' mine\n");
       await tester.pump();
-      await tester.tap(find.text('Hello •'.replaceAll(' •', '')).last);
+      await tester.tap(find.text('Hello').last);
       await tester.pumpAndSettle();
       await tester.tap(find.text('typing').last);
       await tester.pumpAndSettle();
@@ -278,7 +275,7 @@ void main() {
     testWidgets('quitting asks too', (tester) async {
       fs.add('/home/Hello', hello);
       await start(tester);
-      picks = ['/home/Hello'];
+      opens = ['/home/Hello/Hello.gbproj'];
       await menu(tester, s.open);
       expect(
         await tester.binding.handleRequestAppExit(),
@@ -327,6 +324,11 @@ void main() {
     expect(find.text('저장'), findsOneWidget);
     expect(find.text('다른 이름으로 저장…'), findsOneWidget);
     expect(find.text('프로젝트'), findsOneWidget, reason: 'the file list');
+    await tester.tapAt(Offset.zero);
+    await tester.pumpAndSettle();
+    current(tester).setFile('Form1.gbas', "' 바꿈\n");
+    await tester.pump();
+    expect(find.text('Hello — 편집됨'), findsOneWidget);
   });
 
   testWidgets('the File menu is at the top left', (tester) async {

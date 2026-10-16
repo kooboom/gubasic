@@ -12,7 +12,7 @@ import 'src/strings.dart';
 import 'src/theme.dart';
 
 /// The GuBASIC IDE. It opens the example projects and, on the desktop,
-/// project folders (D32), and runs them in a run window (docs/ROADMAP.md,
+/// projects on disk (D32), and runs them in a run window (docs/ROADMAP.md,
 /// stage 1).
 void main() {
   final language = PlatformDispatcher.instance.locale.languageCode;
@@ -21,7 +21,18 @@ void main() {
       projects: exampleProjects,
       strings: IdeStrings.forLanguage(language),
       folders: platformFolders(),
-      pickFolder: (confirm) => getDirectoryPath(confirmButtonText: confirm),
+      pickers: ProjectPickers(
+        openProjectFile: (confirm) async => (await openFile(
+          acceptedTypeGroups: const [
+            XTypeGroup(label: 'GuBASIC', extensions: ['gbproj']),
+          ],
+          confirmButtonText: confirm,
+        ))?.path,
+        saveLocation: (name, confirm) async => (await getSaveLocation(
+          suggestedName: name,
+          confirmButtonText: confirm,
+        ))?.path,
+      ),
     ),
   );
 }
@@ -33,7 +44,7 @@ class IdeApp extends StatefulWidget {
     required this.strings,
     this.open = 'hello',
     this.folders,
-    this.pickFolder,
+    this.pickers,
   });
 
   /// The built-in projects: name → files.
@@ -43,10 +54,10 @@ class IdeApp extends StatefulWidget {
   /// The project opened first.
   final String open;
 
-  /// The disk and the folder dialog, where projects can be opened and
-  /// saved (D32); null on the web for now.
+  /// The disk and the system's file dialogs, where projects can be opened
+  /// and saved (D32); null on the web for now.
   final ProjectFolders? folders;
-  final PickFolder? pickFolder;
+  final ProjectPickers? pickers;
 
   @override
   State<IdeApp> createState() => _IdeAppState();
@@ -58,7 +69,7 @@ class _IdeAppState extends State<IdeApp> {
     examples: widget.projects,
     strings: widget.strings,
     folders: widget.folders,
-    pickFolder: widget.pickFolder,
+    pickers: widget.pickers,
     open: widget.open,
   );
 

@@ -7,18 +7,18 @@ import 'support/memory_folders.dart';
 void main() {
   final hello = exampleProjects['hello']!;
 
-  group('readProjectFolder', () {
+  group('readProject', () {
     test('reads the .gbproj file and the files of its forms', () async {
       final fs = MemoryFolders()
         ..add('/p', {...hello, 'notes.txt': 'not part of it'});
-      final read = await readProjectFolder(fs, '/p');
+      final read = await readProject(fs, '/p/Hello.gbproj');
       expect(read.files, hello);
       expect(read.missing, isEmpty);
     });
 
     test('names the files the .gbproj lists that are not there', () async {
       final fs = MemoryFolders()..add('/p', {...hello}..remove('Form1.gbas'));
-      final read = await readProjectFolder(fs, '/p');
+      final read = await readProject(fs, '/p/Hello.gbproj');
       expect(read.missing, ['Form1.gbas']);
       expect(
         read.files.keys,
@@ -26,32 +26,29 @@ void main() {
       );
     });
 
-    test('a folder without a .gbproj file', () async {
-      final fs = MemoryFolders()..add('/p', {'Form1.gbas': ''});
-      expect(readProjectFolder(fs, '/p'), throwsA(isA<NoProjectFile>()));
-    });
-
-    test('a folder with two .gbproj files', () async {
+    test('the chosen one of two projects in a folder', () async {
       final fs = MemoryFolders()
-        ..add('/p', {...hello, 'Other.GBPROJ': hello['Hello.gbproj']!});
+        ..add('/p', {
+          ...hello,
+          'Other.gbproj': 'formatVersion: 1\nname: Other\nforms:\n  - Form1\n',
+        });
+      final read = await readProject(fs, '/p/Other.gbproj');
       expect(
-        readProjectFolder(fs, '/p'),
-        throwsA(
-          isA<ManyProjectFiles>().having((p) => p.files, 'files', [
-            'Hello.gbproj',
-            'Other.GBPROJ',
-          ]),
-        ),
+        read.files.keys,
+        unorderedEquals(['Other.gbproj', 'Form1.form.yaml', 'Form1.gbas']),
       );
     });
 
-    test('a folder that cannot be listed', () async {
+    test('a .gbproj file that is gone', () async {
+      final fs = MemoryFolders()..add('/p', {});
       expect(
-        readProjectFolder(MemoryFolders(), '/gone'),
+        readProject(fs, '/p/Hello.gbproj'),
         throwsA(
-          isA<FileFailed>()
-              .having((p) => p.file, 'file', '/gone')
-              .having((p) => p.writing, 'writing', false),
+          isA<MissingProjectFile>().having(
+            (p) => p.file,
+            'file',
+            'Hello.gbproj',
+          ),
         ),
       );
     });

@@ -4,9 +4,22 @@ import '../strings.dart';
 import 'folders.dart';
 import 'open_project.dart';
 
-/// Asks the user for a folder; null when they cancel. [confirm] is the
-/// word on the dialog's button.
-typedef PickFolder = Future<String?> Function(String confirm);
+/// The system's dialogs for choosing where projects are (D32).
+class ProjectPickers {
+  const ProjectPickers({
+    required this.openProjectFile,
+    required this.saveLocation,
+  });
+
+  /// Asks for a `.gbproj` file to open: its path, or null when the user
+  /// cancels. [confirm] is the word on the dialog's button.
+  final Future<String?> Function(String confirm) openProjectFile;
+
+  /// Asks where to save a project and under what name, offering
+  /// [suggestedName]: the path the user chose (`…/MyQuiz`), or null.
+  final Future<String?> Function(String suggestedName, String confirm)
+  saveLocation;
+}
 
 /// What to do with unsaved changes.
 enum _Unsaved { save, discard, cancel }
@@ -19,7 +32,7 @@ class ProjectController extends ChangeNotifier {
     required this.examples,
     required this.strings,
     this.folders,
-    this.pickFolder,
+    this.pickers,
     String open = 'hello',
   }) : _current = OpenProject(ExampleLocation(open), examples[open]!);
 
@@ -30,7 +43,7 @@ class ProjectController extends ChangeNotifier {
   /// The disk, or null where projects cannot be opened or saved (the web,
   /// for now).
   final ProjectFolders? folders;
-  final PickFolder? pickFolder;
+  final ProjectPickers? pickers;
 
   OpenProject _current;
   OpenProject? _folderProject;
@@ -39,10 +52,10 @@ class ProjectController extends ChangeNotifier {
   OpenProject get current => _current;
 
   /// Whether the File menu is offered.
-  bool get canUseFolders => folders != null && pickFolder != null;
+  bool get canUseFolders => folders != null && pickers != null;
 
   /// The project menu's entries, a key and the words shown: the examples
-  /// by name, then the folder project last opened or saved, if any.
+  /// by name, then the project on disk last opened or saved, if any.
   List<(String, String)> get menuEntries => [
     for (final name in examples.keys) ('example:$name', name),
     if (_folderProject case final p?) ('folder', p.project.name),
@@ -66,15 +79,18 @@ class ProjectController extends ChangeNotifier {
     }
   }
 
-  /// Asks for a project folder and opens it.
+  /// Asks for a `.gbproj` file and opens its project.
   Future<void> open(BuildContext context) async {
     if (!await mayLeave(context)) return;
     if (!context.mounted) return;
-    final folder = await pickFolder!(strings.openFolderButton);
-    if (folder == null || !context.mounted) return;
+    final file = await pickers!.openProjectFile(strings.openButton);
+    if (file == null || !context.mounted) return;
     try {
-      final read = await readProjectFolder(folders!, folder);
-      final project = OpenProject(FolderLocation(folder), read.files);
+      final read = await readProject(folders!, file);
+      final project = OpenProject(
+        FolderLocation(folders!.parent(file)),
+        read.files,
+      );
       _folderProject = project;
       _show(project);
       if (read.missing.isNotEmpty && context.mounted) {
@@ -94,7 +110,10 @@ class ProjectController extends ChangeNotifier {
     final project = _current;
     final location = project.location;
     if (location is! FolderLocation) return saveAs(context);
-    if (!project.isDirty) return true;
+    if (!project.isDirty) {
+      _snack(context, strings.nothingToSave);
+      return true;
+    }
     try {
       final changed = await changedOnDisk(
         folders!,
@@ -113,7 +132,9 @@ class ProjectController extends ChangeNotifier {
       }
       await writeChanged(folders!, location.path, project.files, project.saved);
       project.markSaved();
-      if (context.mounted) _snack(context, location.path);
+      if (context.mounted) {
+        _snack(context, strings.saved.replaceAll('{0}', location.path));
+      }
       return true;
     } on FolderProblem catch (p) {
       if (context.mounted) await _tell(context, _describe(p));
@@ -121,31 +142,39 @@ class ProjectController extends ChangeNotifier {
     }
   }
 
-  /// Saves the open project as a new project in a new folder, then keeps
-  /// working there. Gives whether it was saved.
+  /// Saves the open project as a new project: the user chooses a place
+  /// and a name, and the project is copied into a new folder of that name
+  /// (D32). Then keeps working there. Gives whether it was saved.
   Future<bool> saveAs(BuildContext context) async {
     final project = _current;
     if (project.isExample) {
       final go = await _confirm(
         context,
         strings.exampleIsReadOnly,
-        strings.chooseFolderButton,
+        strings.saveCopyButton,
       );
       if (!go) return false;
     }
-    if (!context.mounted) return false;
-    final parent = await pickFolder!(strings.chooseFolderButton);
-    if (parent == null || !context.mounted) return false;
-    var name = project.project.name;
+    final fs = folders!;
     while (true) {
       if (!context.mounted) return false;
-      final chosen = await _askName(context, parent, name);
-      if (chosen == null) return false;
-      name = chosen;
+      final path = await pickers!.saveLocation(
+        project.project.name,
+        strings.saveButton,
+      );
+      if (path == null || !context.mounted) return false;
+      var name = fs.name(path);
+      if (name.toLowerCase().endsWith('.gbproj')) {
+        name = name.substring(0, name.length - '.gbproj'.length);
+      }
+      if (!isUsableProjectName(name)) {
+        await _tell(context, strings.badProjectName);
+        continue;
+      }
       try {
         final (folder, files) = await saveCopy(
-          folders!,
-          parent,
+          fs,
+          fs.parent(path),
           name,
           project.files,
         );
@@ -158,7 +187,9 @@ class ProjectController extends ChangeNotifier {
           _folderProject = project;
           notifyListeners();
         }
-        if (context.mounted) _snack(context, folder);
+        if (context.mounted) {
+          _snack(context, strings.saved.replaceAll('{0}', folder));
+        }
         return true;
       } on FolderExists {
         if (!context.mounted) return false;
@@ -209,10 +240,9 @@ class ProjectController extends ChangeNotifier {
   }
 
   String _describe(FolderProblem p) => switch (p) {
-    NoProjectFile() => strings.noProjectFile,
-    ManyProjectFiles(:final files) => strings.manyProjectFiles.replaceAll(
+    MissingProjectFile(:final file) => strings.missingFiles.replaceAll(
       '{0}',
-      files.join(', '),
+      file,
     ),
     FileFailed(:final file, :final reason, :final writing) =>
       (writing ? strings.cannotWrite : strings.cannotRead)
@@ -221,9 +251,15 @@ class ProjectController extends ChangeNotifier {
     FolderExists(:final name) => strings.folderExists.replaceAll('{0}', name),
   };
 
-  void _snack(BuildContext context, String folder) =>
+  /// Tells [message] at the bottom for a while; the title's mark tells
+  /// the rest (whether anything is unsaved), so missing it loses nothing.
+  void _snack(BuildContext context, String message) =>
       ScaffoldMessenger.maybeOf(context)?.showSnackBar(
-        SnackBar(content: Text(strings.saved.replaceAll('{0}', folder))),
+        SnackBar(
+          content: Text(message),
+          duration: const Duration(seconds: 8),
+          showCloseIcon: true,
+        ),
       );
 
   Future<void> _tell(BuildContext context, String message) => showDialog(
@@ -261,85 +297,4 @@ class ProjectController extends ChangeNotifier {
         ),
       ) ??
       false;
-
-  Future<String?> _askName(
-    BuildContext context,
-    String parent,
-    String initial,
-  ) => showDialog<String>(
-    context: context,
-    builder: (context) =>
-        _NameDialog(strings: strings, parent: parent, initial: initial),
-  );
-}
-
-class _NameDialog extends StatefulWidget {
-  const _NameDialog({
-    required this.strings,
-    required this.parent,
-    required this.initial,
-  });
-
-  final IdeStrings strings;
-  final String parent;
-  final String initial;
-
-  @override
-  State<_NameDialog> createState() => _NameDialogState();
-}
-
-class _NameDialogState extends State<_NameDialog> {
-  late final _field = TextEditingController(text: widget.initial);
-
-  @override
-  void dispose() {
-    _field.dispose();
-    super.dispose();
-  }
-
-  bool get _usable => isUsableProjectName(_field.text);
-
-  void _ok() {
-    if (_usable) Navigator.pop(context, _field.text);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final s = widget.strings;
-    return AlertDialog(
-      title: Text(s.saveAsTitle),
-      content: SizedBox(
-        width: 400,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            TextField(
-              controller: _field,
-              autofocus: true,
-              decoration: InputDecoration(
-                labelText: s.projectName,
-                errorText: _usable ? null : s.badProjectName,
-                errorMaxLines: 3,
-              ),
-              onChanged: (_) => setState(() {}),
-              onSubmitted: (_) => _ok(),
-            ),
-            const SizedBox(height: 12),
-            Text(s.saveAsHint.replaceAll('{0}', widget.parent)),
-          ],
-        ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: Text(s.runtime.cancel),
-        ),
-        FilledButton(
-          onPressed: _usable ? _ok : null,
-          child: Text(s.saveButton),
-        ),
-      ],
-    );
-  }
 }

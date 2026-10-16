@@ -18,8 +18,8 @@ import 'theme.dart';
 /// MsgBox or InputBox, stays as it was. The files cannot be changed while
 /// the program runs.
 ///
-/// The File menu opens and saves project folders (D32); the menu at the
-/// top right switches between the examples and the folder project. Both
+/// The File menu opens and saves projects on disk (D32); the menu at the
+/// top right switches between the examples and the project on disk. Both
 /// wait while a program runs.
 class IdeShell extends StatefulWidget {
   const IdeShell({super.key, required this.controller, required this.strings});
@@ -124,7 +124,7 @@ class _IdeShellState extends State<IdeShell> {
               automaticallyImplyLeading: false,
               title: Text(
                 widget.controller.current.isDirty
-                    ? '${_project.name} •'
+                    ? '${_project.name} — ${widget.strings.edited}'
                     : _project.name,
               ),
               actions: [

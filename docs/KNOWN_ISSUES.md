@@ -26,14 +26,14 @@ Problems we know about and have **deliberately** left unfixed for now. Each entr
 
 ## The IDE does not reopen the last project
 
-- **What:** the desktop IDE always starts with the `hello` example. A project folder has to be opened again with File → Open… each time.
-- **Why deferred:** in the macOS sandbox, the app may use a folder only while the user's choice of it lasts; reopening it after a restart needs a security-scoped bookmark stored by platform code ([Apple](https://developer.apple.com/documentation/security/accessing-files-from-the-macos-app-sandbox)). Opening a folder takes one dialog.
+- **What:** the desktop IDE always starts with the `hello` example. A project has to be opened again with File → Open… each time.
+- **Why deferred:** remembering projects (the last one, or a list of recent ones) is a feature of its own: where to keep the list, and what to do when a project was moved or deleted. Opening a project takes one dialog.
 - **Revisit:** with a list of recent projects, or when students find reopening a burden.
 
 ## The web IDE cannot open or save projects yet
 
 - **What:** on the web there is no File menu; the examples can be run but not saved.
-- **Why deferred:** a browser cannot write into a folder the way the desktop app does (D32). The approved plan is E2b-2: projects kept in the browser's storage automatically, plus `.zip` download and upload.
+- **Why deferred:** a browser cannot write files on disk the way the desktop app does (D32). The approved plan is E2b-2: projects kept in the browser's storage automatically, plus `.zip` download and upload.
 - **Revisit:** E2b-2, right after this.
 
 ## The run window is inside the IDE's window
