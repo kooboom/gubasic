@@ -322,27 +322,16 @@ const recorded = <String, Map<String, List<String>>>{
   },
   'windows-chrome.json': {
     'dokkaebi': ['txtName.Changed [갈]', 'txtName.Changed [갈가]'],
-    // Mixed in: a try at 닭값 without spaces, typed and erased before the
-    // real one (no 다시 between them). Kept until the re-recording.
-    'double_final': [
-      'txtName.Changed [닭]',
-      'txtName.Changed [닭값]',
-      'txtName.Changed [닭]',
-      'txtName.Changed []',
-      'txtName.Changed [닭 ]',
-      'txtName.Changed [닭 값 ]',
-    ],
+    // The space is committed together with 닭, as on macOS: 닭 is never
+    // committed alone (the input method sends no composition for it).
+    'double_final': ['txtName.Changed [닭 ]', 'txtName.Changed [닭 값 ]'],
     'backspace': ['txtName.Changed [하]'],
     'click_composing': [
       'txtName.Changed [한]',
       'txtName.Changed [한글]',
       'btnOk.Click [한글]',
     ],
-    // Mixed in: 한긂 typed and erased before 한글 in button A's try.
-    // Kept until the re-recording.
     'click_committed': [
-      'txtName.Changed [한]',
-      'txtName.Changed []',
       'txtName.Changed [한]',
       'txtName.Changed [한글]',
       'btnOk.Click [한글]',
@@ -351,5 +340,12 @@ const recorded = <String, Map<String, List<String>>>{
       'txtName.Changed [한글]',
       'btnOk.Click [한글]',
     ],
+    'erase_retype': [
+      'txtName.Changed [닭]',
+      'txtName.Changed []',
+      'txtName.Changed [닭 ]',
+      'txtName.Changed [닭 값 ]',
+    ],
+    'erase_jamo': ['txtName.Changed [한]', 'txtName.Changed []'],
   },
 };

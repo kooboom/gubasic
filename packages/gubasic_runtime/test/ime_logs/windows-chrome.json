@@ -1,12 +1,12 @@
 {
   "probe": 1,
-  "recordedAt": "2026-10-15T05:12:52.230Z",
+  "recordedAt": "2026-10-16T01:41:01.595Z",
   "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36",
   "platform": "Win32",
   "scenarios": {
     "dokkaebi": [
       {
-        "ms": 2078,
+        "ms": 6813,
         "kind": "value",
         "text": "",
         "codes": [],
@@ -20,19 +20,233 @@
         ]
       },
       {
-        "ms": 2081,
+        "ms": 6816,
         "kind": "focus",
         "hasFocus": true
       },
       {
-        "ms": 5783,
+        "ms": 11466,
+        "kind": "keyDown",
+        "key": "R",
+        "physical": null,
+        "character": "r"
+      },
+      {
+        "ms": 11468,
+        "kind": "value",
+        "text": "r",
+        "codes": [
+          "U+0072"
+        ],
+        "composing": [
+          -1,
+          -1
+        ],
+        "selection": [
+          1,
+          1
+        ]
+      },
+      {
+        "ms": 11630,
+        "kind": "keyUp",
+        "key": "R",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 12434,
+        "kind": "keyDown",
+        "key": "Backspace",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 12435,
+        "kind": "value",
+        "text": "",
+        "codes": [],
+        "composing": [
+          -1,
+          -1
+        ],
+        "selection": [
+          0,
+          0
+        ]
+      },
+      {
+        "ms": 12604,
+        "kind": "keyUp",
+        "key": "Backspace",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 12748,
+        "kind": "keyDown",
+        "key": "Backspace",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 12807,
+        "kind": "keyUp",
+        "key": "Backspace",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 12913,
+        "kind": "keyDown",
+        "key": "Backspace",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 12965,
+        "kind": "keyUp",
+        "key": "Backspace",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 13070,
+        "kind": "keyDown",
+        "key": "Backspace",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 13123,
+        "kind": "keyUp",
+        "key": "Backspace",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 13212,
+        "kind": "keyDown",
+        "key": "Backspace",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 13279,
+        "kind": "keyUp",
+        "key": "Backspace",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 14875,
+        "kind": "focus",
+        "hasFocus": false
+      },
+      {
+        "ms": 15012,
+        "kind": "reset"
+      },
+      {
+        "ms": 15012,
+        "kind": "focus",
+        "hasFocus": true
+      },
+      {
+        "ms": 17158,
+        "kind": "keyDown",
+        "key": "R",
+        "physical": null,
+        "character": "r"
+      },
+      {
+        "ms": 17158,
+        "kind": "value",
+        "text": "r",
+        "codes": [
+          "U+0072"
+        ],
+        "composing": [
+          -1,
+          -1
+        ],
+        "selection": [
+          1,
+          1
+        ]
+      },
+      {
+        "ms": 17262,
+        "kind": "keyUp",
+        "key": "R",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 17659,
+        "kind": "keyDown",
+        "key": "Backspace",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 17660,
+        "kind": "value",
+        "text": "",
+        "codes": [],
+        "composing": [
+          -1,
+          -1
+        ],
+        "selection": [
+          0,
+          0
+        ]
+      },
+      {
+        "ms": 17764,
+        "kind": "keyUp",
+        "key": "Backspace",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 17862,
+        "kind": "keyDown",
+        "key": "Backspace",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 17930,
+        "kind": "keyUp",
+        "key": "Backspace",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 19343,
+        "kind": "focus",
+        "hasFocus": false
+      },
+      {
+        "ms": 19500,
+        "kind": "reset"
+      },
+      {
+        "ms": 19500,
+        "kind": "focus",
+        "hasFocus": true
+      },
+      {
+        "ms": 21657,
         "kind": "keyDown",
         "key": "Process",
         "physical": null,
         "character": null
       },
       {
-        "ms": 5786,
+        "ms": 21660,
         "kind": "value",
         "text": "ㄱ",
         "codes": [
@@ -48,21 +262,21 @@
         ]
       },
       {
-        "ms": 5891,
+        "ms": 21836,
         "kind": "keyUp",
         "key": "Process",
         "physical": null,
         "character": null
       },
       {
-        "ms": 5904,
+        "ms": 21956,
         "kind": "keyDown",
         "key": "Process",
         "physical": null,
         "character": null
       },
       {
-        "ms": 5905,
+        "ms": 21965,
         "kind": "value",
         "text": "가",
         "codes": [
@@ -78,21 +292,21 @@
         ]
       },
       {
-        "ms": 6017,
+        "ms": 22061,
         "kind": "keyUp",
         "key": "Process",
         "physical": null,
         "character": null
       },
       {
-        "ms": 6063,
+        "ms": 22256,
         "kind": "keyDown",
         "key": "Process",
         "physical": null,
         "character": null
       },
       {
-        "ms": 6065,
+        "ms": 22266,
         "kind": "value",
         "text": "갈",
         "codes": [
@@ -108,21 +322,21 @@
         ]
       },
       {
-        "ms": 6176,
+        "ms": 22353,
         "kind": "keyUp",
         "key": "Process",
         "physical": null,
         "character": null
       },
       {
-        "ms": 6295,
+        "ms": 22932,
         "kind": "keyDown",
         "key": "Process",
         "physical": null,
         "character": null
       },
       {
-        "ms": 6306,
+        "ms": 22942,
         "kind": "value",
         "text": "갉",
         "codes": [
@@ -138,21 +352,21 @@
         ]
       },
       {
-        "ms": 6415,
+        "ms": 23028,
         "kind": "keyUp",
         "key": "Process",
         "physical": null,
         "character": null
       },
       {
-        "ms": 6467,
+        "ms": 23254,
         "kind": "keyDown",
         "key": "Process",
         "physical": null,
         "character": null
       },
       {
-        "ms": 6468,
+        "ms": 23263,
         "kind": "value",
         "text": "갈",
         "codes": [
@@ -168,7 +382,7 @@
         ]
       },
       {
-        "ms": 6469,
+        "ms": 23265,
         "kind": "value",
         "text": "갈가",
         "codes": [
@@ -185,19 +399,19 @@
         ]
       },
       {
-        "ms": 6596,
+        "ms": 23373,
         "kind": "keyUp",
         "key": "Process",
         "physical": null,
         "character": null
       },
       {
-        "ms": 9859,
+        "ms": 26429,
         "kind": "focus",
         "hasFocus": false
       },
       {
-        "ms": 9860,
+        "ms": 26429,
         "kind": "value",
         "text": "갈가",
         "codes": [
@@ -216,7 +430,7 @@
     ],
     "double_final": [
       {
-        "ms": 9858,
+        "ms": 26429,
         "kind": "value",
         "text": "",
         "codes": [],
@@ -230,19 +444,19 @@
         ]
       },
       {
-        "ms": 9860,
+        "ms": 26430,
         "kind": "focus",
         "hasFocus": true
       },
       {
-        "ms": 10799,
+        "ms": 28851,
         "kind": "keyDown",
         "key": "Process",
         "physical": null,
         "character": null
       },
       {
-        "ms": 10800,
+        "ms": 28852,
         "kind": "value",
         "text": "ㄷ",
         "codes": [
@@ -258,21 +472,21 @@
         ]
       },
       {
-        "ms": 10921,
+        "ms": 28901,
         "kind": "keyUp",
         "key": "Process",
         "physical": null,
         "character": null
       },
       {
-        "ms": 10929,
+        "ms": 28961,
         "kind": "keyDown",
         "key": "Process",
         "physical": null,
         "character": null
       },
       {
-        "ms": 10931,
+        "ms": 28962,
         "kind": "value",
         "text": "다",
         "codes": [
@@ -288,14 +502,21 @@
         ]
       },
       {
-        "ms": 11028,
+        "ms": 29074,
+        "kind": "keyUp",
+        "key": "Process",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 29134,
         "kind": "keyDown",
         "key": "Process",
         "physical": null,
         "character": null
       },
       {
-        "ms": 11040,
+        "ms": 29142,
         "kind": "value",
         "text": "달",
         "codes": [
@@ -311,28 +532,21 @@
         ]
       },
       {
-        "ms": 11041,
+        "ms": 29216,
         "kind": "keyUp",
         "key": "Process",
         "physical": null,
         "character": null
       },
       {
-        "ms": 11133,
-        "kind": "keyUp",
-        "key": "Process",
-        "physical": null,
-        "character": null
-      },
-      {
-        "ms": 11238,
+        "ms": 29411,
         "kind": "keyDown",
         "key": "Process",
         "physical": null,
         "character": null
       },
       {
-        "ms": 11240,
+        "ms": 29423,
         "kind": "value",
         "text": "닭",
         "codes": [
@@ -348,395 +562,35 @@
         ]
       },
       {
-        "ms": 11328,
+        "ms": 29508,
         "kind": "keyUp",
         "key": "Process",
         "physical": null,
         "character": null
       },
       {
-        "ms": 11524,
+        "ms": 30446,
         "kind": "keyDown",
         "key": "Process",
         "physical": null,
         "character": null
       },
       {
-        "ms": 11537,
-        "kind": "value",
-        "text": "닭ㄱ",
-        "codes": [
-          "U+B2ED",
-          "U+3131"
-        ],
-        "composing": [
-          1,
-          2
-        ],
-        "selection": [
-          2,
-          2
-        ]
-      },
-      {
-        "ms": 11635,
+        "ms": 30448,
         "kind": "keyUp",
         "key": "Process",
         "physical": null,
         "character": null
       },
       {
-        "ms": 11688,
-        "kind": "keyDown",
-        "key": "Process",
-        "physical": null,
-        "character": null
-      },
-      {
-        "ms": 11698,
-        "kind": "value",
-        "text": "닭가",
-        "codes": [
-          "U+B2ED",
-          "U+AC00"
-        ],
-        "composing": [
-          1,
-          2
-        ],
-        "selection": [
-          2,
-          2
-        ]
-      },
-      {
-        "ms": 11809,
-        "kind": "keyUp",
-        "key": "Process",
-        "physical": null,
-        "character": null
-      },
-      {
-        "ms": 11851,
-        "kind": "keyDown",
-        "key": "Process",
-        "physical": null,
-        "character": null
-      },
-      {
-        "ms": 11859,
-        "kind": "value",
-        "text": "닭갑",
-        "codes": [
-          "U+B2ED",
-          "U+AC11"
-        ],
-        "composing": [
-          1,
-          2
-        ],
-        "selection": [
-          2,
-          2
-        ]
-      },
-      {
-        "ms": 11973,
-        "kind": "keyUp",
-        "key": "Process",
-        "physical": null,
-        "character": null
-      },
-      {
-        "ms": 12280,
-        "kind": "keyDown",
-        "key": "Process",
-        "physical": null,
-        "character": null
-      },
-      {
-        "ms": 12291,
-        "kind": "value",
-        "text": "닭값",
-        "codes": [
-          "U+B2ED",
-          "U+AC12"
-        ],
-        "composing": [
-          1,
-          2
-        ],
-        "selection": [
-          2,
-          2
-        ]
-      },
-      {
-        "ms": 12371,
-        "kind": "keyUp",
-        "key": "Process",
-        "physical": null,
-        "character": null
-      },
-      {
-        "ms": 15279,
-        "kind": "focus",
-        "hasFocus": false
-      },
-      {
-        "ms": 15279,
-        "kind": "value",
-        "text": "닭값",
-        "codes": [
-          "U+B2ED",
-          "U+AC12"
-        ],
-        "composing": [
-          -1,
-          -1
-        ],
-        "selection": [
-          2,
-          2
-        ]
-      },
-      {
-        "ms": 30759,
-        "kind": "value",
-        "text": "닭값",
-        "codes": [
-          "U+B2ED",
-          "U+AC12"
-        ],
-        "composing": [
-          -1,
-          -1
-        ],
-        "selection": [
-          2,
-          2
-        ]
-      },
-      {
-        "ms": 30760,
-        "kind": "focus",
-        "hasFocus": true
-      },
-      {
-        "ms": 32288,
-        "kind": "keyDown",
-        "key": "Backspace",
-        "physical": null,
-        "character": null
-      },
-      {
-        "ms": 32289,
-        "kind": "value",
-        "text": "닭",
-        "codes": [
-          "U+B2ED"
-        ],
-        "composing": [
-          -1,
-          -1
-        ],
-        "selection": [
-          1,
-          1
-        ]
-      },
-      {
-        "ms": 32352,
-        "kind": "keyUp",
-        "key": "Backspace",
-        "physical": null,
-        "character": null
-      },
-      {
-        "ms": 32478,
-        "kind": "keyDown",
-        "key": "Backspace",
-        "physical": null,
-        "character": null
-      },
-      {
-        "ms": 32479,
-        "kind": "value",
-        "text": "",
-        "codes": [],
-        "composing": [
-          -1,
-          -1
-        ],
-        "selection": [
-          0,
-          0
-        ]
-      },
-      {
-        "ms": 32552,
-        "kind": "keyUp",
-        "key": "Backspace",
-        "physical": null,
-        "character": null
-      },
-      {
-        "ms": 32666,
-        "kind": "keyDown",
-        "key": "Backspace",
-        "physical": null,
-        "character": null
-      },
-      {
-        "ms": 32743,
-        "kind": "keyUp",
-        "key": "Backspace",
-        "physical": null,
-        "character": null
-      },
-      {
-        "ms": 34108,
-        "kind": "keyDown",
-        "key": "Process",
-        "physical": null,
-        "character": null
-      },
-      {
-        "ms": 34109,
-        "kind": "value",
-        "text": "ㄷ",
-        "codes": [
-          "U+3137"
-        ],
-        "composing": [
-          0,
-          1
-        ],
-        "selection": [
-          1,
-          1
-        ]
-      },
-      {
-        "ms": 34270,
-        "kind": "keyUp",
-        "key": "Process",
-        "physical": null,
-        "character": null
-      },
-      {
-        "ms": 34307,
-        "kind": "keyDown",
-        "key": "Process",
-        "physical": null,
-        "character": null
-      },
-      {
-        "ms": 34317,
-        "kind": "value",
-        "text": "다",
-        "codes": [
-          "U+B2E4"
-        ],
-        "composing": [
-          0,
-          1
-        ],
-        "selection": [
-          1,
-          1
-        ]
-      },
-      {
-        "ms": 34405,
-        "kind": "keyUp",
-        "key": "Process",
-        "physical": null,
-        "character": null
-      },
-      {
-        "ms": 34486,
-        "kind": "keyDown",
-        "key": "Process",
-        "physical": null,
-        "character": null
-      },
-      {
-        "ms": 34487,
-        "kind": "value",
-        "text": "달",
-        "codes": [
-          "U+B2EC"
-        ],
-        "composing": [
-          0,
-          1
-        ],
-        "selection": [
-          1,
-          1
-        ]
-      },
-      {
-        "ms": 34583,
-        "kind": "keyUp",
-        "key": "Process",
-        "physical": null,
-        "character": null
-      },
-      {
-        "ms": 34750,
-        "kind": "keyDown",
-        "key": "Process",
-        "physical": null,
-        "character": null
-      },
-      {
-        "ms": 34761,
-        "kind": "value",
-        "text": "닭",
-        "codes": [
-          "U+B2ED"
-        ],
-        "composing": [
-          0,
-          1
-        ],
-        "selection": [
-          1,
-          1
-        ]
-      },
-      {
-        "ms": 34855,
-        "kind": "keyUp",
-        "key": "Process",
-        "physical": null,
-        "character": null
-      },
-      {
-        "ms": 35704,
-        "kind": "keyDown",
-        "key": "Process",
-        "physical": null,
-        "character": null
-      },
-      {
-        "ms": 35714,
-        "kind": "keyUp",
-        "key": "Process",
-        "physical": null,
-        "character": null
-      },
-      {
-        "ms": 35714,
+        "ms": 30448,
         "kind": "keyDown",
         "key": " ",
         "physical": null,
         "character": " "
       },
       {
-        "ms": 35715,
+        "ms": 30449,
         "kind": "value",
         "text": "닭 ",
         "codes": [
@@ -753,21 +607,21 @@
         ]
       },
       {
-        "ms": 35784,
+        "ms": 30536,
         "kind": "keyUp",
         "key": " ",
         "physical": null,
         "character": null
       },
       {
-        "ms": 36637,
+        "ms": 31047,
         "kind": "keyDown",
         "key": "Process",
         "physical": null,
         "character": null
       },
       {
-        "ms": 36638,
+        "ms": 31047,
         "kind": "value",
         "text": "닭 ㄱ",
         "codes": [
@@ -785,21 +639,21 @@
         ]
       },
       {
-        "ms": 36760,
+        "ms": 31143,
         "kind": "keyUp",
         "key": "Process",
         "physical": null,
         "character": null
       },
       {
-        "ms": 36812,
+        "ms": 31188,
         "kind": "keyDown",
         "key": "Process",
         "physical": null,
         "character": null
       },
       {
-        "ms": 36822,
+        "ms": 31198,
         "kind": "value",
         "text": "닭 가",
         "codes": [
@@ -817,21 +671,21 @@
         ]
       },
       {
-        "ms": 36931,
+        "ms": 31256,
         "kind": "keyUp",
         "key": "Process",
         "physical": null,
         "character": null
       },
       {
-        "ms": 36953,
+        "ms": 31466,
         "kind": "keyDown",
         "key": "Process",
         "physical": null,
         "character": null
       },
       {
-        "ms": 36954,
+        "ms": 31474,
         "kind": "value",
         "text": "닭 갑",
         "codes": [
@@ -849,14 +703,21 @@
         ]
       },
       {
-        "ms": 37043,
+        "ms": 31563,
+        "kind": "keyUp",
+        "key": "Process",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 31743,
         "kind": "keyDown",
         "key": "Process",
         "physical": null,
         "character": null
       },
       {
-        "ms": 37052,
+        "ms": 31745,
         "kind": "value",
         "text": "닭 값",
         "codes": [
@@ -874,42 +735,35 @@
         ]
       },
       {
-        "ms": 37072,
+        "ms": 31841,
         "kind": "keyUp",
         "key": "Process",
         "physical": null,
         "character": null
       },
       {
-        "ms": 37188,
-        "kind": "keyUp",
-        "key": "Process",
-        "physical": null,
-        "character": null
-      },
-      {
-        "ms": 37773,
+        "ms": 35082,
         "kind": "keyDown",
         "key": "Process",
         "physical": null,
         "character": null
       },
       {
-        "ms": 37783,
+        "ms": 35092,
         "kind": "keyUp",
         "key": "Process",
         "physical": null,
         "character": null
       },
       {
-        "ms": 37783,
+        "ms": 35092,
         "kind": "keyDown",
         "key": " ",
         "physical": null,
         "character": " "
       },
       {
-        "ms": 37784,
+        "ms": 35092,
         "kind": "value",
         "text": "닭 값 ",
         "codes": [
@@ -928,21 +782,21 @@
         ]
       },
       {
-        "ms": 37855,
+        "ms": 35126,
         "kind": "keyUp",
         "key": " ",
         "physical": null,
         "character": null
       },
       {
-        "ms": 40022,
+        "ms": 36190,
         "kind": "focus",
         "hasFocus": false
       }
     ],
     "backspace": [
       {
-        "ms": 15278,
+        "ms": 36190,
         "kind": "value",
         "text": "",
         "codes": [],
@@ -956,19 +810,19 @@
         ]
       },
       {
-        "ms": 15280,
+        "ms": 36191,
         "kind": "focus",
         "hasFocus": true
       },
       {
-        "ms": 16686,
+        "ms": 37754,
         "kind": "keyDown",
         "key": "Process",
         "physical": null,
         "character": null
       },
       {
-        "ms": 16687,
+        "ms": 37756,
         "kind": "value",
         "text": "ㅎ",
         "codes": [
@@ -984,21 +838,21 @@
         ]
       },
       {
-        "ms": 16801,
+        "ms": 37873,
         "kind": "keyUp",
         "key": "Process",
         "physical": null,
         "character": null
       },
       {
-        "ms": 16809,
+        "ms": 38014,
         "kind": "keyDown",
         "key": "Process",
         "physical": null,
         "character": null
       },
       {
-        "ms": 16810,
+        "ms": 38025,
         "kind": "value",
         "text": "하",
         "codes": [
@@ -1014,21 +868,21 @@
         ]
       },
       {
-        "ms": 16915,
+        "ms": 38126,
         "kind": "keyUp",
         "key": "Process",
         "physical": null,
         "character": null
       },
       {
-        "ms": 16952,
+        "ms": 38471,
         "kind": "keyDown",
         "key": "Process",
         "physical": null,
         "character": null
       },
       {
-        "ms": 16960,
+        "ms": 38479,
         "kind": "value",
         "text": "한",
         "codes": [
@@ -1044,21 +898,21 @@
         ]
       },
       {
-        "ms": 17050,
+        "ms": 38583,
         "kind": "keyUp",
         "key": "Process",
         "physical": null,
         "character": null
       },
       {
-        "ms": 25243,
+        "ms": 40348,
         "kind": "keyDown",
         "key": "Process",
         "physical": null,
         "character": null
       },
       {
-        "ms": 25253,
+        "ms": 40358,
         "kind": "value",
         "text": "하",
         "codes": [
@@ -1074,19 +928,19 @@
         ]
       },
       {
-        "ms": 25261,
+        "ms": 40438,
         "kind": "keyUp",
         "key": "Process",
         "physical": null,
         "character": null
       },
       {
-        "ms": 30759,
+        "ms": 43099,
         "kind": "focus",
         "hasFocus": false
       },
       {
-        "ms": 30760,
+        "ms": 43099,
         "kind": "value",
         "text": "하",
         "codes": [
@@ -1100,37 +954,11 @@
           1,
           1
         ]
-      },
-      {
-        "ms": 40021,
-        "kind": "value",
-        "text": "하",
-        "codes": [
-          "U+D558"
-        ],
-        "composing": [
-          -1,
-          -1
-        ],
-        "selection": [
-          1,
-          1
-        ]
-      },
-      {
-        "ms": 40023,
-        "kind": "focus",
-        "hasFocus": true
-      },
-      {
-        "ms": 41956,
-        "kind": "focus",
-        "hasFocus": false
       }
     ],
     "click": [
       {
-        "ms": 41955,
+        "ms": 43099,
         "kind": "value",
         "text": "",
         "codes": [],
@@ -1144,19 +972,19 @@
         ]
       },
       {
-        "ms": 41957,
+        "ms": 43100,
         "kind": "focus",
         "hasFocus": true
       },
       {
-        "ms": 47901,
+        "ms": 44625,
         "kind": "keyDown",
         "key": "Process",
         "physical": null,
         "character": null
       },
       {
-        "ms": 47902,
+        "ms": 44625,
         "kind": "value",
         "text": "ㅎ",
         "codes": [
@@ -1172,21 +1000,14 @@
         ]
       },
       {
-        "ms": 47979,
-        "kind": "keyUp",
-        "key": "Process",
-        "physical": null,
-        "character": null
-      },
-      {
-        "ms": 48001,
+        "ms": 44673,
         "kind": "keyDown",
         "key": "Process",
         "physical": null,
         "character": null
       },
       {
-        "ms": 48010,
+        "ms": 44674,
         "kind": "value",
         "text": "하",
         "codes": [
@@ -1202,21 +1023,28 @@
         ]
       },
       {
-        "ms": 48108,
+        "ms": 44703,
         "kind": "keyUp",
         "key": "Process",
         "physical": null,
         "character": null
       },
       {
-        "ms": 48118,
+        "ms": 44802,
+        "kind": "keyUp",
+        "key": "Process",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 44816,
         "kind": "keyDown",
         "key": "Process",
         "physical": null,
         "character": null
       },
       {
-        "ms": 48119,
+        "ms": 44816,
         "kind": "value",
         "text": "한",
         "codes": [
@@ -1232,21 +1060,21 @@
         ]
       },
       {
-        "ms": 48228,
+        "ms": 44899,
         "kind": "keyUp",
         "key": "Process",
         "physical": null,
         "character": null
       },
       {
-        "ms": 48443,
+        "ms": 45072,
         "kind": "keyDown",
         "key": "Process",
         "physical": null,
         "character": null
       },
       {
-        "ms": 48451,
+        "ms": 45083,
         "kind": "value",
         "text": "한ㄱ",
         "codes": [
@@ -1263,21 +1091,21 @@
         ]
       },
       {
-        "ms": 48587,
+        "ms": 45183,
         "kind": "keyUp",
         "key": "Process",
         "physical": null,
         "character": null
       },
       {
-        "ms": 48597,
+        "ms": 45192,
         "kind": "keyDown",
         "key": "Process",
         "physical": null,
         "character": null
       },
       {
-        "ms": 48598,
+        "ms": 45193,
         "kind": "value",
         "text": "한그",
         "codes": [
@@ -1294,21 +1122,21 @@
         ]
       },
       {
-        "ms": 48707,
+        "ms": 45320,
         "kind": "keyUp",
         "key": "Process",
         "physical": null,
         "character": null
       },
       {
-        "ms": 48722,
+        "ms": 45330,
         "kind": "keyDown",
         "key": "Process",
         "physical": null,
         "character": null
       },
       {
-        "ms": 48724,
+        "ms": 45331,
         "kind": "value",
         "text": "한글",
         "codes": [
@@ -1325,398 +1153,19 @@
         ]
       },
       {
-        "ms": 48843,
+        "ms": 45424,
         "kind": "keyUp",
         "key": "Process",
         "physical": null,
         "character": null
       },
       {
-        "ms": 51551,
-        "kind": "keyDown",
-        "key": "Process",
-        "physical": null,
-        "character": null
-      },
-      {
-        "ms": 51560,
-        "kind": "value",
-        "text": "한긂",
-        "codes": [
-          "U+D55C",
-          "U+AE02"
-        ],
-        "composing": [
-          1,
-          2
-        ],
-        "selection": [
-          2,
-          2
-        ]
-      },
-      {
-        "ms": 51625,
-        "kind": "keyUp",
-        "key": "Process",
-        "physical": null,
-        "character": null
-      },
-      {
-        "ms": 60580,
-        "kind": "keyDown",
-        "key": "Process",
-        "physical": null,
-        "character": null
-      },
-      {
-        "ms": 60583,
-        "kind": "value",
-        "text": "한글",
-        "codes": [
-          "U+D55C",
-          "U+AE00"
-        ],
-        "composing": [
-          1,
-          2
-        ],
-        "selection": [
-          2,
-          2
-        ]
-      },
-      {
-        "ms": 60640,
-        "kind": "keyUp",
-        "key": "Process",
-        "physical": null,
-        "character": null
-      },
-      {
-        "ms": 60714,
-        "kind": "keyDown",
-        "key": "Process",
-        "physical": null,
-        "character": null
-      },
-      {
-        "ms": 60723,
-        "kind": "value",
-        "text": "한그",
-        "codes": [
-          "U+D55C",
-          "U+ADF8"
-        ],
-        "composing": [
-          1,
-          2
-        ],
-        "selection": [
-          2,
-          2
-        ]
-      },
-      {
-        "ms": 60819,
-        "kind": "keyUp",
-        "key": "Process",
-        "physical": null,
-        "character": null
-      },
-      {
-        "ms": 60879,
-        "kind": "keyDown",
-        "key": "Process",
-        "physical": null,
-        "character": null
-      },
-      {
-        "ms": 60888,
-        "kind": "value",
-        "text": "한ㄱ",
-        "codes": [
-          "U+D55C",
-          "U+3131"
-        ],
-        "composing": [
-          1,
-          2
-        ],
-        "selection": [
-          2,
-          2
-        ]
-      },
-      {
-        "ms": 60953,
-        "kind": "keyUp",
-        "key": "Process",
-        "physical": null,
-        "character": null
-      },
-      {
-        "ms": 61052,
-        "kind": "keyDown",
-        "key": "Process",
-        "physical": null,
-        "character": null
-      },
-      {
-        "ms": 61063,
-        "kind": "value",
-        "text": "한",
-        "codes": [
-          "U+D55C"
-        ],
-        "composing": [
-          -1,
-          -1
-        ],
-        "selection": [
-          1,
-          1
-        ]
-      },
-      {
-        "ms": 61127,
-        "kind": "keyUp",
-        "key": "Process",
-        "physical": null,
-        "character": null
-      },
-      {
-        "ms": 61243,
-        "kind": "keyDown",
-        "key": "Backspace",
-        "physical": null,
-        "character": null
-      },
-      {
-        "ms": 61244,
-        "kind": "value",
-        "text": "",
-        "codes": [],
-        "composing": [
-          -1,
-          -1
-        ],
-        "selection": [
-          0,
-          0
-        ]
-      },
-      {
-        "ms": 61299,
-        "kind": "keyUp",
-        "key": "Backspace",
-        "physical": null,
-        "character": null
-      },
-      {
-        "ms": 61400,
-        "kind": "keyDown",
-        "key": "Backspace",
-        "physical": null,
-        "character": null
-      },
-      {
-        "ms": 61472,
-        "kind": "keyUp",
-        "key": "Backspace",
-        "physical": null,
-        "character": null
-      },
-      {
-        "ms": 62262,
-        "kind": "keyDown",
-        "key": "Process",
-        "physical": null,
-        "character": null
-      },
-      {
-        "ms": 62263,
-        "kind": "value",
-        "text": "ㅎ",
-        "codes": [
-          "U+314E"
-        ],
-        "composing": [
-          0,
-          1
-        ],
-        "selection": [
-          1,
-          1
-        ]
-      },
-      {
-        "ms": 62372,
-        "kind": "keyUp",
-        "key": "Process",
-        "physical": null,
-        "character": null
-      },
-      {
-        "ms": 62380,
-        "kind": "keyDown",
-        "key": "Process",
-        "physical": null,
-        "character": null
-      },
-      {
-        "ms": 62381,
-        "kind": "value",
-        "text": "하",
-        "codes": [
-          "U+D558"
-        ],
-        "composing": [
-          0,
-          1
-        ],
-        "selection": [
-          1,
-          1
-        ]
-      },
-      {
-        "ms": 62463,
-        "kind": "keyDown",
-        "key": "Process",
-        "physical": null,
-        "character": null
-      },
-      {
-        "ms": 62471,
-        "kind": "value",
-        "text": "한",
-        "codes": [
-          "U+D55C"
-        ],
-        "composing": [
-          0,
-          1
-        ],
-        "selection": [
-          1,
-          1
-        ]
-      },
-      {
-        "ms": 62475,
-        "kind": "keyUp",
-        "key": "Process",
-        "physical": null,
-        "character": null
-      },
-      {
-        "ms": 62559,
-        "kind": "keyUp",
-        "key": "Process",
-        "physical": null,
-        "character": null
-      },
-      {
-        "ms": 62678,
-        "kind": "keyDown",
-        "key": "Process",
-        "physical": null,
-        "character": null
-      },
-      {
-        "ms": 62685,
-        "kind": "value",
-        "text": "한ㄱ",
-        "codes": [
-          "U+D55C",
-          "U+3131"
-        ],
-        "composing": [
-          1,
-          2
-        ],
-        "selection": [
-          2,
-          2
-        ]
-      },
-      {
-        "ms": 62778,
-        "kind": "keyUp",
-        "key": "Process",
-        "physical": null,
-        "character": null
-      },
-      {
-        "ms": 62806,
-        "kind": "keyDown",
-        "key": "Process",
-        "physical": null,
-        "character": null
-      },
-      {
-        "ms": 62813,
-        "kind": "value",
-        "text": "한그",
-        "codes": [
-          "U+D55C",
-          "U+ADF8"
-        ],
-        "composing": [
-          1,
-          2
-        ],
-        "selection": [
-          2,
-          2
-        ]
-      },
-      {
-        "ms": 62889,
-        "kind": "keyDown",
-        "key": "Process",
-        "physical": null,
-        "character": null
-      },
-      {
-        "ms": 62900,
-        "kind": "value",
-        "text": "한글",
-        "codes": [
-          "U+D55C",
-          "U+AE00"
-        ],
-        "composing": [
-          1,
-          2
-        ],
-        "selection": [
-          2,
-          2
-        ]
-      },
-      {
-        "ms": 62901,
-        "kind": "keyUp",
-        "key": "Process",
-        "physical": null,
-        "character": null
-      },
-      {
-        "ms": 63002,
-        "kind": "keyUp",
-        "key": "Process",
-        "physical": null,
-        "character": null
-      },
-      {
-        "ms": 66367,
+        "ms": 47568,
         "kind": "focus",
         "hasFocus": false
       },
       {
-        "ms": 66367,
+        "ms": 47569,
         "kind": "value",
         "text": "한글",
         "codes": [
@@ -1733,7 +1182,7 @@
         ]
       },
       {
-        "ms": 66521,
+        "ms": 47723,
         "kind": "click",
         "button": "A",
         "text": "한글",
@@ -1751,11 +1200,11 @@
         ]
       },
       {
-        "ms": 69787,
+        "ms": 50234,
         "kind": "reset"
       },
       {
-        "ms": 69787,
+        "ms": 50234,
         "kind": "value",
         "text": "",
         "codes": [],
@@ -1769,19 +1218,19 @@
         ]
       },
       {
-        "ms": 69787,
+        "ms": 50234,
         "kind": "focus",
         "hasFocus": true
       },
       {
-        "ms": 72722,
+        "ms": 53052,
         "kind": "keyDown",
         "key": "Process",
         "physical": null,
         "character": null
       },
       {
-        "ms": 72723,
+        "ms": 53053,
         "kind": "value",
         "text": "ㅎ",
         "codes": [
@@ -1797,21 +1246,21 @@
         ]
       },
       {
-        "ms": 72758,
+        "ms": 53149,
         "kind": "keyUp",
         "key": "Process",
         "physical": null,
         "character": null
       },
       {
-        "ms": 72767,
+        "ms": 53164,
         "kind": "keyDown",
         "key": "Process",
         "physical": null,
         "character": null
       },
       {
-        "ms": 72768,
+        "ms": 53165,
         "kind": "value",
         "text": "하",
         "codes": [
@@ -1827,14 +1276,14 @@
         ]
       },
       {
-        "ms": 72872,
+        "ms": 53263,
         "kind": "keyDown",
         "key": "Process",
         "physical": null,
         "character": null
       },
       {
-        "ms": 72881,
+        "ms": 53273,
         "kind": "value",
         "text": "한",
         "codes": [
@@ -1850,28 +1299,28 @@
         ]
       },
       {
-        "ms": 72881,
+        "ms": 53273,
         "kind": "keyUp",
         "key": "Process",
         "physical": null,
         "character": null
       },
       {
-        "ms": 72968,
+        "ms": 53336,
         "kind": "keyUp",
         "key": "Process",
         "physical": null,
         "character": null
       },
       {
-        "ms": 73150,
+        "ms": 53501,
         "kind": "keyDown",
         "key": "Process",
         "physical": null,
         "character": null
       },
       {
-        "ms": 73159,
+        "ms": 53512,
         "kind": "value",
         "text": "한ㄱ",
         "codes": [
@@ -1888,21 +1337,21 @@
         ]
       },
       {
-        "ms": 73270,
+        "ms": 53599,
         "kind": "keyUp",
         "key": "Process",
         "physical": null,
         "character": null
       },
       {
-        "ms": 73284,
+        "ms": 53636,
         "kind": "keyDown",
         "key": "Process",
         "physical": null,
         "character": null
       },
       {
-        "ms": 73285,
+        "ms": 53646,
         "kind": "value",
         "text": "한그",
         "codes": [
@@ -1919,14 +1368,14 @@
         ]
       },
       {
-        "ms": 73389,
+        "ms": 53741,
         "kind": "keyDown",
         "key": "Process",
         "physical": null,
         "character": null
       },
       {
-        "ms": 73398,
+        "ms": 53751,
         "kind": "value",
         "text": "한글",
         "codes": [
@@ -1943,26 +1392,26 @@
         ]
       },
       {
-        "ms": 73398,
+        "ms": 53752,
         "kind": "keyUp",
         "key": "Process",
         "physical": null,
         "character": null
       },
       {
-        "ms": 73502,
+        "ms": 53854,
         "kind": "keyUp",
         "key": "Process",
         "physical": null,
         "character": null
       },
       {
-        "ms": 74971,
+        "ms": 55618,
         "kind": "focus",
         "hasFocus": false
       },
       {
-        "ms": 74971,
+        "ms": 55619,
         "kind": "value",
         "text": "한글",
         "codes": [
@@ -1979,7 +1428,7 @@
         ]
       },
       {
-        "ms": 75114,
+        "ms": 55789,
         "kind": "click",
         "button": "B",
         "text": "한글",
@@ -1995,6 +1444,1214 @@
           2,
           2
         ]
+      }
+    ],
+    "erase_retype": [
+      {
+        "ms": 57882,
+        "kind": "value",
+        "text": "",
+        "codes": [],
+        "composing": [
+          -1,
+          -1
+        ],
+        "selection": [
+          0,
+          0
+        ]
+      },
+      {
+        "ms": 57883,
+        "kind": "focus",
+        "hasFocus": true
+      },
+      {
+        "ms": 60120,
+        "kind": "keyDown",
+        "key": "Process",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 60121,
+        "kind": "value",
+        "text": "ㄷ",
+        "codes": [
+          "U+3137"
+        ],
+        "composing": [
+          0,
+          1
+        ],
+        "selection": [
+          1,
+          1
+        ]
+      },
+      {
+        "ms": 60184,
+        "kind": "keyUp",
+        "key": "Process",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 60229,
+        "kind": "keyDown",
+        "key": "Process",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 60237,
+        "kind": "value",
+        "text": "다",
+        "codes": [
+          "U+B2E4"
+        ],
+        "composing": [
+          0,
+          1
+        ],
+        "selection": [
+          1,
+          1
+        ]
+      },
+      {
+        "ms": 60312,
+        "kind": "keyUp",
+        "key": "Process",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 60386,
+        "kind": "keyDown",
+        "key": "Process",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 60394,
+        "kind": "value",
+        "text": "달",
+        "codes": [
+          "U+B2EC"
+        ],
+        "composing": [
+          0,
+          1
+        ],
+        "selection": [
+          1,
+          1
+        ]
+      },
+      {
+        "ms": 60469,
+        "kind": "keyUp",
+        "key": "Process",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 60604,
+        "kind": "keyDown",
+        "key": "Process",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 60613,
+        "kind": "value",
+        "text": "닭",
+        "codes": [
+          "U+B2ED"
+        ],
+        "composing": [
+          0,
+          1
+        ],
+        "selection": [
+          1,
+          1
+        ]
+      },
+      {
+        "ms": 60741,
+        "kind": "keyUp",
+        "key": "Process",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 61399,
+        "kind": "keyDown",
+        "key": "Process",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 61408,
+        "kind": "value",
+        "text": "닭ㄱ",
+        "codes": [
+          "U+B2ED",
+          "U+3131"
+        ],
+        "composing": [
+          1,
+          2
+        ],
+        "selection": [
+          2,
+          2
+        ]
+      },
+      {
+        "ms": 61511,
+        "kind": "keyUp",
+        "key": "Process",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 61571,
+        "kind": "keyDown",
+        "key": "Process",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 61574,
+        "kind": "value",
+        "text": "닭가",
+        "codes": [
+          "U+B2ED",
+          "U+AC00"
+        ],
+        "composing": [
+          1,
+          2
+        ],
+        "selection": [
+          2,
+          2
+        ]
+      },
+      {
+        "ms": 61660,
+        "kind": "keyUp",
+        "key": "Process",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 61774,
+        "kind": "keyDown",
+        "key": "Process",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 61784,
+        "kind": "value",
+        "text": "닭갑",
+        "codes": [
+          "U+B2ED",
+          "U+AC11"
+        ],
+        "composing": [
+          1,
+          2
+        ],
+        "selection": [
+          2,
+          2
+        ]
+      },
+      {
+        "ms": 61879,
+        "kind": "keyUp",
+        "key": "Process",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 61992,
+        "kind": "keyDown",
+        "key": "Process",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 61995,
+        "kind": "value",
+        "text": "닭값",
+        "codes": [
+          "U+B2ED",
+          "U+AC12"
+        ],
+        "composing": [
+          1,
+          2
+        ],
+        "selection": [
+          2,
+          2
+        ]
+      },
+      {
+        "ms": 62097,
+        "kind": "keyUp",
+        "key": "Process",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 65796,
+        "kind": "keyDown",
+        "key": "Process",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 65805,
+        "kind": "value",
+        "text": "닭갑",
+        "codes": [
+          "U+B2ED",
+          "U+AC11"
+        ],
+        "composing": [
+          1,
+          2
+        ],
+        "selection": [
+          2,
+          2
+        ]
+      },
+      {
+        "ms": 65830,
+        "kind": "keyUp",
+        "key": "Process",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 65950,
+        "kind": "keyDown",
+        "key": "Process",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 65959,
+        "kind": "value",
+        "text": "닭가",
+        "codes": [
+          "U+B2ED",
+          "U+AC00"
+        ],
+        "composing": [
+          1,
+          2
+        ],
+        "selection": [
+          2,
+          2
+        ]
+      },
+      {
+        "ms": 66018,
+        "kind": "keyUp",
+        "key": "Process",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 66132,
+        "kind": "keyDown",
+        "key": "Process",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 66135,
+        "kind": "value",
+        "text": "닭ㄱ",
+        "codes": [
+          "U+B2ED",
+          "U+3131"
+        ],
+        "composing": [
+          1,
+          2
+        ],
+        "selection": [
+          2,
+          2
+        ]
+      },
+      {
+        "ms": 66205,
+        "kind": "keyUp",
+        "key": "Process",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 66312,
+        "kind": "keyDown",
+        "key": "Process",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 66314,
+        "kind": "value",
+        "text": "닭",
+        "codes": [
+          "U+B2ED"
+        ],
+        "composing": [
+          -1,
+          -1
+        ],
+        "selection": [
+          1,
+          1
+        ]
+      },
+      {
+        "ms": 66386,
+        "kind": "keyUp",
+        "key": "Process",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 66495,
+        "kind": "keyDown",
+        "key": "Backspace",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 66497,
+        "kind": "value",
+        "text": "",
+        "codes": [],
+        "composing": [
+          -1,
+          -1
+        ],
+        "selection": [
+          0,
+          0
+        ]
+      },
+      {
+        "ms": 66553,
+        "kind": "keyUp",
+        "key": "Backspace",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 66671,
+        "kind": "keyDown",
+        "key": "Backspace",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 66738,
+        "kind": "keyUp",
+        "key": "Backspace",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 66843,
+        "kind": "keyDown",
+        "key": "Backspace",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 66926,
+        "kind": "keyUp",
+        "key": "Backspace",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 67046,
+        "kind": "keyDown",
+        "key": "Backspace",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 67131,
+        "kind": "keyUp",
+        "key": "Backspace",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 68241,
+        "kind": "keyDown",
+        "key": "Process",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 68242,
+        "kind": "value",
+        "text": "ㄷ",
+        "codes": [
+          "U+3137"
+        ],
+        "composing": [
+          0,
+          1
+        ],
+        "selection": [
+          1,
+          1
+        ]
+      },
+      {
+        "ms": 68336,
+        "kind": "keyUp",
+        "key": "Process",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 68411,
+        "kind": "keyDown",
+        "key": "Process",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 68412,
+        "kind": "value",
+        "text": "다",
+        "codes": [
+          "U+B2E4"
+        ],
+        "composing": [
+          0,
+          1
+        ],
+        "selection": [
+          1,
+          1
+        ]
+      },
+      {
+        "ms": 68486,
+        "kind": "keyUp",
+        "key": "Process",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 68523,
+        "kind": "keyDown",
+        "key": "Process",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 68524,
+        "kind": "value",
+        "text": "달",
+        "codes": [
+          "U+B2EC"
+        ],
+        "composing": [
+          0,
+          1
+        ],
+        "selection": [
+          1,
+          1
+        ]
+      },
+      {
+        "ms": 68592,
+        "kind": "keyUp",
+        "key": "Process",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 68704,
+        "kind": "keyDown",
+        "key": "Process",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 68707,
+        "kind": "value",
+        "text": "닭",
+        "codes": [
+          "U+B2ED"
+        ],
+        "composing": [
+          0,
+          1
+        ],
+        "selection": [
+          1,
+          1
+        ]
+      },
+      {
+        "ms": 68785,
+        "kind": "keyUp",
+        "key": "Process",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 69851,
+        "kind": "keyDown",
+        "key": "Process",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 69858,
+        "kind": "keyUp",
+        "key": "Process",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 69858,
+        "kind": "keyDown",
+        "key": " ",
+        "physical": null,
+        "character": " "
+      },
+      {
+        "ms": 69859,
+        "kind": "value",
+        "text": "닭 ",
+        "codes": [
+          "U+B2ED",
+          "U+0020"
+        ],
+        "composing": [
+          -1,
+          -1
+        ],
+        "selection": [
+          2,
+          2
+        ]
+      },
+      {
+        "ms": 69932,
+        "kind": "keyUp",
+        "key": " ",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 71183,
+        "kind": "keyDown",
+        "key": "Process",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 71184,
+        "kind": "value",
+        "text": "닭 ㄱ",
+        "codes": [
+          "U+B2ED",
+          "U+0020",
+          "U+3131"
+        ],
+        "composing": [
+          2,
+          3
+        ],
+        "selection": [
+          3,
+          3
+        ]
+      },
+      {
+        "ms": 71313,
+        "kind": "keyUp",
+        "key": "Process",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 71324,
+        "kind": "keyDown",
+        "key": "Process",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 71324,
+        "kind": "value",
+        "text": "닭 가",
+        "codes": [
+          "U+B2ED",
+          "U+0020",
+          "U+AC00"
+        ],
+        "composing": [
+          2,
+          3
+        ],
+        "selection": [
+          3,
+          3
+        ]
+      },
+      {
+        "ms": 71411,
+        "kind": "keyUp",
+        "key": "Process",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 71561,
+        "kind": "keyDown",
+        "key": "Process",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 71574,
+        "kind": "value",
+        "text": "닭 갑",
+        "codes": [
+          "U+B2ED",
+          "U+0020",
+          "U+AC11"
+        ],
+        "composing": [
+          2,
+          3
+        ],
+        "selection": [
+          3,
+          3
+        ]
+      },
+      {
+        "ms": 71636,
+        "kind": "keyUp",
+        "key": "Process",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 71704,
+        "kind": "keyDown",
+        "key": "Process",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 71714,
+        "kind": "value",
+        "text": "닭 값",
+        "codes": [
+          "U+B2ED",
+          "U+0020",
+          "U+AC12"
+        ],
+        "composing": [
+          2,
+          3
+        ],
+        "selection": [
+          3,
+          3
+        ]
+      },
+      {
+        "ms": 71824,
+        "kind": "keyUp",
+        "key": "Process",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 72358,
+        "kind": "keyDown",
+        "key": "Process",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 72367,
+        "kind": "keyUp",
+        "key": "Process",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 72367,
+        "kind": "keyDown",
+        "key": " ",
+        "physical": null,
+        "character": " "
+      },
+      {
+        "ms": 72368,
+        "kind": "value",
+        "text": "닭 값 ",
+        "codes": [
+          "U+B2ED",
+          "U+0020",
+          "U+AC12",
+          "U+0020"
+        ],
+        "composing": [
+          -1,
+          -1
+        ],
+        "selection": [
+          4,
+          4
+        ]
+      },
+      {
+        "ms": 72423,
+        "kind": "keyUp",
+        "key": " ",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 74717,
+        "kind": "focus",
+        "hasFocus": false
+      }
+    ],
+    "erase_jamo": [
+      {
+        "ms": 74716,
+        "kind": "value",
+        "text": "",
+        "codes": [],
+        "composing": [
+          -1,
+          -1
+        ],
+        "selection": [
+          0,
+          0
+        ]
+      },
+      {
+        "ms": 74717,
+        "kind": "focus",
+        "hasFocus": true
+      },
+      {
+        "ms": 76594,
+        "kind": "keyDown",
+        "key": "Process",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 76595,
+        "kind": "value",
+        "text": "ㅎ",
+        "codes": [
+          "U+314E"
+        ],
+        "composing": [
+          0,
+          1
+        ],
+        "selection": [
+          1,
+          1
+        ]
+      },
+      {
+        "ms": 76706,
+        "kind": "keyUp",
+        "key": "Process",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 76720,
+        "kind": "keyDown",
+        "key": "Process",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 76721,
+        "kind": "value",
+        "text": "하",
+        "codes": [
+          "U+D558"
+        ],
+        "composing": [
+          0,
+          1
+        ],
+        "selection": [
+          1,
+          1
+        ]
+      },
+      {
+        "ms": 76826,
+        "kind": "keyUp",
+        "key": "Process",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 76848,
+        "kind": "keyDown",
+        "key": "Process",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 76850,
+        "kind": "value",
+        "text": "한",
+        "codes": [
+          "U+D55C"
+        ],
+        "composing": [
+          0,
+          1
+        ],
+        "selection": [
+          1,
+          1
+        ]
+      },
+      {
+        "ms": 76924,
+        "kind": "keyUp",
+        "key": "Process",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 77134,
+        "kind": "keyDown",
+        "key": "Process",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 77146,
+        "kind": "value",
+        "text": "한ㄱ",
+        "codes": [
+          "U+D55C",
+          "U+3131"
+        ],
+        "composing": [
+          1,
+          2
+        ],
+        "selection": [
+          2,
+          2
+        ]
+      },
+      {
+        "ms": 77261,
+        "kind": "keyUp",
+        "key": "Process",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 77276,
+        "kind": "keyDown",
+        "key": "Process",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 77277,
+        "kind": "value",
+        "text": "한그",
+        "codes": [
+          "U+D55C",
+          "U+ADF8"
+        ],
+        "composing": [
+          1,
+          2
+        ],
+        "selection": [
+          2,
+          2
+        ]
+      },
+      {
+        "ms": 77365,
+        "kind": "keyUp",
+        "key": "Process",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 77388,
+        "kind": "keyDown",
+        "key": "Process",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 77394,
+        "kind": "value",
+        "text": "한글",
+        "codes": [
+          "U+D55C",
+          "U+AE00"
+        ],
+        "composing": [
+          1,
+          2
+        ],
+        "selection": [
+          2,
+          2
+        ]
+      },
+      {
+        "ms": 77479,
+        "kind": "keyUp",
+        "key": "Process",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 80272,
+        "kind": "keyDown",
+        "key": "Process",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 80281,
+        "kind": "value",
+        "text": "한긂",
+        "codes": [
+          "U+D55C",
+          "U+AE02"
+        ],
+        "composing": [
+          1,
+          2
+        ],
+        "selection": [
+          2,
+          2
+        ]
+      },
+      {
+        "ms": 80358,
+        "kind": "keyUp",
+        "key": "Process",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 85339,
+        "kind": "keyDown",
+        "key": "Process",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 85345,
+        "kind": "value",
+        "text": "한글",
+        "codes": [
+          "U+D55C",
+          "U+AE00"
+        ],
+        "composing": [
+          1,
+          2
+        ],
+        "selection": [
+          2,
+          2
+        ]
+      },
+      {
+        "ms": 85382,
+        "kind": "keyUp",
+        "key": "Process",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 85668,
+        "kind": "keyDown",
+        "key": "Process",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 85675,
+        "kind": "value",
+        "text": "한그",
+        "codes": [
+          "U+D55C",
+          "U+ADF8"
+        ],
+        "composing": [
+          1,
+          2
+        ],
+        "selection": [
+          2,
+          2
+        ]
+      },
+      {
+        "ms": 85743,
+        "kind": "keyUp",
+        "key": "Process",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 86027,
+        "kind": "keyDown",
+        "key": "Process",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 86035,
+        "kind": "value",
+        "text": "한ㄱ",
+        "codes": [
+          "U+D55C",
+          "U+3131"
+        ],
+        "composing": [
+          1,
+          2
+        ],
+        "selection": [
+          2,
+          2
+        ]
+      },
+      {
+        "ms": 86102,
+        "kind": "keyUp",
+        "key": "Process",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 86328,
+        "kind": "keyDown",
+        "key": "Process",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 86339,
+        "kind": "value",
+        "text": "한",
+        "codes": [
+          "U+D55C"
+        ],
+        "composing": [
+          -1,
+          -1
+        ],
+        "selection": [
+          1,
+          1
+        ]
+      },
+      {
+        "ms": 86411,
+        "kind": "keyUp",
+        "key": "Process",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 86631,
+        "kind": "keyDown",
+        "key": "Backspace",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 86632,
+        "kind": "value",
+        "text": "",
+        "codes": [],
+        "composing": [
+          -1,
+          -1
+        ],
+        "selection": [
+          0,
+          0
+        ]
+      },
+      {
+        "ms": 86704,
+        "kind": "keyUp",
+        "key": "Backspace",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 86923,
+        "kind": "keyDown",
+        "key": "Backspace",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 87043,
+        "kind": "keyUp",
+        "key": "Backspace",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 91967,
+        "kind": "focus",
+        "hasFocus": false
       }
     ]
   }
