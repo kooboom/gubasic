@@ -5,7 +5,7 @@ Draw your interface, double-click a control, write a few lines of BASIC — and 
 
 [한국어](README.ko.md)
 
-> **Status:** early development. GuBASIC programs now **run** in the [**playground**](https://kooboom.github.io/gubasic) in your browser: variables, loops, procedures, `Try`, `Debug.Print`, `MsgBox` and `InputBox`. Forms and controls come next.
+> **Status:** early development. GuBASIC programs **run** in the [**playground**](https://kooboom.github.io/gubasic) in your browser: variables, loops, procedures, `Try`, `Debug.Print`, `MsgBox` and `InputBox`. The IDE ([apps/ide](apps/ide), on macOS, Windows and the web) runs projects with a form and its controls (`Button`, `Label`, `TextBox`) in its run window. The form designer comes next.
 
 ---
 

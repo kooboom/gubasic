@@ -6,21 +6,23 @@ Each stage ends with something that runs. Small, finished stages beat a big unfi
 
 ---
 
-## Stage 0 — Design (current)
+## Stage 0 — Design
 
 - [x] Design decisions ([DESIGN.md](DESIGN.md))
 - [x] Language draft ([LANGUAGE.md](LANGUAGE.md))
 - [x] Repository setup: license, CI that runs `dart test`
 
-## Stage 1 — Draw, double-click, run
+## Stage 1 — Draw, double-click, run (current)
 
 The core Visual Basic experience, entirely inside the IDE.
 
-- [ ] IDE shell on macOS (Windows build kept working)
+- [x] IDE shell on macOS (Windows build kept working; also runs on the web)
 - [ ] Form designer: toolbox, canvas, drag / resize, Properties window
-- [ ] Built-in components: `Form`, `Button`, `Label`, `TextBox`, `CheckBox`, `ListBox`, `Image`
-- [ ] Absolute layout with `Anchor`; form size presets (Phone / Tablet / Desktop)
-- [ ] Project files in plain text (`.gbproj`, `.form.yaml`, `.gbas`)
+- [x] Built-in components: `Form`, `Button`, `Label`, `TextBox`
+- [ ] Built-in components: `CheckBox`, `ListBox`, `Image`
+- [x] Absolute layout (`Left`, `Top`, `Width`, `Height`)
+- [ ] `Anchor`; form size presets (Phone / Tablet / Desktop)
+- [x] Project files in plain text (`.gbproj`, `.form.yaml`, `.gbas`)
 - [x] Lexer and **error-tolerant** parser
 - [x] Analyzer: names, scopes and types, with plain-language diagnostics (English / Korean)
 - [x] Web playground for development ([try it](https://kooboom.github.io/gubasic))

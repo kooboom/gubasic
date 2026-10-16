@@ -6,21 +6,23 @@
 
 ---
 
-## 0단계 — 설계 (현재)
+## 0단계 — 설계
 
 - [x] 설계 결정 ([DESIGN.ko.md](DESIGN.ko.md))
 - [x] 언어 초안 ([LANGUAGE.ko.md](LANGUAGE.ko.md))
 - [x] 저장소 준비: 라이선스, `dart test`를 돌리는 CI
 
-## 1단계 — 그리고, 더블클릭하고, 실행하기
+## 1단계 — 그리고, 더블클릭하고, 실행하기 (현재)
 
 IDE 안에서 완결되는 비주얼 베이직의 핵심 경험입니다.
 
-- [ ] 맥용 IDE 뼈대 (윈도우 빌드도 계속 유지)
+- [x] 맥용 IDE 뼈대 (윈도우 빌드도 계속 유지, 웹에서도 실행)
 - [ ] 폼 디자이너: 도구상자, 캔버스, 끌어 놓기·크기 조절, 속성 창
-- [ ] 기본 컴포넌트: `Form`, `Button`, `Label`, `TextBox`, `CheckBox`, `ListBox`, `Image`
-- [ ] `Anchor`가 있는 절대 배치; 폼 크기 프리셋 (폰 / 태블릿 / 데스크톱)
-- [ ] 일반 텍스트 프로젝트 파일 (`.gbproj`, `.form.yaml`, `.gbas`)
+- [x] 기본 컴포넌트: `Form`, `Button`, `Label`, `TextBox`
+- [ ] 기본 컴포넌트: `CheckBox`, `ListBox`, `Image`
+- [x] 절대 배치 (`Left`, `Top`, `Width`, `Height`)
+- [ ] `Anchor`; 폼 크기 프리셋 (폰 / 태블릿 / 데스크톱)
+- [x] 일반 텍스트 프로젝트 파일 (`.gbproj`, `.form.yaml`, `.gbas`)
 - [x] 렉서와 **오류에 강한** 파서
 - [x] 분석기: 이름, 범위, 타입 검사와 쉬운 말 진단 (영어 / 한국어)
 - [x] 개발용 웹 놀이터 ([써 보기](https://kooboom.github.io/gubasic))
