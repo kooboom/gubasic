@@ -109,8 +109,8 @@ jobs:
         run: dart run tool/embed_examples.dart --check
       - name: Test (the parity scripts through the real widgets)
         run: flutter test
-      - name: Build for the web
-        run: flutter build web --release
+      - name: Build for the web (engine and fonts served with the app, D30)
+        run: flutter build web --release --no-web-resources-cdn
 
   # The runtime's example and the IDE must keep building as desktop apps.
   windows:

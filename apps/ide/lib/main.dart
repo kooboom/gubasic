@@ -6,6 +6,7 @@ import 'src/ide_shell.dart';
 import 'src/project/examples.g.dart';
 import 'src/project/project.dart';
 import 'src/strings.dart';
+import 'src/theme.dart';
 
 /// The GuBASIC IDE. For now it opens the example projects and runs them
 /// in a run window (docs/ROADMAP.md, stage 1).
@@ -45,7 +46,7 @@ class _IdeAppState extends State<IdeApp> {
   Widget build(BuildContext context) => MaterialApp(
     title: 'GuBASIC',
     debugShowCheckedModeBanner: false,
-    theme: ThemeData(colorSchemeSeed: Colors.indigo),
+    theme: ideTheme,
     home: IdeShell(
       // A new shell for each project: what ran before is gone.
       key: ValueKey(_open),

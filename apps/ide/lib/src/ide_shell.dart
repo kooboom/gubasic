@@ -5,6 +5,7 @@ import 'project/project.dart';
 import 'run/run_session.dart';
 import 'run/run_window.dart';
 import 'strings.dart';
+import 'theme.dart';
 
 /// The IDE's main window: the project's files on the left, the selected
 /// file or the running program in the middle, the output below. F5 runs
@@ -178,10 +179,7 @@ class _IdeShellState extends State<IdeShell> {
     final session = _session;
     final code = SingleChildScrollView(
       padding: const EdgeInsets.all(12),
-      child: SelectableText(
-        widget.project.files[_file]!,
-        style: const TextStyle(fontFamily: 'monospace'),
-      ),
+      child: SelectableText(widget.project.files[_file]!, style: codeStyle),
     );
     if (session == null || session.result != null) {
       return code;
@@ -218,11 +216,7 @@ class _IdeShellState extends State<IdeShell> {
           child: ListView(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
             children: [
-              for (final l in lines)
-                SelectableText(
-                  l,
-                  style: const TextStyle(fontFamily: 'monospace'),
-                ),
+              for (final l in lines) SelectableText(l, style: codeStyle),
             ],
           ),
         ),

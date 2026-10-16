@@ -41,6 +41,22 @@
     For more details:
     * https://docs.flutter.dev/platform-integration/web/initialization
   -->
+  <!-- Shown until the app draws its first frame: the engine and the
+       Korean font take a moment on the first visit (D30). -->
+  <div id="loading" style="font: 16px system-ui, sans-serif; color: #555;
+       position: fixed; inset: 0; display: flex; align-items: center;
+       justify-content: center;">Loading…</div>
+  <script>
+    (function () {
+      var loading = document.getElementById('loading');
+      if ((navigator.language || '').toLowerCase().indexOf('ko') === 0) {
+        loading.textContent = '불러오는 중…';
+      }
+      window.addEventListener('flutter-first-frame', function () {
+        loading.remove();
+      });
+    })();
+  </script>
   <script src="flutter_bootstrap.js" async></script>
 </body>
 </html>

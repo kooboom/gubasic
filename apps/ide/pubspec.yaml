@@ -23,3 +23,11 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  # Noto Sans KR 2.004 (OFL, fonts/OFL.txt), the IDE's font on every
+  # platform (D30). The source is in README.md.
+  fonts:
+    - family: NotoSansKR
+      fonts:
+        - asset: fonts/NotoSansKR-Regular.otf
+        - asset: fonts/NotoSansKR-Bold.otf
+          weight: 700
