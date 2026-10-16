@@ -7,7 +7,7 @@ Read this before changing anything in this repository.
 GuBASIC: a Visual Basic–style RAD tool built with Flutter. Users draw forms, double-click controls and write event handlers in a BASIC dialect. The same code runs instantly in an interpreter inside the IDE and is transpiled to Dart for native release builds.
 
 Source of truth, in this order:
-1. `docs/DESIGN.md` — architecture and decisions (D1–D20)
+1. `docs/DESIGN.md` — architecture and the decision record (§14, D1 onwards)
 2. `docs/LANGUAGE.md` — language rules
 3. `docs/ROADMAP.md` — what belongs to which stage
 
@@ -16,15 +16,25 @@ If a request conflicts with these documents, **stop and say so** instead of sile
 ## Layout
 
 ```
-apps/ide/                Flutter IDE, desktop and web
-apps/player/             Phone player (stage 3)
+apps/ide/                Flutter IDE: macOS, Windows and web
 apps/playground/         Web playground for development (pure Dart, no Flutter)
-packages/gubasic_lang/   Pure Dart: lexer, parser, AST, analyzer, interpreter, transpiler
+packages/gubasic_lang/   Pure Dart: lexer, parser, AST, analyzer, interpreter, form files
+                         (the transpiler comes in stage 2)
 packages/gubasic_runtime/ Flutter runtime used by BOTH interpreter and generated apps
-components/<Name>/       component.yaml + adapter
-examples/                Sample projects
-test/parity/             Interpreter-vs-transpiler parity tests
+components/<Name>/       component.yaml (the adapter comes with the transpiler)
+examples/                Sample projects, built into the IDE
+test/parity/             Parity programs (.gbas, .form.yaml, .events, .in, .out), run by
+                         the interpreter on the VM, in Chrome and through the IDE's widgets;
+                         the transpiled Dart joins in stage 2
 ```
+
+`apps/player/` (the phone player) arrives in stage 3.
+
+Generated files that are checked in, each with a `--check` mode that CI runs:
+`packages/gubasic_lang/lib/src/forms/components.g.dart` (`tool/embed_components.dart`),
+`apps/ide/lib/src/project/examples.g.dart` (`tool/embed_examples.dart`),
+`apps/playground/test/parity_cases.g.dart` (`tool/embed_parity.dart`).
+After changing `components/`, `examples/` or `test/parity/`, run the generator in that package.
 
 ## Hard rules
 
@@ -44,7 +54,7 @@ test/parity/             Interpreter-vs-transpiler parity tests
 
 ## Conventions
 
-- Dart: `dart format`, `flutter analyze` clean, null-safe.
+- Dart: `dart format`; `dart analyze --fatal-infos` / `flutter analyze --fatal-infos` clean; null-safe.
 - User-facing messages exist in English and Korean (`en`, `ko`).
 - Documentation: English file first (`X.md`), Korean translation next to it (`X.ko.md`). Keep them in sync.
 - Text files are LF everywhere (`.gitattributes`), so golden files and byte-for-byte test comparisons match on Windows and macOS alike.
@@ -59,13 +69,15 @@ test/parity/             Interpreter-vs-transpiler parity tests
 - Anything deliberately left unfixed goes into `docs/KNOWN_ISSUES.md` (what, why deferred, when to revisit).
 - Merge only when the author says so: fast-forward locally (rebase onto `main` first if needed), push `main`, then delete the branch locally and remotely. Never merge on GitHub: fast-forward keeps the history linear, with every commit authored exactly as configured.
 - After merging, verify that local and remote `main` point to the same commit, and that CI and the Pages deploy on `main` succeeded, before reporting done. If a command reports failure, check the actual repository state before retrying.
-- Stage files by explicit path; never commit generated files or files containing local paths.
+- Stage files by explicit path; never commit build output or files containing local paths (the `*.g.dart` files listed under Layout are the only generated files in the repository).
 - Never force-push `main` without the author's explicit approval.
 
 ## Before you finish a task
 
 - `dart tool/check_flutter.dart` in `packages/gubasic_runtime` passes (the pinned Flutter, D29)
-- `dart test` in `packages/gubasic_lang` passes
+- `dart test` in `packages/gubasic_lang` passes (parity on the VM)
 - `flutter test` in `packages/gubasic_runtime` passes
-- Parity tests pass
+- `dart test -p vm,chrome` in `apps/playground` passes (parity in Chrome)
+- `flutter test` in `apps/ide` passes (parity through the widgets)
+- The generators' `--check` passes
 - Docs updated if behavior or a decision changed
