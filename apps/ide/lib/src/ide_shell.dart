@@ -1,7 +1,9 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'project/project.dart';
+import 'project/project_controller.dart';
 import 'run/run_session.dart';
 import 'run/run_window.dart';
 import 'strings.dart';
@@ -15,34 +17,37 @@ import 'theme.dart';
 /// user can look at a file and come back: the run window, with any open
 /// MsgBox or InputBox, stays as it was. The files cannot be changed while
 /// the program runs.
+///
+/// The File menu opens and saves project folders (D32); the menu at the
+/// top right switches between the examples and the folder project. Both
+/// wait while a program runs.
 class IdeShell extends StatefulWidget {
-  const IdeShell({
-    super.key,
-    required this.project,
-    required this.strings,
-    this.projects = const [],
-    this.openProject,
-    this.onOpenProject,
-  });
+  const IdeShell({super.key, required this.controller, required this.strings});
 
-  final Project project;
+  /// The open project, [ProjectController.current], and the commands
+  /// that open and save projects.
+  final ProjectController controller;
   final IdeStrings strings;
-
-  /// The projects the menu offers, the one that is open, and what to do
-  /// when another one is chosen.
-  final List<String> projects;
-  final String? openProject;
-  final ValueChanged<String>? onOpenProject;
 
   @override
   State<IdeShell> createState() => _IdeShellState();
 }
 
 class _IdeShellState extends State<IdeShell> {
-  late String _file = widget.project.files.keys.firstWhere(
+  Project get _project => widget.controller.current.project;
+
+  late String _chosenFile = _firstFile;
+
+  String get _firstFile => _project.files.keys.firstWhere(
     (f) => f.endsWith('.gbas'),
-    orElse: () => widget.project.files.keys.first,
+    orElse: () => _project.files.keys.first,
   );
+
+  /// The file shown; the first code file when the chosen one is gone
+  /// (Save As renames the .gbproj file).
+  String get _file =>
+      _project.files.containsKey(_chosenFile) ? _chosenFile : _firstFile;
+  set _file(String file) => _chosenFile = file;
   RunSession? _session;
 
   /// Whether the middle shows the run window rather than [_file].
@@ -55,7 +60,7 @@ class _IdeShellState extends State<IdeShell> {
 
   void _run() {
     if (_running) return;
-    final project = widget.project;
+    final project = _project;
     final s = widget.strings;
     _session?.dispose();
     _session = null;
@@ -89,29 +94,44 @@ class _IdeShellState extends State<IdeShell> {
   Widget build(BuildContext context) {
     final s = widget.strings;
     final session = _session;
+    final folders = widget.controller.canUseFolders && !_running;
     return CallbackShortcuts(
       bindings: {
         const SingleActivator(LogicalKeyboardKey.f5): _run,
         const SingleActivator(LogicalKeyboardKey.f5, shift: true): _stop,
+        if (folders) ...{
+          _shortcut(LogicalKeyboardKey.keyO): _open,
+          _shortcut(LogicalKeyboardKey.keyS): _save,
+          _shortcut(LogicalKeyboardKey.keyS, shift: true): _saveAs,
+        },
       },
       child: Focus(
         autofocus: true,
         child: ListenableBuilder(
-          listenable: session ?? const _Never(),
+          listenable: Listenable.merge([
+            session ?? const _Never(),
+            widget.controller,
+            widget.controller.current,
+          ]),
           builder: (context, _) => Scaffold(
             appBar: AppBar(
-              title: Text(widget.project.name),
+              title: Text(
+                widget.controller.current.isDirty
+                    ? '${_project.name} •'
+                    : _project.name,
+              ),
               actions: [
-                if (widget.projects.length > 1)
+                if (widget.controller.canUseFolders) _fileMenu(context),
+                if (widget.controller.menuEntries.length > 1)
                   DropdownButton<String>(
-                    value: widget.openProject,
+                    value: widget.controller.currentKey,
                     underline: const SizedBox(),
                     onChanged: _running
                         ? null
-                        : (name) => widget.onOpenProject?.call(name!),
+                        : (key) => widget.controller.choose(context, key!),
                     items: [
-                      for (final p in widget.projects)
-                        DropdownMenuItem(value: p, child: Text(p)),
+                      for (final (key, label) in widget.controller.menuEntries)
+                        DropdownMenuItem(value: key, child: Text(label)),
                     ],
                   ),
                 const SizedBox(width: 8),
@@ -151,6 +171,35 @@ class _IdeShellState extends State<IdeShell> {
     );
   }
 
+  void _open() => widget.controller.open(context);
+  void _save() => widget.controller.save(context);
+  void _saveAs() => widget.controller.saveAs(context);
+
+  Widget _fileMenu(BuildContext context) {
+    final s = widget.strings;
+    MenuItemButton item(
+      String label,
+      VoidCallback action,
+      LogicalKeyboardKey key, {
+      bool shift = false,
+    }) => MenuItemButton(
+      onPressed: _running ? null : action,
+      shortcut: _shortcut(key, shift: shift),
+      child: Text(label),
+    );
+    return MenuAnchor(
+      menuChildren: [
+        item(s.open, _open, LogicalKeyboardKey.keyO),
+        item(s.save, _save, LogicalKeyboardKey.keyS),
+        item(s.saveAs, _saveAs, LogicalKeyboardKey.keyS, shift: true),
+      ],
+      builder: (context, menu, _) => TextButton(
+        onPressed: () => menu.isOpen ? menu.close() : menu.open(),
+        child: Text(s.fileMenu),
+      ),
+    );
+  }
+
   Widget _fileList(BuildContext context) => ListView(
     children: [
       if (_running)
@@ -162,7 +211,7 @@ class _IdeShellState extends State<IdeShell> {
           onTap: () => setState(() => _showRun = true),
         ),
       ListTile(dense: true, title: Text(widget.strings.files)),
-      for (final f in widget.project.files.keys)
+      for (final f in _project.files.keys)
         ListTile(
           dense: true,
           title: Text(f),
@@ -179,7 +228,7 @@ class _IdeShellState extends State<IdeShell> {
     final session = _session;
     final code = SingleChildScrollView(
       padding: const EdgeInsets.all(12),
-      child: SelectableText(widget.project.files[_file]!, style: codeStyle),
+      child: SelectableText(_project.files[_file]!, style: codeStyle),
     );
     if (session == null || session.result != null) {
       return code;
@@ -223,6 +272,15 @@ class _IdeShellState extends State<IdeShell> {
       ],
     );
   }
+}
+
+/// ⌘ and [key] on Apple systems, Ctrl and [key] elsewhere.
+SingleActivator _shortcut(LogicalKeyboardKey key, {bool shift = false}) {
+  final apple = switch (defaultTargetPlatform) {
+    TargetPlatform.macOS || TargetPlatform.iOS => true,
+    _ => false,
+  };
+  return SingleActivator(key, meta: apple, control: !apple, shift: shift);
 }
 
 /// A listenable that never changes, for when nothing runs.

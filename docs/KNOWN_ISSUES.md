@@ -24,6 +24,18 @@ Problems we know about and have **deliberately** left unfixed for now. Each entr
 - **Why deferred:** the playground is pure Dart without Flutter; imitating controls in HTML would create a second runtime (D24). The IDE's web build (E1e) runs forms in the browser instead.
 - **Revisit:** when the IDE's web build is published; then decide whether the playground still needs its Run tab.
 
+## The IDE does not reopen the last project
+
+- **What:** the desktop IDE always starts with the `hello` example. A project folder has to be opened again with File → Open… each time.
+- **Why deferred:** in the macOS sandbox, the app may use a folder only while the user's choice of it lasts; reopening it after a restart needs a security-scoped bookmark stored by platform code ([Apple](https://developer.apple.com/documentation/security/accessing-files-from-the-macos-app-sandbox)). Opening a folder takes one dialog.
+- **Revisit:** with a list of recent projects, or when students find reopening a burden.
+
+## The web IDE cannot open or save projects yet
+
+- **What:** on the web there is no File menu; the examples can be run but not saved.
+- **Why deferred:** a browser cannot write into a folder the way the desktop app does (D32). The approved plan is E2b-2: projects kept in the browser's storage automatically, plus `.zip` download and upload.
+- **Revisit:** E2b-2, right after this.
+
 ## The run window is inside the IDE's window
 
 - **What:** a running program's form is shown in the middle of the IDE's window, not in a window of its own. Moving it or running two programs side by side is not possible.

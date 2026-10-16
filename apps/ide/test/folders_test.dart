@@ -1,0 +1,166 @@
+import 'package:flutter_test/flutter_test.dart';
+import 'package:gubasic_ide/src/project/examples.g.dart';
+import 'package:gubasic_ide/src/project/folders.dart';
+
+import 'support/memory_folders.dart';
+
+void main() {
+  final hello = exampleProjects['hello']!;
+
+  group('readProjectFolder', () {
+    test('reads the .gbproj file and the files of its forms', () async {
+      final fs = MemoryFolders()
+        ..add('/p', {...hello, 'notes.txt': 'not part of it'});
+      final read = await readProjectFolder(fs, '/p');
+      expect(read.files, hello);
+      expect(read.missing, isEmpty);
+    });
+
+    test('names the files the .gbproj lists that are not there', () async {
+      final fs = MemoryFolders()..add('/p', {...hello}..remove('Form1.gbas'));
+      final read = await readProjectFolder(fs, '/p');
+      expect(read.missing, ['Form1.gbas']);
+      expect(
+        read.files.keys,
+        unorderedEquals(['Hello.gbproj', 'Form1.form.yaml']),
+      );
+    });
+
+    test('a folder without a .gbproj file', () async {
+      final fs = MemoryFolders()..add('/p', {'Form1.gbas': ''});
+      expect(readProjectFolder(fs, '/p'), throwsA(isA<NoProjectFile>()));
+    });
+
+    test('a folder with two .gbproj files', () async {
+      final fs = MemoryFolders()
+        ..add('/p', {...hello, 'Other.GBPROJ': hello['Hello.gbproj']!});
+      expect(
+        readProjectFolder(fs, '/p'),
+        throwsA(
+          isA<ManyProjectFiles>().having((p) => p.files, 'files', [
+            'Hello.gbproj',
+            'Other.GBPROJ',
+          ]),
+        ),
+      );
+    });
+
+    test('a folder that cannot be listed', () async {
+      expect(
+        readProjectFolder(MemoryFolders(), '/gone'),
+        throwsA(
+          isA<FileFailed>()
+              .having((p) => p.file, 'file', '/gone')
+              .having((p) => p.writing, 'writing', false),
+        ),
+      );
+    });
+  });
+
+  group('saving', () {
+    test('only changed files are written', () async {
+      final fs = MemoryFolders()..add('/p', hello);
+      await writeChanged(fs, '/p', {
+        ...hello,
+        'Form1.gbas': "' changed\n",
+      }, hello);
+      expect(fs.written, ['/p/Form1.gbas']);
+      expect(fs.files['/p/Form1.gbas'], "' changed\n");
+    });
+
+    test('a file changed on disk since it was read is found', () async {
+      final fs = MemoryFolders()..add('/p', hello);
+      fs.files['/p/Form1.gbas'] = "' by another program\n";
+      final files = {...hello, 'Form1.gbas': "' mine\n"};
+      expect(await changedOnDisk(fs, '/p', files, hello), ['Form1.gbas']);
+      expect(
+        await changedOnDisk(fs, '/p', hello, hello),
+        isEmpty,
+        reason: 'unchanged files are not looked at',
+      );
+    });
+
+    test('a file deleted on disk counts as changed', () async {
+      final fs = MemoryFolders()..add('/p', hello);
+      fs.files.remove('/p/Form1.gbas');
+      final files = {...hello, 'Form1.gbas': "' mine\n"};
+      expect(await changedOnDisk(fs, '/p', files, hello), ['Form1.gbas']);
+    });
+
+    test('a write that fails names the file', () async {
+      final fs = MemoryFolders()..add('/p', hello);
+      fs.failing.add('/p/Form1.gbas');
+      expect(
+        writeChanged(fs, '/p', {...hello, 'Form1.gbas': 'x'}, hello),
+        throwsA(
+          isA<FileFailed>()
+              .having((p) => p.file, 'file', 'Form1.gbas')
+              .having((p) => p.reason, 'reason', 'disk full')
+              .having((p) => p.writing, 'writing', true),
+        ),
+      );
+    });
+  });
+
+  group('saveCopy', () {
+    test('makes NAME/NAME.gbproj with the new name', () async {
+      final fs = MemoryFolders()..folders.add('/home');
+      final (folder, files) = await saveCopy(fs, '/home', 'My Quiz', hello);
+      expect(folder, '/home/My Quiz');
+      expect(
+        files.keys,
+        unorderedEquals(['My Quiz.gbproj', 'Form1.form.yaml', 'Form1.gbas']),
+      );
+      expect(fs.files['/home/My Quiz/My Quiz.gbproj'], '''
+formatVersion: 1
+name: My Quiz
+startup: Form1
+forms:
+  - Form1
+''');
+      expect(fs.files['/home/My Quiz/Form1.gbas'], hello['Form1.gbas']);
+      expect(fs.folders, contains('/home/My Quiz'));
+    });
+
+    test('keeps a .gbproj file with errors as it is', () async {
+      final fs = MemoryFolders()..folders.add('/home');
+      final broken = {...hello, 'Hello.gbproj': 'formatVersion: 1\nname: [\n'};
+      final (_, files) = await saveCopy(fs, '/home', 'Copy', broken);
+      expect(files['Copy.gbproj'], 'formatVersion: 1\nname: [\n');
+    });
+
+    test('never writes into a folder that is there', () async {
+      final fs = MemoryFolders()..add('/home/Hello', {'keep.txt': 'mine'});
+      expect(
+        saveCopy(fs, '/home', 'Hello', hello),
+        throwsA(isA<FolderExists>()),
+      );
+      expect(fs.written, isEmpty);
+    });
+  });
+
+  test('project names', () {
+    for (final name in ['Hello', '내 퀴즈', 'quiz-2', 'v1.2']) {
+      expect(isUsableProjectName(name), isTrue, reason: name);
+    }
+    for (final name in [
+      '',
+      ' lead',
+      'trail ',
+      '.hidden',
+      'end.',
+      'a/b',
+      r'a\b',
+      'a:b',
+      'a*b',
+      'a?b',
+      'a"b',
+      'a<b',
+      'a>b',
+      'a|b',
+      'tab\there',
+    ]) {
+      expect(isUsableProjectName(name), isFalse, reason: name);
+    }
+  });
+}
