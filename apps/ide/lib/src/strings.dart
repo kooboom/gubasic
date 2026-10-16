@@ -142,9 +142,8 @@ class IdeStrings {
     changedOnDisk: 'These files were changed outside GuBASIC after they were opened: {0}. Saving replaces them with what the IDE has.',
     exampleIsReadOnly:
         'Examples cannot be changed. Save a copy as a project of your own.',
-    badProjectName: 'A project name cannot be empty, start or end with a space or a dot, or contain / \\ : * ? " < > |. Save again with another name.',
-    folderExists:
-        'A folder named {0} is already there. Save again with another name.',
+    badProjectName: 'A project name cannot be empty, start or end with a space, or contain a dot or / \\ : * ? " < > |. Save again with another name.',
+    folderExists: 'A folder named {0} is already there. GuBASIC does not overwrite an existing project, even when the save dialog asked to replace it. Save again with another name.',
     missingFiles: 'The project folder does not have these files: {0}. Add them, or remove their form from the .gbproj file.',
     cannotRead: 'The file {0} cannot be read: {1}',
     cannotWrite: 'The file {0} cannot be saved: {1}',
@@ -181,8 +180,8 @@ class IdeStrings {
     changedOnDisk:
         '다음 파일은 연 뒤에 GuBASIC 밖에서 바뀌었습니다: {0}. 저장하면 IDE에 있는 내용으로 바뀝니다.',
     exampleIsReadOnly: '예제는 바꿀 수 없습니다. 내 프로젝트로 복사본을 저장합니다.',
-    badProjectName: '프로젝트 이름은 비워 둘 수 없고, 공백이나 점으로 시작하거나 끝날 수 없으며, / \\ : * ? " < > | 문자를 쓸 수 없습니다. 다른 이름으로 다시 저장합니다.',
-    folderExists: '그 자리에 {0} 폴더가 이미 있습니다. 다른 이름으로 다시 저장합니다.',
+    badProjectName: '프로젝트 이름은 비워 둘 수 없고, 공백으로 시작하거나 끝날 수 없으며, 점(.)과 / \\ : * ? " < > | 문자를 쓸 수 없습니다. 다른 이름을 입력해 다시 저장합니다.',
+    folderExists: '그 자리에 {0} 폴더가 이미 있습니다. GuBASIC은 이미 있는 프로젝트를 덮어쓰지 않습니다(저장 창에서 대치를 눌렀더라도 그렇습니다). 다른 이름을 입력해 다시 저장합니다.',
     missingFiles: '프로젝트 폴더에 다음 파일이 없습니다: {0}. 파일을 넣거나, .gbproj 파일에서 그 폼을 뺍니다.',
     cannotRead: '{0} 파일을 읽을 수 없습니다: {1}',
     cannotWrite: '{0} 파일을 저장할 수 없습니다: {1}',

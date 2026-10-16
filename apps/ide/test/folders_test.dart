@@ -137,7 +137,7 @@ forms:
   });
 
   test('project names', () {
-    for (final name in ['Hello', '내 퀴즈', 'quiz-2', 'v1.2']) {
+    for (final name in ['Hello', '내 퀴즈', 'quiz-2', 'quiz_2']) {
       expect(isUsableProjectName(name), isTrue, reason: name);
     }
     for (final name in [
@@ -146,6 +146,8 @@ forms:
       'trail ',
       '.hidden',
       'end.',
+      'v1.2',
+      'MyHello.band',
       'a/b',
       r'a\b',
       'a:b',

@@ -23,12 +23,14 @@ void main() {
       folders: platformFolders(),
       pickers: ProjectPickers(
         openProjectFile: (confirm) async => (await openFile(
-          acceptedTypeGroups: const [
-            XTypeGroup(label: 'GuBASIC', extensions: ['gbproj']),
-          ],
+          acceptedTypeGroups: const [_gbproj],
           confirmButtonText: confirm,
         ))?.path,
+        // Telling the dialog it saves a .gbproj makes macOS add the
+        // extension, so it does not ask to replace the project's folder
+        // of the same name; the IDE says so itself (D32).
         saveLocation: (name, confirm) async => (await getSaveLocation(
+          acceptedTypeGroups: const [_gbproj],
           suggestedName: name,
           confirmButtonText: confirm,
         ))?.path,
@@ -36,6 +38,17 @@ void main() {
     ),
   );
 }
+
+/// GuBASIC project files, for the system's open and save dialogs.
+///
+/// macOS knows `.gbproj` from the type the app declares in its
+/// Info.plist (`dev.gubasic.project`); without it, the save dialog made
+/// up a type and added another extension (D32).
+const _gbproj = XTypeGroup(
+  label: 'GuBASIC',
+  extensions: ['gbproj'],
+  uniformTypeIdentifiers: ['dev.gubasic.project'],
+);
 
 class IdeApp extends StatefulWidget {
   const IdeApp({

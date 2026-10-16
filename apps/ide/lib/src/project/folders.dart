@@ -180,15 +180,15 @@ Future<(String, Map<String, String>)> saveCopy(
   return (folder, copy);
 }
 
-/// Characters a folder name cannot have on macOS or Windows.
-final _badNameCharacters = RegExp(r'[/\\:*?"<>|\x00-\x1f]');
+/// Characters a project's name cannot have: those a folder name cannot
+/// have on macOS or Windows, and the dot, because macOS may show a
+/// folder named like `MyQuiz.band` as a document of another program.
+final _badNameCharacters = RegExp(r'[./\\:*?"<>|\x00-\x1f]');
 
 /// Whether [name] can be a project's name, and so its folder's.
 bool isUsableProjectName(String name) =>
     name.trim() == name &&
     name.isNotEmpty &&
-    !name.startsWith('.') &&
-    !name.endsWith('.') &&
     !_badNameCharacters.hasMatch(name);
 
 Future<T> _io<T>(
