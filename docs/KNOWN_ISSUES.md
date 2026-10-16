@@ -44,11 +44,12 @@ Problems we know about and have **deliberately** left unfixed for now. Each entr
 - **Why deferred:** there is no transpiler yet.
 - **Revisit:** in the transpiler stage. Options include putting the same font into generated apps (they grow by about 9 MB), or having the designer warn when text may be cut off.
 
-## The web IDE's font loading is checked on macOS only
+## The web IDE's font loading is checked from a local server only
 
-- **What:** with all outside hosts blocked (headless Chrome on macOS, `--host-resolver-rules="MAP * ~NOTFOUND, EXCLUDE 127.0.0.1"`, the web build served locally), the IDE shows its Korean words correctly and the page fetches nothing from outside: the engine, the fonts and the fallback font come from the local server. Missing syllables as □ ([flutter/flutter#188255](https://github.com/flutter/flutter/issues/188255)) did not appear. Text first drawn in the wrong font and corrected once the font arrives ([flutter/flutter#77023](https://github.com/flutter/flutter/issues/77023)) should not happen, because the font comes with the app and is loaded while the engine starts; a screenshot of the finished page cannot show such a brief change, so this was not observed directly.
-- **Why deferred:** the earlier measurements (a blank page with the default build, □ without a bundled font) were made on the Windows PC; repeating them with this build needs that PC.
-- **Revisit:** on the Windows PC with the same blocked-hosts check, and after the Pages deploy (E1e), in a normal browser.
+- **What:** with all outside hosts blocked (headless Chrome, `--host-resolver-rules="MAP * ~NOTFOUND, EXCLUDE 127.0.0.1"`, the web build served locally), the IDE shows its Korean words correctly and the page fetches nothing from outside: the engine, the fonts and the fallback font come from the local server. Checked on macOS and on Windows (Chrome 155; the only outside requests in the net log were Chrome's own, such as updates and spelling dictionaries). Missing syllables as □ ([flutter/flutter#188255](https://github.com/flutter/flutter/issues/188255)) did not appear.
+- **First visit on a slow network** (Windows, headless Chrome, cache off, DevTools' Slow 4G preset: 562.5 ms latency, 180 kB/s, served from 127.0.0.1): "불러오는 중…" showed from 1.1 s until the first frame at about 102 s. The two Noto Sans KR files arrived at 100.3 s and 101.3 s, and the first frame came right after them. A screencast of every frame went from the loading text straight to the finished IDE in Noto Sans KR: no frame in another font, so text first drawn in the wrong font and corrected later ([flutter/flutter#77023](https://github.com/flutter/flutter/issues/77023)) did not appear. Running `typing` and putting 동해물과 백두산이 닭 값 into its TextBox showed it in the TextBox and the Label without □.
+- **Why deferred:** all of this was served from 127.0.0.1, so no real network (such as a school network) was in between. That needs the Pages deploy (E1e).
+- **Revisit:** after the Pages deploy (E1e): open the real address in a normal browser on the school PC, check that it loads on the school network, and measure how long the first visit takes.
 
 ## On the web, the code view is not monospace
 
