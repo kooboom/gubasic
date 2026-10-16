@@ -628,6 +628,7 @@ controls:
 - `properties` holds only the values that differ from the defaults. Keys and property names are not case-sensitive.
 - Each control has a `name`, a `type` and, if needed, `properties`. A name follows the rules for identifiers (§1): an English letter, then letters, digits or `_`. It cannot be a keyword or `Form`, and two controls cannot have the same name in any case.
 - A `String` property takes the value as it is written: `Caption: 2026` is the text `2026`. Use quotes for text that YAML would otherwise read differently, such as text starting with a quote, `-`, `[` or `{`, or containing `: ` or ` #`.
+- The IDE always writes a form file the same way (D31): properties in the order of the component's `component.yaml`, only values that differ from the defaults, and quotes only where YAML would read the text differently (`Caption: "2026"`). Saving a form that did not change gives the same file, and Git shows only the lines that changed. Comments and the layout of a hand-written file are not kept when the IDE saves it.
 
 ### 11.3 Project files
 
