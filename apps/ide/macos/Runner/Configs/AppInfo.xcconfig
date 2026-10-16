@@ -8,7 +8,7 @@
 PRODUCT_NAME = GuBASIC IDE
 
 // The application's bundle identifier
-PRODUCT_BUNDLE_IDENTIFIER = dev.gubasic.gubasicIde
+PRODUCT_BUNDLE_IDENTIFIER = io.github.kooboom.gubasic.ide
 
 // The copyright displayed in application information
-PRODUCT_COPYRIGHT = Copyright © 2026 dev.gubasic. All rights reserved.
+PRODUCT_COPYRIGHT = Copyright © 2026 Jungmo Gu. All rights reserved.

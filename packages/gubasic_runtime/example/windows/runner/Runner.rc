@@ -89,11 +89,11 @@ BEGIN
     BEGIN
         BLOCK "040904e4"
         BEGIN
-            VALUE "CompanyName", "dev.gubasic" "\0"
+            VALUE "CompanyName", "Jungmo Gu" "\0"
             VALUE "FileDescription", "gubasic_runtime_example" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
             VALUE "InternalName", "gubasic_runtime_example" "\0"
-            VALUE "LegalCopyright", "Copyright (C) 2026 dev.gubasic. All rights reserved." "\0"
+            VALUE "LegalCopyright", "Copyright (C) 2026 Jungmo Gu. All rights reserved." "\0"
             VALUE "OriginalFilename", "gubasic_runtime_example.exe" "\0"
             VALUE "ProductName", "gubasic_runtime_example" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"

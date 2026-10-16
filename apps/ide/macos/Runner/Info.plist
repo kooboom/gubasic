@@ -8,7 +8,7 @@
 	<array>
 		<dict>
 			<key>UTTypeIdentifier</key>
-			<string>dev.gubasic.project</string>
+			<string>io.github.kooboom.gubasic.project</string>
 			<key>UTTypeDescription</key>
 			<string>GuBASIC Project</string>
 			<key>UTTypeConformsTo</key>

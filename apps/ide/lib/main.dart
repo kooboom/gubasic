@@ -42,12 +42,12 @@ void main() {
 /// GuBASIC project files, for the system's open and save dialogs.
 ///
 /// macOS knows `.gbproj` from the type the app declares in its
-/// Info.plist (`dev.gubasic.project`); without it, the save dialog made
+/// Info.plist (`io.github.kooboom.gubasic.project`); without it, the save dialog made
 /// up a type and added another extension (D32).
 const _gbproj = XTypeGroup(
   label: 'GuBASIC',
   extensions: ['gbproj'],
-  uniformTypeIdentifiers: ['dev.gubasic.project'],
+  uniformTypeIdentifiers: ['io.github.kooboom.gubasic.project'],
 );
 
 class IdeApp extends StatefulWidget {

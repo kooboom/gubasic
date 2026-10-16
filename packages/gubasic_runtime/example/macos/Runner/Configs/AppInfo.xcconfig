@@ -8,7 +8,7 @@
 PRODUCT_NAME = gubasic_runtime_example
 
 // The application's bundle identifier
-PRODUCT_BUNDLE_IDENTIFIER = dev.gubasic.gubasicRuntimeExample
+PRODUCT_BUNDLE_IDENTIFIER = io.github.kooboom.gubasic.runtimeExample
 
 // The copyright displayed in application information
-PRODUCT_COPYRIGHT = Copyright © 2026 dev.gubasic. All rights reserved.
+PRODUCT_COPYRIGHT = Copyright © 2026 Jungmo Gu. All rights reserved.
