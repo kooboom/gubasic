@@ -38,6 +38,31 @@ class IdeStrings {
     required this.saveCopyButton,
     required this.nothingToSave,
     required this.edited,
+    required this.saveAsTitle,
+    required this.projectName,
+    required this.downloadZip,
+    required this.uploadZip,
+    required this.changedSinceDownloadHint,
+    required this.keptStatus,
+    required this.exampleStatus,
+    required this.none,
+    required this.keptInBrowser,
+    required this.browserNotice,
+    required this.storageFailed,
+    required this.keptProjectsTitle,
+    required this.noKeptProjects,
+    required this.keptAt,
+    required this.notDownloaded,
+    required this.deleteProject,
+    required this.confirmDelete,
+    required this.projectExistsInBrowser,
+    required this.notAZip,
+    required this.zipTooLarge,
+    required this.unsafeZipPath,
+    required this.zipLayout,
+    required this.zipProjectFiles,
+    required this.zipNotText,
+    required this.zipIgnored,
   });
 
   /// The words on MsgBox and InputBox.
@@ -108,6 +133,49 @@ class IdeStrings {
   /// After the project's name while it has unsaved changes.
   final String edited;
 
+  // Projects kept in the browser, and .zip files (D33).
+  final String saveAsTitle;
+  final String projectName;
+  final String downloadZip;
+  final String uploadZip;
+  final String changedSinceDownloadHint;
+
+  /// `{0}` the time of the last download, or [none].
+  final String keptStatus;
+  final String exampleStatus;
+  final String none;
+  final String keptInBrowser;
+  final String browserNotice;
+  final String storageFailed;
+  final String keptProjectsTitle;
+  final String noKeptProjects;
+
+  /// `{0}` the time.
+  final String keptAt;
+  final String notDownloaded;
+  final String deleteProject;
+
+  /// `{0}` the project.
+  final String confirmDelete;
+
+  /// `{0}` the name.
+  final String projectExistsInBrowser;
+  final String notAZip;
+  final String zipTooLarge;
+
+  /// `{0}` the path.
+  final String unsafeZipPath;
+  final String zipLayout;
+
+  /// `{0}` the .gbproj files, or [none].
+  final String zipProjectFiles;
+
+  /// `{0}` the file.
+  final String zipNotText;
+
+  /// `{0}` the files.
+  final String zipIgnored;
+
   /// [diagnostic] in [file], in this language.
   String problem(String file, Diagnostic diagnostic) => errorAt
       .replaceAll('{0}', file)
@@ -152,6 +220,33 @@ class IdeStrings {
     saveCopyButton: 'Save a Copy',
     nothingToSave: 'There are no changes to save.',
     edited: 'Edited',
+    saveAsTitle: 'Save As',
+    projectName: 'Project name',
+    downloadZip: 'Download .zip',
+    uploadZip: 'Upload .zip…',
+    changedSinceDownloadHint:
+        'Changed since the last download. Download a .zip to keep it safe.',
+    keptStatus: 'Kept in this browser · last download: {0}',
+    exampleStatus: 'Example (read-only) · Save keeps a copy in this browser',
+    none: 'none',
+    keptInBrowser: 'Kept in this browser.',
+    browserNotice: 'This project is kept only in this browser. On a computer whose browser data is cleared, such as a shared school PC, it can be lost, and Safari removes it after 7 days without a visit. Download it as a .zip at the end of each lesson.',
+    storageFailed: 'The project could not be kept in this browser: its storage is full or turned off. Download it as a .zip so that nothing is lost.',
+    keptProjectsTitle: 'Projects in this browser',
+    noKeptProjects: 'No projects are kept in this browser yet.',
+    keptAt: 'kept {0}',
+    notDownloaded: 'changes not downloaded',
+    deleteProject: 'Delete',
+    confirmDelete: 'Delete the project {0} from this browser? This cannot be undone. If you may need it, download it as a .zip first.',
+    projectExistsInBrowser: 'A project named {0} is already kept in this browser. Enter another name.',
+    notAZip: 'This is not a .zip file, or the file is damaged.',
+    zipTooLarge: 'This .zip is too large for a GuBASIC project: at most 1 MB, 100 files and 2 MB unpacked.',
+    unsafeZipPath: 'The .zip has a file with an unsafe path ({0}): it is absolute or goes up with "..". Nothing was taken from it.',
+    zipLayout: 'The project\'s files must be at the top of the .zip or in one folder there.',
+    zipProjectFiles:
+        'A .zip must hold exactly one .gbproj file. It holds: {0}.',
+    zipNotText: 'The file {0} in the .zip is not UTF-8 text.',
+    zipIgnored: 'These files are not GuBASIC files and were left out: {0}',
   );
 
   static const ko = IdeStrings(
@@ -190,6 +285,35 @@ class IdeStrings {
     saveCopyButton: '복사본 저장',
     nothingToSave: '바뀐 내용이 없어서 저장할 것이 없습니다.',
     edited: '편집됨',
+    saveAsTitle: '다른 이름으로 저장',
+    projectName: '프로젝트 이름',
+    downloadZip: '.zip으로 내려받기',
+    uploadZip: '.zip 올리기…',
+    changedSinceDownloadHint:
+        '마지막으로 내려받은 뒤 바뀐 내용이 있습니다. 안전하게 보관하려면 .zip으로 내려받습니다.',
+    keptStatus: '이 브라우저에 보관 중 · 마지막 내려받기: {0}',
+    exampleStatus: '예제(읽기 전용) · 저장하면 이 브라우저에 복사본을 보관합니다',
+    none: '없음',
+    keptInBrowser: '이 브라우저에 보관했습니다.',
+    browserNotice: '이 프로젝트는 이 브라우저에만 보관됩니다. 학교 공용 PC처럼 브라우저 기록이 지워지는 컴퓨터에서는 사라질 수 있고, Safari는 7일 동안 방문하지 않으면 지웁니다. 수업이 끝날 때마다 .zip으로 내려받습니다.',
+    storageFailed:
+        '이 브라우저에 프로젝트를 보관할 수 없습니다. 저장소가 가득 찼거나 꺼져 있습니다. 잃지 않도록 .zip으로 내려받습니다.',
+    keptProjectsTitle: '이 브라우저의 프로젝트',
+    noKeptProjects: '이 브라우저에 보관된 프로젝트가 아직 없습니다.',
+    keptAt: '{0} 보관',
+    notDownloaded: '내려받지 않은 변경 있음',
+    deleteProject: '지우기',
+    confirmDelete:
+        '{0} 프로젝트를 이 브라우저에서 지웁니까? 되돌릴 수 없습니다. 다시 쓸 수도 있다면 먼저 .zip으로 내려받습니다.',
+    projectExistsInBrowser: '이 브라우저에 {0} 프로젝트가 이미 있습니다. 다른 이름을 입력합니다.',
+    notAZip: '.zip 파일이 아니거나 망가진 파일입니다.',
+    zipTooLarge:
+        '이 .zip 파일은 GuBASIC 프로젝트로 보기에 너무 큽니다. 최대 1MB, 파일 100개, 풀었을 때 2MB까지입니다.',
+    unsafeZipPath: '.zip 안에 안전하지 않은 경로의 파일이 있습니다({0}). 절대 경로이거나 ".."로 위 폴더를 가리킵니다. 아무것도 가져오지 않았습니다.',
+    zipLayout: '프로젝트 파일은 .zip의 맨 위나 그 바로 아래 폴더 하나 안에 있어야 합니다.',
+    zipProjectFiles: '.zip에는 .gbproj 파일이 하나만 있어야 합니다. 들어 있는 것: {0}.',
+    zipNotText: '.zip 안의 {0} 파일은 UTF-8 텍스트가 아닙니다.',
+    zipIgnored: '다음 파일은 GuBASIC 파일이 아니라서 넣지 않았습니다: {0}',
   );
 
   /// Korean when the system language is Korean, else English.

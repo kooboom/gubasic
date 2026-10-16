@@ -9,6 +9,7 @@ environment:
   sdk: ^3.13.5
 
 dependencies:
+  archive: ^4.5.2
   file_selector: ^1.1.0
   flutter:
     sdk: flutter
@@ -16,6 +17,7 @@ dependencies:
     path: ../../packages/gubasic_lang
   gubasic_runtime:
     path: ../../packages/gubasic_runtime
+  web: ^1.1.1
 
 dev_dependencies:
   flutter_test:

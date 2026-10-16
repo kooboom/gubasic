@@ -15,6 +15,13 @@ class ExampleLocation extends ProjectLocation {
   final String name;
 }
 
+/// A project kept in the web browser under [name] (D33).
+class BrowserLocation extends ProjectLocation {
+  const BrowserLocation(this.name);
+
+  final String name;
+}
+
 /// A project on disk: the folder its `.gbproj` file is in.
 class FolderLocation extends ProjectLocation {
   const FolderLocation(this.path);

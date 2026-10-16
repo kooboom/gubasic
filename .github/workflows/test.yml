@@ -109,6 +109,8 @@ jobs:
         run: dart run tool/embed_examples.dart --check
       - name: Test (the parity scripts through the real widgets)
         run: flutter test
+      - name: Test in Chrome (projects kept in the browser, D33)
+        run: flutter test --platform chrome test/web
       - name: Build for the web (engine and fonts served with the app, D30)
         run: flutter build web --release --no-web-resources-cdn
 

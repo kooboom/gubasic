@@ -158,6 +158,15 @@ Future<(String, Map<String, String>)> saveCopy(
   if (await _io(name, writing: true, () => fs.exists(folder))) {
     throw FolderExists(name);
   }
+  final copy = renameProject(files, name);
+  await _io(name, writing: true, () => fs.createFolder(folder));
+  await writeChanged(fs, folder, copy, const {});
+  return (folder, copy);
+}
+
+/// [files] as project [name]: the `.gbproj` file is renamed `NAME.gbproj`
+/// and, when it reads without errors, its `name:` becomes [name].
+Map<String, String> renameProject(Map<String, String> files, String name) {
   final copy = <String, String>{};
   for (final MapEntry(key: file, value: text) in files.entries) {
     if (!file.toLowerCase().endsWith('.gbproj')) {
@@ -175,9 +184,7 @@ Future<(String, Map<String, String>)> saveCopy(
             ),
           );
   }
-  await _io(name, writing: true, () => fs.createFolder(folder));
-  await writeChanged(fs, folder, copy, const {});
-  return (folder, copy);
+  return copy;
 }
 
 /// Characters a project's name cannot have: those a folder name cannot

@@ -1,4 +1,4 @@
 import 'folders.dart';
 
-/// The web has no folders to open or save into yet (E2b-2).
+/// The web keeps projects in the browser instead (D33).
 ProjectFolders? platformFolders() => null;

@@ -30,11 +30,17 @@ Problems we know about and have **deliberately** left unfixed for now. Each entr
 - **Why deferred:** remembering projects (the last one, or a list of recent ones) is a feature of its own: where to keep the list, and what to do when a project was moved or deleted. Opening a project takes one dialog.
 - **Revisit:** with a list of recent projects, or when students find reopening a burden.
 
-## The web IDE cannot open or save projects yet
+## Projects kept in the web IDE's browser can be lost
 
-- **What:** on the web there is no File menu; the examples can be run but not saved.
-- **Why deferred:** a browser cannot write files on disk the way the desktop app does (D32). The approved plan is E2b-2: projects kept in the browser's storage automatically, plus `.zip` download and upload.
-- **Revisit:** E2b-2, right after this.
+- **What:** on the web, projects are kept in the browser's `localStorage` (D33). Clearing the browser's data removes them, shared PCs may do that at every logout, and Safari removes them after seven days without a visit. Two tabs with the same project keep whichever saved last.
+- **Why deferred:** a web page cannot keep files on disk by itself. The IDE makes the `.zip` download one click away, asks for it while there are changes that were not downloaded, and says so when a project is first saved.
+- **Revisit:** if students lose work in practice; then consider saving into a folder where browsers allow it (the File System Access API, Chrome and Edge only).
+
+## Browser storage is too small for pictures
+
+- **What:** `localStorage` holds about 5 MB per site. Projects today are a few kilobytes of text, but once forms can hold pictures (the `Image` control, stage 1) a few projects would fill it.
+- **Why deferred:** nothing stores pictures yet, and `localStorage` is synchronous, so a project is kept even while the page closes.
+- **Revisit:** with the `Image` control: move projects in the browser to IndexedDB (or another larger storage), with a converter for what is kept already.
 
 ## The run window is inside the IDE's window
 

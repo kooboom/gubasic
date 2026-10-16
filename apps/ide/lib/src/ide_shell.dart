@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import 'project/open_project.dart';
 import 'project/project.dart';
 import 'project/project_controller.dart';
 import 'run/run_session.dart';
@@ -94,16 +95,20 @@ class _IdeShellState extends State<IdeShell> {
   Widget build(BuildContext context) {
     final s = widget.strings;
     final session = _session;
-    final folders = widget.controller.canUseFolders && !_running;
+    final controller = widget.controller;
+    final files =
+        (controller.canUseFolders || controller.canUseBrowser) && !_running;
     return CallbackShortcuts(
       bindings: {
         const SingleActivator(LogicalKeyboardKey.f5): _run,
         const SingleActivator(LogicalKeyboardKey.f5, shift: true): _stop,
-        if (folders) ...{
+        if (files) ...{
           _shortcut(LogicalKeyboardKey.keyO): _open,
           _shortcut(LogicalKeyboardKey.keyS): _save,
           _shortcut(LogicalKeyboardKey.keyS, shift: true): _saveAs,
         },
+        if (files && controller.canUseBrowser)
+          _shortcut(LogicalKeyboardKey.keyE, shift: true): _download,
       },
       child: Focus(
         autofocus: true,
@@ -117,7 +122,7 @@ class _IdeShellState extends State<IdeShell> {
             appBar: AppBar(
               // The File menu at the top left, where Visual Basic and most
               // desktop programs have it.
-              leading: widget.controller.canUseFolders
+              leading: controller.canUseFolders || controller.canUseBrowser
                   ? _fileMenu(context)
                   : null,
               leadingWidth: 96,
@@ -127,7 +132,12 @@ class _IdeShellState extends State<IdeShell> {
                     ? '${_project.name} — ${widget.strings.edited}'
                     : _project.name,
               ),
+              // On the web, the .zip is what keeps a project safe (D33):
+              // its button is always there, and stands out while there are
+              // changes that were not downloaded.
+              bottom: controller.canUseBrowser ? _browserStatus(context) : null,
               actions: [
+                if (controller.canUseBrowser) _downloadButton(context),
                 if (widget.controller.menuEntries.length > 1)
                   DropdownButton<String>(
                     value: widget.controller.currentKey,
@@ -177,7 +187,63 @@ class _IdeShellState extends State<IdeShell> {
     );
   }
 
-  void _open() => widget.controller.open(context);
+  void _open() => widget.controller.canUseBrowser
+      ? widget.controller.openKept(context)
+      : widget.controller.open(context);
+  void _download() => widget.controller.downloadZip(context);
+  void _upload() => widget.controller.uploadZip(context);
+
+  Widget _downloadButton(BuildContext context) {
+    final s = widget.strings;
+    final changed = widget.controller.changedSinceDownload;
+    final label = Text(s.downloadZip);
+    const icon = Icon(Icons.download);
+    return Padding(
+      padding: const EdgeInsets.only(right: 8),
+      child: Tooltip(
+        message: changed ? s.changedSinceDownloadHint : '',
+        child: changed
+            ? FilledButton.icon(onPressed: _download, icon: icon, label: label)
+            : OutlinedButton.icon(
+                onPressed: _download,
+                icon: icon,
+                label: label,
+              ),
+      ),
+    );
+  }
+
+  PreferredSizeWidget _browserStatus(BuildContext context) {
+    final s = widget.strings;
+    final controller = widget.controller;
+    final text = switch (controller.current.location) {
+      BrowserLocation(:final name) => s.keptStatus.replaceAll(
+        '{0}',
+        switch (controller.kept?.read(name)?.downloadedAt) {
+          final at? => formatTime(at),
+          null => s.none,
+        },
+      ),
+      _ => s.exampleStatus,
+    };
+    return PreferredSize(
+      preferredSize: const Size.fromHeight(24),
+      child: Container(
+        height: 24,
+        alignment: Alignment.centerLeft,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        color: controller.storageFailed
+            ? Theme.of(context).colorScheme.errorContainer
+            : Theme.of(context).colorScheme.surfaceContainerHighest,
+        child: Text(
+          controller.storageFailed ? s.storageFailed : text,
+          overflow: TextOverflow.ellipsis,
+          style: Theme.of(context).textTheme.labelSmall,
+        ),
+      ),
+    );
+  }
+
   void _save() => widget.controller.save(context);
   void _saveAs() => widget.controller.saveAs(context);
 
@@ -198,6 +264,14 @@ class _IdeShellState extends State<IdeShell> {
         item(s.open, _open, LogicalKeyboardKey.keyO),
         item(s.save, _save, LogicalKeyboardKey.keyS),
         item(s.saveAs, _saveAs, LogicalKeyboardKey.keyS, shift: true),
+        if (widget.controller.canUseBrowser) ...[
+          const Divider(),
+          item(s.downloadZip, _download, LogicalKeyboardKey.keyE, shift: true),
+          MenuItemButton(
+            onPressed: _running ? null : _upload,
+            child: Text(s.uploadZip),
+          ),
+        ],
       ],
       builder: (context, menu, _) => Padding(
         padding: const EdgeInsets.only(left: 8),

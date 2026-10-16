@@ -5,7 +5,9 @@ import 'package:flutter/material.dart';
 
 import 'src/ide_shell.dart';
 import 'src/project/examples.g.dart';
+import 'src/project/browser.dart';
 import 'src/project/folders.dart';
+import 'src/project/platform_browser.dart';
 import 'src/project/platform_folders.dart';
 import 'src/project/project_controller.dart';
 import 'src/strings.dart';
@@ -21,6 +23,12 @@ void main() {
       projects: exampleProjects,
       strings: IdeStrings.forLanguage(language),
       folders: platformFolders(),
+      browser: platformBrowser(),
+      pickZip: () async => (await openFile(
+        acceptedTypeGroups: const [
+          XTypeGroup(label: 'zip', extensions: ['zip']),
+        ],
+      ))?.readAsBytes(),
       pickers: ProjectPickers(
         openProjectFile: (confirm) async => (await openFile(
           acceptedTypeGroups: const [_gbproj],
@@ -58,6 +66,8 @@ class IdeApp extends StatefulWidget {
     this.open = 'hello',
     this.folders,
     this.pickers,
+    this.browser,
+    this.pickZip,
   });
 
   /// The built-in projects: name → files.
@@ -72,6 +82,11 @@ class IdeApp extends StatefulWidget {
   final ProjectFolders? folders;
   final ProjectPickers? pickers;
 
+  /// The web browser and its file dialog for `.zip` files, where projects
+  /// are kept in the browser (D33); null on the desktop.
+  final Browser? browser;
+  final Future<List<int>?> Function()? pickZip;
+
   @override
   State<IdeApp> createState() => _IdeAppState();
 }
@@ -83,6 +98,8 @@ class _IdeAppState extends State<IdeApp> {
     strings: widget.strings,
     folders: widget.folders,
     pickers: widget.pickers,
+    browser: widget.browser,
+    pickZip: widget.pickZip,
     open: widget.open,
   );
 
