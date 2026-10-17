@@ -109,6 +109,21 @@ void main() {
     });
   });
 
+  testWidgets('a Button is filled, so a Label under it does not show', (
+    tester,
+  ) async {
+    await show(tester);
+    final material = tester.widget<Material>(
+      find.descendant(
+        of: find.byType(GbButton),
+        matching: find.byType(Material),
+      ),
+    );
+    final scheme = Theme.of(tester.element(find.byType(GbButton))).colorScheme;
+    expect(material.color, gbButtonFace(scheme));
+    expect(material.color!.a, 1.0, reason: 'opaque');
+  });
+
   testWidgets("a Button's text has 8 pixels on each side", (tester) async {
     await show(tester);
     // At the default width, 96, the text gets 80: room for "Button1".

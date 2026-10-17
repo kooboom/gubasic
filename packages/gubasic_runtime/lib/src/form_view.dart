@@ -58,6 +58,11 @@ class _GbPlaced extends StatelessWidget {
 /// The room between a Button's edge and its text, left and right.
 const gbButtonPadding = 8.0;
 
+/// A Button's fill: opaque, as in Visual Basic 6, so that a Label under it
+/// does not show through (docs/DESIGN.md D41). The theme's
+/// `surfaceContainerHigh`, a shade darker than the form's `surface`.
+Color gbButtonFace(ColorScheme scheme) => scheme.surfaceContainerHigh;
+
 class GbButton extends StatefulWidget {
   const GbButton({super.key, required this.model, required this.state});
 
@@ -84,6 +89,7 @@ class _GbButtonState extends State<GbButton> {
       focusNode: _focus,
       style: OutlinedButton.styleFrom(
         padding: const EdgeInsets.symmetric(horizontal: gbButtonPadding),
+        backgroundColor: gbButtonFace(Theme.of(context).colorScheme),
       ),
       onPressed: () {
         _focus.requestFocus();
