@@ -159,6 +159,16 @@ class _FormDesignerState extends State<FormDesigner> {
     if (text == null) return;
     setState(() {});
     widget.project.setFile(widget.file, text);
+    final code = widget.history.lastCode;
+    final now = widget.project.files[_codeFile];
+    if (code != null && now != null) {
+      // The code as the step left it; if it was changed since, the names
+      // in it are renamed again (D39).
+      widget.project.setFile(
+        _codeFile,
+        now == code.before ? code.after : renameInCode(now, code.from, code.to),
+      );
+    }
   }
 
   void _delete() {
@@ -469,9 +479,26 @@ class _FormDesignerState extends State<FormDesigner> {
   /// The form's code file: `Form1.gbas` next to `Form1.form.yaml`.
   String get _codeFile => '$_formName.gbas';
 
+  /// Renames a control, and its uses and handlers in the form's code with
+  /// it (D39): one step of undo.
   void _rename(String name, String newName) {
     if (!_canEdit) return;
-    _apply(withName(_form, name, newName), select: newName);
+    final code = widget.project.files[_codeFile];
+    final renamed = code == null ? null : renameInCode(code, name, newName);
+    final before = _text;
+    final text = writeFormFile(withName(_form, name, newName));
+    widget.history.record(
+      before,
+      text,
+      code: code == null || renamed == code
+          ? null
+          : (from: name, to: newName, before: code, after: renamed!),
+    );
+    setState(() => _selected = newName);
+    widget.project.setFile(widget.file, text);
+    if (renamed != null && renamed != code) {
+      widget.project.setFile(_codeFile, renamed);
+    }
   }
 
   /// Shows text being typed in the Properties window on the form at once,

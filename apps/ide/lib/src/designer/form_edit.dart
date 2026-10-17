@@ -159,17 +159,31 @@ FormFile _copy(FormFile form, List<ControlDecl> controls) => FormFile(
   controls: controls,
 );
 
+/// How a step of [FormHistory] changed the form's code: a control was
+/// renamed [from] one name [to] another, and the code with it (D39), from
+/// [before] to [after].
+typedef CodeRename = ({String from, String to, String before, String after});
+
 /// The texts a form file had as the designer changed it, to go back and
 /// forth with undo and redo. Each finished action is one step; the
 /// oldest steps are forgotten after [limit]. Changes recorded with the
 /// same group, such as the letters typed in one field of the Properties
-/// window, make one step until [seal].
+/// window, make one step until [seal]. A step that renamed a control
+/// also keeps how it changed the code, so that both go back together.
 class FormHistory {
   FormHistory({this.limit = 100});
 
   final int limit;
   final _texts = <String>[];
+
+  /// The code change of the step that leads to each text.
+  final _codes = <CodeRename?>[];
   var _at = -1;
+
+  /// The code change the last [undo] or [redo] went across, the way it
+  /// went: after an undo, from the new name back to the old one.
+  CodeRename? get lastCode => _lastCode;
+  CodeRename? _lastCode;
 
   /// The group of the last step, while it may still grow.
   Object? _group;
@@ -185,18 +199,26 @@ class FormHistory {
     _texts
       ..clear()
       ..add(text);
+    _codes
+      ..clear()
+      ..add(null);
     _at = 0;
     _group = null;
   }
 
-  /// Records [text] as the next step, after [follow]ing [before]. Steps
-  /// that were undone are dropped.
-  void record(String before, String text, {Object? group}) {
+  /// Records [text] as the next step, after [follow]ing [before], with
+  /// the [code] change that goes with it. Steps that were undone are
+  /// dropped.
+  void record(String before, String text, {Object? group, CodeRename? code}) {
     follow(before);
-    if (group != null && group == _group && _at == _texts.length - 1) {
+    if (code == null &&
+        group != null &&
+        group == _group &&
+        _at == _texts.length - 1) {
       // The same step goes on; back where it started, it is no step.
       if (text == _texts[_at - 1]) {
         _texts.removeLast();
+        _codes.removeLast();
         _at--;
         _group = null;
       } else {
@@ -205,11 +227,17 @@ class FormHistory {
       return;
     }
     _group = null;
-    if (text == before) return;
+    if (text == before && code == null) return;
     _texts
       ..removeRange(_at + 1, _texts.length)
       ..add(text);
-    if (_texts.length > limit + 1) _texts.removeAt(0);
+    _codes
+      ..removeRange(_at + 1, _codes.length)
+      ..add(code);
+    if (_texts.length > limit + 1) {
+      _texts.removeAt(0);
+      _codes.removeAt(0);
+    }
     _at = _texts.length - 1;
     _group = group;
   }
@@ -221,13 +249,22 @@ class FormHistory {
   /// The text one step back, or null.
   String? undo() {
     seal();
-    return canUndo ? _texts[--_at] : null;
+    _lastCode = null;
+    if (!canUndo) return null;
+    final c = _codes[_at];
+    if (c != null) {
+      _lastCode = (from: c.to, to: c.from, before: c.after, after: c.before);
+    }
+    return _texts[--_at];
   }
 
   /// The text one step forward, or null.
   String? redo() {
     seal();
-    return canRedo ? _texts[++_at] : null;
+    _lastCode = null;
+    if (!canRedo) return null;
+    _lastCode = _codes[++_at];
+    return _texts[_at];
   }
 }
 

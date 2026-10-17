@@ -87,11 +87,11 @@ Problems we know about and have **deliberately** left unfixed for now. Each entr
 - **Why deferred:** drawing a form is what the designer is for; keyboard ways in come step by step.
 - **Revisit:** when the designer is checked with a screen reader (after E2d); placing a control from the keyboard would need the toolbox to take the focus.
 
-## A control the code uses cannot be renamed in the designer
+## Undoing a rename after the code changed renames every use of the new name
 
-- **What:** when a form's code uses a control's name (`btnHello.Caption`, `Sub btnHello_Click`), its (Name) in the Properties window is read-only and says on which lines; the code has to be changed by hand first.
-- **Why deferred:** renaming the uses and the handlers together needs the code editor, which does not exist yet; renaming only the control would leave the code pointing at a control that is gone (D35).
-- **Revisit:** with the code editor's rename-safe handlers (ROADMAP, stage 1).
+- **What:** renaming a control renames it in the code (D39). If the code is changed after that and the rename is undone, every use of the new name in the code goes back to the old name, those written after the rename too; if the old name was meanwhile given to something else in the code (a variable, say), the two then share it, which the analyzer reports.
+- **Why deferred:** the code after the rename is the user's; putting back the text from before it would lose their changes, and which of the new uses were meant for the control cannot be told. Undo right after a rename, the usual case, puts back the code exactly.
+- **Revisit:** with refactoring in the code editor (rename from the code), when a rename can show what it changes before it does.
 
 ## Typing in a long code file can drop a frame
 

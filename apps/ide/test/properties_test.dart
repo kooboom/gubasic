@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gubasic_ide/main.dart';
+import 'package:gubasic_ide/src/code/code_editor.dart';
 import 'package:gubasic_ide/src/designer/form_designer.dart';
 import 'package:gubasic_ide/src/designer/properties_panel.dart';
 import 'package:gubasic_ide/src/ide_shell.dart';
@@ -15,12 +16,16 @@ void main() {
   final hello = exampleProjects['hello']!;
   const formFile = 'Form1.form.yaml';
 
-  Future<void> open(WidgetTester tester, {IdeStrings strings = s}) async {
+  Future<void> open(
+    WidgetTester tester, {
+    IdeStrings strings = s,
+    Map<String, String>? project,
+  }) async {
     tester.view.physicalSize = const Size(1400, 900);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
     await tester.pumpWidget(
-      IdeApp(projects: {'hello': hello}, strings: strings),
+      IdeApp(projects: {'hello': project ?? hello}, strings: strings),
     );
     await tester.tap(find.text(formFile));
     await tester.pumpAndSettle();
@@ -31,6 +36,11 @@ void main() {
       .controller
       .current
       .files[formFile]!;
+  String codeText(WidgetTester tester) => tester
+      .widget<IdeShell>(find.byType(IdeShell))
+      .controller
+      .current
+      .files['Form1.gbas']!;
 
   Finder field(String property) => find.byKey(propertyFieldKey(property));
   String fieldText(WidgetTester tester, String property) =>
@@ -321,23 +331,91 @@ void main() {
       expect(formText(tester), contains('  - name: Label1\n'));
     });
 
-    testWidgets('a name the code uses cannot change, and says where', (
-      tester,
-    ) async {
+    testWidgets('a name the code uses changes in the code too', (tester) async {
+      // btnHelloWorld, the comment and the string are not btnHello.
+      final before = code.replaceFirst(
+        'Dim clickCount As Integer\n',
+        'Dim clickCount As Integer\n'
+            "Dim btnHelloWorld As String ' btnHello\n"
+            'Dim said As String = "btnHello"\n',
+      );
+      await open(tester, project: {...hello, 'Form1.gbas': before});
+      await click(tester, const Offset(30, 70));
+      final lines = linesUsingName(before, 'btnHello').join(', ');
+      expect(
+        find.text(
+          'btnHello is used in Form1.gbas on lines $lines; a new name '
+          'changes those lines too.',
+        ),
+        findsOneWidget,
+      );
+      await tester.enterText(field('(Name)'), 'btnOk');
+      await tester.pump();
+      expect(codeText(tester), before, reason: 'not yet');
+      await tester.testTextInput.receiveAction(TextInputAction.done);
+      await tester.pumpAndSettle();
+      final after = codeText(tester);
+      expect(formText(tester), contains('  - name: btnOk\n'));
+      expect(after, contains('Sub btnOk_Click()'));
+      expect(after, contains("Dim btnHelloWorld As String ' btnHello\n"));
+      expect(after, contains('Dim said As String = "btnHello"\n'));
+      expect(linesUsingName(after, 'btnHello'), isEmpty);
+
+      // One undo step for both files, and back again.
+      await ctrl(tester, LogicalKeyboardKey.keyZ);
+      expect(formText(tester), hello[formFile]);
+      expect(codeText(tester), before);
+      await ctrl(tester, LogicalKeyboardKey.keyY);
+      expect(formText(tester), contains('  - name: btnOk\n'));
+      expect(codeText(tester), after);
+    });
+
+    testWidgets('the code editor shows the renamed code', (tester) async {
+      await open(tester);
+      await tester.tap(find.text('Form1.gbas'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(formFile));
+      await tester.pumpAndSettle();
+      await click(tester, const Offset(30, 70));
+      await tester.enterText(field('(Name)'), 'btnOk');
+      await tester.testTextInput.receiveAction(TextInputAction.done);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Form1.gbas'));
+      await tester.pumpAndSettle();
+      expect(
+        tester.widget<TextField>(find.byKey(codeFieldKey)).controller!.text,
+        contains('Sub btnOk_Click()'),
+      );
+    });
+
+    testWidgets('undo after the code changed renames it back', (tester) async {
       await open(tester);
       await click(tester, const Offset(30, 70));
-      expect(find.byType(NameField), findsOneWidget);
-      expect(
-        tester.widgetList(field('(Name)')).single,
-        isA<Text>(),
-        reason: 'read-only',
+      await tester.enterText(field('(Name)'), 'btnOk');
+      await tester.testTextInput.receiveAction(TextInputAction.done);
+      await tester.pumpAndSettle();
+      final shell = tester.widget<IdeShell>(find.byType(IdeShell));
+      shell.controller.current.setFile(
+        'Form1.gbas',
+        '${codeText(tester)}\nSub Again()\n    btnOk.Caption = "x"\nEnd Sub\n',
       );
+      await tester.pumpAndSettle();
+      await ctrl(tester, LogicalKeyboardKey.keyZ);
+      expect(formText(tester), hello[formFile]);
+      expect(
+        codeText(tester),
+        '$code\nSub Again()\n    btnHello.Caption = "x"\nEnd Sub\n',
+      );
+    });
+
+    testWidgets('Korean words', (tester) async {
+      await open(tester, strings: IdeStrings.ko);
+      await click(tester, const Offset(30, 70));
       final lines = linesUsingName(code, 'btnHello').join(', ');
       expect(
         find.text(
-          'btnHello is used in Form1.gbas on lines $lines, so it cannot be '
-          'renamed here. Change those lines first. Renaming the code '
-          'together with the control comes with the code editor.',
+          'btnHello 이름은 Form1.gbas 파일의 $lines번째 줄에서 쓰입니다. '
+          '새 이름으로 바꾸면 그 줄도 함께 바뀝니다.',
         ),
         findsOneWidget,
       );

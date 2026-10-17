@@ -558,30 +558,17 @@ class _NameFieldState extends State<NameField> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final uses = linesUsingName(widget.code, _name);
-    if (uses.isNotEmpty || !widget.editable) {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 6),
-            child: Text(
-              _name,
-              key: propertyFieldKey('(Name)'),
-              style: TextStyle(color: theme.disabledColor),
-            ),
-          ),
-          if (uses.isNotEmpty)
-            Text(
-              widget.strings.nameUsedInCode
-                  .replaceAll('{0}', _name)
-                  .replaceAll('{1}', widget.codeFile)
-                  .replaceAll('{2}', uses.join(', ')),
-              style: theme.textTheme.bodySmall,
-            ),
-        ],
+    if (!widget.editable) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 6),
+        child: Text(
+          _name,
+          key: propertyFieldKey('(Name)'),
+          style: TextStyle(color: theme.disabledColor),
+        ),
       );
     }
+    final uses = linesUsingName(widget.code, _name);
     return CallbackShortcuts(
       bindings: {const SingleActivator(LogicalKeyboardKey.escape): _escape},
       child: TextField(
@@ -594,6 +581,13 @@ class _NameFieldState extends State<NameField> {
           border: const OutlineInputBorder(),
           errorText: _error,
           errorMaxLines: 6,
+          helperText: uses.isEmpty
+              ? null
+              : widget.strings.nameUsedInCode
+                    .replaceAll('{0}', _name)
+                    .replaceAll('{1}', widget.codeFile)
+                    .replaceAll('{2}', uses.join(', ')),
+          helperMaxLines: 6,
         ),
         onChanged: (name) => setState(() => _error = _problem(name)),
         onEditingComplete: _apply,

@@ -17,9 +17,9 @@ bool isUsableName(String name) =>
 /// `_` (`Button1_Click`, the control's handlers). Comments and strings do
 /// not count. Sorted, each line once.
 ///
-/// The designer renames a control only when this is empty (D35): the code
-/// would otherwise refer to a control that is no longer there, or a
-/// handler would no longer run.
+/// The designer renames a control to a name only when this is empty for
+/// it (D35): the code's own use of that name would otherwise turn into a
+/// use of the control.
 List<int> linesUsingName(String source, String name) {
   final lower = name.toLowerCase();
   final lines = <int>{
@@ -30,4 +30,36 @@ List<int> linesUsingName(String source, String name) {
         t.line,
   };
   return lines.toList()..sort();
+}
+
+/// [source] with the control [name] renamed to [newName] (D39): every
+/// identifier that is [name], in any case, or starts with it and `_` (the
+/// control's handlers, `btnHello_Click`), gets [newName] in place of that
+/// part. Comments, strings and other names, such as `btnHelloWorld`, stay
+/// as they are, and so does a name after `.` other than `Me.`: there it is
+/// a property or a member (`lblMessage.Caption`), not the control.
+///
+/// The designer renames only to a name the code does not use
+/// ([linesUsingName] is empty), so renaming back gives the code again,
+/// with [name] spelled one way.
+String renameInCode(String source, String name, String newName) {
+  final lower = name.toLowerCase();
+  final tokens = lex(source).tokens;
+  final out = StringBuffer();
+  var at = 0;
+  for (var i = 0; i < tokens.length; i++) {
+    final t = tokens[i];
+    if (t.kind != TokenKind.identifier) continue;
+    final text = t.text.toLowerCase();
+    if (text != lower && !text.startsWith('${lower}_')) continue;
+    if (i > 0 && tokens[i - 1].kind == TokenKind.dot) {
+      if (i < 2 || tokens[i - 2].keyword != Keyword.kwMe) continue;
+    }
+    out
+      ..write(source.substring(at, t.offset))
+      ..write(newName);
+    at = t.offset + name.length;
+  }
+  out.write(source.substring(at));
+  return out.toString();
 }

@@ -238,6 +238,29 @@ void main() {
       }
       expect([h.undo(), h.undo(), h.undo(), h.undo()], ['4', '3', '2', null]);
     });
+
+    test('a rename keeps its code change, turned around by undo', () {
+      const code = (from: 'a1', to: 'b1', before: 'x = a1', after: 'x = b1');
+      final g = Object();
+      final h = FormHistory()
+        ..record('a', 'b', group: g)
+        ..record('b', 'c', code: code);
+      expect(h.undo(), 'b');
+      expect(h.lastCode, (
+        from: 'b1',
+        to: 'a1',
+        before: 'x = b1',
+        after: 'x = a1',
+      ));
+      expect(h.undo(), 'a');
+      expect(h.lastCode, isNull);
+      expect(h.redo(), 'b');
+      expect(h.redo(), 'c');
+      expect(h.lastCode, code);
+      // A rename ends the group before it.
+      h.record('c', 'd', group: g);
+      expect(h.undo(), 'c');
+    });
   });
 
   group('moving and resizing', () {

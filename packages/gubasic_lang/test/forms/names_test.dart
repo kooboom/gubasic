@@ -52,4 +52,56 @@ End Sub
       expect(linesUsingName('Sub x(\n  Label1.Caption = \n', 'label1'), [2]);
     });
   });
+
+  group('renameInCode', () {
+    const source = '''Dim btnHelloWorld As Integer
+
+Sub Form_Load()
+    ' btnHello says hello
+    btnHello.Caption = "btnHello"
+    Me.BTNHELLO.Caption = lblMessage.btnHello
+End Sub
+
+Sub btnHello_Click()
+    btnHelloWorld = btnHelloWorld + 1
+End Sub
+''';
+
+    test('renames the uses and the handlers, nothing else', () {
+      expect(renameInCode(source, 'btnHello', 'btnOk'),
+          '''Dim btnHelloWorld As Integer
+
+Sub Form_Load()
+    ' btnHello says hello
+    btnOk.Caption = "btnHello"
+    Me.btnOk.Caption = lblMessage.btnHello
+End Sub
+
+Sub btnOk_Click()
+    btnHelloWorld = btnHelloWorld + 1
+End Sub
+''');
+    });
+
+    test('renaming back gives the code again, in any case', () {
+      final renamed = renameInCode(source, 'btnHello', 'btnOk');
+      expect(linesUsingName(source, 'btnOk'), isEmpty);
+      expect(
+        renameInCode(renamed, 'btnOk', 'btnHello'),
+        equalsIgnoringCase(source),
+      );
+    });
+
+    test('a name with no uses leaves the code as it is', () {
+      expect(renameInCode(source, 'Button1', 'Button2'), source);
+      expect(renameInCode('', 'a', 'b'), '');
+    });
+
+    test('code that does not parse is renamed too', () {
+      expect(
+        renameInCode('Sub x(\n  Label1.Caption = \n', 'label1', 'lblName'),
+        'Sub x(\n  lblName.Caption = \n',
+      );
+    });
+  });
 }
