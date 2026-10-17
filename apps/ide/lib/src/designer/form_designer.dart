@@ -105,6 +105,7 @@ class _FormDesignerState extends State<FormDesigner> {
       // A new model each time, never changed: the designer only shows it.
       _model = formModelOf(_read.form, onEvent: (_, _) {});
       _modelVersion++;
+      _showPreview();
     }
     return _read.form;
   }
@@ -442,6 +443,35 @@ class _FormDesignerState extends State<FormDesigner> {
     _apply(withName(_form, name, newName), select: newName);
   }
 
+  /// Shows text being typed in the Properties window on the form at once,
+  /// before the file has it (D35).
+  void _preview(String? control, String property, String text) {
+    _previewing = (control, property, text);
+    _showPreview();
+    setState(() {});
+  }
+
+  /// The text being typed in the Properties window, shown on the form.
+  (String?, String, String)? _previewing;
+
+  void _showPreview() {
+    final (control, property, text) = _previewing ?? (null, '', '');
+    if (_previewing == null) return;
+    final state = control == null ? _model.form : _model.control(control);
+    if (state != null && state[property] != text) state.set(property, text);
+  }
+
+  /// A field of the Properties window is done: one step of undo ends, and
+  /// the form shows its file again, without what was only being typed.
+  void _fieldDone() {
+    widget.history.seal();
+    if (_previewing != null) {
+      _previewing = null;
+      _readText = null;
+      setState(() {});
+    }
+  }
+
   void _select(String? name) {
     setState(() => _selected = name);
     _focus.requestFocus();
@@ -523,7 +553,8 @@ class _FormDesignerState extends State<FormDesigner> {
                         strings: s,
                         onSelect: _select,
                         onChange: _setProperty,
-                        onDone: widget.history.seal,
+                        onPreview: _preview,
+                        onDone: _fieldDone,
                         onLeave: _focus.requestFocus,
                         code: widget.project.files[_codeFile] ?? '',
                         codeFile: _codeFile,
@@ -673,7 +704,7 @@ class _FormDesignerState extends State<FormDesigner> {
       ),
     );
     final frame = FormWindowFrame(
-      caption: form.valueOf('Caption') as String,
+      caption: _model.form.text('Caption'),
       width: width,
       child: area,
     );

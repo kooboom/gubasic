@@ -118,6 +118,32 @@ void main() {
     expect(formText(tester), contains('Caption: Hi there'));
   });
 
+  testWidgets('the canvas shows the syllable being typed; the file waits', (
+    tester,
+  ) async {
+    await open(tester);
+    await click(tester, const Offset(30, 70));
+    await tester.tap(field('Caption'));
+    await tester.pump();
+    tester.testTextInput.updateEditingValue(
+      const TextEditingValue(
+        text: '한글',
+        selection: TextSelection.collapsed(offset: 2),
+        composing: TextRange(start: 1, end: 2),
+      ),
+    );
+    await tester.pump();
+    expect(onForm('한글'), findsOneWidget, reason: 'as the field shows it');
+    expect(formText(tester), contains('      Caption: 한\n'));
+    // Esc drops 글: the form follows the field again.
+    await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+    await tester.pump();
+    expect(onForm('한'), findsOneWidget);
+    await click(tester, const Offset(250, 100));
+    expect(formText(tester), contains('      Caption: 한\n'));
+    expect(find.text('한글'), findsNothing);
+  });
+
   testWidgets('a value that is not valid says why and is not applied', (
     tester,
   ) async {

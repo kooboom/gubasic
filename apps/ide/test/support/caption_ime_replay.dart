@@ -145,7 +145,12 @@ void defineCaptionImeTests(Map<String, String> logs) {
                   reason: 'the form file $at',
                 );
               }
-              expect(canvas(t), caption(t), reason: 'the canvas $at');
+              // The canvas shows the field as it is typed (D35).
+              expect(
+                canvas(t),
+                inField ? v.text : caption(t),
+                reason: 'the canvas $at',
+              );
               if (caption(t) != before) changedThisVisit = true;
             case 'focus' when e['hasFocus'] == false && inField:
               final before = caption(t);
@@ -169,6 +174,7 @@ void defineCaptionImeTests(Map<String, String> logs) {
         }
         await t.pumpAndSettle();
         expect(caption(t), last.text, reason: 'the final text');
+        expect(canvas(t), last.text, reason: 'the canvas, from the file');
         expect(fieldText(t), last.text);
         expect(await undoSteps(t), visits, reason: 'one step per visit');
       });

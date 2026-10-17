@@ -31,6 +31,7 @@ class PropertiesPanel extends StatelessWidget {
     required this.code,
     required this.codeFile,
     required this.onRename,
+    this.onPreview,
   });
 
   final FormFile form;
@@ -42,6 +43,11 @@ class PropertiesPanel extends StatelessWidget {
 
   /// Renames the control named [name] to [newName].
   final void Function(String name, String newName) onRename;
+
+  /// Shows [text] as [property] of [control] (null for the form) on the
+  /// form while it is typed, the syllable being composed included; the
+  /// file gets only what is committed ([onChange]).
+  final void Function(String? control, String property, String text)? onPreview;
 
   /// The control shown; null for the form.
   final ControlDecl? selected;
@@ -143,6 +149,9 @@ class PropertiesPanel extends StatelessWidget {
                       strings: strings,
                       onChange: (v, group) =>
                           onChange(target, p.name, v, group),
+                      onPreview: onPreview == null
+                          ? null
+                          : (text) => onPreview!(target, p.name, text),
                       onDone: onDone,
                       onLeave: onLeave,
                     ),
@@ -216,6 +225,7 @@ class PropertyField extends StatefulWidget {
     required this.onChange,
     required this.onDone,
     required this.onLeave,
+    this.onPreview,
   });
 
   final PropertySpec spec;
@@ -225,6 +235,9 @@ class PropertyField extends StatefulWidget {
   final void Function(Object value, Object group) onChange;
   final VoidCallback onDone;
   final VoidCallback onLeave;
+
+  /// Text as it shows in the field, being composed or not.
+  final void Function(String text)? onPreview;
 
   @override
   State<PropertyField> createState() => _PropertyFieldState();
@@ -343,9 +356,11 @@ class _PropertyFieldState extends State<PropertyField> {
     final value = _tracker.track(_controller.value);
     if (!_isText || !widget.editable || !_focus.hasFocus) return;
     final committed = committedText(value);
-    if (committed == _written) return;
-    _written = committed;
-    widget.onChange(committed, _group);
+    if (committed != _written) {
+      _written = committed;
+      widget.onChange(committed, _group);
+    }
+    widget.onPreview?.call(value.text);
   }
 
   bool get _composing => _tracker.composing;
