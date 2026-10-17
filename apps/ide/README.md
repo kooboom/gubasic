@@ -14,6 +14,7 @@ flutter build web --no-web-resources-cdn   # as CI builds it (D30)
   - **Save** (⌘S / Ctrl+S) saves the project: every file of it that changed, `.gbproj`, `.form.yaml` and `.gbas` alike.
   - **Save As…** (⇧⌘S / Ctrl+Shift+S) copies the whole project into a new folder: choose a place and a name, and the IDE makes `NAME/NAME.gbproj` and the forms' files. It does not ask file by file as Visual Basic 6 did.
   - A form's `.form.yaml` and `.gbas` are one pair with one name: they are always saved, and renamed, together. Saving one form on its own is decided with multiple forms (stage 2).
+  - The first time a project in the Documents, Desktop or Downloads folder is opened, macOS asks whether GuBASIC IDE may use that folder: allow it, or the forms cannot be read (D32).
   - The examples are read-only: Save on one saves a copy. "— Edited" after the project's name means unsaved changes.
 - **On the web** (D33), the File menu keeps projects in this browser (Open… lists them; changes are kept automatically) and adds **Download .zip** (⇧⌘E / Ctrl+Shift+E, also a button in the top bar) and **Upload .zip…**. The browser's storage can be cleared, so download a .zip at the end of each lesson; the button stands out while there are changes that were not downloaded. The .zip unpacks to a folder the desktop IDE opens.
 - **F5** runs the project, **Shift+F5** stops it. The words follow the system language (English or Korean).
