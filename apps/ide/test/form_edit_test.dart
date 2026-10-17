@@ -215,6 +215,182 @@ void main() {
     });
   });
 
+  group('moving and resizing', () {
+    const size = (width: 320, height: 120);
+    const box = (left: 40, top: 40, width: 80, height: 32);
+
+    test('a move lands on the grid, inside the form', () {
+      expect(movedBox(box, 13, 9, size: size, grid: true), (
+        left: 56,
+        top: 48,
+        width: 80,
+        height: 32,
+      ));
+      expect(movedBox(box, 13, 9, size: size, grid: false), (
+        left: 53,
+        top: 49,
+        width: 80,
+        height: 32,
+      ));
+      expect(movedBox(box, 900, -900, size: size, grid: true), (
+        left: 240,
+        top: 0,
+        width: 80,
+        height: 32,
+      ));
+    });
+
+    test('each handle moves its own edges', () {
+      ControlBox r(Handle h, double dx, double dy) =>
+          resizedBox(box, h, dx, dy, size: size, grid: true);
+      expect(r((x: 1, y: 0), 13, 50), (
+        left: 40,
+        top: 40,
+        width: 96,
+        height: 32,
+      ));
+      expect(r((x: -1, y: 0), -13, 0), (
+        left: 24,
+        top: 40,
+        width: 96,
+        height: 32,
+      ));
+      expect(r((x: 0, y: 1), 50, 9), (
+        left: 40,
+        top: 40,
+        width: 80,
+        height: 40,
+      ));
+      expect(r((x: 0, y: -1), 0, -9), (
+        left: 40,
+        top: 32,
+        width: 80,
+        height: 40,
+      ));
+      expect(r((x: 1, y: 1), 900, 900), (
+        left: 40,
+        top: 40,
+        width: 280,
+        height: 80,
+      ));
+      expect(r((x: -1, y: -1), -900, -900), (
+        left: 0,
+        top: 0,
+        width: 120,
+        height: 72,
+      ));
+      expect(r((x: 1, y: -1), 8, -8), (
+        left: 40,
+        top: 32,
+        width: 88,
+        height: 40,
+      ));
+      expect(r((x: -1, y: 1), -8, 8), (
+        left: 32,
+        top: 40,
+        width: 88,
+        height: 40,
+      ));
+    });
+
+    test('a control is never made smaller than 8', () {
+      expect(
+        resizedBox(box, (x: -1, y: -1), 900, 900, size: size, grid: true),
+        (left: 112, top: 64, width: 8, height: 8),
+      );
+      expect(
+        resizedBox(box, (x: 1, y: 1), -900, -900, size: size, grid: false),
+        (left: 40, top: 40, width: 8, height: 8),
+      );
+    });
+
+    test('an arrow key goes to the next grid line, or one pixel', () {
+      expect(step(13, 1, grid: true), 16);
+      expect(step(13, -1, grid: true), 8);
+      expect(step(16, 1, grid: true), 24);
+      expect(step(16, -1, grid: true), 8);
+      expect(step(13, 1, grid: false), 14);
+      expect(step(13, -1, grid: false), 12);
+      expect(nudgedBox(box, 1, -1, size: size, grid: true), (
+        left: 48,
+        top: 32,
+        width: 80,
+        height: 32,
+      ));
+      expect(
+        nudgedBox(
+          (left: 240, top: 0, width: 80, height: 32),
+          1,
+          -1,
+          size: size,
+          grid: true,
+        ),
+        (left: 240, top: 0, width: 80, height: 32),
+        reason: 'stays inside the form',
+      );
+    });
+
+    test('Shift and an arrow key moves the right or bottom edge', () {
+      expect(grownBox(box, 1, 0, size: size, grid: true), (
+        left: 40,
+        top: 40,
+        width: 88,
+        height: 32,
+      ));
+      expect(grownBox(box, 0, -1, size: size, grid: false), (
+        left: 40,
+        top: 40,
+        width: 80,
+        height: 31,
+      ));
+      expect(
+        grownBox(
+          (left: 40, top: 40, width: 8, height: 8),
+          -1,
+          -1,
+          size: size,
+          grid: true,
+        ),
+        (left: 40, top: 40, width: 8, height: 8),
+      );
+      expect(
+        grownBox(
+          (left: 240, top: 88, width: 80, height: 32),
+          1,
+          1,
+          size: size,
+          grid: true,
+        ),
+        (left: 240, top: 88, width: 80, height: 32),
+        reason: 'the form edge',
+      );
+    });
+
+    test('the form is resized on the grid, never below 64', () {
+      expect(resizedForm(size, 13, 3, grid: true), (width: 336, height: 120));
+      expect(resizedForm(size, 13, 3, grid: false), (width: 333, height: 123));
+      expect(resizedForm(size, -900, -900, grid: true), (
+        width: 64,
+        height: 64,
+      ));
+    });
+
+    test('the file gets the new box and size', () {
+      var form = withBox(hello, 'BTNHELLO', box);
+      form = withFormSize(form, (width: 400, height: 200));
+      final text = writeFormFile(form);
+      expect(text, contains('  Width: 400\n  Height: 200\n'));
+      expect(
+        text,
+        contains(
+          '      Caption: Say hello\n      Left: 40\n      Top: 40\n'
+          '      Width: 80\n',
+        ),
+      );
+      expect(text, isNot(contains('Height: 32')), reason: 'the default');
+    });
+  });
+
   test('snap', () {
     expect(snap(11, grid: true), 8);
     expect(snap(13, grid: true), 16);

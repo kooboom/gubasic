@@ -1,5 +1,6 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gubasic_ide/main.dart';
@@ -283,6 +284,186 @@ void main() {
       find.widgetWithIcon(IconButton, Icons.undo),
     );
     expect(undo.onPressed, isNull);
+  });
+
+  String status(WidgetTester tester) => tester
+      .widgetList<Text>(
+        find.descendant(
+          of: find.byType(FormDesigner),
+          matching: find.byType(Text),
+        ),
+      )
+      .map((t) => t.data ?? '')
+      .lastWhere((t) => t.contains(' · '));
+
+  testWidgets('a control follows the mouse and lands on the grid', (
+    tester,
+  ) async {
+    await open(tester);
+    final origin = tester.getTopLeft(find.byKey(designerFormKey));
+    final before = tester.getTopLeft(find.text('Say hello'));
+    final mouse = await tester.startGesture(
+      origin + const Offset(30, 70),
+      kind: PointerDeviceKind.mouse,
+      buttons: kPrimaryButton,
+    );
+    await mouse.moveTo(origin + const Offset(50, 80));
+    await tester.pump();
+    await mouse.moveTo(origin + const Offset(75, 91));
+    await tester.pump();
+    expect(
+      tester.getTopLeft(find.text('Say hello')),
+      before + const Offset(48, 24),
+      reason: 'the widget follows at once',
+    );
+    expect(formText(tester), hello[formFile], reason: 'the file waits');
+    expect(status(tester), 'btnHello (Button) · Left 64, Top 80 · 120×32');
+    await mouse.up();
+    await tester.pumpAndSettle();
+    expect(formText(tester), contains('      Left: 64\n      Top: 80\n'));
+
+    // A move of a pixel or two only selects.
+    final moved = formText(tester);
+    await drag(tester, const Offset(80, 90), const Offset(82, 91));
+    expect(formText(tester), moved);
+
+    await ctrl(tester, LogicalKeyboardKey.keyZ);
+    expect(formText(tester), hello[formFile]);
+  });
+
+  testWidgets('each of the eight handles resizes its own edges', (
+    tester,
+  ) async {
+    await open(tester);
+    await drag(tester, const Offset(30, 70), const Offset(30, 70));
+    // btnHello: Left 16, Top 56, 120 x 32.
+    for (final (hx, hy) in [
+      (-1, -1),
+      (0, -1),
+      (1, -1),
+      (-1, 0),
+      (1, 0),
+      (-1, 1),
+      (0, 1),
+      (1, 1),
+    ]) {
+      final at = Offset(16 + (hx + 1) / 2 * 120, 56 + (hy + 1) / 2 * 32);
+      await drag(tester, at, at + Offset(8.0 * hx, 8.0 * hy));
+      final left = 16 - (hx < 0 ? 8 : 0);
+      final top = 56 - (hy < 0 ? 8 : 0);
+      final width = 120 + 8 * hx.abs();
+      final height = 32 + 8 * hy.abs();
+      expect(
+        status(tester),
+        'btnHello (Button) · Left $left, Top $top · $width×$height',
+        reason: 'handle ($hx, $hy)',
+      );
+      await ctrl(tester, LogicalKeyboardKey.keyZ);
+      expect(formText(tester), hello[formFile]);
+    }
+  });
+
+  testWidgets("the form's handles resize the form", (tester) async {
+    await open(tester);
+    final corner = find.byKey(const ValueKey('designer.formHandle.1.1'));
+    await tester.dragFrom(
+      tester.getCenter(corner),
+      const Offset(43, 21),
+      kind: PointerDeviceKind.mouse,
+    );
+    await tester.pumpAndSettle();
+    expect(status(tester), 'Form1 (Form) · 360×144');
+    expect(formText(tester), contains('  Width: 360\n  Height: 144\n'));
+
+    final right = find.byKey(const ValueKey('designer.formHandle.1.0'));
+    await tester.dragFrom(
+      tester.getCenter(right),
+      const Offset(-500, 30),
+      kind: PointerDeviceKind.mouse,
+    );
+    await tester.pumpAndSettle();
+    expect(status(tester), 'Form1 (Form) · 64×144', reason: 'only across');
+    await ctrl(tester, LogicalKeyboardKey.keyZ);
+    await ctrl(tester, LogicalKeyboardKey.keyZ);
+    expect(formText(tester), hello[formFile]);
+  });
+
+  testWidgets('arrow keys move and resize the selected control', (
+    tester,
+  ) async {
+    await open(tester);
+    await drag(tester, const Offset(30, 70), const Offset(30, 70));
+    await ctrl(tester, LogicalKeyboardKey.arrowRight);
+    await ctrl(tester, LogicalKeyboardKey.arrowDown);
+    expect(status(tester), 'btnHello (Button) · Left 24, Top 64 · 120×32');
+    await tester.sendKeyDownEvent(LogicalKeyboardKey.shift);
+    await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
+    await tester.sendKeyEvent(LogicalKeyboardKey.arrowUp);
+    await tester.sendKeyUpEvent(LogicalKeyboardKey.shift);
+    await tester.pumpAndSettle();
+    expect(status(tester), 'btnHello (Button) · Left 24, Top 64 · 128×24');
+
+    await tester.tap(find.text(s.grid));
+    await tester.pumpAndSettle();
+    await ctrl(tester, LogicalKeyboardKey.arrowLeft);
+    expect(status(tester), 'btnHello (Button) · Left 23, Top 64 · 128×24');
+
+    // Each key is one step back.
+    for (var i = 0; i < 5; i++) {
+      await ctrl(tester, LogicalKeyboardKey.keyZ);
+    }
+    expect(formText(tester), hello[formFile]);
+  });
+
+  testWidgets('the cursor shows what the mouse would do', (tester) async {
+    await open(tester);
+    final origin = tester.getTopLeft(find.byKey(designerFormKey));
+    final mouse = await tester.createGesture(kind: PointerDeviceKind.mouse);
+    await mouse.addPointer(location: origin + const Offset(200, 100));
+    addTearDown(mouse.removePointer);
+    MouseCursor cursorAt(Offset p) {
+      return RendererBinding.instance.mouseTracker.debugDeviceActiveCursor(1)!;
+    }
+
+    Future<MouseCursor> at(Offset p) async {
+      await mouse.moveTo(origin + p);
+      await tester.pump();
+      return cursorAt(p);
+    }
+
+    expect(await at(const Offset(30, 70)), SystemMouseCursors.move);
+    await drag(tester, const Offset(30, 70), const Offset(30, 70));
+    expect(await at(const Offset(136, 72)), SystemMouseCursors.resizeLeftRight);
+    expect(await at(const Offset(76, 88)), SystemMouseCursors.resizeUpDown);
+    expect(
+      await at(const Offset(136, 88)),
+      SystemMouseCursors.resizeUpLeftDownRight,
+    );
+    expect(
+      await at(const Offset(16, 88)),
+      SystemMouseCursors.resizeUpRightDownLeft,
+    );
+    expect(await at(const Offset(250, 100)), SystemMouseCursors.basic);
+    await chooseTool(tester, 'Label');
+    expect(await at(const Offset(250, 101)), SystemMouseCursors.precise);
+  });
+
+  testWidgets('nothing moves while the program runs', (tester) async {
+    await open(tester);
+    await tester.sendKeyEvent(LogicalKeyboardKey.f5);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(formFile));
+    await tester.pumpAndSettle();
+    await drag(tester, const Offset(30, 70), const Offset(90, 100));
+    await ctrl(tester, LogicalKeyboardKey.arrowRight);
+    final corner = find.byKey(const ValueKey('designer.formHandle.1.1'));
+    await tester.dragFrom(
+      tester.getCenter(corner),
+      const Offset(40, 40),
+      kind: PointerDeviceKind.mouse,
+    );
+    await tester.pumpAndSettle();
+    expect(formText(tester), hello[formFile]);
   });
 
   testWidgets('Korean words', (tester) async {

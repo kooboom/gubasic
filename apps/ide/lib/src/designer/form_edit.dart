@@ -201,3 +201,167 @@ class FormHistory {
   /// The text one step forward, or null.
   String? redo() => canRedo ? _texts[++_at] : null;
 }
+
+/// The smallest width or height the designer gives a form.
+const minFormSize = 64;
+
+/// A handle of a control's frame: [x] is -1 at the left edge, 0 in the
+/// middle, 1 at the right edge; [y] likewise from the top. (0, 0) is not
+/// a handle.
+typedef Handle = ({int x, int y});
+
+/// The eight handles of a frame, corners first.
+const List<Handle> handles = [
+  (x: -1, y: -1),
+  (x: 1, y: -1),
+  (x: -1, y: 1),
+  (x: 1, y: 1),
+  (x: 0, y: -1),
+  (x: 0, y: 1),
+  (x: -1, y: 0),
+  (x: 1, y: 0),
+];
+
+/// [box] moved by [dx], [dy]: its top left on the grid when [grid] is on,
+/// and inside a form of [size] as far as it fits.
+ControlBox movedBox(
+  ControlBox box,
+  double dx,
+  double dy, {
+  required ({int width, int height}) size,
+  required bool grid,
+}) => _inside((
+  left: snap(box.left + dx, grid: grid),
+  top: snap(box.top + dy, grid: grid),
+  width: box.width,
+  height: box.height,
+), size);
+
+/// [box] with the edges of [handle] moved by [dx], [dy]: on the grid when
+/// [grid] is on, inside a form of [size], and never smaller than
+/// [minControlSize]. The other edges stay where they are.
+ControlBox resizedBox(
+  ControlBox box,
+  Handle handle,
+  double dx,
+  double dy, {
+  required ({int width, int height}) size,
+  required bool grid,
+}) {
+  var (left, right) = (box.left, box.left + box.width);
+  var (top, bottom) = (box.top, box.top + box.height);
+  if (handle.x < 0) {
+    left = min(max(0, snap(left + dx, grid: grid)), right - minControlSize);
+  } else if (handle.x > 0) {
+    right = max(
+      min(size.width, snap(right + dx, grid: grid)),
+      left + minControlSize,
+    );
+  }
+  if (handle.y < 0) {
+    top = min(max(0, snap(top + dy, grid: grid)), bottom - minControlSize);
+  } else if (handle.y > 0) {
+    bottom = max(
+      min(size.height, snap(bottom + dy, grid: grid)),
+      top + minControlSize,
+    );
+  }
+  return (left: left, top: top, width: right - left, height: bottom - top);
+}
+
+/// [value] one step in [direction] (+1 or -1): to the next grid line when
+/// [grid] is on, else one pixel.
+int step(int value, int direction, {required bool grid}) {
+  if (!grid) return value + direction;
+  final down = (value / gridStep).floor() * gridStep;
+  return direction > 0
+      ? down + gridStep
+      : (down == value ? value - gridStep : down);
+}
+
+/// [box] moved one step by an arrow key, [dx] and [dy] being -1, 0 or 1,
+/// inside a form of [size].
+ControlBox nudgedBox(
+  ControlBox box,
+  int dx,
+  int dy, {
+  required ({int width, int height}) size,
+  required bool grid,
+}) => _inside((
+  left: dx == 0 ? box.left : step(box.left, dx, grid: grid),
+  top: dy == 0 ? box.top : step(box.top, dy, grid: grid),
+  width: box.width,
+  height: box.height,
+), size);
+
+/// [box] made one step wider or narrower ([dx]), taller or shorter
+/// ([dy]) by an arrow key with Shift: its right or bottom edge moves,
+/// inside a form of [size] and never below [minControlSize].
+ControlBox grownBox(
+  ControlBox box,
+  int dx,
+  int dy, {
+  required ({int width, int height}) size,
+  required bool grid,
+}) {
+  int edge(int start, int length, int d, int limit) => d == 0
+      ? start + length
+      : min(
+          limit,
+          max(start + minControlSize, step(start + length, d, grid: grid)),
+        );
+  return (
+    left: box.left,
+    top: box.top,
+    width:
+        edge(box.left, box.width, dx, max(size.width, box.left + box.width)) -
+        box.left,
+    height:
+        edge(box.top, box.height, dy, max(size.height, box.top + box.height)) -
+        box.top,
+  );
+}
+
+/// A form's size after its right or bottom edge was dragged by [dx], [dy]:
+/// on the grid when [grid] is on, and never below [minFormSize].
+({int width, int height}) resizedForm(
+  ({int width, int height}) size,
+  double dx,
+  double dy, {
+  required bool grid,
+}) => (
+  width: max(minFormSize, snap(size.width + dx, grid: grid)),
+  height: max(minFormSize, snap(size.height + dy, grid: grid)),
+);
+
+/// [form] with the control named [name] at [box].
+FormFile withBox(FormFile form, String name, ControlBox box) => _copy(form, [
+  for (final c in form.controls)
+    if (c.name.toLowerCase() == name.toLowerCase())
+      ControlDecl(
+        name: c.name,
+        component: c.component,
+        properties: {
+          ...c.properties,
+          'Left': box.left,
+          'Top': box.top,
+          'Width': box.width,
+          'Height': box.height,
+        },
+        line: c.line,
+      )
+    else
+      c,
+]);
+
+/// [form] with its inside [size].
+FormFile withFormSize(FormFile form, ({int width, int height}) size) =>
+    FormFile(
+      name: form.name,
+      properties: {
+        ...form.properties,
+        'Width': size.width,
+        'Height': size.height,
+      },
+      controls: form.controls,
+    );

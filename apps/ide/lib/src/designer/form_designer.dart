@@ -65,6 +65,22 @@ class _FormDesignerState extends State<FormDesigner> {
   Point<double>? _dragStart;
   Point<double>? _dragEnd;
 
+  /// A control being moved (no [handle]) or resized with the mouse: its
+  /// box when the drag started, and where the drag started.
+  ({String name, ControlBox start, Handle? handle, Offset from})? _change;
+
+  /// Where that control is now; null until the drag goes far enough.
+  ControlBox? _live;
+
+  /// The form's size and where a drag of one of its handles started.
+  ({({int width, int height}) start, Offset from, Handle handle})? _formChange;
+
+  /// The form's size during that drag.
+  ({int width, int height})? _liveForm;
+
+  /// The mouse cursor over the form, from what is under the mouse.
+  MouseCursor _cursor = MouseCursor.defer;
+
   /// Whether the form file's text is shown instead of the form.
   var _showText = false;
 
@@ -72,6 +88,9 @@ class _FormDesignerState extends State<FormDesigner> {
   String? _readText;
   late FormFileResult _read;
   late GbFormModel _model;
+
+  /// Counts the models made, so that each one gets new widgets.
+  var _modelVersion = 0;
 
   String get _text => widget.project.files[widget.file] ?? '';
   String get _formName =>
@@ -84,6 +103,7 @@ class _FormDesignerState extends State<FormDesigner> {
       _read = readFormFile(text, name: _formName);
       // A new model each time, never changed: the designer only shows it.
       _model = formModelOf(_read.form, onEvent: (_, _) {});
+      _modelVersion++;
     }
     return _read.form;
   }
@@ -141,7 +161,24 @@ class _FormDesignerState extends State<FormDesigner> {
     _tool = null;
     _selected = null;
     _dragStart = _dragEnd = null;
+    _endChange();
   });
+
+  /// Moves the selected control one step, [dx] and [dy] being -1, 0 or 1.
+  void _nudge(int dx, int dy) =>
+      _arrow((b) => nudgedBox(b, dx, dy, size: formSizeOf(_form), grid: _grid));
+
+  /// Makes the selected control one step wider or narrower, taller or
+  /// shorter.
+  void _grow(int dx, int dy) =>
+      _arrow((b) => grownBox(b, dx, dy, size: formSizeOf(_form), grid: _grid));
+
+  void _arrow(ControlBox Function(ControlBox) change) {
+    final c = _selectedControl;
+    if (!_canEdit || c == null || _change != null) return;
+    final box = change(boxOf(c));
+    if (box != boxOf(c)) _apply(withBox(_form, c.name, box), select: c.name);
+  }
 
   ControlDecl? get _selectedControl =>
       _selected == null ? null : _form.control(_selected!);
@@ -177,15 +214,80 @@ class _FormDesignerState extends State<FormDesigner> {
       setState(() => _dragStart = _dragEnd = _point(e));
       return;
     }
-    setState(() => _selected = _controlAt(e.localPosition)?.name);
+    final p = e.localPosition;
+    final selected = _selectedControl;
+    final handle = selected == null ? null : _handleAt(p, boxOf(selected));
+    if (handle != null && _canEdit) {
+      setState(
+        () => _change = (
+          name: selected!.name,
+          start: boxOf(selected),
+          handle: handle,
+          from: p,
+        ),
+      );
+      return;
+    }
+    final c = _controlAt(p);
+    setState(() {
+      _selected = c?.name;
+      if (c != null && _canEdit) {
+        _change = (name: c.name, start: boxOf(c), handle: null, from: p);
+        _cursor = SystemMouseCursors.move;
+      }
+    });
   }
 
   void _move(PointerMoveEvent e) {
-    if (_dragStart == null) return;
-    setState(() => _dragEnd = _point(e));
+    if (_dragStart != null) {
+      setState(() => _dragEnd = _point(e));
+      return;
+    }
+    final change = _change;
+    if (change == null) return;
+    final d = e.localPosition - change.from;
+    // A click that moves a pixel or two only selects.
+    if (_live == null &&
+        change.handle == null &&
+        d.dx.abs() < clickDistance &&
+        d.dy.abs() < clickDistance) {
+      return;
+    }
+    final size = formSizeOf(_form);
+    final box = switch (change.handle) {
+      null => movedBox(change.start, d.dx, d.dy, size: size, grid: _grid),
+      final h => resizedBox(
+        change.start,
+        h,
+        d.dx,
+        d.dy,
+        size: size,
+        grid: _grid,
+      ),
+    };
+    if (box == _live) return;
+    // The runtime's widget follows at once; the file changes at the end.
+    _model.control(change.name)!
+      ..set('Left', box.left)
+      ..set('Top', box.top)
+      ..set('Width', box.width)
+      ..set('Height', box.height);
+    setState(() => _live = box);
   }
 
   void _up(PointerUpEvent e) {
+    final change = _change;
+    if (change != null) {
+      final live = _live;
+      _endChange();
+      if (live != null && live != change.start) {
+        _apply(withBox(_form, change.name, live), select: change.name);
+      } else {
+        setState(() {});
+      }
+      _hover(e.localPosition);
+      return;
+    }
     final start = _dragStart;
     final tool = _tool;
     if (start == null || tool == null) return;
@@ -195,10 +297,101 @@ class _FormDesignerState extends State<FormDesigner> {
     _dragStart = _dragEnd = null;
     _tool = null;
     _apply(withControl(form, tool, name, box), select: name);
+    _hover(e.localPosition);
   }
 
-  void _cancel(PointerCancelEvent e) =>
-      setState(() => _dragStart = _dragEnd = null);
+  void _cancel(PointerCancelEvent e) => setState(() {
+    _dragStart = _dragEnd = null;
+    _endChange();
+  });
+
+  /// Forgets a move or resize; the form is shown from its file again.
+  void _endChange() {
+    if (_live != null || _liveForm != null) _readText = null;
+    _change = null;
+    _live = null;
+    _formChange = null;
+    _liveForm = null;
+  }
+
+  /// Sets the cursor for the mouse at [p] on the form.
+  void _hover(Offset p) {
+    final selected = _selectedControl;
+    final handle = selected == null ? null : _handleAt(p, boxOf(selected));
+    final cursor = !_canEdit
+        ? MouseCursor.defer
+        : _tool != null
+        ? SystemMouseCursors.precise
+        : handle != null
+        ? _resizeCursor(handle)
+        : _controlAt(p) != null
+        ? SystemMouseCursors.move
+        : MouseCursor.defer;
+    if (cursor != _cursor) setState(() => _cursor = cursor);
+  }
+
+  /// The handle of [box] at [p], if any.
+  static Handle? _handleAt(Offset p, ControlBox box) {
+    for (final h in handles) {
+      final c = _handleCentre(box, h);
+      if ((p.dx - c.dx).abs() <= _handleReach &&
+          (p.dy - c.dy).abs() <= _handleReach) {
+        return h;
+      }
+    }
+    return null;
+  }
+
+  /// How far from a handle's centre the mouse still takes it.
+  static const _handleReach = 5.0;
+
+  static Offset _handleCentre(ControlBox b, Handle h) => Offset(
+    b.left + (h.x + 1) / 2 * b.width,
+    b.top + (h.y + 1) / 2 * b.height,
+  );
+
+  // The form's own handles, at its right and bottom edges.
+
+  void _formDown(Handle handle, PointerDownEvent e) {
+    _focus.requestFocus();
+    if (!_canEdit || e.buttons & kPrimaryButton == 0) return;
+    setState(
+      () => _formChange = (
+        start: formSizeOf(_form),
+        from: e.position,
+        handle: handle,
+      ),
+    );
+  }
+
+  void _formMove(PointerMoveEvent e) {
+    final change = _formChange;
+    if (change == null) return;
+    final d = e.position - change.from;
+    final size = resizedForm(
+      change.start,
+      change.handle.x == 0 ? 0 : d.dx,
+      change.handle.y == 0 ? 0 : d.dy,
+      grid: _grid,
+    );
+    if (size == _liveForm) return;
+    _model.form
+      ..set('Width', size.width)
+      ..set('Height', size.height);
+    setState(() => _liveForm = size);
+  }
+
+  void _formUp(PointerUpEvent e) {
+    final change = _formChange;
+    final live = _liveForm;
+    if (change == null) return;
+    _endChange();
+    if (live != null && live != change.start) {
+      _apply(withFormSize(_form, live), select: _selected);
+    } else {
+      setState(() {});
+    }
+  }
 
   /// The control drawn at [p], the one on top where they overlap.
   ControlDecl? _controlAt(Offset p) {
@@ -233,6 +426,13 @@ class _FormDesignerState extends State<FormDesigner> {
           const SingleActivator(LogicalKeyboardKey.backspace): _delete,
           for (final a in _undoKeys) a: _undo,
           for (final a in _redoKeys) a: _redo,
+        },
+        // Taken even when nothing can change: otherwise Ctrl+arrow went on
+        // to scroll whichever view the app chose.
+        for (final (key, dx, dy) in _arrows) ...{
+          SingleActivator(key, meta: _isApple, control: !_isApple): () =>
+              _nudge(dx, dy),
+          SingleActivator(key, shift: true): () => _grow(dx, dy),
         },
         const SingleActivator(LogicalKeyboardKey.escape): _escape,
       },
@@ -355,19 +555,21 @@ class _FormDesignerState extends State<FormDesigner> {
   }
 
   Widget _canvas(BuildContext context, FormFile form, bool editable) {
-    final size = formSizeOf(form);
+    final size = _liveForm ?? formSizeOf(form);
     final width = size.width.toDouble();
     final height = size.height.toDouble();
     final scheme = Theme.of(context).colorScheme;
     final selected = _selectedControl;
+    ControlBox boxNow(ControlDecl c) =>
+        _live != null && c.name == _change?.name ? _live! : boxOf(c);
     final area = SizedBox(
       key: designerFormKey,
       width: width,
       height: height,
       child: MouseRegion(
-        cursor: _tool != null && editable
-            ? SystemMouseCursors.precise
-            : MouseCursor.defer,
+        cursor: _cursor,
+        onHover: (e) => _hover(e.localPosition),
+        onExit: (_) => setState(() => _cursor = MouseCursor.defer),
         child: Listener(
           behavior: HitTestBehavior.opaque,
           onPointerDown: _down,
@@ -387,7 +589,10 @@ class _FormDesignerState extends State<FormDesigner> {
               Positioned.fill(
                 child: IgnorePointer(
                   child: ExcludeFocus(
-                    child: GbFormView(key: ValueKey(_readText), model: _model),
+                    child: GbFormView(
+                      key: ValueKey(_modelVersion),
+                      model: _model,
+                    ),
                   ),
                 ),
               ),
@@ -396,10 +601,10 @@ class _FormDesignerState extends State<FormDesigner> {
                   painter: _MarksPainter(
                     edges: [
                       for (final c in form.controls)
-                        if (c.component.name == 'Label') boxOf(c),
+                        if (c.component.name == 'Label') boxNow(c),
                     ],
                     edgeColor: scheme.outline,
-                    selected: selected == null ? null : boxOf(selected),
+                    selected: selected == null ? null : boxNow(selected),
                     drawing: _drawing,
                     color: scheme.primary,
                     handleFill: scheme.surface,
@@ -411,6 +616,62 @@ class _FormDesignerState extends State<FormDesigner> {
         ),
       ),
     );
+    final frame = FormWindowFrame(
+      caption: form.valueOf('Caption') as String,
+      width: width,
+      child: area,
+    );
+    // The form's handles sit on its right and bottom edges, half outside
+    // the window; the padding lets the mouse take that half too.
+    const reach = _MarksPainter.handleSize;
+    Widget formHandle(Handle h, MouseCursor cursor) {
+      final centre = Offset(
+        h.x == 0 ? width / 2 : width,
+        formTitleHeight + (h.y == 0 ? height / 2 : height),
+      );
+      return Positioned(
+        key: ValueKey('designer.formHandle.${h.x}.${h.y}'),
+        left: centre.dx - reach,
+        top: centre.dy - reach,
+        width: reach * 2,
+        height: reach * 2,
+        child: MouseRegion(
+          cursor: editable ? cursor : MouseCursor.defer,
+          child: Listener(
+            behavior: HitTestBehavior.opaque,
+            onPointerDown: (e) => _formDown(h, e),
+            onPointerMove: _formMove,
+            onPointerUp: _formUp,
+            onPointerCancel: (_) => setState(_endChange),
+            child: Center(
+              child: Container(
+                width: reach,
+                height: reach,
+                decoration: BoxDecoration(
+                  color: scheme.surface,
+                  border: Border.all(
+                    color: editable ? scheme.outline : scheme.outlineVariant,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    final framed = Stack(
+      clipBehavior: Clip.none,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(right: reach, bottom: reach),
+          child: frame,
+        ),
+        formHandle((x: 1, y: 0), SystemMouseCursors.resizeLeftRight),
+        formHandle((x: 0, y: 1), SystemMouseCursors.resizeUpDown),
+        formHandle((x: 1, y: 1), SystemMouseCursors.resizeUpLeftDownRight),
+      ],
+    );
     return LayoutBuilder(
       builder: (context, constraints) => SingleChildScrollView(
         child: SingleChildScrollView(
@@ -419,14 +680,7 @@ class _FormDesignerState extends State<FormDesigner> {
             constraints: BoxConstraints(minWidth: constraints.maxWidth),
             child: Padding(
               padding: const EdgeInsets.all(24),
-              child: Align(
-                alignment: Alignment.topCenter,
-                child: FormWindowFrame(
-                  caption: form.valueOf('Caption') as String,
-                  width: width,
-                  child: area,
-                ),
-              ),
+              child: Align(alignment: Alignment.topCenter, child: framed),
             ),
           ),
         ),
@@ -442,11 +696,15 @@ class _FormDesignerState extends State<FormDesigner> {
         '${b.width}×${b.height}';
     final drawing = _drawing;
     final selected = _selectedControl;
-    final size = formSizeOf(form);
+    final size = _liveForm ?? formSizeOf(form);
     final text = drawing != null
         ? describe(newControlName(form, _tool!), _tool!.name, drawing)
         : selected != null
-        ? describe(selected.name, selected.component.name, boxOf(selected))
+        ? describe(
+            selected.name,
+            selected.component.name,
+            _live ?? boxOf(selected),
+          )
         : '${form.name} (Form) · ${size.width}×${size.height}';
     return Container(
       height: 24,
@@ -464,6 +722,23 @@ class _FormDesignerState extends State<FormDesigner> {
 bool get _isApple => switch (defaultTargetPlatform) {
   TargetPlatform.macOS || TargetPlatform.iOS => true,
   _ => false,
+};
+
+/// The arrow keys and the way each one moves: (key, dx, dy).
+const _arrows = [
+  (LogicalKeyboardKey.arrowLeft, -1, 0),
+  (LogicalKeyboardKey.arrowRight, 1, 0),
+  (LogicalKeyboardKey.arrowUp, 0, -1),
+  (LogicalKeyboardKey.arrowDown, 0, 1),
+];
+
+/// The cursor over [handle] of a control's frame.
+MouseCursor _resizeCursor(Handle handle) => switch (handle) {
+  (x: 0, y: _) => SystemMouseCursors.resizeUpDown,
+  (x: _, y: 0) => SystemMouseCursors.resizeLeftRight,
+  (x: final x, y: final y) when x == y =>
+    SystemMouseCursors.resizeUpLeftDownRight,
+  _ => SystemMouseCursors.resizeUpRightDownLeft,
 };
 
 /// ⌘Z on Apple systems, Ctrl+Z elsewhere.

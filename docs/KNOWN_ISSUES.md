@@ -89,6 +89,6 @@ Problems we know about and have **deliberately** left unfixed for now. Each entr
 
 ## The form designer needs a mouse
 
-- **What:** controls are placed, selected and deleted with the mouse (or a touchpad); the keyboard only deletes, undoes and goes back to the pointer. On the web with Flutter's accessibility layer on (as a screen reader turns it on), a double-click in the toolbox did not place a control when tried in Chrome; choosing a tool and clicking on the form still works. The cause was not looked into.
+- **What:** controls are placed and selected with the mouse (or a touchpad); the keyboard moves, resizes and deletes the selected control, undoes and goes back to the pointer. On the web with Flutter's accessibility layer on (as a screen reader turns it on), a double-click in the toolbox did not place a control when tried in Chrome; choosing a tool and clicking on the form still works. The cause was not looked into.
 - **Why deferred:** drawing a form is what the designer is for; keyboard ways in come step by step.
-- **Revisit:** arrow keys move and resize the selected control in E2c-2; the Properties window (E2d) lets values be typed. Then check the designer with a screen reader.
+- **Revisit:** with the Properties window (E2d), which lets values be typed; then check the designer with a screen reader.
