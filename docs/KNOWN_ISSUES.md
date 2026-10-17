@@ -73,17 +73,17 @@ Problems we know about and have **deliberately** left unfixed for now. Each entr
 
 - **What:** the form designer cannot copy, cut or paste controls (⌘C / ⌘X / ⌘V, Ctrl+C / Ctrl+X / Ctrl+V).
 - **Why deferred:** a pasted control needs a new name and a place, and what it copies depends on the properties the Properties window (E2d) will set; drawing a new control already takes one drag.
-- **Revisit:** after E2d (the Properties window).
+- **Revisit:** after E2d (the Properties window). When they come, Cut, Copy and Paste go into the designer's context menu too (D42).
 
-## The form designer selects one control at a time and keeps the drawing order
+## The form designer selects one control at a time
 
-- **What:** only one control can be selected, so several cannot be moved or deleted together; a new control is always drawn above the others, and the order cannot be changed (no "bring to front" or "send to back").
-- **Why deferred:** forms in stage 1 have a few controls that do not overlap; a group selection needs its own rules for moving and resizing.
+- **What:** only one control can be selected, so several cannot be moved, deleted or brought to the front together.
+- **Why deferred:** forms in stage 1 have a few controls; a group selection needs its own rules for moving and resizing. The drawing order can be changed one control at a time (D42).
 - **Revisit:** when forms with many controls (ListBox, Image, stage 1) make it a burden, or with `Anchor`.
 
 ## The form designer needs a mouse
 
-- **What:** controls are placed with the mouse (or a touchpad); the keyboard moves, resizes and deletes the selected control, and the Properties window chooses controls and takes typed values. On the web with Flutter's accessibility layer on (as a screen reader turns it on), a double-click in the toolbox did not place a control when tried in Chrome; choosing a tool and clicking on the form still works. The cause was not looked into.
+- **What:** controls are placed with the mouse (or a touchpad); the keyboard chooses a control (Tab, Shift+Tab), moves, resizes, deletes and orders it, and the Properties window chooses controls and takes typed values. On the web with Flutter's accessibility layer on (as a screen reader turns it on), a double-click in the toolbox did not place a control when tried in Chrome; choosing a tool and clicking on the form still works. The cause was not looked into.
 - **Why deferred:** drawing a form is what the designer is for; keyboard ways in come step by step.
 - **Revisit:** when the designer is checked with a screen reader (after E2d); placing a control from the keyboard would need the toolbox to take the focus.
 

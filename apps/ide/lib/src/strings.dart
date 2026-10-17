@@ -88,6 +88,10 @@ class IdeStrings {
     required this.eventList,
     required this.noHandlerWhileRunning,
     required this.goToLine,
+    required this.viewCode,
+    required this.bringToFront,
+    required this.sendToBack,
+    required this.delete,
   });
 
   /// The words on MsgBox and InputBox.
@@ -250,6 +254,12 @@ class IdeStrings {
   /// An error in the output, clicked (D40). `{0}` the file, `{1}` the line.
   final String goToLine;
 
+  // The designer's context menu and order buttons (D42).
+  final String viewCode;
+  final String bringToFront;
+  final String sendToBack;
+  final String delete;
+
   /// [diagnostic] in [file], in this language.
   String problem(String file, Diagnostic diagnostic) => errorAt
       .replaceAll('{0}', file)
@@ -346,6 +356,10 @@ class IdeStrings {
     eventList: 'Event',
     noHandlerWhileRunning: 'There is no {0} yet, and code cannot be changed while the program runs. Stop it (Shift+F5) first.',
     goToLine: 'Go to {0}, line {1}',
+    viewCode: 'View Code',
+    bringToFront: 'Bring to Front',
+    sendToBack: 'Send to Back',
+    delete: 'Delete',
   );
 
   static const ko = IdeStrings(
@@ -440,6 +454,10 @@ class IdeStrings {
     noHandlerWhileRunning:
         '{0} 처리기가 아직 없고, 프로그램이 실행되는 동안에는 코드를 바꿀 수 없습니다. 먼저 중지(Shift+F5)합니다.',
     goToLine: '{0} 파일 {1}번째 줄로 갑니다',
+    viewCode: '코드 보기',
+    bringToFront: '맨 앞으로',
+    sendToBack: '맨 뒤로',
+    delete: '삭제',
   );
 
   /// Korean when the system language is Korean, else English.

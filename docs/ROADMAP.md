@@ -46,6 +46,7 @@ The core Visual Basic experience, entirely inside the IDE.
 - [ ] GitHub Actions template for cloud builds
 - [ ] Layout: `LayoutMode` (Vertical / Horizontal / Grid), `Dock`
 - [ ] `Handles` clause; run-time control creation
+- [ ] Menus in students' apps: a menu bar and right-click menus (Visual Basic 6's [Menu Editor](https://learn.microsoft.com/en-us/previous-versions/visualstudio/visual-studio-2008/62aawczc(v=vs.90)) and [PopupMenu](https://learn.microsoft.com/en-us/previous-versions/visualstudio/visual-basic-6/aa716251(v=vs.60)); Visual Basic .NET's `ContextMenuStrip`, same source)
 - [ ] `Database` (SQLite) and `Http` + JSON
 - [ ] Multiple forms and `Form2.Show` platform behavior; decide then whether one form can be saved on its own (Visual Basic 6's "Save Form1 As"; until then Save saves the whole project, D32)
 - [ ] `ByRef`

@@ -147,6 +147,16 @@ FormFile withControl(
   ]);
 }
 
+/// [form] with the control named [name] moved to the end of the list, on
+/// top of the controls of its layer ([front]), or to its start, under
+/// them (D42). The layers stay as they are (D41).
+FormFile withOrder(FormFile form, String name, {required bool front}) {
+  final lower = name.toLowerCase();
+  final moved = form.controls.where((c) => c.name.toLowerCase() == lower);
+  final others = form.controls.where((c) => c.name.toLowerCase() != lower);
+  return _copy(form, front ? [...others, ...moved] : [...moved, ...others]);
+}
+
 /// [form] without the control named [name].
 FormFile withoutControl(FormFile form, String name) => _copy(form, [
   for (final c in form.controls)

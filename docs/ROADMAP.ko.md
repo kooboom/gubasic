@@ -46,6 +46,7 @@ IDE 안에서 완결되는 비주얼 베이직의 핵심 경험입니다.
 - [ ] 클라우드 빌드용 GitHub Actions 템플릿
 - [ ] 레이아웃: `LayoutMode` (세로 / 가로 / 격자), `Dock`
 - [ ] `Handles` 절; 실행 중 컨트롤 생성
+- [ ] 학생 앱의 메뉴: 메뉴 막대와 오른쪽 클릭 메뉴(Visual Basic 6의 [메뉴 편집기](https://learn.microsoft.com/en-us/previous-versions/visualstudio/visual-studio-2008/62aawczc(v=vs.90))와 [PopupMenu](https://learn.microsoft.com/en-us/previous-versions/visualstudio/visual-basic-6/aa716251(v=vs.60)), Visual Basic .NET의 `ContextMenuStrip`(같은 출처)에 해당)
 - [ ] `Database` (SQLite)와 `Http` + JSON
 - [ ] 여러 폼과 플랫폼별 `Form2.Show` 동작. 이때 폼 하나만 따로 저장하는 기능(Visual Basic 6의 "Form1을 다른 이름으로 저장")을 둘지 정함(그때까지 저장은 프로젝트 전체 저장, D32)
 - [ ] `ByRef`

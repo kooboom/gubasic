@@ -26,6 +26,10 @@ const designerFormKey = ValueKey('designer.form');
 ///
 /// It only shows the form while [locked] (a program runs), or when the
 /// form file has errors: writing it again would drop what could not be
+/// The keys of the designer's context menu items and order buttons.
+ValueKey<String> designerMenuKey(String item) =>
+    ValueKey('designer.menu.$item');
+
 /// read.
 class FormDesigner extends StatefulWidget {
   const FormDesigner({
@@ -134,6 +138,8 @@ class _FormDesignerState extends State<FormDesigner> {
   @override
   void dispose() {
     _focus.dispose();
+    _propertiesNode.dispose();
+    if (kIsWeb) BrowserContextMenu.enableContextMenu();
     super.dispose();
   }
 
@@ -238,6 +244,17 @@ class _FormDesignerState extends State<FormDesigner> {
 
   void _down(PointerDownEvent e) {
     _focus.requestFocus();
+    // The right button, a two-finger click, or Control and a click on
+    // Apple systems: the context menu.
+    final secondary =
+        e.buttons & kSecondaryButton != 0 ||
+        (_isApple &&
+            e.buttons & kPrimaryButton != 0 &&
+            HardwareKeyboard.instance.isControlPressed);
+    if (secondary) {
+      _contextMenu(e.position, e.localPosition);
+      return;
+    }
     if (e.buttons & kPrimaryButton == 0) return;
     _pressBefore = _press;
     _press = (
@@ -249,6 +266,20 @@ class _FormDesignerState extends State<FormDesigner> {
       return;
     }
     final p = e.localPosition;
+    if (HardwareKeyboard.instance.isAltPressed) {
+      // Option / Alt and a click: the control under the selected one
+      // there, round again from the top (D42).
+      final under = _controlsAt(p);
+      final i = under.indexWhere((c) => c.name == _selected);
+      final c = under.isEmpty ? null : under[(i + 1) % under.length];
+      setState(() {
+        _selected = c?.name;
+        if (c != null && _canEdit) {
+          _change = (name: c.name, start: boxOf(c), handle: null, from: p);
+        }
+      });
+      return;
+    }
     final selected = _selectedControl;
     final handle = selected == null ? null : _handleAt(p, boxOf(selected));
     if (handle != null && _canEdit) {
@@ -277,6 +308,8 @@ class _FormDesignerState extends State<FormDesigner> {
   void _doubleClick() {
     final (a, b) = (_pressBefore, _press);
     if (_tool != null || a == null || b == null) return;
+    // Option-clicks go down through the controls; they open nothing.
+    if (HardwareKeyboard.instance.isAltPressed) return;
     if (a.target != b.target || (a.at - b.at).distance > _doubleClickReach) {
       return;
     }
@@ -439,22 +472,169 @@ class _FormDesignerState extends State<FormDesigner> {
     }
   }
 
-  /// The control drawn at [p], the one on top where they overlap: the
-  /// order the runtime draws them in (D41).
-  ControlDecl? _controlAt(Offset p) {
+  /// The control drawn at [p], the one on top where they overlap.
+  ControlDecl? _controlAt(Offset p) => _controlsAt(p).firstOrNull;
+
+  /// The controls drawn at [p], from the top down: the order the runtime
+  /// draws them in (D41).
+  List<ControlDecl> _controlsAt(Offset p) {
     final form = _form;
-    for (final drawn in _model.drawingOrder.reversed) {
-      final c = form.control(drawn.name!);
-      if (c == null) continue;
-      final b = boxOf(c);
-      if (p.dx >= b.left &&
-          p.dx < b.left + b.width &&
-          p.dy >= b.top &&
-          p.dy < b.top + b.height) {
-        return c;
-      }
+    return [
+      for (final drawn in _model.drawingOrder.reversed)
+        if (form.control(drawn.name!) case final c?)
+          if (_contains(boxOf(c), p)) c,
+    ];
+  }
+
+  static bool _contains(ControlBox b, Offset p) =>
+      p.dx >= b.left &&
+      p.dx < b.left + b.width &&
+      p.dy >= b.top &&
+      p.dy < b.top + b.height;
+
+  /// Tab / Shift+Tab: the next or the previous control in the form file,
+  /// round again at the end (D42).
+  void _selectNext(int step) {
+    final controls = _form.controls;
+    if (controls.isEmpty) return;
+    final i = controls.indexWhere((c) => c.name == _selected);
+    final n = controls.length;
+    final next = i < 0 ? (step > 0 ? 0 : n - 1) : (i + step + n) % n;
+    setState(() => _selected = controls[next].name);
+  }
+
+  /// ⌘J / ⌘K, Ctrl+J / Ctrl+K: the selected control on top of the others
+  /// of its layer, or under them (D42); one step of undo.
+  void _order({required bool front}) {
+    final name = _selectedControl?.name;
+    if (!_canEdit || name == null) return;
+    _apply(withOrder(_form, name, front: front), select: name);
+  }
+
+  /// The designer's context menu at [global], for what is at [local] on
+  /// the form: a right click, a two-finger click, Control and a click on
+  /// Apple systems, and later a long press on a touch screen. A control
+  /// there is selected first. While a program runs only View Code works.
+  Future<void> _contextMenu(Offset global, Offset local) async {
+    final c = _controlAt(local);
+    setState(() {
+      _selected = c?.name;
+      _change = null;
+      _dragStart = _dragEnd = null;
+    });
+    final s = widget.strings;
+    final editable = _canEdit;
+    final apple = _isApple;
+    String key(String k) => apple ? '⌘$k' : 'Ctrl+$k';
+    PopupMenuItem<VoidCallback> item(
+      Key id,
+      String label,
+      VoidCallback action, {
+      bool enabled = true,
+      String? shortcut,
+    }) => PopupMenuItem(
+      key: id,
+      value: action,
+      enabled: enabled,
+      child: Row(
+        children: [
+          Expanded(child: Text(label)),
+          if (shortcut != null)
+            Padding(
+              padding: const EdgeInsets.only(left: 24),
+              child: Text(
+                shortcut,
+                style: TextStyle(color: Theme.of(context).hintColor),
+              ),
+            ),
+        ],
+      ),
+    );
+    final name = c?.name;
+    final action = await showMenu<VoidCallback>(
+      context: context,
+      position: RelativeRect.fromLTRB(
+        global.dx,
+        global.dy,
+        global.dx,
+        global.dy,
+      ),
+      items: [
+        item(
+          designerMenuKey('viewCode'),
+          s.viewCode,
+          () => widget.onOpenHandler?.call(name),
+        ),
+        if (c != null) ...[
+          const PopupMenuDivider(),
+          item(
+            designerMenuKey('front'),
+            s.bringToFront,
+            () => _order(front: true),
+            enabled: editable,
+            shortcut: key('J'),
+          ),
+          item(
+            designerMenuKey('back'),
+            s.sendToBack,
+            () => _order(front: false),
+            enabled: editable,
+            shortcut: key('K'),
+          ),
+          const PopupMenuDivider(),
+          item(
+            designerMenuKey('delete'),
+            s.delete,
+            _delete,
+            enabled: editable,
+            shortcut: apple ? '⌫' : 'Delete',
+          ),
+          item(
+            designerMenuKey('properties'),
+            s.properties,
+            _focusProperties,
+            enabled: editable,
+          ),
+        ] else ...[
+          const PopupMenuDivider(),
+          CheckedPopupMenuItem(
+            key: designerMenuKey('grid'),
+            value: () => widget.grid.value = !widget.grid.value,
+            enabled: editable,
+            checked: _grid,
+            child: Text(s.grid),
+          ),
+        ],
+      ],
+    );
+    if (!mounted) return;
+    if (action == null) {
+      _focus.requestFocus();
+      return;
     }
-    return null;
+    action();
+    if (!_propertiesAsked) _focus.requestFocus();
+    _propertiesAsked = false;
+  }
+
+  /// The Properties window around its fields, to give the first one the
+  /// focus.
+  final _propertiesNode = FocusNode(skipTraversal: true);
+  var _propertiesAsked = false;
+
+  /// Properties in the context menu: the first field of the Properties
+  /// window takes the focus, (Name) for a control.
+  void _focusProperties() {
+    _propertiesAsked = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      for (final n in _propertiesNode.traversalDescendants) {
+        if (n.canRequestFocus &&
+            n.context?.findAncestorWidgetOfExactType<TextField>() != null) {
+          n.requestFocus();
+          return;
+        }
+      }
+    });
   }
 
   /// The box being drawn, as it will be placed.
@@ -554,7 +734,15 @@ class _FormDesignerState extends State<FormDesigner> {
           const SingleActivator(LogicalKeyboardKey.backspace): _delete,
           for (final a in _undoKeys) a: _undo,
           for (final a in _redoKeys) a: _redo,
+          const ShortcutAt(PhysicalKeyboardKey.keyJ): () => _order(front: true),
+          const ShortcutAt(PhysicalKeyboardKey.keyK): () =>
+              _order(front: false),
         },
+        // Tab chooses controls while the form has the focus; in the
+        // Properties window and the code editor it stays theirs.
+        const SingleActivator(LogicalKeyboardKey.tab): () => _selectNext(1),
+        const SingleActivator(LogicalKeyboardKey.tab, shift: true): () =>
+            _selectNext(-1),
         // Taken even when nothing can change: otherwise Ctrl+arrow went on
         // to scroll whichever view the app chose.
         for (final (key, dx, dy) in _arrows) ...{
@@ -608,19 +796,23 @@ class _FormDesignerState extends State<FormDesigner> {
                     children: [
                       Expanded(child: canvas),
                       const VerticalDivider(width: 1),
-                      PropertiesPanel(
-                        form: form,
-                        selected: _selectedControl,
-                        editable: editable,
-                        strings: s,
-                        onSelect: _select,
-                        onChange: _setProperty,
-                        onPreview: _preview,
-                        onDone: _fieldDone,
-                        onLeave: _focus.requestFocus,
-                        code: widget.project.files[_codeFile] ?? '',
-                        codeFile: _codeFile,
-                        onRename: _rename,
+                      Focus(
+                        focusNode: _propertiesNode,
+                        canRequestFocus: false,
+                        child: PropertiesPanel(
+                          form: form,
+                          selected: _selectedControl,
+                          editable: editable,
+                          strings: s,
+                          onSelect: _select,
+                          onChange: _setProperty,
+                          onPreview: _preview,
+                          onDone: _fieldDone,
+                          onLeave: _focus.requestFocus,
+                          code: widget.project.files[_codeFile] ?? '',
+                          codeFile: _codeFile,
+                          onRename: _rename,
+                        ),
                       ),
                     ],
                   ),
@@ -663,6 +855,23 @@ class _FormDesignerState extends State<FormDesigner> {
                 _focus.requestFocus();
               },
             ),
+          ),
+          const SizedBox(width: 8),
+          IconButton(
+            key: designerMenuKey('toolbar.front'),
+            tooltip: '${s.bringToFront} (${apple ? '⌘J' : 'Ctrl+J'})',
+            icon: const Icon(Icons.flip_to_front),
+            onPressed: editable && _selectedControl != null
+                ? () => _order(front: true)
+                : null,
+          ),
+          IconButton(
+            key: designerMenuKey('toolbar.back'),
+            tooltip: '${s.sendToBack} (${apple ? '⌘K' : 'Ctrl+K'})',
+            icon: const Icon(Icons.flip_to_back),
+            onPressed: editable && _selectedControl != null
+                ? () => _order(front: false)
+                : null,
           ),
           const Spacer(),
           TextButton.icon(
@@ -718,7 +927,15 @@ class _FormDesignerState extends State<FormDesigner> {
       child: MouseRegion(
         cursor: _cursor,
         onHover: (e) => _hover(e.localPosition),
-        onExit: (_) => setState(() => _cursor = MouseCursor.defer),
+        // On the web, the right button opens the designer's menu here,
+        // not the browser's.
+        onEnter: (_) {
+          if (kIsWeb) BrowserContextMenu.disableContextMenu();
+        },
+        onExit: (_) {
+          if (kIsWeb) BrowserContextMenu.enableContextMenu();
+          setState(() => _cursor = MouseCursor.defer);
+        },
         child: Listener(
           behavior: HitTestBehavior.opaque,
           onPointerDown: _down,
@@ -1020,4 +1237,31 @@ class _MarksPainter extends CustomPainter {
       old.drawing != drawing ||
       old.color != color ||
       old.handleFill != handleFill;
+}
+
+/// ⌘ and [key] on Apple systems, Ctrl and [key] elsewhere, by where the
+/// key is on the keyboard: with a Korean input method on, Chrome on a Mac
+/// reports Ctrl+K as ㅏ, which a shortcut by the letter does not match.
+@visibleForTesting
+class ShortcutAt extends ShortcutActivator {
+  const ShortcutAt(this.key);
+
+  final PhysicalKeyboardKey key;
+
+  @override
+  Iterable<LogicalKeyboardKey>? get triggers => null;
+
+  @override
+  bool accepts(KeyEvent event, HardwareKeyboard state) {
+    if (event is KeyUpEvent || event.physicalKey != key) return false;
+    final apple = _isApple;
+    return state.isMetaPressed == apple &&
+        state.isControlPressed == !apple &&
+        !state.isAltPressed &&
+        !state.isShiftPressed;
+  }
+
+  @override
+  String debugDescribeKeys() =>
+      '${_isApple ? 'Meta' : 'Control'}+${key.debugName}';
 }
