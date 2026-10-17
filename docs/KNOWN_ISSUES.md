@@ -69,12 +69,6 @@ Problems we know about and have **deliberately** left unfixed for now. Each entr
 - **Why deferred:** all of this was served from 127.0.0.1, so no real network (such as a school network) was in between. That needs the Pages deploy (E1e).
 - **Revisit:** after the Pages deploy (E1e): open the real address in a normal browser on the school PC, check that it loads on the school network, and measure how long the first visit takes.
 
-## On the web, the code view is not monospace
-
-- **What:** the IDE's code view and output ask for the `monospace` font, which the web build does not have, so code is shown in a proportional font there (Hangul in it uses Noto Sans KR).
-- **Why deferred:** a monospace font would add to the download (D30), and the code view is read-only until the code editor arrives.
-- **Revisit:** with the code editor (ROADMAP), which chooses the font for code.
-
 ## No copy and paste in the form designer
 
 - **What:** the form designer cannot copy, cut or paste controls (⌘C / ⌘X / ⌘V, Ctrl+C / Ctrl+X / Ctrl+V).
@@ -98,3 +92,9 @@ Problems we know about and have **deliberately** left unfixed for now. Each entr
 - **What:** when a form's code uses a control's name (`btnHello.Caption`, `Sub btnHello_Click`), its (Name) in the Properties window is read-only and says on which lines; the code has to be changed by hand first.
 - **Why deferred:** renaming the uses and the handlers together needs the code editor, which does not exist yet; renaming only the control would leave the code pointing at a control that is gone (D35).
 - **Revisit:** with the code editor's rename-safe handlers (ROADMAP, stage 1).
+
+## Typing in a long code file can drop a frame
+
+- **What:** each key re-lays out the whole code file in the code editor (D36). Measured in the macOS Release app, building a frame after a key takes up to 10 ms for 30 lines, 4–18 ms for 100 lines and 8–29 ms for 300 lines (the first keys the slowest), against 16.7 ms per frame at 60 Hz; typing a line into a 300-line file dropped 2 of 27 frames. In Chrome, one of 80 frames took longer than 20 ms there.
+- **Why deferred:** Flutter's text field lays out its whole text, about 1,000 coloured pieces at 300 lines; the IDE no longer compiles the project or measures every line at each key, which halved it. Programs written in stage 1 are a few dozen lines.
+- **Revisit:** when students write programs of more than about 150 lines, or with the code editor's autocompletion: then lay out only the lines on screen.

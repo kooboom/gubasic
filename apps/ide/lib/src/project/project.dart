@@ -12,50 +12,58 @@ class FileDiagnostic {
 /// `FORM.form.yaml` and `FORM.gbas` next to it (docs/LANGUAGE.md §11.3).
 /// Reading never throws: problems are in [diagnostics].
 class Project {
-  Project._(this.name, this.files, this.diagnostics, this.startup);
+  Project._(this.name, this.files, this._compile);
 
-  /// Reads the project from [files] (file name → text).
+  /// Reads the project from [files] (file name → text). Its name is read
+  /// at once; the forms and the code are read and compiled the first time
+  /// [diagnostics] or [startup] is asked for, so that showing the project
+  /// as it is typed in does not compile it at every key (D36).
   factory Project.read(Map<String, String> files) {
-    final diagnostics = <FileDiagnostic>[];
     final projectFiles = files.keys.where((f) => f.endsWith('.gbproj'));
     if (projectFiles.length != 1) {
-      return Project._('', files, diagnostics, null);
+      return Project._('', files, () => (const <FileDiagnostic>[], null));
     }
     final projectName = projectFiles.single;
     final read = readProjectFile(files[projectName]!);
-    diagnostics.addAll([
-      for (final d in read.diagnostics) FileDiagnostic(projectName, d),
-    ]);
-    final formName = read.project.startupForm;
-    StartupForm? startup;
-    if (!read.hasErrors && formName != null) {
-      final formFile = '$formName.form.yaml';
-      final codeFile = '$formName.gbas';
-      final form = readFormFile(files[formFile] ?? '', name: formName);
-      diagnostics.addAll([
-        for (final d in form.diagnostics) FileDiagnostic(formFile, d),
-      ]);
-      final source = files[codeFile] ?? '';
-      final program = compile(source, form: form.form);
-      diagnostics.addAll([
-        for (final d in program.diagnostics) FileDiagnostic(codeFile, d),
-      ]);
-      if (!form.hasErrors && files.containsKey(formFile)) {
-        startup = StartupForm(form.form, codeFile, program);
+    return Project._(read.project.name, files, () {
+      final diagnostics = <FileDiagnostic>[
+        for (final d in read.diagnostics) FileDiagnostic(projectName, d),
+      ];
+      final formName = read.project.startupForm;
+      StartupForm? startup;
+      if (!read.hasErrors && formName != null) {
+        final formFile = '$formName.form.yaml';
+        final codeFile = '$formName.gbas';
+        final form = readFormFile(files[formFile] ?? '', name: formName);
+        diagnostics.addAll([
+          for (final d in form.diagnostics) FileDiagnostic(formFile, d),
+        ]);
+        final source = files[codeFile] ?? '';
+        final program = compile(source, form: form.form);
+        diagnostics.addAll([
+          for (final d in program.diagnostics) FileDiagnostic(codeFile, d),
+        ]);
+        if (!form.hasErrors && files.containsKey(formFile)) {
+          startup = StartupForm(form.form, codeFile, program);
+        }
       }
-    }
-    return Project._(read.project.name, files, diagnostics, startup);
+      return (diagnostics, startup);
+    });
   }
 
   final String name;
 
   /// The project's files, file name → text.
   final Map<String, String> files;
-  final List<FileDiagnostic> diagnostics;
+
+  final (List<FileDiagnostic>, StartupForm?) Function() _compile;
+  late final (List<FileDiagnostic>, StartupForm?) _compiled = _compile();
+
+  List<FileDiagnostic> get diagnostics => _compiled.$1;
 
   /// The form the project starts with, compiled; null when the project
   /// files have errors.
-  final StartupForm? startup;
+  StartupForm? get startup => _compiled.$2;
 
   /// Whether the project can run: its startup form was read and its code
   /// has no errors (warnings do not count, D23).

@@ -2,6 +2,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import 'code/code_editor.dart';
+import 'code/code_font.dart';
 import 'designer/form_designer.dart';
 import 'designer/form_edit.dart';
 import 'project/open_project.dart';
@@ -52,17 +54,31 @@ class _IdeShellState extends State<IdeShell> {
 
   late String _chosenFile = _firstFile;
 
+  /// The file shown first: the first form, in the designer, as the
+  /// project's look comes first; the code editor, and its font, open when
+  /// a code file is chosen (D36).
   String get _firstFile => _project.files.keys.firstWhere(
-    (f) => f.endsWith('.gbas'),
-    orElse: () => _project.files.keys.first,
+    (f) => f.endsWith('.form.yaml'),
+    orElse: () => _project.files.keys.firstWhere(
+      (f) => f.endsWith('.gbas'),
+      orElse: () => _project.files.keys.first,
+    ),
   );
 
-  /// The file shown; the first code file when the chosen one is gone
+  /// The file shown; the first form when the chosen one is gone
   /// (Save As renames the .gbproj file).
   String get _file =>
       _project.files.containsKey(_chosenFile) ? _chosenFile : _firstFile;
   set _file(String file) => _chosenFile = file;
   RunSession? _session;
+
+  /// The IDE's focus: its keys (F5, ⌘S…) work while it or anything in it
+  /// has the focus.
+  final _focus = FocusNode(debugLabel: 'ide');
+
+  /// Counts the times a file was chosen, so that the code editor takes
+  /// the focus each time, also one that stayed built during a run.
+  var _codeFocusCount = 0;
 
   /// The designer's undo history of each form file.
   final _histories = <String, FormHistory>{};
@@ -97,12 +113,15 @@ class _IdeShellState extends State<IdeShell> {
       _session = RunSession(startup, strings: s);
       _showRun = true;
     });
+    // The view that had the focus is hidden now.
+    _focus.requestFocus();
   }
 
   void _stop() => _session?.stop();
 
   @override
   void dispose() {
+    _focus.dispose();
     _session?.dispose();
     super.dispose();
   }
@@ -127,12 +146,15 @@ class _IdeShellState extends State<IdeShell> {
           _shortcut(LogicalKeyboardKey.keyE, shift: true): _download,
       },
       child: Focus(
+        focusNode: _focus,
         autofocus: true,
         child: ListenableBuilder(
           listenable: Listenable.merge([
             session ?? const _Never(),
             widget.controller,
             widget.controller.current,
+            // The code font arrives later; code shows in it from then on.
+            CodeFont.loaded,
           ]),
           builder: (context, _) => Scaffold(
             appBar: AppBar(
@@ -307,7 +329,10 @@ class _IdeShellState extends State<IdeShell> {
           leading: const Icon(Icons.play_arrow),
           title: Text(widget.strings.runWindow),
           selected: _showRun,
-          onTap: () => setState(() => _showRun = true),
+          onTap: () {
+            setState(() => _showRun = true);
+            _focus.requestFocus();
+          },
         ),
       ListTile(dense: true, title: Text(widget.strings.files)),
       for (final f in _project.files.keys)
@@ -315,10 +340,17 @@ class _IdeShellState extends State<IdeShell> {
           dense: true,
           title: Text(f),
           selected: f == _file && !(_running && _showRun),
-          onTap: () => setState(() {
-            _file = f;
-            _showRun = false;
-          }),
+          onTap: () {
+            setState(() {
+              _file = f;
+              _showRun = false;
+              _codeFocusCount++;
+            });
+            // The IDE takes the focus, so that F5 and ⌘S work: the view that
+            // had it may be hidden now. A designer or code editor that
+            // opens takes it next.
+            _focus.requestFocus();
+          },
         ),
     ],
   );
@@ -336,24 +368,34 @@ class _IdeShellState extends State<IdeShell> {
             locked: _running,
             strings: widget.strings,
           )
+        : file.toLowerCase().endsWith('.gbas')
+        ? CodeEditor(
+            key: ValueKey(file),
+            project: widget.controller.current,
+            file: file,
+            locked: _running,
+            focusCount: _codeFocusCount,
+          )
         : SingleChildScrollView(
             padding: const EdgeInsets.all(12),
             child: SelectableText(_project.files[file]!, style: codeStyle),
           );
-    if (session == null || session.result != null) {
-      return code;
-    }
+    final running = session != null && session.result == null;
     // The run window stays built while a file is shown, so that its
-    // dialogs are still there, unanswered, when the user comes back.
+    // dialogs are still there, unanswered, when the user comes back. The
+    // file's view keeps its place in the stack, run or no run, so that the
+    // code editor and the designer keep their state (the caret, the undo
+    // history) across a run.
     return IndexedStack(
-      index: _showRun ? 1 : 0,
+      index: running && _showRun ? 1 : 0,
       sizing: StackFit.expand,
       children: [
         code,
-        ColoredBox(
-          color: Theme.of(context).colorScheme.scrim.withValues(alpha: 0.2),
-          child: RunWindow(key: ObjectKey(session), session: session),
-        ),
+        if (running)
+          ColoredBox(
+            color: Theme.of(context).colorScheme.scrim.withValues(alpha: 0.2),
+            child: RunWindow(key: ObjectKey(session), session: session),
+          ),
       ],
     );
   }

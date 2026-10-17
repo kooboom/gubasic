@@ -55,7 +55,7 @@ void main() {
     await menu(tester, s.save);
     await tester.tap(find.text(s.saveCopyButton));
     await tester.pumpAndSettle();
-    await tester.enterText(find.byType(TextField), name);
+    await tester.enterText(find.byType(TextField).last, name);
     await tester.pump();
     await tester.tap(find.widgetWithText(FilledButton, s.saveButton));
     await tester.pumpAndSettle();
@@ -249,7 +249,7 @@ void main() {
       findsOneWidget,
     );
     await closeDialog(tester);
-    await tester.enterText(find.byType(TextField), 'Hello2');
+    await tester.enterText(find.byType(TextField).last, 'Hello2');
     await tester.pump();
     await tester.tap(find.widgetWithText(FilledButton, s.saveButton));
     await tester.pumpAndSettle();

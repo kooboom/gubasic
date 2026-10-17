@@ -26,7 +26,11 @@ void main() {
 
   testWidgets('F5 runs hello: click, InputBox, MsgBox, close', (tester) async {
     await open(tester, hello);
-    expect(find.text('Hello'), findsOneWidget, reason: 'the project name');
+    expect(
+      find.descendant(of: find.byType(AppBar), matching: find.text('Hello')),
+      findsOneWidget,
+      reason: 'the project name',
+    );
 
     await tester.sendKeyEvent(LogicalKeyboardKey.f5);
     await tester.pumpAndSettle();
@@ -157,12 +161,18 @@ void main() {
     await tester.pumpWidget(
       IdeApp(projects: exampleProjects, strings: IdeStrings.en),
     );
-    expect(find.text('Hello'), findsOneWidget);
+    expect(
+      find.descendant(of: find.byType(AppBar), matching: find.text('Hello')),
+      findsOneWidget,
+    );
     await tester.tap(find.text('hello'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('typing').last);
     await tester.pumpAndSettle();
-    expect(find.text('Typing'), findsOneWidget);
+    expect(
+      find.descendant(of: find.byType(AppBar), matching: find.text('Typing')),
+      findsOneWidget,
+    );
   });
 
   testWidgets('a project with errors does not start', (tester) async {

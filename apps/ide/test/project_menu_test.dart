@@ -7,6 +7,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gubasic_ide/main.dart';
+import 'package:gubasic_ide/src/code/code_editor.dart';
 import 'package:gubasic_ide/src/ide_shell.dart';
 import 'package:gubasic_ide/src/project/examples.g.dart';
 import 'package:gubasic_ide/src/project/open_project.dart';
@@ -369,7 +370,9 @@ void main() {
     SystemMouseCursor? cursor() =>
         RendererBinding.instance.mouseTracker.debugDeviceActiveCursor(1)
             as SystemMouseCursor?;
-    final code = tester.getCenter(find.textContaining('clickCount').first);
+    await tester.tap(find.text('Form1.gbas'));
+    await tester.pumpAndSettle();
+    final code = tester.getCenter(find.byKey(codeFieldKey));
     await mouse.moveTo(code);
     await tester.pump();
     expect(cursor(), SystemMouseCursors.text, reason: 'the code view');
