@@ -3,7 +3,8 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gubasic_lang/gubasic_lang.dart';
-import 'package:gubasic_runtime/gubasic_runtime.dart' show committedText;
+import 'package:gubasic_runtime/gubasic_runtime.dart'
+    show ComposingTracker, committedText;
 
 import '../project/open_project.dart';
 import '../theme.dart';
@@ -167,7 +168,12 @@ class _CodeEditorState extends State<CodeEditor> {
   /// it takes the focus again.
   var _caret = const TextSelection.collapsed(offset: 0);
 
+  /// What is being composed, as the platform says or as guessed where it
+  /// says nothing (the macOS app, D37).
+  late final _tracker = ComposingTracker(_controller.value);
+
   void _changed() {
+    _tracker.track(_controller.value);
     if (_changing) return;
     final value = _controller.value;
     final last = _last;
@@ -182,7 +188,7 @@ class _CodeEditorState extends State<CodeEditor> {
   /// Writes what the input method has committed, when it changed.
   void _write() {
     if (widget.locked) return;
-    final committed = committedText(_controller.value);
+    final committed = committedText(_tracker.value);
     if (committed == _written) return;
     _written = committed;
     widget.project.setFile(widget.file, committed);
@@ -192,8 +198,12 @@ class _CodeEditorState extends State<CodeEditor> {
   /// before the input method committed it).
   void _commitComposing() {
     final value = _controller.value;
-    if (!value.composing.isValid || value.composing.isCollapsed) return;
-    _controller.value = value.copyWith(composing: TextRange.empty);
+    if (value.composing.isValid && !value.composing.isCollapsed) {
+      _controller.value = value.copyWith(composing: TextRange.empty);
+    } else if (_tracker.composing) {
+      _tracker.commit();
+      _write();
+    }
   }
 
   /// Whether [now] is [before] with its selection replaced by a line
@@ -229,10 +239,7 @@ class _CodeEditorState extends State<CodeEditor> {
     _write();
   }
 
-  bool get _composing {
-    final c = _controller.value.composing;
-    return c.isValid && !c.isCollapsed;
-  }
+  bool get _composing => _tracker.composing;
 
   /// The first and the last line of the selection, as offsets: the start
   /// of the first and the end of the last.

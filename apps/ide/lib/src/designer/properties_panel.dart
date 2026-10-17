@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gubasic_lang/gubasic_lang.dart';
-import 'package:gubasic_runtime/gubasic_runtime.dart' show committedText;
+import 'package:gubasic_runtime/gubasic_runtime.dart'
+    show ComposingTracker, committedText;
 
 import '../strings.dart';
 
@@ -240,6 +241,10 @@ class _PropertyFieldState extends State<PropertyField> {
   late Object _start = widget.value;
   String? _error;
 
+  /// What is being composed, as the platform says or as guessed where it
+  /// says nothing (the macOS app, D37).
+  late final _tracker = ComposingTracker(_controller.value);
+
   /// The text last written to the form from this field.
   late String _written = _show(widget.value);
 
@@ -335,25 +340,25 @@ class _PropertyFieldState extends State<PropertyField> {
   /// Text: writes what the input method has committed, when it changes.
   /// Every value counts, also one where only the composing part ended.
   void _valueChanged() {
+    final value = _tracker.track(_controller.value);
     if (!_isText || !widget.editable || !_focus.hasFocus) return;
-    final committed = committedText(_controller.value);
+    final committed = committedText(value);
     if (committed == _written) return;
     _written = committed;
     widget.onChange(committed, _group);
   }
 
-  bool get _composing {
-    final c = _controller.value.composing;
-    return c.isValid && !c.isCollapsed;
-  }
+  bool get _composing => _tracker.composing;
 
   /// Takes what is being composed as committed, and writes it.
   void _commitComposing() {
-    if (!_composing) return;
-    final value = _controller.value.copyWith(composing: TextRange.empty);
-    if (!widget.editable) return;
-    final committed = committedText(value);
-    _controller.value = value;
+    if (!_composing || !widget.editable) return;
+    final raw = _controller.value;
+    _tracker.commit();
+    if (raw.composing.isValid && !raw.composing.isCollapsed) {
+      _controller.value = raw.copyWith(composing: TextRange.empty);
+    }
+    final committed = committedText(_tracker.value);
     if (committed != _written) {
       _written = committed;
       widget.onChange(committed, _group);
@@ -379,7 +384,7 @@ class _PropertyFieldState extends State<PropertyField> {
   void _escape() {
     if (_composing) {
       // Only what is being composed goes; the field keeps the focus.
-      final v = _controller.value;
+      final v = _tracker.value;
       final c = v.composing;
       _controller.value = TextEditingValue(
         text: v.text.replaceRange(c.start, c.end, ''),

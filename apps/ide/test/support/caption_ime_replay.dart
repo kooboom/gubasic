@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -76,10 +77,14 @@ void defineCaptionImeTests(Map<String, String> logs) {
 
   Future<int> undoSteps(WidgetTester t) async {
     var steps = 0;
+    final apple = defaultTargetPlatform == TargetPlatform.macOS;
+    final modifier = apple
+        ? LogicalKeyboardKey.meta
+        : LogicalKeyboardKey.control;
     while (file(t) != hello[formFile] && steps < 20) {
-      await t.sendKeyDownEvent(LogicalKeyboardKey.control);
+      await t.sendKeyDownEvent(modifier);
       await t.sendKeyEvent(LogicalKeyboardKey.keyZ);
-      await t.sendKeyUpEvent(LogicalKeyboardKey.control);
+      await t.sendKeyUpEvent(modifier);
       await t.pumpAndSettle();
       steps++;
     }
@@ -107,7 +112,9 @@ void defineCaptionImeTests(Map<String, String> logs) {
       ];
       final log = all.sublist(resets.isEmpty ? 0 : resets.last + 1);
 
-      testWidgets('Caption field, $source $id', (t) async {
+      testWidgets('Caption field, $source $id', variant: _platformOf(source), (
+        t,
+      ) async {
         await open(t);
         var inField = true;
         // Visits of the field in which the form changed.
@@ -127,15 +134,24 @@ void defineCaptionImeTests(Map<String, String> logs) {
                   'composing ${v.composing.start}-${v.composing.end})';
               // In the field, only committed characters; after it was
               // left, what was composed then was committed already.
-              expect(
-                caption(t),
-                inField ? committedText(v) : before,
-                reason: 'the form file $at',
-              );
+              // A desktop app's recording has no composing ranges: the
+              // IDE guesses them (D37), so no jamo may reach the form.
+              if (_isApp(source) && inField) {
+                expect(_hasJamo(caption(t)), isFalse, reason: 'jamo $at');
+              } else {
+                expect(
+                  caption(t),
+                  inField ? committedText(v) : before,
+                  reason: 'the form file $at',
+                );
+              }
               expect(canvas(t), caption(t), reason: 'the canvas $at');
               if (caption(t) != before) changedThisVisit = true;
             case 'focus' when e['hasFocus'] == false && inField:
+              final before = caption(t);
               await clickButton(t);
+              // Leaving the field commits what is being composed.
+              if (caption(t) != before) changedThisVisit = true;
               inField = false;
               if (changedThisVisit) visits++;
               changedThisVisit = false;
@@ -146,7 +162,9 @@ void defineCaptionImeTests(Map<String, String> logs) {
           }
         }
         if (inField) {
+          final before = caption(t);
           await clickButton(t);
+          if (caption(t) != before) changedThisVisit = true;
           if (changedThisVisit) visits++;
         }
         await t.pumpAndSettle();
@@ -222,3 +240,14 @@ void defineCaptionImeTests(Map<String, String> logs) {
     expect(await undoSteps(t), 1);
   });
 }
+
+/// Whether [source] was recorded in a desktop app, not a browser.
+bool _isApp(String source) => source.endsWith('-app.json');
+
+/// The platform a recording replays on: the app's, or the test default.
+TestVariant<Object?> _platformOf(String source) => _isApp(source)
+    ? TargetPlatformVariant.only(TargetPlatform.macOS)
+    : const DefaultTestVariant();
+
+/// Whether [text] holds a lone jamo (ㄱ, ㅏ): a syllable being composed.
+bool _hasJamo(String text) => text.runes.any((r) => r >= 0x3131 && r <= 0x318E);

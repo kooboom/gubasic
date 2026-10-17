@@ -51,11 +51,30 @@ void main() {
   /// LANGUAGE §11.1 promises for every input method:
   /// - `Text` holds only the characters the input method has committed;
   /// - `Changed` runs each time the committed text changes, and only then.
+  ///
+  /// A desktop app's recording ([app]) has no composing ranges where the
+  /// platform left them out ([mayLeaveOutComposing]): the runtime guesses
+  /// them, so only the Changed events are checked, against those pinned
+  /// in [recorded]. The app does not commit when the field loses the
+  /// focus, so with [focus] the replay moves the focus where the
+  /// recording did.
   Future<void> replay(
     WidgetTester tester,
-    Iterable<Map<String, Object?>> log,
-  ) async {
-    for (final e in log.where((e) => e['kind'] == 'value')) {
+    Iterable<Map<String, Object?>> log, {
+    bool app = false,
+    bool focus = true,
+  }) async {
+    for (final e in log) {
+      if (e['kind'] == 'focus' && app && focus) {
+        if (e['hasFocus'] == false) {
+          FocusManager.instance.primaryFocus?.unfocus();
+        } else {
+          await tester.tap(find.byType(TextField));
+        }
+        await tester.pump();
+        continue;
+      }
+      if (e['kind'] != 'value') continue;
       final composing = (e['composing']! as List).cast<int>();
       final selection = (e['selection']! as List).cast<int>();
       final value = TextEditingValue(
@@ -71,7 +90,9 @@ void main() {
       tester.testTextInput.updateEditingValue(value);
       await tester.pump();
       final at = 'at ${e['ms']} ms (${e['text']}, composing $composing)';
-      expect(text(), committedText(value), reason: 'only committed text $at');
+      if (!app) {
+        expect(text(), committedText(value), reason: 'only committed text $at');
+      }
       expect(
         changes().length,
         changed + (text() == before ? 0 : 1),
@@ -94,6 +115,16 @@ void main() {
 
   for (final file in Directory('test/ime_logs').listSync().whereType<File>()) {
     final source = file.uri.pathSegments.last;
+    // Recorded in a desktop app, not a browser: run as that platform.
+    final app = source.endsWith('-app.json');
+    final TestVariant<Object?> variant = app
+        ? TargetPlatformVariant.only(TargetPlatform.macOS)
+        : const DefaultTestVariant();
+    void testReplay(
+      String description,
+      WidgetTesterCallback body, {
+      bool skip = false,
+    }) => testWidgets(description, body, skip: skip, variant: variant);
     final log = jsonDecode(file.readAsStringSync()) as Map<String, Object?>;
     final scenarios = (log['scenarios']! as Map<String, Object?>).map(
       (k, v) => MapEntry(k, (v! as List).cast<Map<String, Object?>>()),
@@ -127,11 +158,11 @@ void main() {
     }
 
     group(source, () {
-      testWidgets('dokkaebibul 갈가: 갈 is committed only when ㅏ is typed', (
+      testReplay('dokkaebibul 갈가: 갈 is committed only when ㅏ is typed', (
         tester,
       ) async {
         await show(tester);
-        await replay(tester, last('dokkaebi'));
+        await replay(tester, last('dokkaebi'), app: app);
         // 갉 was only ever being composed.
         expectNoLoneJamo();
         expect(changes(), everyElement(isNot(contains('갉'))));
@@ -139,9 +170,9 @@ void main() {
         expectRecorded('dokkaebi');
       });
 
-      testWidgets('double final consonants 닭 and 값', (tester) async {
+      testReplay('double final consonants 닭 and 값', (tester) async {
         await show(tester);
-        await replay(tester, last('double_final'));
+        await replay(tester, last('double_final'), app: app);
         // 달 and 갑 were only ever being composed.
         expectNoLoneJamo();
         expect(changes(), everyElement(isNot(contains('달'))));
@@ -150,11 +181,11 @@ void main() {
         expectRecorded('double_final');
       });
 
-      testWidgets('Backspace while composing: 한 becomes 하, not empty', (
+      testReplay('Backspace while composing: 한 becomes 하, not empty', (
         tester,
       ) async {
         await show(tester);
-        await replay(tester, last('backspace'));
+        await replay(tester, last('backspace'), app: app);
         // 한 was only ever being composed.
         expectNoLoneJamo();
         expect(changes(), everyElement(isNot(contains('한'))));
@@ -162,7 +193,7 @@ void main() {
         expectRecorded('backspace');
       });
 
-      testWidgets('a click while composing: commit, Changed, then Click', (
+      testReplay('a click while composing: commit, Changed, then Click', (
         tester,
       ) async {
         await show(tester);
@@ -170,12 +201,17 @@ void main() {
         // browser made when the field lost the focus: the runtime must
         // commit by itself on platforms that do not.
         final typed = last('click').takeWhile((e) => e['kind'] != 'click');
+        // The app sends no composing ranges: every value, and no focus
+        // change, as if the click came while composing.
         await replay(
           tester,
           typed.where(
             (e) =>
-                e['kind'] == 'value' && (e['composing']! as List).first != -1,
+                e['kind'] == 'value' &&
+                (app || (e['composing']! as List).first != -1),
           ),
+          app: app,
+          focus: false,
         );
         expect(text(), '한', reason: '글 is still being composed');
         final before = events.length;
@@ -190,12 +226,12 @@ void main() {
       });
 
       // Recordings made before scenario 5 existed do not have it.
-      testWidgets(
+      testReplay(
         'erasing committed text: 닭값, erased, then 닭 값',
         skip: !scenarios.containsKey('erase_retype'),
         (tester) async {
           await show(tester);
-          await replay(tester, last('erase_retype'));
+          await replay(tester, last('erase_retype'), app: app);
           expectNoLoneJamo();
           expect(changes(), contains('[]'), reason: 'erased to empty');
           expect(text(), '닭 값 ');
@@ -203,12 +239,12 @@ void main() {
         },
       );
 
-      testWidgets(
+      testReplay(
         'erasing committed text: 한글, 한긂, erased to empty',
         skip: !scenarios.containsKey('erase_jamo'),
         (tester) async {
           await show(tester);
-          await replay(tester, last('erase_jamo'));
+          await replay(tester, last('erase_jamo'), app: app);
           // 긂 was only ever being composed.
           expectNoLoneJamo();
           expect(changes(), everyElement(isNot(contains('긂'))));
@@ -217,7 +253,7 @@ void main() {
         },
       );
 
-      testWidgets('a click after the browser committed: Click sees 한글', (
+      testReplay('a click after the browser committed: Click sees 한글', (
         tester,
       ) async {
         await show(tester);
@@ -227,7 +263,7 @@ void main() {
             'click',
             skipResets: skip,
           ).takeWhile((e) => e['kind'] != 'click');
-          await replay(tester, typed);
+          await replay(tester, typed, app: app);
           final before = events.length;
           await tester.tap(find.text('OK'));
           await tester.pump();
@@ -290,62 +326,69 @@ void main() {
 /// input method does fails here. A new recording fails until its events
 /// are checked by hand and added.
 const recorded = <String, Map<String, List<String>>>{
-  'macos-chrome.json': {
-    'dokkaebi': ['txtName.Changed [갈]', 'txtName.Changed [갈가]'],
-    // The space goes into the composition, so 닭 is never committed alone.
-    'double_final': ['txtName.Changed [닭 ]', 'txtName.Changed [닭 값 ]'],
-    'backspace': ['txtName.Changed [하]'],
-    'click_composing': [
-      'txtName.Changed [한]',
-      'txtName.Changed [한글]',
-      'btnOk.Click [한글]',
-    ],
-    'click_committed': [
-      'txtName.Changed [한]',
-      'txtName.Changed [한글]',
-      'btnOk.Click [한글]',
-      'txtName.Changed []',
-      'txtName.Changed [한]',
-      'txtName.Changed [한글]',
-      'btnOk.Click [한글]',
-    ],
-    // Backspace takes 값 apart inside the input method (no Changed), then
-    // deletes the committed 닭 in one step.
-    'erase_retype': [
-      'txtName.Changed [닭]',
-      'txtName.Changed []',
-      'txtName.Changed [닭 ]',
-      'txtName.Changed [닭 값 ]',
-    ],
-    // 긂 and its jamo are only ever being composed; 한 goes in one step.
-    'erase_jamo': ['txtName.Changed [한]', 'txtName.Changed []'],
-  },
-  'windows-chrome.json': {
-    'dokkaebi': ['txtName.Changed [갈]', 'txtName.Changed [갈가]'],
-    // The space is committed together with 닭, as on macOS: 닭 is never
-    // committed alone (the input method sends no composition for it).
-    'double_final': ['txtName.Changed [닭 ]', 'txtName.Changed [닭 값 ]'],
-    'backspace': ['txtName.Changed [하]'],
-    'click_composing': [
-      'txtName.Changed [한]',
-      'txtName.Changed [한글]',
-      'btnOk.Click [한글]',
-    ],
-    'click_committed': [
-      'txtName.Changed [한]',
-      'txtName.Changed [한글]',
-      'btnOk.Click [한글]',
-      'txtName.Changed []',
-      'txtName.Changed [한]',
-      'txtName.Changed [한글]',
-      'btnOk.Click [한글]',
-    ],
-    'erase_retype': [
-      'txtName.Changed [닭]',
-      'txtName.Changed []',
-      'txtName.Changed [닭 ]',
-      'txtName.Changed [닭 값 ]',
-    ],
-    'erase_jamo': ['txtName.Changed [한]', 'txtName.Changed []'],
-  },
+  'macos-chrome.json': _macos,
+  // The macOS app sends no composing ranges; with the runtime's guess
+  // (D37) it makes the same events as Chrome on the same Mac.
+  'macos-app.json': _macos,
+  'windows-chrome.json': _windowsChrome,
+};
+
+const _macos = <String, List<String>>{
+  'dokkaebi': ['txtName.Changed [갈]', 'txtName.Changed [갈가]'],
+  // The space goes into the composition, so 닭 is never committed alone.
+  'double_final': ['txtName.Changed [닭 ]', 'txtName.Changed [닭 값 ]'],
+  'backspace': ['txtName.Changed [하]'],
+  'click_composing': [
+    'txtName.Changed [한]',
+    'txtName.Changed [한글]',
+    'btnOk.Click [한글]',
+  ],
+  'click_committed': [
+    'txtName.Changed [한]',
+    'txtName.Changed [한글]',
+    'btnOk.Click [한글]',
+    'txtName.Changed []',
+    'txtName.Changed [한]',
+    'txtName.Changed [한글]',
+    'btnOk.Click [한글]',
+  ],
+  // Backspace takes 값 apart inside the input method (no Changed), then
+  // deletes the committed 닭 in one step.
+  'erase_retype': [
+    'txtName.Changed [닭]',
+    'txtName.Changed []',
+    'txtName.Changed [닭 ]',
+    'txtName.Changed [닭 값 ]',
+  ],
+  // 긂 and its jamo are only ever being composed; 한 goes in one step.
+  'erase_jamo': ['txtName.Changed [한]', 'txtName.Changed []'],
+};
+
+const _windowsChrome = <String, List<String>>{
+  'dokkaebi': ['txtName.Changed [갈]', 'txtName.Changed [갈가]'],
+  // The space is committed together with 닭, as on macOS: 닭 is never
+  // committed alone (the input method sends no composition for it).
+  'double_final': ['txtName.Changed [닭 ]', 'txtName.Changed [닭 값 ]'],
+  'backspace': ['txtName.Changed [하]'],
+  'click_composing': [
+    'txtName.Changed [한]',
+    'txtName.Changed [한글]',
+    'btnOk.Click [한글]',
+  ],
+  'click_committed': [
+    'txtName.Changed [한]',
+    'txtName.Changed [한글]',
+    'btnOk.Click [한글]',
+    'txtName.Changed []',
+    'txtName.Changed [한]',
+    'txtName.Changed [한글]',
+    'btnOk.Click [한글]',
+  ],
+  'erase_retype': [
+    'txtName.Changed [닭]',
+    'txtName.Changed []',
+    'txtName.Changed [닭 ]',
+    'txtName.Changed [닭 값 ]',
+  ],
+  'erase_jamo': ['txtName.Changed [한]', 'txtName.Changed []'],
 };

@@ -3,6 +3,7 @@
 /// (docs/DESIGN.md §2.3, D11). It does not depend on gubasic_lang.
 library;
 
+export 'src/composing.dart';
 export 'src/dialogs.dart';
 export 'src/form_model.dart';
 export 'src/form_view.dart';

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'composing.dart';
 import 'form_model.dart';
 
 /// The characters of [value] the input method has committed: its text
@@ -30,6 +31,8 @@ class GbTextBox extends StatefulWidget {
 class _GbTextBoxState extends State<GbTextBox> {
   late final _controller = TextEditingController(text: _committed);
   late String _committed = widget.state.text('Text');
+  late final _tracker = ComposingTracker(_controller.value);
+  final _focus = FocusNode();
 
   @override
   void initState() {
@@ -37,18 +40,29 @@ class _GbTextBoxState extends State<GbTextBox> {
     _controller.addListener(_userEdited);
     widget.state.addListener(_programSet);
     widget.model.addCommitter(_commitComposing);
+    // Where the platform does not commit as the field loses the focus
+    // ([mayLeaveOutComposing]), the field does.
+    _focus.addListener(() {
+      if (!_focus.hasFocus) _commitComposing();
+    });
   }
 
   @override
   void dispose() {
     widget.model.removeCommitter(_commitComposing);
     widget.state.removeListener(_programSet);
+    _focus.dispose();
     _controller.dispose();
     super.dispose();
   }
 
   void _userEdited() {
-    final text = committedText(_controller.value);
+    _tracker.track(_controller.value);
+    _changed();
+  }
+
+  void _changed() {
+    final text = committedText(_tracker.value);
     if (text == _committed) return;
     _committed = text;
     widget.state.set('Text', text);
@@ -70,12 +84,16 @@ class _GbTextBoxState extends State<GbTextBox> {
     final value = _controller.value;
     if (value.composing.isValid && !value.composing.isCollapsed) {
       _controller.value = value.copyWith(composing: TextRange.empty);
+    } else if (_tracker.composing) {
+      _tracker.commit();
+      _changed();
     }
   }
 
   @override
   Widget build(BuildContext context) => TextField(
     controller: _controller,
+    focusNode: _focus,
     decoration: const InputDecoration(
       border: OutlineInputBorder(),
       isDense: true,

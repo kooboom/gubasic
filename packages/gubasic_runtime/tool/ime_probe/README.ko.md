@@ -2,9 +2,9 @@
 
 [English](README.md)
 
-실제 입력기가 Flutter 입력 칸에 보내는 것을 기록합니다: 모든 값(글자, 아직 조합 중인 부분, 선택 범위), 키, 포커스 변화, 클릭. 기록은 테스트 입력입니다: `packages/gubasic_runtime/test/text_box_test.dart`가 `test/ime_logs/`의 모든 파일을 재생합니다(DESIGN 9.1절).
+실제 입력기가 브라우저나 데스크톱 앱의 Flutter 입력 칸에 보내는 것을 기록합니다: 모든 값(글자, 아직 조합 중인 부분, 선택 범위), 키, 포커스 변화, 클릭. 기록은 테스트 입력입니다: `packages/gubasic_runtime/test/text_box_test.dart`가 `test/ime_logs/`의 모든 파일을 재생합니다(DESIGN 9.1절).
 
-지금까지의 기록: `windows-chrome.json`(Windows 한글 입력기, Chrome), `macos-chrome.json`(macOS 한글 입력기 두벌식, Chrome).
+지금까지의 기록: `windows-chrome.json`(Windows 한글 입력기, Chrome), `macos-chrome.json`(macOS 한글 입력기 두벌식, Chrome), `macos-app.json`(같은 입력기, macOS 27의 macOS 앱). 데스크톱 앱의 기록은 그 플랫폼으로 재생합니다.
 
 ## 기록하는 방법
 
@@ -13,8 +13,12 @@
 ```sh
 cd packages/gubasic_runtime/tool/ime_probe
 flutter pub get
-flutter run -d chrome --release
+flutter run -d chrome --release     # 웹 IDE의 경로
+flutter run -d macos --release      # macOS 앱의 경로
+flutter run -d windows --release    # Windows 앱의 경로(Windows에서)
 ```
+
+브라우저와 데스크톱 앱은 입력기에서 Flutter까지 오는 길이 달라서 따로 기록합니다. 데스크톱 앱은 다운로드 폴더에 `ime-log-macos-app.json`이나 `ime-log-windows-app.json`을 저장하고(아래에 뜨는 알림이 위치를 알려 줌), 아래처럼 `ime-log-` 없이 복사합니다.
 
 1. 시스템 입력기를 한글(두벌식)로 바꿉니다.
 2. 페이지의 다섯 시나리오를 차례로 합니다. 시나리오마다 칠 키가 적혀 있습니다. 테스트는 시나리오마다 마지막 **다시** 뒤의 기록만 씁니다. 4번 시나리오는 일부러 "다시"를 한 번 누릅니다(버튼 A, 그다음 버튼 B).
@@ -42,4 +46,5 @@ flutter run -d chrome --release
 - **확정된 음절은 한 번에 지워지고, `Changed`가 한 번 실행됩니다.** 조합이 다 풀린 뒤의 백스페이스는 닭(5-1)이나 한(5-2)을 통째로 지우며, 달이나 하로 바꾸지 않습니다. `Changed`는 짧아진 글자로 한 번 실행됩니다. Windows와 macOS.
 - **조합 중이기만 했던 글자는 `Changed`에 나오지 않습니다.** 5-2의 긂과 5-1에서 지우는 동안의 값은 확정된 적이 없으므로 `Changed`에 나타나지 않습니다. 5-2에서 `Changed`는 한과 빈 칸일 때만 실행됩니다. Windows와 macOS.
 - **스페이스는 앞 음절과 함께 확정됩니다.** 닭 다음에 `Changed`는 `닭 `은 보지만 `닭`만 따로는 보지 않습니다(시나리오 2). 신호는 다릅니다. macOS는 스페이스를 먼저 조합 안에 넣고(`닭 `을 조합 중), Windows는 조합 중인 닭을 확정된 `닭 `으로 한 번에 바꿉니다. Windows와 macOS.
+- **macOS 앱은 조합 범위를 받지 못합니다.** `macos-app.json`의 모든 값은 조합 범위가 `[-1, -1]`입니다. 자모가 하나씩 확정된 글자로 오고 커서 앞 음절이 제자리에서 바뀌며(ㄱ, 가, 갈, 갉, 갈, 갈가), 입력 칸이 포커스를 잃어도 아무것도 오지 않습니다. 글자는 Chrome과 같습니다. 거기서는 runtime이 조합을 알아내고(DESIGN D37), 이벤트는 Chrome과 같게 나옵니다.
 - **입력 칸을 떠나면 확정됩니다.** 두 입력기 모두 입력 칸이 포커스를 잃을 때 조합 중인 글자를 확정합니다. 웹에서는 클릭이 도착하기 150~180 ms쯤 전입니다(시나리오 4).

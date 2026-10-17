@@ -83,47 +83,67 @@ void defineCodeImeTests(Map<String, String> logs) {
       final log = all.sublist(resets.isEmpty ? 0 : resets.last + 1);
       for (final MapEntry(key: where, value: (before, after, kind))
           in places.entries) {
-        testWidgets('code editor, $source $id, in $where', (t) async {
-          await open(t, '$before$after');
-          var inField = true;
-          var last = const TextEditingValue();
-          for (final e in log) {
-            switch (e['kind']) {
-              case 'value':
-                final v = shifted(e, before, after);
-                last = v;
-                final fileBefore = file(t);
-                t.testTextInput.updateEditingValue(v);
-                await t.pump();
-                final at = 'at ${e['ms']} ms (${jsonEncode(e['text'])})';
-                expect(editor(t).text, v.text, reason: 'shown $at');
-                expect(
-                  file(t),
-                  inField ? committedText(v) : fileBefore,
-                  reason: 'the file $at',
-                );
-                final kinds = codeKinds(v.text, const {});
-                for (
-                  var i = before.length;
-                  i < v.text.length - after.length;
-                  i++
-                ) {
-                  expect(CodeKind.values[kinds[i]], kind, reason: 'colour $at');
-                }
-              case 'focus' when e['hasFocus'] == false && inField:
-                FocusManager.instance.primaryFocus?.unfocus();
-                await t.pump();
-                inField = false;
-              case 'focus' when e['hasFocus'] == true && !inField:
-                await t.tap(find.byKey(codeFieldKey));
-                await t.pump();
-                inField = true;
+        testWidgets(
+          'code editor, $source $id, in $where',
+          variant: source.endsWith('-app.json')
+              ? TargetPlatformVariant.only(TargetPlatform.macOS)
+              : const DefaultTestVariant(),
+          (t) async {
+            await open(t, '$before$after');
+            var inField = true;
+            var last = const TextEditingValue();
+            for (final e in log) {
+              switch (e['kind']) {
+                case 'value':
+                  final v = shifted(e, before, after);
+                  last = v;
+                  final fileBefore = file(t);
+                  t.testTextInput.updateEditingValue(v);
+                  await t.pump();
+                  final at = 'at ${e['ms']} ms (${jsonEncode(e['text'])})';
+                  expect(editor(t).text, v.text, reason: 'shown $at');
+                  // A desktop app's recording has no composing ranges: the
+                  // editor guesses them (D37), so no jamo may reach the file.
+                  if (source.endsWith('-app.json') && inField) {
+                    expect(
+                      file(t).runes.any((r) => r >= 0x3131 && r <= 0x318E),
+                      isFalse,
+                      reason: 'jamo in the file $at',
+                    );
+                  } else {
+                    expect(
+                      file(t),
+                      inField ? committedText(v) : fileBefore,
+                      reason: 'the file $at',
+                    );
+                  }
+                  final kinds = codeKinds(v.text, const {});
+                  for (
+                    var i = before.length;
+                    i < v.text.length - after.length;
+                    i++
+                  ) {
+                    expect(
+                      CodeKind.values[kinds[i]],
+                      kind,
+                      reason: 'colour $at',
+                    );
+                  }
+                case 'focus' when e['hasFocus'] == false && inField:
+                  FocusManager.instance.primaryFocus?.unfocus();
+                  await t.pump();
+                  inField = false;
+                case 'focus' when e['hasFocus'] == true && !inField:
+                  await t.tap(find.byKey(codeFieldKey));
+                  await t.pump();
+                  inField = true;
+              }
             }
-          }
-          FocusManager.instance.primaryFocus?.unfocus();
-          await t.pumpAndSettle();
-          expect(file(t), last.text, reason: 'the final text');
-        });
+            FocusManager.instance.primaryFocus?.unfocus();
+            await t.pumpAndSettle();
+            expect(file(t), last.text, reason: 'the final text');
+          },
+        );
       }
     }
   }
