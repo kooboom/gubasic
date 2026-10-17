@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gubasic_lang/gubasic_lang.dart';
+import 'package:gubasic_runtime/gubasic_runtime.dart' show committedText;
 
 import '../strings.dart';
 
@@ -175,6 +176,12 @@ class PropertiesPanel extends StatelessWidget {
 /// nobody meant (erasing 120 gives 12, then 1), so those are only checked.
 /// Leaving the field with a value that is not valid shows the property's
 /// value again; Esc puts it back and gives the focus to the form.
+///
+/// As in a TextBox (LANGUAGE.md §11.1), only the characters the input
+/// method has committed reach the form: 한 is not written while it is
+/// still being composed. Leaving the field or Enter commits what is being
+/// composed; Esc while composing drops only that, and a second Esc puts
+/// the value back.
 class PropertyField extends StatefulWidget {
   const PropertyField({
     super.key,
@@ -210,10 +217,14 @@ class _PropertyFieldState extends State<PropertyField> {
   late Object _start = widget.value;
   String? _error;
 
+  /// The text last written to the form from this field.
+  late String _written = _show(widget.value);
+
   @override
   void initState() {
     super.initState();
     _focus.addListener(_focusChanged);
+    _controller.addListener(_valueChanged);
   }
 
   @override
@@ -242,6 +253,14 @@ class _PropertyFieldState extends State<PropertyField> {
     if (_focus.hasFocus) {
       _group = Object();
       _start = widget.value;
+      _written = _show(widget.value);
+      return;
+    }
+    if (_isText) {
+      // The click that moved the focus comes before the input method's
+      // commit: commit here, or the syllable being composed is lost.
+      _commitComposing();
+      widget.onDone();
       return;
     }
     _commit();
@@ -281,14 +300,41 @@ class _PropertyFieldState extends State<PropertyField> {
     }
   }
 
+  /// A number being typed is only checked.
   void _changed(String text) {
+    if (_isText) return;
     final value = _parse(text);
-    if (value == null) {
-      setState(() {});
-      return;
+    setState(() {
+      if (value != null) _error = null;
+    });
+  }
+
+  /// Text: writes what the input method has committed, when it changes.
+  /// Every value counts, also one where only the composing part ended.
+  void _valueChanged() {
+    if (!_isText || !widget.editable || !_focus.hasFocus) return;
+    final committed = committedText(_controller.value);
+    if (committed == _written) return;
+    _written = committed;
+    widget.onChange(committed, _group);
+  }
+
+  bool get _composing {
+    final c = _controller.value.composing;
+    return c.isValid && !c.isCollapsed;
+  }
+
+  /// Takes what is being composed as committed, and writes it.
+  void _commitComposing() {
+    if (!_composing) return;
+    final value = _controller.value.copyWith(composing: TextRange.empty);
+    if (!widget.editable) return;
+    final committed = committedText(value);
+    _controller.value = value;
+    if (committed != _written) {
+      _written = committed;
+      widget.onChange(committed, _group);
     }
-    setState(() => _error = null);
-    if (_isText) widget.onChange(value, _group);
   }
 
   /// Applies a number typed in the field, if it is valid and new.
@@ -301,18 +347,32 @@ class _PropertyFieldState extends State<PropertyField> {
   }
 
   void _submitted() {
+    _commitComposing();
     _commit();
     widget.onDone();
     _group = Object();
   }
 
   void _escape() {
+    if (_composing) {
+      // Only what is being composed goes; the field keeps the focus.
+      final v = _controller.value;
+      final c = v.composing;
+      _controller.value = TextEditingValue(
+        text: v.text.replaceRange(c.start, c.end, ''),
+        selection: TextSelection.collapsed(offset: c.start),
+      );
+      return;
+    }
     final back = _isText ? _start : widget.value;
     setState(() {
       _controller.text = _show(back);
       _error = null;
     });
-    if (_isText) widget.onChange(_start, _group);
+    if (_isText) {
+      _written = _show(_start);
+      widget.onChange(_start, _group);
+    }
     widget.onDone();
     widget.onLeave();
   }
