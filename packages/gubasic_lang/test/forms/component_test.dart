@@ -87,6 +87,18 @@ void main() {
         throwsFormatException);
   });
 
+  test('Label is drawn in the graphic layer, the others in front (D41)', () {
+    expect(builtinComponents['label']!.layer, ComponentLayer.graphic);
+    for (final name in ['button', 'textbox', 'form']) {
+      expect(builtinComponents[name]!.layer, ComponentLayer.control,
+          reason: name);
+    }
+    expect(
+        () => readComponentFile('name: X\nversion: 1\ndefaultEvent: A\n'
+            'layer: top\nproperties: []\nevents: [A()]\n'),
+        throwsFormatException);
+  });
+
   test('a broken component.yaml is refused', () {
     expect(
         () => readComponentFile('name: X\nversion: 1\ndefaultEvent: A\n'

@@ -58,6 +58,11 @@ class EventSpec {
   }
 }
 
+/// The layer a control is drawn in (docs/DESIGN.md D41): [graphic]
+/// controls (Label) under all the others, whatever their order in the
+/// form file; within a layer, a control later in the file is on top.
+enum ComponentLayer { graphic, control }
+
 /// A control type described by a component.yaml (docs/DESIGN.md §5, D10).
 class ComponentSpec {
   ComponentSpec({
@@ -66,12 +71,16 @@ class ComponentSpec {
     required this.defaultEvent,
     required List<PropertySpec> properties,
     required List<EventSpec> events,
+    this.layer = ComponentLayer.control,
   })  : properties = {for (final p in properties) p.name.toLowerCase(): p},
         events = {for (final e in events) e.name.toLowerCase(): e};
 
   final String name;
   final int version;
   final String defaultEvent;
+
+  /// `layer:` in the component.yaml; `control` when it is left out.
+  final ComponentLayer layer;
 
   /// By lower-case name, in declaration order.
   final Map<String, PropertySpec> properties;
@@ -166,12 +175,18 @@ ComponentSpec readComponentFile(String text) {
     events.add(EventSpec(m[1]!, params));
   }
 
+  final layerName = doc['layer'] ?? 'control';
+  final layer =
+      ComponentLayer.values.where((l) => l.name == layerName).firstOrNull;
+  if (layer == null) throw FormatException('bad layer: $layerName');
+
   final spec = ComponentSpec(
     name: field<String>(doc, 'name'),
     version: field<int>(doc, 'version'),
     defaultEvent: field<String>(doc, 'defaultEvent'),
     properties: properties,
     events: events,
+    layer: layer,
   );
   if (!spec.events.containsKey(spec.defaultEvent.toLowerCase())) {
     throw FormatException('${spec.name}: defaultEvent is not an event');

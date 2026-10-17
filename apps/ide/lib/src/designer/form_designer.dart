@@ -439,9 +439,13 @@ class _FormDesignerState extends State<FormDesigner> {
     }
   }
 
-  /// The control drawn at [p], the one on top where they overlap.
+  /// The control drawn at [p], the one on top where they overlap: the
+  /// order the runtime draws them in (D41).
   ControlDecl? _controlAt(Offset p) {
-    for (final c in _form.controls.reversed) {
+    final form = _form;
+    for (final drawn in _model.drawingOrder.reversed) {
+      final c = form.control(drawn.name!);
+      if (c == null) continue;
       final b = boxOf(c);
       if (p.dx >= b.left &&
           p.dx < b.left + b.width &&

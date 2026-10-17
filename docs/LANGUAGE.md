@@ -572,6 +572,7 @@ End Sub
 
 - `Me` refers to the current form; its properties are those of `Form` (§11.1).
 - The controls are the ones in the form file (§11.2). Their names can be used anywhere in the form's code, like form-level variables. A form-level variable or procedure cannot have a control's name (A030); a local can, but then hides the control (warning A031).
+- **Where controls overlap**, a `Label` is always under a `Button` or a `TextBox`, whatever their order in the form file, and the control on top takes the click. Among controls of the same kind of layer, the one later in the form file is on top (DESIGN.md D41).
 - Code without a form, such as a program in the playground, cannot use controls or `Me` (A003).
 - Stage 2: controls can be created at run time.
 

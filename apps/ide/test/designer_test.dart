@@ -5,11 +5,14 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gubasic_ide/main.dart';
 import 'package:gubasic_ide/src/designer/form_designer.dart';
+import 'package:gubasic_ide/src/designer/form_edit.dart';
 import 'package:gubasic_ide/src/ide_shell.dart';
 import 'package:gubasic_ide/src/project/examples.g.dart';
 import 'package:gubasic_ide/src/project/open_project.dart';
 import 'package:gubasic_ide/src/run/run_window.dart';
 import 'package:gubasic_ide/src/strings.dart';
+import 'package:gubasic_lang/gubasic_lang.dart';
+import 'package:gubasic_runtime/gubasic_runtime.dart';
 
 void main() {
   const s = IdeStrings.en;
@@ -471,6 +474,72 @@ void main() {
     );
     await tester.pumpAndSettle();
     expect(formText(tester), hello[formFile]);
+  });
+
+  group('layers (D41)', () {
+    // A Label over btnHello, later in the file: still drawn under it.
+    final over = {
+      ...hello,
+      formFile:
+          '${hello[formFile]}'
+          '  - name: lblOver\n'
+          '    type: Label\n'
+          '    properties:\n'
+          '      Left: 8\n'
+          '      Top: 48\n'
+          '      Width: 200\n'
+          '      Height: 48\n',
+    };
+
+    testWidgets('a click where they overlap selects the Button', (
+      tester,
+    ) async {
+      await open(tester, projects: {'hello': over});
+      await drag(tester, const Offset(30, 70), const Offset(30, 70));
+      expect(find.textContaining('btnHello (Button)'), findsOneWidget);
+      await drag(tester, const Offset(180, 70), const Offset(180, 70));
+      expect(find.textContaining('lblOver (Label)'), findsOneWidget);
+    });
+
+    testWidgets('in the run window, the Button takes the click', (
+      tester,
+    ) async {
+      await open(tester, projects: {'hello': over});
+      await tester.sendKeyEvent(LogicalKeyboardKey.f5);
+      await tester.pumpAndSettle();
+      final form = find.descendant(
+        of: find.byType(RunWindow),
+        matching: find.byType(GbFormView),
+      );
+      await tester.tapAt(tester.getTopLeft(form) + const Offset(30, 70));
+      await tester.pumpAndSettle();
+      expect(find.text('What is your name?'), findsOneWidget);
+    });
+
+    test('the examples look as they did: no controls overlap', () {
+      for (final MapEntry(key: name, value: files) in exampleProjects.entries) {
+        for (final MapEntry(key: file, value: text) in files.entries) {
+          if (!file.endsWith('.form.yaml')) continue;
+          final controls = readFormFile(text, name: 'Form1').form.controls;
+          for (var i = 0; i < controls.length; i++) {
+            for (final b in controls.skip(i + 1)) {
+              final p = boxOf(controls[i]);
+              final q = boxOf(b);
+              final apart =
+                  p.left + p.width <= q.left ||
+                  q.left + q.width <= p.left ||
+                  p.top + p.height <= q.top ||
+                  q.top + q.height <= p.top;
+              expect(
+                apart,
+                isTrue,
+                reason: '$name: ${controls[i].name}, ${b.name}',
+              );
+            }
+          }
+        }
+      }
+    });
   });
 
   testWidgets('Korean words', (tester) async {

@@ -15,7 +15,7 @@ void main() {
         GbControlState('lblMessage', GbControlKind.label, {
           'Caption': 'Press the button', 'Left': 16, 'Top': 16, //
           'Width': 288, 'Height': 24,
-        }),
+        }, layer: GbLayer.graphic),
         GbControlState('btnHello', GbControlKind.button, {
           'Caption': 'Say hello', 'Left': 16, 'Top': 56, //
           'Width': 120, 'Height': 32,
@@ -47,6 +47,66 @@ void main() {
       tester.getRect(find.byType(GbLabel)),
       const Rect.fromLTWH(16, 16, 288, 24).shift(form.topLeft),
     );
+  });
+
+  group('layers (D41)', () {
+    Future<void> overlap(WidgetTester tester, {required bool labelLast}) async {
+      events = [];
+      final label = GbControlState('lblOver', GbControlKind.label, {
+        'Caption': 'over', 'Left': 0, 'Top': 0, //
+        'Width': 200, 'Height': 40,
+      }, layer: GbLayer.graphic);
+      GbControlState button(String name, int left) =>
+          GbControlState(name, GbControlKind.button, {
+            'Caption': name, 'Left': left, 'Top': 0, //
+            'Width': 100, 'Height': 40,
+          });
+      final buttons = [button('btnA', 0), button('btnB', 50)];
+      model = GbFormModel(
+        form: {'Caption': '', 'Width': 200, 'Height': 40},
+        controls: labelLast ? [...buttons, label] : [label, ...buttons],
+        onEvent: (c, e) => events.add('$c.$e'),
+      );
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Align(
+              alignment: Alignment.topLeft,
+              child: GbFormView(model: model),
+            ),
+          ),
+        ),
+      );
+    }
+
+    for (final labelLast in [false, true]) {
+      testWidgets('a Label is under the Buttons, '
+          '${labelLast ? 'last' : 'first'} in the file', (tester) async {
+        await overlap(tester, labelLast: labelLast);
+        expect(model.drawingOrder.map((c) => c.name), [
+          'lblOver',
+          'btnA',
+          'btnB',
+        ]);
+        final form = tester.getTopLeft(find.byType(GbFormView));
+        // Where all three overlap, btnB (later in the file) is on top.
+        await tester.tapAt(form + const Offset(75, 20));
+        await tester.tapAt(form + const Offset(25, 20));
+        await tester.tapAt(form + const Offset(125, 20));
+        expect(events, ['btnB.Click', 'btnA.Click', 'btnB.Click']);
+      });
+    }
+
+    testWidgets('a Label alone still takes its clicks', (tester) async {
+      await overlap(tester, labelLast: true);
+      model.control('btnA')!.set('Top', 100);
+      model.control('btnB')!.set('Top', 100);
+      await tester.pump();
+      await tester.tapAt(
+        tester.getTopLeft(find.byType(GbFormView)) + const Offset(25, 20),
+      );
+      expect(events, ['lblOver.Click']);
+    });
   });
 
   testWidgets("a Button's text has 8 pixels on each side", (tester) async {

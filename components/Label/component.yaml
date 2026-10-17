@@ -1,6 +1,8 @@
 name: Label
 version: 1
 visual: true
+# Drawn under Buttons and TextBoxes, whatever the order (DESIGN.md D41).
+layer: graphic
 defaultEvent: Click
 properties:
   - { name: Caption, type: String, default: "" }

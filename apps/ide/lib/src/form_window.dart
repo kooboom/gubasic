@@ -13,10 +13,18 @@ GbFormModel formModelOf(FormFile form, {required GbEventSink onEvent}) =>
       },
       controls: [
         for (final c in form.controls)
-          GbControlState(c.name, _kind(c.component.name), {
-            for (final p in c.component.properties.values)
-              p.name: c.valueOf(p.name),
-          }),
+          GbControlState(
+            c.name,
+            _kind(c.component.name),
+            {
+              for (final p in c.component.properties.values)
+                p.name: c.valueOf(p.name),
+            },
+            layer: switch (c.component.layer) {
+              ComponentLayer.graphic => GbLayer.graphic,
+              ComponentLayer.control => GbLayer.control,
+            },
+          ),
       ],
       onEvent: onEvent,
     );

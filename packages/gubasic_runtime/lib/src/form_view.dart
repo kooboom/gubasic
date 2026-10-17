@@ -20,7 +20,7 @@ class GbFormView extends StatelessWidget {
       height: model.form.integer('Height').toDouble(),
       child: Stack(
         clipBehavior: Clip.hardEdge,
-        children: [for (final c in model.controls) _GbPlaced(model, c)],
+        children: [for (final c in model.drawingOrder) _GbPlaced(model, c)],
       ),
     ),
   );

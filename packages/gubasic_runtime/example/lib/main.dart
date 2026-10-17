@@ -31,7 +31,7 @@ class _ExampleFormState extends State<ExampleForm> {
       GbControlState('lblEcho', GbControlKind.label, {
         'Caption': '0 characters', 'Left': 16, 'Top': 64, //
         'Width': 288, 'Height': 24,
-      }),
+      }, layer: GbLayer.graphic),
       GbControlState('btnHello', GbControlKind.button, {
         'Caption': 'Say hello', 'Left': 16, 'Top': 104, //
         'Width': 120, 'Height': 36,

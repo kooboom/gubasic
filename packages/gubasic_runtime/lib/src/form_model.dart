@@ -3,16 +3,27 @@ import 'package:flutter/foundation.dart';
 /// The kinds of built-in controls (components/NAME/component.yaml).
 enum GbControlKind { form, button, label, textBox }
 
+/// The layer a control is drawn in, its component.yaml's `layer`
+/// (docs/DESIGN.md D41): [graphic] controls (Label) under all the others,
+/// whatever their order; within a layer, a later control is on top and
+/// takes the clicks where they overlap.
+enum GbLayer { graphic, control }
+
 /// One control's current properties: `Caption`, `Text`, `Left`, `Top`,
 /// `Width`, `Height`, named as in its component.yaml. Values are `int`,
 /// `double`, `bool` or `String`. Its widget rebuilds when they change.
 class GbControlState extends ChangeNotifier {
-  GbControlState(this.name, this.kind, Map<String, Object> properties)
-    : _properties = Map.of(properties);
+  GbControlState(
+    this.name,
+    this.kind,
+    Map<String, Object> properties, {
+    this.layer = GbLayer.control,
+  }) : _properties = Map.of(properties);
 
   /// The control's name; null for the form.
   final String? name;
   final GbControlKind kind;
+  final GbLayer layer;
   final Map<String, Object> _properties;
 
   Object operator [](String property) =>
@@ -46,8 +57,18 @@ class GbFormModel {
        controls = List.unmodifiable(controls);
 
   final GbControlState form;
+
+  /// In the form file's order.
   final List<GbControlState> controls;
   final GbEventSink onEvent;
+
+  /// [controls] in the order they are drawn, the last on top: the
+  /// graphic layer first, each layer in the form file's order (D41).
+  late final List<GbControlState> drawingOrder = List.unmodifiable([
+    for (final layer in GbLayer.values)
+      for (final c in controls)
+        if (c.layer == layer) c,
+  ]);
 
   final _committers = <VoidCallback>[];
 
