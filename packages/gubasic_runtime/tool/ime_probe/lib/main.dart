@@ -1,17 +1,20 @@
 import 'dart:convert';
-import 'dart:js_interop';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:web/web.dart' as web;
+
+import 'save.dart';
 
 /// Records what a real input method sends to a Flutter TextField: every
 /// value (text, composing range, selection), key, focus change and click,
-/// for five Korean typing scenarios. "Save" downloads one JSON file; the
+/// for five Korean typing scenarios. "Save" downloads one JSON file in the
+/// browser, or writes it to the Downloads folder in the desktop app; the
 /// files become test input for gubasic_runtime's TextBox
 /// (test/ime_logs/).
 ///
-///     flutter run -d chrome --release
+///     flutter run -d chrome --release     # ime-log-<system>-chrome.json
+///     flutter run -d macos --release      # ime-log-macos-app.json
+///     flutter run -d windows --release    # ime-log-windows-app.json
 void main() => runApp(const MaterialApp(home: Probe()));
 
 class Scenario {
@@ -144,27 +147,24 @@ class _ProbeState extends State<Probe> {
     ..._value(_controllers[id]!.value),
   });
 
-  void _save() {
+  Future<void> _save() async {
     final json = const JsonEncoder.withIndent('  ').convert({
       'probe': 1,
       'recordedAt': DateTime.now().toUtc().toIso8601String(),
-      'userAgent': web.window.navigator.userAgent,
-      'platform': web.window.navigator.platform,
+      ...recordedOn(),
+      // An assistive app turns semantics on, and with it macOS ends a
+      // composition (flutter/flutter#194199).
+      'semanticsEnabled': WidgetsBinding.instance.semanticsEnabled,
       'scenarios': _logs,
     });
-    final blob = web.Blob(
-      [json.toJS].toJS,
-      web.BlobPropertyBag(type: 'application/json'),
+    final where = await saveLog(json);
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('저장했습니다 (saved): $where'),
+        duration: const Duration(seconds: 20),
+      ),
     );
-    final url = web.URL.createObjectURL(blob);
-    final os = web.window.navigator.platform.toLowerCase().startsWith('mac')
-        ? 'macos'
-        : 'windows';
-    web.HTMLAnchorElement()
-      ..href = url
-      ..download = 'ime-log-$os-chrome.json'
-      ..click();
-    web.URL.revokeObjectURL(url);
   }
 
   @override
