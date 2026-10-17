@@ -67,7 +67,7 @@ IDE를 C로 만드는 방안도 검토했지만 제외했습니다. C로 GUI를 
 GuBASIC의 각 릴리스는 검증한 Flutter 버전에 고정됩니다(D29). Flutter 업그레이드는 업데이트마다 따라가는 일이 아니라, 원할 때 하는 별도 작업입니다. 런타임은 기본적이고 안정적인 Flutter 위젯만 씁니다.
 
 구조는 이렇습니다.
-- **`GbFormModel`**은 폼과 컨트롤의 현재 속성(`GbControlState`, 이름과 타입은 `component.yaml`과 같음)을 담습니다. **`GbFormView`**가 이를 보여 줍니다: 각 컨트롤을 `Stack` 안의 `Left`, `Top` 위치에 둡니다(6절). 사용자가 한 일은 이벤트로 돌아옵니다: `Click`, 그리고 사용자가 TextBox의 확정된 글자를 바꿀 때의 `Changed`.
+- **`GbFormModel`**은 폼과 컨트롤의 현재 속성(`GbControlState`, 이름과 타입은 `component.yaml`과 같음)을 담습니다. **`GbFormView`**가 이를 보여 줍니다: 각 컨트롤을 `Stack` 안의 `Left`, `Top` 위치에 둡니다(6절). Button은 테두리와 글자 사이를 8픽셀로 둡니다. 그래야 기본 너비의 Button에 자기 이름(`Button1`)이 다 보입니다. Material의 기본값 24로는 96픽셀 가운데 48픽셀만 글자에 남았습니다. 사용자가 한 일은 이벤트로 돌아옵니다: `Click`, 그리고 사용자가 TextBox의 확정된 글자를 바꿀 때의 `Changed`.
 - **`GbDialogs`**는 `MsgBox`와 `InputBox`를 모달로 보여 주고(D28), 프로그램이 끝나면 모두 닫습니다.
 - **`gubasic_runtime`은 `gubasic_lang`에 의존하지 않습니다.** 둘은 IDE가 이어 줍니다(인터프리터의 `FormHost`). 그래서 생성된 앱에는 인터프리터가 들어가지 않습니다.
 - **IDE의 실행 창**(`apps/ide`): `RunHost`가 `GbFormModel`과 `GbDialogs` 위에 `FormHost`를 구현합니다. 속성 값은 모델 한 곳에만 있고, 프로그램이 넣고 사용자가 바꿉니다. 클릭과 입력은 이벤트로 인터프리터에 갑니다. 실행 창은 IDE 가운데를 채우고 자기 내비게이터를 가집니다. 그래서 MsgBox나 InputBox는 폼과 폼의 닫기 단추를 가리지만(D28) IDE의 도구 막대는 가리지 않아, 중지(Shift+F5)는 언제나 됩니다. 폼은 `Form_Load`가 끝나면 나타납니다.

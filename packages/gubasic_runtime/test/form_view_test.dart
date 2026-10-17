@@ -49,6 +49,17 @@ void main() {
     );
   });
 
+  testWidgets("a Button's text has 8 pixels on each side", (tester) async {
+    await show(tester);
+    // At the default width, 96, the text gets 80: room for "Button1".
+    model.control('btnHello')!.set('Width', 96);
+    await tester.pump();
+    final text = tester.renderObject<RenderBox>(
+      find.descendant(of: find.byType(GbButton), matching: find.byType(Text)),
+    );
+    expect(text.constraints.maxWidth, 96 - 2 * gbButtonPadding);
+  });
+
   testWidgets('properties set by the program show at once', (tester) async {
     await show(tester);
     model.control('LBLMESSAGE')!.set('Caption', 'Hello, Kim!');
