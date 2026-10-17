@@ -2,6 +2,8 @@ import 'package:flutter/widgets.dart';
 import 'package:gubasic_lang/gubasic_lang.dart';
 import 'package:gubasic_runtime/gubasic_runtime.dart';
 
+import '../form_window.dart';
+
 /// Connects the interpreter to gubasic_runtime (docs/DESIGN.md §2.3): the
 /// form's properties live in [model], which the run window shows, and
 /// MsgBox and InputBox are [dialogs]. What the user does on the form goes
@@ -9,20 +11,7 @@ import 'package:gubasic_runtime/gubasic_runtime.dart';
 class RunHost implements FormHost {
   RunHost(FormFile form, {GbStrings strings = GbStrings.en})
     : dialogs = GbDialogs(strings: strings) {
-    model = GbFormModel(
-      form: {
-        for (final p in form.component.properties.values)
-          p.name: form.valueOf(p.name),
-      },
-      controls: [
-        for (final c in form.controls)
-          GbControlState(c.name, _kind(c.component.name), {
-            for (final p in c.component.properties.values)
-              p.name: c.valueOf(p.name),
-          }),
-      ],
-      onEvent: _onEvent,
-    );
+    model = formModelOf(form, onEvent: _onEvent);
   }
 
   late final GbFormModel model;
@@ -44,14 +33,6 @@ class RunHost implements FormHost {
   /// What the interpreter did with the last event the user caused; tests
   /// read it.
   EventOutcome? lastOutcome;
-
-  static GbControlKind _kind(String component) =>
-      switch (component.toLowerCase()) {
-        'button' => GbControlKind.button,
-        'label' => GbControlKind.label,
-        'textbox' => GbControlKind.textBox,
-        _ => throw ArgumentError('no widget for component $component'),
-      };
 
   void _onEvent(String? control, String event) =>
       lastOutcome = interpreter.raiseEvent(control, event);

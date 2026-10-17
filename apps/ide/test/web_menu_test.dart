@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -148,6 +149,29 @@ void main() {
       reason: 'kept at once',
     );
     await tester.pump(const Duration(seconds: 3));
+  });
+
+  testWidgets('a form changed in the designer is kept a moment later', (
+    tester,
+  ) async {
+    await start(tester);
+    await keepHelloAs(tester, 'Quiz');
+    await closeDialog(tester);
+
+    await tester.tap(find.text('Form1.form.yaml'));
+    await tester.pumpAndSettle();
+    final label = find.byKey(const ValueKey('toolbox.Label'));
+    await tester.tap(label);
+    await tester.pump(kDoubleTapMinTime);
+    await tester.tap(label);
+    await tester.pumpAndSettle();
+    expect(find.text('Quiz — Edited'), findsOneWidget);
+    await tester.pump(const Duration(seconds: 3));
+    expect(find.text('Quiz — Edited'), findsNothing);
+    expect(
+      browser.storage.values['gubasic.ide.project.quiz'],
+      contains('name: Label1'),
+    );
   });
 
   testWidgets('Download gives NAME.zip; the browser asks before leaving '

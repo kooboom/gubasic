@@ -103,6 +103,9 @@ class _IdeAppState extends State<IdeApp> {
     open: widget.open,
   );
 
+  /// Whether the designer's grid is on.
+  final _grid = ValueNotifier(true);
+
   /// Asks about unsaved changes when the app is about to quit.
   late final AppLifecycleListener _lifecycle;
 
@@ -116,6 +119,7 @@ class _IdeAppState extends State<IdeApp> {
   void dispose() {
     _lifecycle.dispose();
     _controller.dispose();
+    _grid.dispose();
     super.dispose();
   }
 
@@ -153,6 +157,7 @@ class _IdeAppState extends State<IdeApp> {
         key: ObjectKey(_controller.current),
         controller: _controller,
         strings: widget.strings,
+        grid: _grid,
       ),
     ),
   );

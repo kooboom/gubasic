@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gubasic_ide/main.dart';
+import 'package:gubasic_ide/src/designer/form_designer.dart';
 import 'package:gubasic_ide/src/project/examples.g.dart';
 import 'package:gubasic_ide/src/run/run_window.dart';
 import 'package:gubasic_ide/src/strings.dart';
@@ -103,7 +104,7 @@ void main() {
     await tester.tap(find.text('Form1.form.yaml'));
     await tester.pumpAndSettle();
     expect(find.text('Hello, Ann! (1)'), findsNothing);
-    expect(find.textContaining('btnHello'), findsWidgets, reason: 'the file');
+    expect(find.byType(FormDesigner), findsOneWidget, reason: 'the file');
 
     await tester.tap(find.text('Run window'));
     await tester.pumpAndSettle();

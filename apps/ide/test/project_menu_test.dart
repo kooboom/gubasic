@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:ui';
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
@@ -174,6 +175,33 @@ void main() {
     expect(fs.files['/home/Hello/Form1.gbas'], "' changed\n");
     expect(find.text('Hello'), findsWidgets);
     expect(find.text('Hello — Edited'), findsNothing);
+  });
+
+  testWidgets('a form drawn in the designer saves only its form file', (
+    tester,
+  ) async {
+    fs.add('/home/Hello', hello);
+    await start(tester);
+    opens = ['/home/Hello/Hello.gbproj'];
+    await menu(tester, s.open);
+    await tester.tap(find.text('Form1.form.yaml'));
+    await tester.pumpAndSettle();
+    final button = find.byKey(const ValueKey('toolbox.Button'));
+    await tester.tap(button);
+    await tester.pump(kDoubleTapMinTime);
+    await tester.tap(button);
+    await tester.pumpAndSettle();
+    expect(find.text('Hello — Edited'), findsOneWidget);
+
+    await menu(tester, s.save);
+    expect(fs.written, ['/home/Hello/Form1.form.yaml']);
+    expect(fs.files['/home/Hello/Form1.form.yaml'], contains('Button1'));
+    expect(find.text('Hello — Edited'), findsNothing);
+
+    // Undo after saving is a change again.
+    await tester.tap(find.widgetWithIcon(IconButton, Icons.undo));
+    await tester.pumpAndSettle();
+    expect(find.text('Hello — Edited'), findsOneWidget);
   });
 
   testWidgets('Save asks before replacing a file changed on disk', (

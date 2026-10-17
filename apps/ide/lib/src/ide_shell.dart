@@ -2,6 +2,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import 'designer/form_designer.dart';
+import 'designer/form_edit.dart';
 import 'project/open_project.dart';
 import 'project/project.dart';
 import 'project/project_controller.dart';
@@ -22,13 +24,24 @@ import 'theme.dart';
 /// The File menu opens and saves projects on disk (D32); the menu at the
 /// top right switches between the examples and the project on disk. Both
 /// wait while a program runs.
+///
+/// A form file opens in the form designer (D34). Its undo history lasts
+/// as long as this shell: a new project gets a new shell.
 class IdeShell extends StatefulWidget {
-  const IdeShell({super.key, required this.controller, required this.strings});
+  const IdeShell({
+    super.key,
+    required this.controller,
+    required this.strings,
+    required this.grid,
+  });
 
   /// The open project, [ProjectController.current], and the commands
   /// that open and save projects.
   final ProjectController controller;
   final IdeStrings strings;
+
+  /// Whether the designer's grid is on, kept from project to project.
+  final ValueNotifier<bool> grid;
 
   @override
   State<IdeShell> createState() => _IdeShellState();
@@ -50,6 +63,9 @@ class _IdeShellState extends State<IdeShell> {
       _project.files.containsKey(_chosenFile) ? _chosenFile : _firstFile;
   set _file(String file) => _chosenFile = file;
   RunSession? _session;
+
+  /// The designer's undo history of each form file.
+  final _histories = <String, FormHistory>{};
 
   /// Whether the middle shows the run window rather than [_file].
   var _showRun = false;
@@ -309,10 +325,21 @@ class _IdeShellState extends State<IdeShell> {
 
   Widget _main(BuildContext context) {
     final session = _session;
-    final code = SingleChildScrollView(
-      padding: const EdgeInsets.all(12),
-      child: SelectableText(_project.files[_file]!, style: codeStyle),
-    );
+    final file = _file;
+    final code = file.endsWith('.form.yaml')
+        ? FormDesigner(
+            key: ValueKey(file),
+            project: widget.controller.current,
+            file: file,
+            history: _histories.putIfAbsent(file, FormHistory.new),
+            grid: widget.grid,
+            locked: _running,
+            strings: widget.strings,
+          )
+        : SingleChildScrollView(
+            padding: const EdgeInsets.all(12),
+            child: SelectableText(_project.files[file]!, style: codeStyle),
+          );
     if (session == null || session.result != null) {
       return code;
     }

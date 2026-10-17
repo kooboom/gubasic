@@ -63,6 +63,17 @@ class IdeStrings {
     required this.zipProjectFiles,
     required this.zipNotText,
     required this.zipIgnored,
+    required this.pointerTool,
+    required this.pointerTip,
+    required this.placeTip,
+    required this.undo,
+    required this.redo,
+    required this.grid,
+    required this.gridTip,
+    required this.viewFormFile,
+    required this.viewDesigner,
+    required this.lockedWhileRunning,
+    required this.formHasErrors,
   });
 
   /// The words on MsgBox and InputBox.
@@ -176,6 +187,21 @@ class IdeStrings {
   /// `{0}` the files.
   final String zipIgnored;
 
+  // The form designer (D34).
+  final String pointerTool;
+  final String pointerTip;
+
+  /// `{0}` the control type.
+  final String placeTip;
+  final String undo;
+  final String redo;
+  final String grid;
+  final String gridTip;
+  final String viewFormFile;
+  final String viewDesigner;
+  final String lockedWhileRunning;
+  final String formHasErrors;
+
   /// [diagnostic] in [file], in this language.
   String problem(String file, Diagnostic diagnostic) => errorAt
       .replaceAll('{0}', file)
@@ -208,8 +234,7 @@ class IdeStrings {
     saved: 'Saved in {0}.',
     unsaved: 'The project {0} has changes that are not saved. Save them? If you do not, they are lost.',
     changedOnDisk: 'These files were changed outside GuBASIC after they were opened: {0}. Saving replaces them with what the IDE has.',
-    exampleIsReadOnly:
-        'Examples cannot be changed. Save a copy as a project of your own.',
+    exampleIsReadOnly: 'Examples are not overwritten. Save your changes as a project of your own.',
     badProjectName: 'A project name cannot be empty, start or end with a space, or contain a dot or / \\ : * ? " < > |. Save again with another name.',
     folderExists: 'A folder named {0} is already there. GuBASIC does not overwrite an existing project, even when the save dialog asked to replace it. Save again with another name.',
     missingFiles: 'The project folder does not have these files: {0}. Add them, or remove their form from the .gbproj file.',
@@ -227,7 +252,7 @@ class IdeStrings {
     changedSinceDownloadHint:
         'Changed since the last download. Download a .zip to keep it safe.',
     keptStatus: 'Kept in this browser · last download: {0}',
-    exampleStatus: 'Example (read-only) · Save keeps a copy in this browser',
+    exampleStatus: 'Example · Save keeps a copy in this browser',
     none: 'none',
     keptInBrowser: 'Kept in this browser.',
     browserNotice: 'This project is kept only in this browser. On a computer whose browser data is cleared, such as a shared school PC, it can be lost, and Safari removes it after 7 days without a visit. Download it as a .zip at the end of each lesson.',
@@ -247,6 +272,17 @@ class IdeStrings {
         'A .zip must hold exactly one .gbproj file. It holds: {0}.',
     zipNotText: 'The file {0} in the .zip is not UTF-8 text.',
     zipIgnored: 'These files are not GuBASIC files and were left out: {0}',
+    pointerTool: 'Pointer',
+    pointerTip: 'Select a control on the form.',
+    placeTip: 'Drag on the form to draw a {0}, or click for the default size. Double-click here to put one in the middle of the form.',
+    undo: 'Undo',
+    redo: 'Redo',
+    grid: 'Grid',
+    gridTip: 'With the grid on, controls are placed and sized in steps of 8.',
+    viewFormFile: 'View form file',
+    viewDesigner: 'View designer',
+    lockedWhileRunning: 'The form cannot be changed while the program runs. Stop it (Shift+F5) to change it.',
+    formHasErrors: 'This form file has errors, so the designer only shows it: changing it would drop what could not be read. Fix the file in a text editor, then open the project again.',
   );
 
   static const ko = IdeStrings(
@@ -274,7 +310,7 @@ class IdeStrings {
     unsaved: '{0} 프로젝트에 저장하지 않은 변경이 있습니다. 저장합니까? 저장하지 않으면 변경은 사라집니다.',
     changedOnDisk:
         '다음 파일은 연 뒤에 GuBASIC 밖에서 바뀌었습니다: {0}. 저장하면 IDE에 있는 내용으로 바뀝니다.',
-    exampleIsReadOnly: '예제는 바꿀 수 없습니다. 내 프로젝트로 복사본을 저장합니다.',
+    exampleIsReadOnly: '예제는 덮어쓰지 않습니다. 바꾼 내용은 내 프로젝트로 복사본을 저장합니다.',
     badProjectName: '프로젝트 이름은 비워 둘 수 없고, 공백으로 시작하거나 끝날 수 없으며, 점(.)과 / \\ : * ? " < > | 문자를 쓸 수 없습니다. 다른 이름을 입력해 다시 저장합니다.',
     folderExists: '그 자리에 {0} 폴더가 이미 있습니다. GuBASIC은 이미 있는 프로젝트를 덮어쓰지 않습니다(저장 창에서 대치를 눌렀더라도 그렇습니다). 다른 이름을 입력해 다시 저장합니다.',
     missingFiles: '프로젝트 폴더에 다음 파일이 없습니다: {0}. 파일을 넣거나, .gbproj 파일에서 그 폼을 뺍니다.',
@@ -292,7 +328,7 @@ class IdeStrings {
     changedSinceDownloadHint:
         '마지막으로 내려받은 뒤 바뀐 내용이 있습니다. 안전하게 보관하려면 .zip으로 내려받습니다.',
     keptStatus: '이 브라우저에 보관 중 · 마지막 내려받기: {0}',
-    exampleStatus: '예제(읽기 전용) · 저장하면 이 브라우저에 복사본을 보관합니다',
+    exampleStatus: '예제 · 저장하면 이 브라우저에 복사본을 보관합니다',
     none: '없음',
     keptInBrowser: '이 브라우저에 보관했습니다.',
     browserNotice: '이 프로젝트는 이 브라우저에만 보관됩니다. 학교 공용 PC처럼 브라우저 기록이 지워지는 컴퓨터에서는 사라질 수 있고, Safari는 7일 동안 방문하지 않으면 지웁니다. 수업이 끝날 때마다 .zip으로 내려받습니다.',
@@ -314,6 +350,18 @@ class IdeStrings {
     zipProjectFiles: '.zip에는 .gbproj 파일이 하나만 있어야 합니다. 들어 있는 것: {0}.',
     zipNotText: '.zip 안의 {0} 파일은 UTF-8 텍스트가 아닙니다.',
     zipIgnored: '다음 파일은 GuBASIC 파일이 아니라서 넣지 않았습니다: {0}',
+    pointerTool: '포인터',
+    pointerTip: '폼 위의 컨트롤을 선택합니다.',
+    placeTip:
+        '폼 위에서 끌어 {0} 컨트롤을 그리거나, 클릭해서 기본 크기로 놓습니다. 여기를 더블클릭하면 폼 가운데에 놓습니다.',
+    undo: '되돌리기',
+    redo: '다시 하기',
+    grid: '격자',
+    gridTip: '격자를 켜면 컨트롤을 8 단위로 놓고 크기를 맞춥니다.',
+    viewFormFile: '폼 파일 보기',
+    viewDesigner: '그리기 화면 보기',
+    lockedWhileRunning: '프로그램이 실행되는 동안에는 폼을 고칠 수 없습니다. 고치려면 중지(Shift+F5)합니다.',
+    formHasErrors: '이 폼 파일에는 오류가 있어서 그리기 화면에서 보기만 합니다. 고치면 읽지 못한 부분이 사라지기 때문입니다. 텍스트 편집기로 파일을 고친 뒤 프로젝트를 다시 엽니다.',
   );
 
   /// Korean when the system language is Korean, else English.
