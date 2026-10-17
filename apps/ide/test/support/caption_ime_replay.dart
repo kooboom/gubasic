@@ -58,6 +58,8 @@ void defineCaptionImeTests(Map<String, String> logs) {
     );
     await m.up();
     await t.pump();
+    // Past a double-click: the next press is a press of its own.
+    await t.pump(const Duration(milliseconds: 500));
   }
 
   Future<void> open(WidgetTester t) async {

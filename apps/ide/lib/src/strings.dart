@@ -82,6 +82,11 @@ class IdeStrings {
     required this.badName,
     required this.nameTaken,
     required this.nameInCode,
+    required this.generalObject,
+    required this.declarations,
+    required this.objectList,
+    required this.eventList,
+    required this.noHandlerWhileRunning,
   });
 
   /// The words on MsgBox and InputBox.
@@ -232,6 +237,15 @@ class IdeStrings {
   /// `{0}` the name typed, `{1}` the code file, `{2}` the lines.
   final String nameInCode;
 
+  // The code editor's lists of objects and events (D38).
+  final String generalObject;
+  final String declarations;
+  final String objectList;
+  final String eventList;
+
+  /// `{0}` the handler.
+  final String noHandlerWhileRunning;
+
   /// [diagnostic] in [file], in this language.
   String problem(String file, Diagnostic diagnostic) => errorAt
       .replaceAll('{0}', file)
@@ -321,6 +335,11 @@ class IdeStrings {
     badName: '"{0}" cannot be a name. A name starts with an English letter and has only English letters, digits and _; it cannot be a keyword or Form.',
     nameTaken: 'Another control is already named {0}. Choose another name.',
     nameInCode: '{0} is already used in {1} on lines {2}. Renaming the control to it would change what the code means. Choose another name.',
+    generalObject: '(General)',
+    declarations: '(Declarations)',
+    objectList: 'Object',
+    eventList: 'Event',
+    noHandlerWhileRunning: 'There is no {0} yet, and code cannot be changed while the program runs. Stop it (Shift+F5) first.',
   );
 
   static const ko = IdeStrings(
@@ -408,6 +427,12 @@ class IdeStrings {
     badName: '"{0}" 문자열은 이름으로 쓸 수 없습니다. 이름은 영문자로 시작하고 영문자, 숫자, _만 쓸 수 있으며, 키워드나 Form은 쓸 수 없습니다.',
     nameTaken: '{0} 이름의 컨트롤이 이미 있습니다. 다른 이름을 입력합니다.',
     nameInCode: '{0} 이름은 이미 {1} 파일의 {2}번째 줄에서 쓰입니다. 컨트롤을 이 이름으로 바꾸면 코드의 뜻이 바뀝니다. 다른 이름을 입력합니다.',
+    generalObject: '(일반)',
+    declarations: '(선언)',
+    objectList: '개체',
+    eventList: '이벤트',
+    noHandlerWhileRunning:
+        '{0} 처리기가 아직 없고, 프로그램이 실행되는 동안에는 코드를 바꿀 수 없습니다. 먼저 중지(Shift+F5)합니다.',
   );
 
   /// Korean when the system language is Korean, else English.

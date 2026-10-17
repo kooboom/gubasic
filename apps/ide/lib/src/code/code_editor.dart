@@ -7,12 +7,18 @@ import 'package:gubasic_runtime/gubasic_runtime.dart'
     show ComposingTracker, committedText;
 
 import '../project/open_project.dart';
+import '../strings.dart';
 import '../theme.dart';
 import 'code_controller.dart';
 import 'code_font.dart';
+import 'handlers.dart';
 
 /// The key of the code editor's text field.
 const codeFieldKey = ValueKey('code.field');
+
+/// The keys of the lists of objects and of events above the code.
+const codeObjectsKey = ValueKey('code.objects');
+const codeEventsKey = ValueKey('code.events');
 
 /// The size of the code, and the height of a line, so that the line
 /// numbers stay level with the lines whatever font a character takes.
@@ -34,7 +40,9 @@ class CodeEditor extends StatefulWidget {
     required this.project,
     required this.file,
     required this.locked,
+    required this.strings,
     this.focusCount = 0,
+    this.goTo,
   });
 
   final OpenProject project;
@@ -46,6 +54,11 @@ class CodeEditor extends StatefulWidget {
   /// A new number asks the editor to take the focus: the file was chosen
   /// again, and the editor may have been there, hidden, all along.
   final int focusCount;
+  final IdeStrings strings;
+
+  /// A procedure to go to, or a handler to add and go to: a double-click
+  /// in the designer (D38). A new [GoTo.id] asks again.
+  final GoTo? goTo;
 
   @override
   State<CodeEditor> createState() => _CodeEditorState();
@@ -58,11 +71,13 @@ class _CodeEditorState extends State<CodeEditor> {
   final _vertical = ScrollController();
   final _horizontal = ScrollController();
 
-  /// The text last written to the file from here, or read from it.
-  late String _written = _fileText;
+  /// The text last written to the file from here, or read from it. Set
+  /// as the editor opens: read later, it would already be a change made
+  /// elsewhere, which then never showed.
+  late String _written;
 
   /// The value before the last change, to see what the change was.
-  late TextEditingValue _last = _controller.value;
+  late TextEditingValue _last;
 
   var _changing = false;
 
@@ -72,6 +87,12 @@ class _CodeEditorState extends State<CodeEditor> {
   void initState() {
     super.initState();
     CodeFont.load();
+    // A caret from the start: the field's undo history records only values
+    // with one, so the code as it was opened is the first step back.
+    _controller.selection = const TextSelection.collapsed(offset: 0);
+    _written = _fileText;
+    _last = _controller.value;
+    _tracker.track(_controller.value);
     _controller.addListener(_changed);
     _focus.addListener(() {
       // This listener comes before the text field's own, so the selection
@@ -94,7 +115,9 @@ class _CodeEditorState extends State<CodeEditor> {
     // The editor takes the focus when it opens, as the designer does: the
     // view it replaced may have had it.
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) _focus.requestFocus();
+      if (!mounted) return;
+      _focus.requestFocus();
+      if (widget.goTo case final goTo?) _goToFocused(goTo);
     });
   }
 
@@ -102,9 +125,14 @@ class _CodeEditorState extends State<CodeEditor> {
   void didUpdateWidget(CodeEditor old) {
     super.didUpdateWidget(old);
     _updateControls();
-    if (widget.focusCount != old.focusCount) {
+    final goTo = widget.goTo;
+    final again = goTo != null && goTo.id != old.goTo?.id;
+    if (widget.focusCount != old.focusCount || again) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) _focus.requestFocus();
+        if (!mounted) return;
+        _reload();
+        _focus.requestFocus();
+        if (again) _goToFocused(goTo);
       });
     }
     // The file changed some other way (the designer made a handler or
@@ -129,11 +157,15 @@ class _CodeEditorState extends State<CodeEditor> {
     setState(() {
       _undo.dispose();
       _undo = UndoHistoryController();
+      _built = null;
     });
   }
 
   String? _formText;
   var _formRead = false;
+
+  /// The form the code belongs to, for the lists of objects and events.
+  FormFile? _form;
 
   /// The form's control names, coloured in the code; read again only when
   /// the form file changed.
@@ -146,12 +178,210 @@ class _CodeEditorState extends State<CodeEditor> {
     if (form == _formText && _formRead) return;
     _formText = form;
     _formRead = true;
-    _controller.controls = form == null
-        ? const {}
-        : {
-            for (final c in readFormFile(form, name: '').form.controls)
-              c.name.toLowerCase(),
-          };
+    _built = null;
+    _form = form == null ? null : readFormFile(form, name: '').form;
+    _controller.controls = {
+      for (final c in _form?.controls ?? const <ControlDecl>[])
+        c.name.toLowerCase(),
+    };
+  }
+
+  /// The handler just added, and the code before it: ⌘Z takes it out
+  /// while nothing else was typed, also when the field's own history,
+  /// which keeps a step only every half second, has not recorded the code
+  /// as it was opened.
+  ({TextEditingValue before, String after})? _handlerAdded;
+
+  /// ⌘Z: takes out the handler just added, if the field's history
+  /// cannot; true when it did.
+  bool _undoHandlerAdded() {
+    final added = _handlerAdded;
+    _handlerAdded = null;
+    if (added == null || _undo.value.canUndo) return false;
+    if (_controller.text != added.after) return false;
+    _controller.value = added.before;
+    return true;
+  }
+
+  /// Goes where [goTo] says once the editor has the focus: the field's
+  /// undo history records only while it has the focus, and a handler
+  /// added is undone in one step.
+  void _goToFocused(GoTo goTo) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _goTo(goTo.name, goTo.signature);
+    });
+    WidgetsBinding.instance.scheduleFrame();
+  }
+
+  /// Goes to the procedure [name] (the top of the code when empty); adds
+  /// the handler `Sub [signature]` first when there is none, unless a
+  /// program runs.
+  void _goTo(String name, String? signature) {
+    final text = _controller.text;
+    if (name.isEmpty) {
+      _controller.selection = const TextSelection.collapsed(offset: 0);
+      return;
+    }
+    final p = procedureNamed(text, name);
+    if (p != null) {
+      _controller.selection = TextSelection.collapsed(offset: caretIn(text, p));
+    } else if (signature != null && !widget.locked) {
+      final added = withHandler(text, signature);
+      final before = _controller.value;
+      _controller.value = TextEditingValue(
+        text: added.text,
+        selection: TextSelection.collapsed(offset: added.caret),
+      );
+      _handlerAdded = (before: before, after: added.text);
+    } else if (signature != null) {
+      ScaffoldMessenger.maybeOf(context)?.showSnackBar(
+        SnackBar(
+          content: Text(
+            widget.strings.noHandlerWhileRunning.replaceAll('{0}', name),
+          ),
+        ),
+      );
+    }
+  }
+
+  /// The objects of the form, as the list shows them: `Form`, then the
+  /// controls, each with its component.
+  List<(String, ComponentSpec)> get _objects => [
+    ('Form', formComponent),
+    for (final c in _form?.controls ?? const <ControlDecl>[])
+      (c.name, c.component),
+  ];
+
+  /// The object a procedure is the handler of, and its event; null for a
+  /// procedure of its own ((General)).
+  (String, String)? _handlerOf(String procedure) {
+    final lower = procedure.toLowerCase();
+    for (final (name, component) in _objects) {
+      final prefix = '${name.toLowerCase()}_';
+      if (!lower.startsWith(prefix)) continue;
+      final event = component.events[lower.substring(prefix.length)];
+      if (event != null) return (name, event.name);
+    }
+    return null;
+  }
+
+  /// The object chosen in the list; null for (General). Follows the caret
+  /// until the user chooses one.
+  String? _object;
+  Procedure? _caretIn;
+
+  /// Keeps the lists with the procedure the caret is in.
+  void _followCaret() {
+    final s = _controller.selection;
+    if (!s.isValid) return;
+    final procs = proceduresOf(_controller.text);
+    Procedure? here;
+    for (final p in procs) {
+      if (p.contains(s.baseOffset)) here = p;
+    }
+    if (here?.name == _caretIn?.name && here != null) return;
+    _caretIn = here;
+    _object = here == null ? null : _handlerOf(here.name)?.$1;
+  }
+
+  Widget _lists(BuildContext context) {
+    final s = widget.strings;
+    final theme = Theme.of(context);
+    final text = _controller.text;
+    final procs = proceduresOf(text);
+    final names = {for (final p in procs) p.name.toLowerCase()};
+    final object = _object;
+    final here = _caretIn == null ? null : _handlerOf(_caretIn!.name);
+    final component = object == null
+        ? null
+        : _objects
+              .firstWhere((o) => o.$1 == object, orElse: () => _objects.first)
+              .$2;
+    final events = <(String, String, String?)>[
+      // (key, label, signature)
+      if (component == null) ...[
+        ('', s.declarations, null),
+        for (final p in procs)
+          if (_handlerOf(p.name) == null) (p.name, p.name, null),
+      ] else
+        for (final e in component.events.values)
+          ('${object}_${e.name}', e.name, e.handlerSignature(object!)),
+    ];
+    final eventValue = component == null
+        ? (_caretIn != null && here == null ? _caretIn!.name : '')
+        : (here != null && here.$1 == object ? '${object}_${here.$2}' : null);
+    TextStyle? bold(String key) => names.contains(key.toLowerCase())
+        ? const TextStyle(fontWeight: FontWeight.bold)
+        : null;
+    return SizedBox(
+      height: 40,
+      child: Row(
+        children: [
+          const SizedBox(width: 8),
+          Expanded(
+            child: Tooltip(
+              message: s.objectList,
+              child: DropdownButton<String>(
+                key: codeObjectsKey,
+                isExpanded: true,
+                underline: const SizedBox(),
+                value: object ?? '',
+                onChanged: (v) => setState(() {
+                  _object = v!.isEmpty ? null : v;
+                  _built = null;
+                }),
+                items: [
+                  DropdownMenuItem(value: '', child: Text(s.generalObject)),
+                  for (final (name, c) in _objects)
+                    DropdownMenuItem(
+                      value: name,
+                      child: Row(
+                        children: [
+                          Flexible(
+                            child: Text(name, overflow: TextOverflow.ellipsis),
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            c.name,
+                            style: TextStyle(color: theme.hintColor),
+                          ),
+                        ],
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Tooltip(
+              message: s.eventList,
+              child: DropdownButton<String>(
+                key: codeEventsKey,
+                isExpanded: true,
+                underline: const SizedBox(),
+                value: events.any((e) => e.$1 == eventValue)
+                    ? eventValue
+                    : null,
+                onChanged: (key) {
+                  final e = events.firstWhere((e) => e.$1 == key);
+                  _goTo(e.$1, e.$3);
+                  _focus.requestFocus();
+                },
+                items: [
+                  for (final (key, label, _) in events)
+                    DropdownMenuItem(
+                      value: key,
+                      child: Text(label, style: bold(key)),
+                    ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+        ],
+      ),
+    );
   }
 
   @override
@@ -174,6 +404,7 @@ class _CodeEditorState extends State<CodeEditor> {
 
   void _changed() {
     _tracker.track(_controller.value);
+    _followCaret();
     if (_changing) return;
     final value = _controller.value;
     final last = _last;
@@ -328,8 +559,16 @@ class _CodeEditorState extends State<CodeEditor> {
         );
         return ListenableBuilder(
           listenable: _controller,
-          builder: (context, _) =>
-              _layout(context, style, strut, theme.colorScheme),
+          builder: (context, _) => Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _lists(context),
+              const Divider(height: 1),
+              Expanded(
+                child: _layout(context, style, strut, theme.colorScheme),
+              ),
+            ],
+          ),
         );
       },
     );
@@ -374,22 +613,27 @@ class _CodeEditorState extends State<CodeEditor> {
                           shift: true,
                         ): _untab,
                       },
-                      child: TextField(
-                        key: codeFieldKey,
-                        controller: _controller,
-                        focusNode: _focus,
-                        undoController: _undo,
-                        readOnly: widget.locked,
-                        maxLines: null,
-                        keyboardType: TextInputType.multiline,
-                        style: style,
-                        strutStyle: strut,
-                        autocorrect: false,
-                        enableSuggestions: false,
-                        smartDashesType: SmartDashesType.disabled,
-                        smartQuotesType: SmartQuotesType.disabled,
-                        decoration: const InputDecoration.collapsed(
-                          hintText: null,
+                      child: Actions(
+                        actions: {
+                          UndoTextIntent: _UndoHandlerAdded(_undoHandlerAdded),
+                        },
+                        child: TextField(
+                          key: codeFieldKey,
+                          controller: _controller,
+                          focusNode: _focus,
+                          undoController: _undo,
+                          readOnly: widget.locked,
+                          maxLines: null,
+                          keyboardType: TextInputType.multiline,
+                          style: style,
+                          strutStyle: strut,
+                          autocorrect: false,
+                          enableSuggestions: false,
+                          smartDashesType: SmartDashesType.disabled,
+                          smartQuotesType: SmartQuotesType.disabled,
+                          decoration: const InputDecoration.collapsed(
+                            hintText: null,
+                          ),
                         ),
                       ),
                     ),
@@ -466,4 +710,18 @@ class _CodeEditorState extends State<CodeEditor> {
 
   TextStyle? _measured;
   var _column = 0.0;
+}
+
+/// ⌘Z / Ctrl+Z in the code editor: first [undoHandlerAdded], then the
+/// field's own undo.
+class _UndoHandlerAdded extends ContextAction<UndoTextIntent> {
+  _UndoHandlerAdded(this.undoHandlerAdded);
+
+  final bool Function() undoHandlerAdded;
+
+  @override
+  Object? invoke(UndoTextIntent intent, [BuildContext? context]) {
+    if (undoHandlerAdded()) return null;
+    return callingAction?.invoke(intent);
+  }
 }

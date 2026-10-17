@@ -36,6 +36,7 @@ class FormDesigner extends StatefulWidget {
     required this.grid,
     required this.locked,
     required this.strings,
+    this.onOpenHandler,
   });
 
   final OpenProject project;
@@ -48,6 +49,10 @@ class FormDesigner extends StatefulWidget {
   final ValueNotifier<bool> grid;
   final bool locked;
   final IdeStrings strings;
+
+  /// A double-click on a control (or on the form: null) opens its default
+  /// event's handler in the code editor (D38).
+  final void Function(String? control)? onOpenHandler;
 
   @override
   State<FormDesigner> createState() => _FormDesignerState();
@@ -212,9 +217,23 @@ class _FormDesignerState extends State<FormDesigner> {
   Point<double> _point(PointerEvent e) =>
       Point(e.localPosition.dx, e.localPosition.dy);
 
+  /// How far apart, at most, the two presses of a double-click are: a
+  /// mouse stays where it is, unlike a finger (kDoubleTapSlop is 100).
+  static const _doubleClickReach = 8.0;
+
+  /// The last two presses: on which control ('' for the form) and where,
+  /// so that a double-click opens code only when both were on the same
+  /// control, at the same place.
+  ({String target, Offset at})? _press, _pressBefore;
+
   void _down(PointerDownEvent e) {
     _focus.requestFocus();
     if (e.buttons & kPrimaryButton == 0) return;
+    _pressBefore = _press;
+    _press = (
+      target: _controlAt(e.localPosition)?.name ?? '',
+      at: e.localPosition,
+    );
     if (_tool != null && _canEdit) {
       setState(() => _dragStart = _dragEnd = _point(e));
       return;
@@ -241,6 +260,18 @@ class _FormDesignerState extends State<FormDesigner> {
         _cursor = SystemMouseCursors.move;
       }
     });
+  }
+
+  /// A double-click (Flutter's double tap, timed as the platform times
+  /// it) on a control, or on the form, opens its handler.
+  void _doubleClick() {
+    final (a, b) = (_pressBefore, _press);
+    if (_tool != null || a == null || b == null) return;
+    if (a.target != b.target || (a.at - b.at).distance > _doubleClickReach) {
+      return;
+    }
+    _endChange();
+    widget.onOpenHandler?.call(b.target.isEmpty ? null : b.target);
   }
 
   void _move(PointerMoveEvent e) {
@@ -663,42 +694,46 @@ class _FormDesignerState extends State<FormDesigner> {
           onPointerMove: _move,
           onPointerUp: _up,
           onPointerCancel: _cancel,
-          child: Stack(
-            children: [
-              if (_grid)
-                Positioned.fill(
-                  child: CustomPaint(
-                    painter: _GridPainter(scheme.outlineVariant),
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onDoubleTap: _doubleClick,
+            child: Stack(
+              children: [
+                if (_grid)
+                  Positioned.fill(
+                    child: CustomPaint(
+                      painter: _GridPainter(scheme.outlineVariant),
+                    ),
                   ),
-                ),
-              // Drawn by the runtime, as in the run window, but it takes
-              // no clicks, typing or focus.
-              Positioned.fill(
-                child: IgnorePointer(
-                  child: ExcludeFocus(
-                    child: GbFormView(
-                      key: ValueKey(_modelVersion),
-                      model: _model,
+                // Drawn by the runtime, as in the run window, but it takes
+                // no clicks, typing or focus.
+                Positioned.fill(
+                  child: IgnorePointer(
+                    child: ExcludeFocus(
+                      child: GbFormView(
+                        key: ValueKey(_modelVersion),
+                        model: _model,
+                      ),
                     ),
                   ),
                 ),
-              ),
-              Positioned.fill(
-                child: CustomPaint(
-                  painter: _MarksPainter(
-                    edges: [
-                      for (final c in form.controls)
-                        if (c.component.name == 'Label') boxNow(c),
-                    ],
-                    edgeColor: scheme.outline,
-                    selected: selected == null ? null : boxNow(selected),
-                    drawing: _drawing,
-                    color: scheme.primary,
-                    handleFill: scheme.surface,
+                Positioned.fill(
+                  child: CustomPaint(
+                    painter: _MarksPainter(
+                      edges: [
+                        for (final c in form.controls)
+                          if (c.component.name == 'Label') boxNow(c),
+                      ],
+                      edgeColor: scheme.outline,
+                      selected: selected == null ? null : boxNow(selected),
+                      drawing: _drawing,
+                      color: scheme.primary,
+                      handleFill: scheme.surface,
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

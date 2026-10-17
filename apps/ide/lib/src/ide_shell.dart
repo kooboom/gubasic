@@ -1,9 +1,11 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:gubasic_lang/gubasic_lang.dart';
 
 import 'code/code_editor.dart';
 import 'code/code_font.dart';
+import 'code/handlers.dart';
 import 'designer/form_designer.dart';
 import 'designer/form_edit.dart';
 import 'project/open_project.dart';
@@ -355,6 +357,50 @@ class _IdeShellState extends State<IdeShell> {
     ],
   );
 
+  /// The last request to the code editor to go to a handler.
+  GoTo? _goTo;
+
+  /// A double-click on [control] (the form when null) in the designer of
+  /// [formFile]: the code editor opens on the default event's handler,
+  /// which is added first if there is none (D38). While a program runs,
+  /// only a handler that is there opens.
+  void _openHandler(String formFile, String? control) {
+    final formName = formFile.substring(
+      0,
+      formFile.length - '.form.yaml'.length,
+    );
+    final codeFile = '$formName.gbas';
+    final form = readFormFile(
+      _project.files[formFile] ?? '',
+      name: formName,
+    ).form;
+    final decl = control == null ? null : form.control(control);
+    final name = decl?.name ?? 'Form';
+    final component = decl?.component ?? formComponent;
+    final event = component.events[component.defaultEvent.toLowerCase()]!;
+    final handler = '${name}_${event.name}';
+    final code = _project.files[codeFile] ?? '';
+    if (_running && procedureNamed(code, handler) == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            widget.strings.noHandlerWhileRunning.replaceAll('{0}', handler),
+          ),
+        ),
+      );
+      return;
+    }
+    if (!_project.files.containsKey(codeFile)) {
+      widget.controller.current.setFile(codeFile, '');
+    }
+    setState(() {
+      _file = codeFile;
+      _showRun = false;
+      _codeFocusCount++;
+      _goTo = GoTo((_goTo?.id ?? 0) + 1, handler, event.handlerSignature(name));
+    });
+  }
+
   Widget _main(BuildContext context) {
     final session = _session;
     final file = _file;
@@ -367,6 +413,7 @@ class _IdeShellState extends State<IdeShell> {
             grid: widget.grid,
             locked: _running,
             strings: widget.strings,
+            onOpenHandler: (control) => _openHandler(file, control),
           )
         : file.toLowerCase().endsWith('.gbas')
         ? CodeEditor(
@@ -374,7 +421,9 @@ class _IdeShellState extends State<IdeShell> {
             project: widget.controller.current,
             file: file,
             locked: _running,
+            strings: widget.strings,
             focusCount: _codeFocusCount,
+            goTo: _goTo,
           )
         : SingleChildScrollView(
             padding: const EdgeInsets.all(12),

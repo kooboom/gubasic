@@ -21,6 +21,7 @@ flutter build web --no-web-resources-cdn   # CI와 같은 빌드(D30)
 - **F5**는 프로젝트를 실행하고, **Shift+F5**는 중지합니다. 화면의 말은 시스템 언어(영어 또는 한국어)를 따릅니다.
 - 예제 프로젝트는 앱 안에 들어 있으므로(`lib/src/project/examples.g.dart`) 웹 빌드에 파일이 필요 없습니다. `examples/`를 바꾼 뒤에는 `dart run tool/embed_examples.dart`를 실행합니다. CI가 `--check`로 확인합니다.
 - `test/widget_parity_test.dart`는 `test/parity/`의 이벤트 스크립트를 모두 실제 실행 창에서 실행합니다(DESIGN 9.1절).
+- **처리기**(D38): 디자이너에서 컨트롤(또는 빈 폼)을 더블클릭하면 기본 이벤트의 처리기가 코드 편집기에 열리고, 없으면 만들어집니다. 코드 위의 개체·이벤트 목록으로 어느 처리기로든 가거나 처리기를 만들 수 있습니다.
 - **코드 편집기**(D36): `Form1.gbas`를 고릅니다. 키워드, 문자열, 주석, 컨트롤에 색이 칠해지고, Tab / Shift+Tab으로 들여쓰고 내어쓰며, Enter는 들여쓰기를 이어 가고, ⌘Z / Ctrl+Z로 되돌립니다. 프로젝트는 폼으로 열리고, 코드 글꼴 D2Coding은 코드 편집기를 처음 열 때 받습니다.
 - **코드 글꼴:** D2Coding 1.3.2 Regular. 출처는 [naver/d2codingfont](https://github.com/naver/d2codingfont/releases/tag/VER1.3.2)(`D2Coding-Ver1.3.2-20180524.ttf`, sha256 `8b1b23e5…711aba84`)이고, SIL Open Font License 1.1을 따릅니다: [`fonts/d2coding/OFL.txt`](fonts/d2coding/OFL.txt). 선언된 글꼴이 아니라 처음 쓸 때 불러오는 에셋입니다(D36).
 - **글꼴:** IDE는 모든 플랫폼에서 Noto Sans KR을 씁니다(D30). 출처는 [notofonts/noto-cjk](https://github.com/notofonts/noto-cjk/tree/165c01b46ea533872e002e0785ff17e44f6d97d8/Sans/SubsetOTF/KR)(버전 2.004, `NotoSansKR-Regular.otf`, `NotoSansKR-Bold.otf`)이고, SIL Open Font License 1.1을 따릅니다: [`fonts/OFL.txt`](fonts/OFL.txt).

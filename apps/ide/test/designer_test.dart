@@ -59,6 +59,8 @@ void main() {
     await tester.pump();
     await mouse.up();
     await tester.pumpAndSettle();
+    // Past a double-click: the next press is a press of its own.
+    await tester.pump(const Duration(milliseconds: 500));
   }
 
   Future<void> ctrl(WidgetTester tester, LogicalKeyboardKey key) async {
