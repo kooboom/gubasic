@@ -92,3 +92,9 @@ Problems we know about and have **deliberately** left unfixed for now. Each entr
 - **What:** controls are placed with the mouse (or a touchpad); the keyboard moves, resizes and deletes the selected control, and the Properties window chooses controls and takes typed values. On the web with Flutter's accessibility layer on (as a screen reader turns it on), a double-click in the toolbox did not place a control when tried in Chrome; choosing a tool and clicking on the form still works. The cause was not looked into.
 - **Why deferred:** drawing a form is what the designer is for; keyboard ways in come step by step.
 - **Revisit:** when the designer is checked with a screen reader (after E2d); placing a control from the keyboard would need the toolbox to take the focus.
+
+## A control the code uses cannot be renamed in the designer
+
+- **What:** when a form's code uses a control's name (`btnHello.Caption`, `Sub btnHello_Click`), its (Name) in the Properties window is read-only and says on which lines; the code has to be changed by hand first.
+- **Why deferred:** renaming the uses and the handlers together needs the code editor, which does not exist yet; renaming only the control would leave the code pointing at a control that is gone (D35).
+- **Revisit:** with the code editor's rename-safe handlers (ROADMAP, stage 1).

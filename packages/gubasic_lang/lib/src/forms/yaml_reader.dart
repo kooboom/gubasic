@@ -2,7 +2,7 @@ import 'package:source_span/source_span.dart';
 import 'package:yaml/yaml.dart';
 
 import '../diagnostics/diagnostic.dart';
-import '../lexer/keyword.dart';
+import 'names.dart';
 
 /// Shared by the form and project file readers: turns YAML nodes into
 /// values and reports problems as F diagnostics at their place in the
@@ -124,13 +124,3 @@ class YamlReader {
     return SourceSpan(start, start, '');
   }
 }
-
-final _namePattern = RegExp(r'^[A-Za-z][A-Za-z0-9_]*$');
-
-/// Whether [name] can name a control or a form: an ASCII identifier
-/// (docs/LANGUAGE.md §1), not a keyword, and not `Form`, which handlers
-/// of the form's own events use (`Form_Load`).
-bool isUsableName(String name) =>
-    _namePattern.hasMatch(name) &&
-    Keyword.lookup(name) == null &&
-    name.toLowerCase() != 'form';

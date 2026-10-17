@@ -17,7 +17,7 @@ Each stage ends with something that runs. Small, finished stages beat a big unfi
 The core Visual Basic experience, entirely inside the IDE.
 
 - [x] IDE shell on macOS (Windows build kept working; also runs on the web)
-- [ ] Form designer: toolbox, canvas, drag / resize, Properties window
+- [x] Form designer: toolbox, canvas, drag / resize, Properties window
 - [x] Built-in components: `Form`, `Button`, `Label`, `TextBox`
 - [ ] Built-in components: `CheckBox`, `ListBox`, `Image`
 - [x] Absolute layout (`Left`, `Top`, `Width`, `Height`)

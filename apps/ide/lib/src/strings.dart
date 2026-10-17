@@ -78,6 +78,10 @@ class IdeStrings {
     required this.integerRange,
     required this.numberNeeded,
     required this.formNameIsFile,
+    required this.nameUsedInCode,
+    required this.badName,
+    required this.nameTaken,
+    required this.nameInCode,
   });
 
   /// The words on MsgBox and InputBox.
@@ -216,6 +220,18 @@ class IdeStrings {
   final String numberNeeded;
   final String formNameIsFile;
 
+  /// `{0}` the control, `{1}` the code file, `{2}` the lines.
+  final String nameUsedInCode;
+
+  /// `{0}` the name typed.
+  final String badName;
+
+  /// `{0}` the name typed.
+  final String nameTaken;
+
+  /// `{0}` the name typed, `{1}` the code file, `{2}` the lines.
+  final String nameInCode;
+
   /// [diagnostic] in [file], in this language.
   String problem(String file, Diagnostic diagnostic) => errorAt
       .replaceAll('{0}', file)
@@ -301,6 +317,10 @@ class IdeStrings {
     integerRange: '{0} takes a whole number from {1} to {2}.',
     numberNeeded: '{0} takes a number, such as 1.5.',
     formNameIsFile: 'A form is named after its file. Renaming a form comes with several forms in one project (stage 2).',
+    nameUsedInCode: '{0} is used in {1} on lines {2}, so it cannot be renamed here. Change those lines first. Renaming the code together with the control comes with the code editor.',
+    badName: '"{0}" cannot be a name. A name starts with an English letter and has only English letters, digits and _; it cannot be a keyword or Form.',
+    nameTaken: 'Another control is already named {0}. Choose another name.',
+    nameInCode: '{0} is already used in {1} on lines {2}. Renaming the control to it would change what the code means. Choose another name.',
   );
 
   static const ko = IdeStrings(
@@ -384,6 +404,10 @@ class IdeStrings {
     integerRange: '{0} 속성에는 정수만 쓸 수 있습니다. 범위: {1} ~ {2}',
     numberNeeded: '{0} 속성에는 1.5 같은 숫자만 쓸 수 있습니다.',
     formNameIsFile: '폼 이름은 파일 이름입니다. 폼 이름 바꾸기는 한 프로젝트에 폼을 여러 개 두는 2단계에서 합니다.',
+    nameUsedInCode: '{0} 컨트롤 이름은 {1} 파일의 {2}번째 줄에서 쓰이므로 여기서 바꿀 수 없습니다. 먼저 코드의 그 줄을 고칩니다. 컨트롤과 함께 코드의 이름까지 바꾸는 기능은 코드 편집기와 함께 들어옵니다.',
+    badName: '"{0}" 문자열은 이름으로 쓸 수 없습니다. 이름은 영문자로 시작하고 영문자, 숫자, _만 쓸 수 있으며, 키워드나 Form은 쓸 수 없습니다.',
+    nameTaken: '{0} 이름의 컨트롤이 이미 있습니다. 다른 이름을 입력합니다.',
+    nameInCode: '{0} 이름은 이미 {1} 파일의 {2}번째 줄에서 쓰입니다. 컨트롤을 이 이름으로 바꾸면 코드의 뜻이 바뀝니다. 다른 이름을 입력합니다.',
   );
 
   /// Korean when the system language is Korean, else English.

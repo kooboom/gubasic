@@ -24,6 +24,7 @@ export 'src/analyzer/symbols.dart';
 export 'src/forms/component.dart';
 export 'src/forms/form_file.dart';
 export 'src/forms/form_writer.dart';
+export 'src/forms/names.dart';
 export 'src/forms/project_file.dart';
 export 'src/forms/project_writer.dart';
 export 'src/interpreter/checked_math.dart';

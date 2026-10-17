@@ -8,6 +8,7 @@ import 'package:gubasic_ide/src/designer/properties_panel.dart';
 import 'package:gubasic_ide/src/ide_shell.dart';
 import 'package:gubasic_ide/src/project/examples.g.dart';
 import 'package:gubasic_ide/src/strings.dart';
+import 'package:gubasic_lang/gubasic_lang.dart';
 
 void main() {
   const s = IdeStrings.en;
@@ -257,6 +258,100 @@ void main() {
     await tester.enterText(field('Caption'), 'No');
     await tester.pump();
     expect(formText(tester), hello[formFile]);
+  });
+
+  group('renaming', () {
+    final code = hello['Form1.gbas']!;
+
+    Future<void> addLabel(WidgetTester tester) async {
+      final label = find.byKey(const ValueKey('toolbox.Label'));
+      await tester.tap(label);
+      await tester.pump(kDoubleTapMinTime);
+      await tester.tap(label);
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('a name the code does not use, on Enter', (tester) async {
+      await open(tester);
+      await addLabel(tester);
+      expect(fieldText(tester, '(Name)'), 'Label1');
+      await tester.enterText(field('(Name)'), 'lblTitle');
+      await tester.pump();
+      expect(formText(tester), contains('name: Label1'), reason: 'not yet');
+      await tester.testTextInput.receiveAction(TextInputAction.done);
+      await tester.pumpAndSettle();
+      expect(formText(tester), contains('  - name: lblTitle\n'));
+      expect(formText(tester), contains('      Caption: Label1\n'));
+      expect(
+        tester
+            .widget<DropdownButton<String>>(find.byKey(propertiesTargetKey))
+            .value,
+        'lblTitle',
+      );
+      // The form has the focus: one undo step back.
+      await ctrl(tester, LogicalKeyboardKey.keyZ);
+      expect(formText(tester), contains('  - name: Label1\n'));
+    });
+
+    testWidgets('a name the code uses cannot change, and says where', (
+      tester,
+    ) async {
+      await open(tester);
+      await click(tester, const Offset(30, 70));
+      expect(find.byType(NameField), findsOneWidget);
+      expect(
+        tester.widgetList(field('(Name)')).single,
+        isA<Text>(),
+        reason: 'read-only',
+      );
+      final lines = linesUsingName(code, 'btnHello').join(', ');
+      expect(
+        find.text(
+          'btnHello is used in Form1.gbas on lines $lines, so it cannot be '
+          'renamed here. Change those lines first. Renaming the code '
+          'together with the control comes with the code editor.',
+        ),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('names that cannot be used say why', (tester) async {
+      await open(tester);
+      await addLabel(tester);
+      final inCode = linesUsingName(code, 'clickCount').join(', ');
+      for (final (name, why) in [
+        ('1abc', s.badName.replaceAll('{0}', '1abc')),
+        ('If', s.badName.replaceAll('{0}', 'If')),
+        ('Form', s.badName.replaceAll('{0}', 'Form')),
+        ('', s.badName.replaceAll('{0}', '')),
+        ('LBLMESSAGE', s.nameTaken.replaceAll('{0}', 'LBLMESSAGE')),
+        (
+          'clickCount',
+          s.nameInCode
+              .replaceAll('{0}', 'clickCount')
+              .replaceAll('{1}', 'Form1.gbas')
+              .replaceAll('{2}', inCode),
+        ),
+      ]) {
+        await tester.enterText(field('(Name)'), name);
+        await tester.pump();
+        expect(find.text(why), findsOneWidget, reason: name);
+      }
+      final before = formText(tester);
+      await tester.testTextInput.receiveAction(TextInputAction.done);
+      await tester.pumpAndSettle();
+      expect(formText(tester), before, reason: 'not renamed');
+      expect(fieldText(tester, '(Name)'), 'Label1');
+      // Only the case changes: the same control, allowed.
+      await tester.enterText(field('(Name)'), 'label1');
+      await tester.pump();
+      expect(find.textContaining('cannot be a name'), findsNothing);
+    });
+
+    testWidgets("the form's name is its file's", (tester) async {
+      await open(tester);
+      expect(tester.widget(field('(Name)')), isA<Text>());
+    });
   });
 
   testWidgets('Korean words', (tester) async {

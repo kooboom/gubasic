@@ -434,6 +434,14 @@ class _FormDesignerState extends State<FormDesigner> {
     widget.project.setFile(widget.file, text);
   }
 
+  /// The form's code file: `Form1.gbas` next to `Form1.form.yaml`.
+  String get _codeFile => '$_formName.gbas';
+
+  void _rename(String name, String newName) {
+    if (!_canEdit) return;
+    _apply(withName(_form, name, newName), select: newName);
+  }
+
   void _select(String? name) {
     setState(() => _selected = name);
     _focus.requestFocus();
@@ -517,6 +525,9 @@ class _FormDesignerState extends State<FormDesigner> {
                         onChange: _setProperty,
                         onDone: widget.history.seal,
                         onLeave: _focus.requestFocus,
+                        code: widget.project.files[_codeFile] ?? '',
+                        codeFile: _codeFile,
+                        onRename: _rename,
                       ),
                     ],
                   ),

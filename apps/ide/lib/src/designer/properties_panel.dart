@@ -27,9 +27,20 @@ class PropertiesPanel extends StatelessWidget {
     required this.onChange,
     required this.onDone,
     required this.onLeave,
+    required this.code,
+    required this.codeFile,
+    required this.onRename,
   });
 
   final FormFile form;
+
+  /// The form's code, and the name of its file, to see whether a name is
+  /// used there.
+  final String code;
+  final String codeFile;
+
+  /// Renames the control named [name] to [newName].
+  final void Function(String name, String newName) onRename;
 
   /// The control shown; null for the form.
   final ControlDecl? selected;
@@ -95,17 +106,29 @@ class PropertiesPanel extends StatelessWidget {
                 _row(
                   context,
                   '(Name)',
-                  Tooltip(
-                    message: control == null ? strings.formNameIsFile : '',
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 6),
-                      child: Text(
-                        control?.name ?? form.name,
-                        key: propertyFieldKey('(Name)'),
-                        style: TextStyle(color: theme.disabledColor),
-                      ),
-                    ),
-                  ),
+                  control == null
+                      ? Tooltip(
+                          message: strings.formNameIsFile,
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 6),
+                            child: Text(
+                              form.name,
+                              key: propertyFieldKey('(Name)'),
+                              style: TextStyle(color: theme.disabledColor),
+                            ),
+                          ),
+                        )
+                      : NameField(
+                          key: ValueKey('${control.name}.(Name)'),
+                          form: form,
+                          control: control,
+                          code: code,
+                          codeFile: codeFile,
+                          editable: editable,
+                          strings: strings,
+                          onRename: onRename,
+                          onLeave: onLeave,
+                        ),
                 ),
                 for (final p in component.properties.values)
                   _row(
@@ -412,6 +435,148 @@ class _PropertyFieldState extends State<PropertyField> {
         onEditingComplete: _submitted,
         // A click on the form gives the form the focus itself; letting
         // the field drop the focus too left it with nothing focused.
+        onTapOutside: (_) {},
+      ),
+    );
+  }
+}
+
+/// A control's (Name). It can change only while the form's code does not
+/// use the name (D35): the code would refer to a control that is gone, or
+/// a handler would stop running. A new name applies on Enter or when the
+/// field is left, and only a usable name that no other control and no
+/// code uses; otherwise the field says why.
+class NameField extends StatefulWidget {
+  const NameField({
+    super.key,
+    required this.form,
+    required this.control,
+    required this.code,
+    required this.codeFile,
+    required this.editable,
+    required this.strings,
+    required this.onRename,
+    required this.onLeave,
+  });
+
+  final FormFile form;
+  final ControlDecl control;
+  final String code;
+  final String codeFile;
+  final bool editable;
+  final IdeStrings strings;
+  final void Function(String name, String newName) onRename;
+  final VoidCallback onLeave;
+
+  @override
+  State<NameField> createState() => _NameFieldState();
+}
+
+class _NameFieldState extends State<NameField> {
+  late final _controller = TextEditingController(text: widget.control.name);
+  final _focus = FocusNode();
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _focus.addListener(() {
+      if (!_focus.hasFocus) _apply();
+    });
+  }
+
+  @override
+  void dispose() {
+    _focus.dispose();
+    _controller.dispose();
+    super.dispose();
+  }
+
+  String get _name => widget.control.name;
+
+  /// Why [name] cannot be the control's new name, or null.
+  String? _problem(String name) {
+    final s = widget.strings;
+    if (!isUsableName(name)) return s.badName.replaceAll('{0}', name);
+    final lower = name.toLowerCase();
+    if (lower == _name.toLowerCase()) return null;
+    if (widget.form.controls.any((c) => c.name.toLowerCase() == lower)) {
+      return s.nameTaken.replaceAll('{0}', name);
+    }
+    final lines = linesUsingName(widget.code, name);
+    if (lines.isNotEmpty) {
+      return s.nameInCode
+          .replaceAll('{0}', name)
+          .replaceAll('{1}', widget.codeFile)
+          .replaceAll('{2}', lines.join(', '));
+    }
+    return null;
+  }
+
+  void _apply() {
+    final name = _controller.text;
+    if (_problem(name) == null && name != _name) {
+      widget.onRename(_name, name);
+      // This field goes with the old name; the form takes the focus.
+      widget.onLeave();
+      return;
+    }
+    setState(() {
+      _controller.text = _name;
+      _error = null;
+    });
+  }
+
+  void _escape() {
+    setState(() {
+      _controller.text = _name;
+      _error = null;
+    });
+    widget.onLeave();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final uses = linesUsingName(widget.code, _name);
+    if (uses.isNotEmpty || !widget.editable) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 6),
+            child: Text(
+              _name,
+              key: propertyFieldKey('(Name)'),
+              style: TextStyle(color: theme.disabledColor),
+            ),
+          ),
+          if (uses.isNotEmpty)
+            Text(
+              widget.strings.nameUsedInCode
+                  .replaceAll('{0}', _name)
+                  .replaceAll('{1}', widget.codeFile)
+                  .replaceAll('{2}', uses.join(', ')),
+              style: theme.textTheme.bodySmall,
+            ),
+        ],
+      );
+    }
+    return CallbackShortcuts(
+      bindings: {const SingleActivator(LogicalKeyboardKey.escape): _escape},
+      child: TextField(
+        key: propertyFieldKey('(Name)'),
+        controller: _controller,
+        focusNode: _focus,
+        style: theme.textTheme.bodyMedium,
+        decoration: InputDecoration(
+          isDense: true,
+          border: const OutlineInputBorder(),
+          errorText: _error,
+          errorMaxLines: 6,
+        ),
+        onChanged: (name) => setState(() => _error = _problem(name)),
+        onEditingComplete: _apply,
         onTapOutside: (_) {},
       ),
     );

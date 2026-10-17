@@ -423,3 +423,18 @@ FormFile withProperty(
         c,
   ]);
 }
+
+/// [form] with the control named [name] renamed to [newName]. Its
+/// properties, `Caption` included, stay as they are.
+FormFile withName(FormFile form, String name, String newName) => _copy(form, [
+  for (final c in form.controls)
+    if (c.name.toLowerCase() == name.toLowerCase())
+      ControlDecl(
+        name: newName,
+        component: c.component,
+        properties: c.properties,
+        line: c.line,
+      )
+    else
+      c,
+]);
