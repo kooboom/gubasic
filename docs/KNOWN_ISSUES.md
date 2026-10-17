@@ -38,7 +38,7 @@ Problems we know about and have **deliberately** left unfixed for now. Each entr
 
 ## Browser storage is too small for pictures
 
-- **What:** `localStorage` holds about 5 MB per site. Projects today are a few kilobytes of text, but once forms can hold pictures (the `Image` control, stage 1) a few projects would fill it.
+- **What:** `localStorage` holds about 5 MB per site, and the web IDE shares its site with the playground (`kooboom.github.io`; their keys are apart, D33). Projects today are a few kilobytes of text, but once forms can hold pictures (the `Image` control, stage 1) a few projects would fill it.
 - **Why deferred:** nothing stores pictures yet, and `localStorage` is synchronous, so a project is kept even while the page closes.
 - **Revisit:** with the `Image` control: move projects in the browser to IndexedDB (or another larger storage), with a converter for what is kept already.
 

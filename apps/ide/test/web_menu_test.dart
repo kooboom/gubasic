@@ -66,6 +66,14 @@ void main() {
     await tester.pumpAndSettle();
   }
 
+  testWidgets('the File menu goes to the playground next to the IDE', (
+    tester,
+  ) async {
+    await start(tester);
+    await menu(tester, s.openPlayground);
+    expect(browser.opened, ['../']);
+  });
+
   testWidgets('the web File menu, and the .zip button', (tester) async {
     await start(tester);
     await tester.tap(find.text(s.fileMenu));

@@ -42,6 +42,12 @@ class FakeBrowser implements Browser {
   @override
   void onHidden(void Function() action) => _hidden = action;
 
+  /// The pages opened, in order.
+  final opened = <String>[];
+
+  @override
+  void open(String url) => opened.add(url);
+
   /// Whether the browser would ask before leaving the page now.
   bool get wouldAskToLeave => _unsaved!();
 

@@ -19,6 +19,9 @@ enum Locale {
 /// Every piece of text the playground shows.
 enum UiText {
   title,
+
+  /// The link to the IDE next to the playground (`ide/`).
+  openIde,
   sampleStarter,
   sampleReadme,
   sampleErrors,
@@ -58,6 +61,7 @@ enum UiText {
 
 const _en = {
   UiText.title: 'GuBASIC Playground',
+  UiText.openIde: 'Open the IDE: draw forms and run them →',
   UiText.sampleStarter: 'Starter example',
   UiText.sampleReadme: 'README example',
   UiText.sampleErrors: 'Example with errors',
@@ -95,6 +99,7 @@ const _en = {
 
 const _ko = {
   UiText.title: 'GuBASIC 놀이터',
+  UiText.openIde: 'IDE 열기: 폼을 그리고 실행하기 →',
   UiText.sampleStarter: '기본 예제',
   UiText.sampleReadme: 'README 예제',
   UiText.sampleErrors: '오류가 섞인 예제',

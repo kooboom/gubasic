@@ -5,7 +5,7 @@
 
 [English](README.md)
 
-> **상태:** 개발 초기입니다. 브라우저의 [**놀이터**](https://kooboom.github.io/gubasic)에서 GuBASIC 프로그램이 **실행됩니다**: 변수, 반복, 프로시저, `Try`, `Debug.Print`, `MsgBox`, `InputBox`. IDE([apps/ide](apps/ide), macOS·Windows·웹)에서는 폼과 컨트롤(`Button`, `Label`, `TextBox`)이 있는 프로젝트가 실행 화면에서 실행됩니다. 폼 디자이너는 다음 단계입니다.
+> **상태:** 개발 초기입니다. 브라우저의 [**놀이터**](https://kooboom.github.io/gubasic)에서 GuBASIC 프로그램이 **실행됩니다**: 변수, 반복, 프로시저, `Try`, `Debug.Print`, `MsgBox`, `InputBox`. [**IDE**](https://kooboom.github.io/gubasic/ide/)([apps/ide](apps/ide), macOS·Windows·웹)에서는 폼 디자이너로 폼과 컨트롤(`Button`, `Label`, `TextBox`)을 그리고, 코드를 고치고, 실행 화면에서 실행합니다.
 
 ---
 

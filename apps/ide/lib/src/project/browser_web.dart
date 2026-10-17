@@ -41,6 +41,9 @@ class _WebBrowser implements Browser {
   }
 
   @override
+  void open(String url) => web.window.location.href = url;
+
+  @override
   void onHidden(void Function() action) {
     web.document.addEventListener(
       'visibilitychange',

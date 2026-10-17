@@ -334,6 +334,12 @@ class _IdeShellState extends State<IdeShell> {
             onPressed: _running ? null : _upload,
             child: Text(s.uploadZip),
           ),
+          const Divider(),
+          MenuItemButton(
+            key: const ValueKey('menu.playground'),
+            onPressed: () => widget.controller.browser!.open('../'),
+            child: Text(s.openPlayground),
+          ),
         ],
       ],
       builder: (context, menu, _) => Padding(

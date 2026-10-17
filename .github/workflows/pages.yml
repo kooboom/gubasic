@@ -1,7 +1,8 @@
 name: pages
 
-# Builds the playground and publishes it to GitHub Pages
-# (https://kooboom.github.io/gubasic) whenever main changes.
+# Builds the playground and the web IDE and publishes them to GitHub Pages
+# whenever main changes: the playground at https://kooboom.github.io/gubasic/
+# and the IDE at https://kooboom.github.io/gubasic/ide/, one artifact.
 on:
   push:
     branches: [main]
@@ -28,9 +29,16 @@ jobs:
       - name: Install dependencies
         run: dart pub get
         working-directory: apps/playground
-      - name: Build
+      - name: Build the playground
         run: tool/build.sh
         working-directory: apps/playground
+      - name: Build the IDE
+        # The engine and fonts come from this site, not from a CDN (D30).
+        run: |
+          flutter pub get
+          flutter build web --release --no-web-resources-cdn --base-href /gubasic/ide/
+          cp -R build/web ../playground/build/web/ide
+        working-directory: apps/ide
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v4
         with:

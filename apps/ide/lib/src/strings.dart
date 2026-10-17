@@ -42,6 +42,7 @@ class IdeStrings {
     required this.projectName,
     required this.downloadZip,
     required this.uploadZip,
+    required this.openPlayground,
     required this.changedSinceDownloadHint,
     required this.keptStatus,
     required this.exampleStatus,
@@ -167,6 +168,9 @@ class IdeStrings {
   final String projectName;
   final String downloadZip;
   final String uploadZip;
+
+  /// The web IDE's link to the playground next to it (`../`).
+  final String openPlayground;
   final String changedSinceDownloadHint;
 
   /// `{0}` the time of the last download, or [none].
@@ -307,6 +311,7 @@ class IdeStrings {
     projectName: 'Project name',
     downloadZip: 'Download .zip',
     uploadZip: 'Upload .zip…',
+    openPlayground: 'Open the Playground',
     changedSinceDownloadHint:
         'Changed since the last download. Download a .zip to keep it safe.',
     keptStatus: 'Kept in this browser · last download: {0}',
@@ -402,6 +407,7 @@ class IdeStrings {
     projectName: '프로젝트 이름',
     downloadZip: '.zip으로 내려받기',
     uploadZip: '.zip 올리기…',
+    openPlayground: '놀이터 열기',
     changedSinceDownloadHint:
         '마지막으로 내려받은 뒤 바뀐 내용이 있습니다. 안전하게 보관하려면 .zip으로 내려받습니다.',
     keptStatus: '이 브라우저에 보관 중 · 마지막 내려받기: {0}',

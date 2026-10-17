@@ -39,6 +39,10 @@ abstract interface class Browser {
 
   /// Runs [action] when the page is hidden: another tab, or closing.
   void onHidden(void Function() action);
+
+  /// Goes to [url], relative to the page, in the same tab; the browser
+  /// asks first if [guardUnload] says the work is not saved.
+  void open(String url);
 }
 
 /// A project kept in the browser.

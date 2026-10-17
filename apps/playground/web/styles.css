@@ -74,6 +74,17 @@ button:focus-visible, textarea:focus-visible, a:focus-visible {
   border-bottom: 1px solid var(--border);
 }
 .top h1 { margin: 0; font-size: 17px; }
+/* The IDE next to the playground: the first thing to see. */
+.ide-link {
+  margin-right: auto;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--accent-text);
+  font-weight: 600;
+  text-decoration: none;
+}
+.ide-link:hover { filter: brightness(1.1); }
 .actions { display: flex; flex-wrap: wrap; gap: 6px; }
 .lang { font-weight: 600; }
 

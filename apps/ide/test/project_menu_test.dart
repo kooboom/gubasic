@@ -410,6 +410,11 @@ void main() {
     final title = tester.getTopLeft(find.text('Hello').first);
     expect(menu.dx, lessThan(title.dx));
     expect(menu.dx, lessThan(100));
+    // The playground is the web IDE's neighbour, not the desktop app's.
+    await tester.tap(find.text(s.fileMenu));
+    await tester.pumpAndSettle();
+    expect(find.text(s.save), findsOneWidget);
+    expect(find.text(s.openPlayground), findsNothing);
   });
 
   testWidgets('no File menu where there are no folders (the web)', (
