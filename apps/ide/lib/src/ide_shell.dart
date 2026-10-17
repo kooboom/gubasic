@@ -89,7 +89,24 @@ class _IdeShellState extends State<IdeShell> {
   var _showRun = false;
 
   /// Shown instead of a run when the project cannot start.
-  var _problems = <String>[];
+  var _problems = <_Output>[];
+
+  /// The files as the last run started, to tell whether the line of its
+  /// error is still that line.
+  Map<String, String> _runFiles = const {};
+
+  /// Where the last run stopped with an error, while the code is still as
+  /// it was run (D40).
+  ({String file, int line})? get _errorAt {
+    final session = _session;
+    if (session?.result case RunFailed(:final error)) {
+      final file = session!.startup.codeFile;
+      if (_project.files[file] == _runFiles[file]) {
+        return (file: file, line: error.line);
+      }
+    }
+    return null;
+  }
 
   bool get _running => _session?.isRunning ?? false;
 
@@ -103,15 +120,21 @@ class _IdeShellState extends State<IdeShell> {
     if (!project.canRun || startup == null) {
       setState(
         () => _problems = [
-          s.cannotStart,
+          (text: s.cannotStart, file: null, line: null),
           for (final d in project.diagnostics)
-            if (d.diagnostic.isError) s.problem(d.file, d.diagnostic),
+            if (d.diagnostic.isError)
+              (
+                text: s.problem(d.file, d.diagnostic),
+                file: d.file,
+                line: d.diagnostic.line,
+              ),
         ],
       );
       return;
     }
     setState(() {
       _problems = [];
+      _runFiles = Map.of(project.files);
       _session = RunSession(startup, strings: s);
       _showRun = true;
     });
@@ -424,6 +447,7 @@ class _IdeShellState extends State<IdeShell> {
             strings: widget.strings,
             focusCount: _codeFocusCount,
             goTo: _goTo,
+            errorLine: _errorAt?.file == file ? _errorAt!.line : null,
           )
         : SingleChildScrollView(
             padding: const EdgeInsets.all(12),
@@ -449,9 +473,31 @@ class _IdeShellState extends State<IdeShell> {
     );
   }
 
+  /// A click on an error in the output: its code file opens on its line
+  /// (D40).
+  void _goToLine(String file, int line) {
+    setState(() {
+      _file = file;
+      _showRun = false;
+      _codeFocusCount++;
+      _goTo = GoTo.line((_goTo?.id ?? 0) + 1, line);
+    });
+  }
+
   Widget _output(BuildContext context) {
     final session = _session;
-    final lines = [..._problems, ...?session?.output, ?session?.endMessage];
+    final error = switch (session?.result) {
+      RunFailed(:final error) => error,
+      _ => null,
+    };
+    final lines = <_Output>[
+      ..._problems,
+      for (final l in session?.output ?? const <String>[])
+        (text: l, file: null, line: null),
+      if (session?.endMessage case final end?)
+        (text: end, file: session!.startup.codeFile, line: error?.line),
+    ];
+    final theme = Theme.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -466,7 +512,31 @@ class _IdeShellState extends State<IdeShell> {
           child: ListView(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
             children: [
-              for (final l in lines) SelectableText(l, style: codeStyle),
+              for (final l in lines)
+                if ((l.file, l.line) case (final file?, final line?)
+                    when _project.files.containsKey(file) &&
+                        file.toLowerCase().endsWith('.gbas'))
+                  MouseRegion(
+                    cursor: SystemMouseCursors.click,
+                    child: GestureDetector(
+                      onTap: () => _goToLine(file, line),
+                      child: Tooltip(
+                        message: widget.strings.goToLine
+                            .replaceAll('{0}', file)
+                            .replaceAll('{1}', '$line'),
+                        child: Text(
+                          l.text,
+                          style: codeStyle.copyWith(
+                            color: theme.colorScheme.error,
+                            decoration: TextDecoration.underline,
+                            decorationColor: theme.colorScheme.error,
+                          ),
+                        ),
+                      ),
+                    ),
+                  )
+                else
+                  SelectableText(l.text, style: codeStyle),
             ],
           ),
         ),
@@ -494,3 +564,6 @@ class _Never implements Listenable {
   @override
   void removeListener(VoidCallback listener) {}
 }
+
+/// A line of the output, and the code line it is about, if any.
+typedef _Output = ({String text, String? file, int? line});

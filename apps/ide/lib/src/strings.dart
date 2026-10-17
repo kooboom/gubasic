@@ -87,6 +87,7 @@ class IdeStrings {
     required this.objectList,
     required this.eventList,
     required this.noHandlerWhileRunning,
+    required this.goToLine,
   });
 
   /// The words on MsgBox and InputBox.
@@ -246,6 +247,9 @@ class IdeStrings {
   /// `{0}` the handler.
   final String noHandlerWhileRunning;
 
+  /// An error in the output, clicked (D40). `{0}` the file, `{1}` the line.
+  final String goToLine;
+
   /// [diagnostic] in [file], in this language.
   String problem(String file, Diagnostic diagnostic) => errorAt
       .replaceAll('{0}', file)
@@ -341,6 +345,7 @@ class IdeStrings {
     objectList: 'Object',
     eventList: 'Event',
     noHandlerWhileRunning: 'There is no {0} yet, and code cannot be changed while the program runs. Stop it (Shift+F5) first.',
+    goToLine: 'Go to {0}, line {1}',
   );
 
   static const ko = IdeStrings(
@@ -434,6 +439,7 @@ class IdeStrings {
     eventList: '이벤트',
     noHandlerWhileRunning:
         '{0} 처리기가 아직 없고, 프로그램이 실행되는 동안에는 코드를 바꿀 수 없습니다. 먼저 중지(Shift+F5)합니다.',
+    goToLine: '{0} 파일 {1}번째 줄로 갑니다',
   );
 
   /// Korean when the system language is Korean, else English.

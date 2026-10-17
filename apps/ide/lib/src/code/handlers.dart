@@ -77,11 +77,31 @@ int _lineStart(String text, int offset) =>
 
 /// A request to the code editor: go to the procedure [name] (the top of
 /// the code when empty), and, if there is none and [signature] is given,
-/// add the handler `Sub [signature]` first. [id] tells requests apart.
+/// add the handler `Sub [signature]` first; or, with [line], go to that
+/// line (1-based), as a click on an error in the output asks (D40). [id]
+/// tells requests apart.
 class GoTo {
-  const GoTo(this.id, this.name, [this.signature]);
+  const GoTo(this.id, this.name, [this.signature]) : line = null;
+  const GoTo.line(this.id, int this.line) : name = '', signature = null;
 
   final int id;
   final String name;
   final String? signature;
+  final int? line;
+}
+
+/// Where the caret goes for line [line] (1-based) of [source]: after its
+/// indentation, or the end of the code when it has fewer lines.
+int caretAtLine(String source, int line) {
+  var start = 0;
+  for (var i = 1; i < line; i++) {
+    final next = source.indexOf('\n', start);
+    if (next < 0) return source.length;
+    start = next + 1;
+  }
+  var at = start;
+  while (at < source.length && (source[at] == ' ' || source[at] == '\t')) {
+    at++;
+  }
+  return at;
 }

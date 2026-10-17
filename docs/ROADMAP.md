@@ -26,14 +26,14 @@ The core Visual Basic experience, entirely inside the IDE.
 - [x] Lexer and **error-tolerant** parser
 - [x] Analyzer: names, scopes and types, with plain-language diagnostics (English / Korean)
 - [x] Web playground for development ([try it](https://kooboom.github.io/gubasic))
-- [ ] Code editor: syntax highlighting, double-click → handler stub, rename-safe handlers
+- [x] Code editor: syntax highlighting, double-click → handler stub, rename-safe handlers
 - [ ] Light autocompletion (keywords, controls, members, "did you mean")
 - [x] **Async interpreter**, running programs in the playground's Run tab
 - [x] F5 runs the app inside the IDE
 - [x] `MsgBox`, `InputBox`, `DoEvents`, `Try…Catch`
 - [ ] `Settings` (`SaveSetting`, `GetSetting`)
 - [x] Run-time errors with plain-language messages (English / Korean), click to jump to the line (playground)
-- [ ] Run-time errors highlighted in the IDE's code editor
+- [x] Run-time errors highlighted in the IDE's code editor
 
 **Done when:** a beginner can build a small quiz app and run it without installing Flutter.
 

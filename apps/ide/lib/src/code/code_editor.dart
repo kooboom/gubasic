@@ -20,6 +20,9 @@ const codeFieldKey = ValueKey('code.field');
 const codeObjectsKey = ValueKey('code.objects');
 const codeEventsKey = ValueKey('code.events');
 
+/// The mark behind the line where the last run stopped with an error.
+const codeErrorLineKey = ValueKey('code.errorLine');
+
 /// The size of the code, and the height of a line, so that the line
 /// numbers stay level with the lines whatever font a character takes.
 const codeFontSize = 14.0;
@@ -43,6 +46,7 @@ class CodeEditor extends StatefulWidget {
     required this.strings,
     this.focusCount = 0,
     this.goTo,
+    this.errorLine,
   });
 
   final OpenProject project;
@@ -59,6 +63,10 @@ class CodeEditor extends StatefulWidget {
   /// A procedure to go to, or a handler to add and go to: a double-click
   /// in the designer (D38). A new [GoTo.id] asks again.
   final GoTo? goTo;
+
+  /// The line (1-based) where the last run stopped with an error, shown
+  /// marked while the code is as it was run (D40); null for none.
+  final int? errorLine;
 
   @override
   State<CodeEditor> createState() => _CodeEditorState();
@@ -125,6 +133,7 @@ class _CodeEditorState extends State<CodeEditor> {
   void didUpdateWidget(CodeEditor old) {
     super.didUpdateWidget(old);
     _updateControls();
+    if (widget.errorLine != old.errorLine) _built = null;
     final goTo = widget.goTo;
     final again = goTo != null && goTo.id != old.goTo?.id;
     if (widget.focusCount != old.focusCount || again) {
@@ -208,7 +217,14 @@ class _CodeEditorState extends State<CodeEditor> {
   /// added is undone in one step.
   void _goToFocused(GoTo goTo) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) _goTo(goTo.name, goTo.signature);
+      if (!mounted) return;
+      if (goTo.line case final line?) {
+        _controller.selection = TextSelection.collapsed(
+          offset: caretAtLine(_controller.text, line),
+        );
+      } else {
+        _goTo(goTo.name, goTo.signature);
+      }
     });
     WidgetsBinding.instance.scheduleFrame();
   }
@@ -595,50 +611,65 @@ class _CodeEditorState extends State<CodeEditor> {
         child: SingleChildScrollView(
           controller: _vertical,
           padding: const EdgeInsets.symmetric(vertical: 8),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          child: Stack(
             children: [
-              _gutter(lines, style, strut, scheme),
-              Expanded(
-                child: SingleChildScrollView(
-                  controller: _horizontal,
-                  scrollDirection: Axis.horizontal,
-                  child: SizedBox(
-                    width: max(constraints.maxWidth - 48, widest + 32),
-                    child: CallbackShortcuts(
-                      bindings: {
-                        const SingleActivator(LogicalKeyboardKey.tab): _tab,
-                        const SingleActivator(
-                          LogicalKeyboardKey.tab,
-                          shift: true,
-                        ): _untab,
-                      },
-                      child: Actions(
-                        actions: {
-                          UndoTextIntent: _UndoHandlerAdded(_undoHandlerAdded),
-                        },
-                        child: TextField(
-                          key: codeFieldKey,
-                          controller: _controller,
-                          focusNode: _focus,
-                          undoController: _undo,
-                          readOnly: widget.locked,
-                          maxLines: null,
-                          keyboardType: TextInputType.multiline,
-                          style: style,
-                          strutStyle: strut,
-                          autocorrect: false,
-                          enableSuggestions: false,
-                          smartDashesType: SmartDashesType.disabled,
-                          smartQuotesType: SmartQuotesType.disabled,
-                          decoration: const InputDecoration.collapsed(
-                            hintText: null,
+              if (widget.errorLine case final line? when line <= lines)
+                Positioned(
+                  key: codeErrorLineKey,
+                  left: 0,
+                  right: 0,
+                  top: (line - 1) * codeFontSize * codeLineHeight,
+                  height: codeFontSize * codeLineHeight,
+                  child: ColoredBox(color: scheme.errorContainer),
+                ),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _gutter(lines, style, strut, scheme),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      controller: _horizontal,
+                      scrollDirection: Axis.horizontal,
+                      child: SizedBox(
+                        width: max(constraints.maxWidth - 48, widest + 32),
+                        child: CallbackShortcuts(
+                          bindings: {
+                            const SingleActivator(LogicalKeyboardKey.tab): _tab,
+                            const SingleActivator(
+                              LogicalKeyboardKey.tab,
+                              shift: true,
+                            ): _untab,
+                          },
+                          child: Actions(
+                            actions: {
+                              UndoTextIntent: _UndoHandlerAdded(
+                                _undoHandlerAdded,
+                              ),
+                            },
+                            child: TextField(
+                              key: codeFieldKey,
+                              controller: _controller,
+                              focusNode: _focus,
+                              undoController: _undo,
+                              readOnly: widget.locked,
+                              maxLines: null,
+                              keyboardType: TextInputType.multiline,
+                              style: style,
+                              strutStyle: strut,
+                              autocorrect: false,
+                              enableSuggestions: false,
+                              smartDashesType: SmartDashesType.disabled,
+                              smartQuotesType: SmartQuotesType.disabled,
+                              decoration: const InputDecoration.collapsed(
+                                hintText: null,
+                              ),
+                            ),
                           ),
                         ),
                       ),
                     ),
                   ),
-                ),
+                ],
               ),
             ],
           ),
