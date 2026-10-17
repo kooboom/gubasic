@@ -137,6 +137,17 @@ class _IdeAppState extends State<IdeApp> {
       debugShowCheckedModeBanner: false,
       theme: ideTheme,
       navigatorKey: _navigator,
+      // While a system file dialog is open, the whole IDE shows the arrow:
+      // otherwise the code view's text cursor showed through the dialog.
+      builder: (context, child) => Stack(
+        children: [
+          child!,
+          if (_controller.picking)
+            const Positioned.fill(
+              child: MouseRegion(cursor: SystemMouseCursors.basic),
+            ),
+        ],
+      ),
       home: IdeShell(
         // A new shell for each project: what ran before is gone.
         key: ObjectKey(_controller.current),

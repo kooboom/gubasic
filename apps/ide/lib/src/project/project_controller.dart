@@ -129,7 +129,9 @@ class ProjectController extends ChangeNotifier {
     context = _lasting(context);
     if (!await mayLeave(context)) return;
     if (!context.mounted) return;
-    final file = await pickers!.openProjectFile(strings.openButton);
+    final file = await _whilePicking(
+      () => pickers!.openProjectFile(strings.openButton),
+    );
     if (file == null || !context.mounted) return;
     try {
       final read = await readProject(folders!, file);
@@ -217,9 +219,8 @@ class ProjectController extends ChangeNotifier {
     final fs = folders!;
     while (true) {
       if (!context.mounted) return false;
-      final path = await pickers!.saveLocation(
-        project.project.name,
-        strings.saveButton,
+      final path = await _whilePicking(
+        () => pickers!.saveLocation(project.project.name, strings.saveButton),
       );
       if (path == null || !context.mounted) return false;
       var name = fs.name(path);
@@ -295,6 +296,24 @@ class ProjectController extends ChangeNotifier {
       _Unsaved.save => await save(context) && !_current.isDirty,
       _Unsaved.cancel || null => false,
     };
+  }
+
+  /// Whether a system dialog for choosing a file is open.
+  bool get picking => _picking;
+  var _picking = false;
+
+  /// Runs [pick], a system file dialog, marking [picking] meanwhile: the
+  /// IDE then shows the arrow cursor everywhere, so that the text cursor
+  /// of the code view under the dialog does not show inside it.
+  Future<T> _whilePicking<T>(Future<T> Function() pick) async {
+    _picking = true;
+    notifyListeners();
+    try {
+      return await pick();
+    } finally {
+      _picking = false;
+      notifyListeners();
+    }
   }
 
   /// The app's navigator's context: a command may open another project,
@@ -461,7 +480,7 @@ class ProjectController extends ChangeNotifier {
     context = _lasting(context);
     if (!await mayLeave(context)) return;
     if (!context.mounted) return;
-    final bytes = await pickZip!();
+    final bytes = await _whilePicking(pickZip!);
     if (bytes == null || !context.mounted) return;
     final UnzippedProject unzipped;
     try {

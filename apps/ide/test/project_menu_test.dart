@@ -1,6 +1,8 @@
+import 'dart:async';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gubasic_ide/main.dart';
@@ -314,6 +316,46 @@ void main() {
       );
       expect(button.onPressed, isNull, reason: item);
     }
+  });
+
+  testWidgets('the arrow shows over the IDE while a file dialog is open', (
+    tester,
+  ) async {
+    final dialog = Completer<String?>();
+    tester.view.physicalSize = const Size(1200, 800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(
+      IdeApp(
+        projects: exampleProjects,
+        strings: s,
+        folders: fs,
+        pickers: ProjectPickers(
+          openProjectFile: (_) => dialog.future,
+          saveLocation: (_, _) async => null,
+        ),
+      ),
+    );
+    final mouse = await tester.createGesture(kind: PointerDeviceKind.mouse);
+    addTearDown(mouse.removePointer);
+    SystemMouseCursor? cursor() =>
+        RendererBinding.instance.mouseTracker.debugDeviceActiveCursor(1)
+            as SystemMouseCursor?;
+    final code = tester.getCenter(find.textContaining('clickCount').first);
+    await mouse.moveTo(code);
+    await tester.pump();
+    expect(cursor(), SystemMouseCursors.text, reason: 'the code view');
+
+    await menu(tester, s.open);
+    await mouse.moveTo(code + const Offset(1, 1));
+    await tester.pump();
+    expect(cursor(), SystemMouseCursors.basic, reason: 'the dialog is open');
+
+    dialog.complete(null);
+    await tester.pumpAndSettle();
+    await mouse.moveTo(code);
+    await tester.pump();
+    expect(cursor(), SystemMouseCursors.text, reason: 'closed again');
   });
 
   testWidgets('Korean words', (tester) async {
