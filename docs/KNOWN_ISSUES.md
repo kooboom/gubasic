@@ -98,3 +98,9 @@ Problems we know about and have **deliberately** left unfixed for now. Each entr
 - **What:** each key re-lays out the whole code file in the code editor (D36). Measured in the macOS Release app, building a frame after a key takes up to 10 ms for 30 lines, 4–18 ms for 100 lines and 8–29 ms for 300 lines (the first keys the slowest), against 16.7 ms per frame at 60 Hz; typing a line into a 300-line file dropped 2 of 27 frames. In Chrome, one of 80 frames took longer than 20 ms there.
 - **Why deferred:** Flutter's text field lays out its whole text, about 1,000 coloured pieces at 300 lines; the IDE no longer compiles the project or measures every line at each key, which halved it. Programs written in stage 1 are a few dozen lines.
 - **Revisit:** when students write programs of more than about 150 lines, or with the code editor's autocompletion: then lay out only the lines on screen.
+
+## In the macOS app, the syllable being composed is not underlined
+
+- **What:** in the macOS desktop app, Korean typed in a TextBox, the Properties window or the code editor shows no underline under the syllable being composed, and the last syllable reaches the program (or the form file) only when the next one starts, a non-Hangul key comes, or the field commits it (Enter, a click, losing the focus).
+- **Why deferred:** macOS 27's Korean input method sends no composing range to native text views: TextEdit shows no underline either, while Chrome on the same Mac does (DESIGN D37). The runtime guesses the composition so that the events match the web's; the underline would need the range the input method does not send.
+- **Revisit:** when a macOS update or Flutter sends the composing range in desktop apps; then the guess stops by itself (it is used only while no range has come), and `test/ime_logs/macos-app.json` should be recorded again.
