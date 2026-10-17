@@ -13,6 +13,7 @@ import '../project/open_project.dart';
 import '../strings.dart';
 import '../theme.dart';
 import 'form_edit.dart';
+import 'properties_panel.dart';
 import 'toolbox.dart';
 
 /// The key of the area the form is drawn in, for tests.
@@ -144,6 +145,9 @@ class _FormDesignerState extends State<FormDesigner> {
 
   void _step(String? Function() go) {
     if (!_canEdit) return;
+    // From the toolbar while a field has the focus: the field shows the
+    // value undo gives once it loses the focus.
+    _focus.requestFocus();
     widget.history.follow(_text);
     final text = go();
     if (text == null) return;
@@ -414,12 +418,36 @@ class _FormDesignerState extends State<FormDesigner> {
     return drawnBox(_form, tool, start: start, end: end, grid: _grid);
   }
 
+  /// Sets a property from the Properties window: one step of undo for
+  /// all the changes of the same [group].
+  void _setProperty(
+    String? control,
+    String property,
+    Object value,
+    Object group,
+  ) {
+    if (!_canEdit) return;
+    final before = _text;
+    final text = writeFormFile(withProperty(_form, control, property, value));
+    widget.history.record(before, text, group: group);
+    setState(() {});
+    widget.project.setFile(widget.file, text);
+  }
+
+  void _select(String? name) {
+    setState(() => _selected = name);
+    _focus.requestFocus();
+  }
+
   @override
   Widget build(BuildContext context) {
     final form = _form;
     final s = widget.strings;
     final editable = _canEdit;
-    return CallbackShortcuts(
+    // The designer's keys work while the form has the focus, never while
+    // the user types in the Properties window: Backspace in an empty
+    // field must not delete the control, and ⌘Z there undoes the text.
+    final canvas = CallbackShortcuts(
       bindings: {
         if (editable) ...{
           const SingleActivator(LogicalKeyboardKey.delete): _delete,
@@ -438,47 +466,64 @@ class _FormDesignerState extends State<FormDesigner> {
       },
       child: Focus(
         focusNode: _focus,
-        child: ListenableBuilder(
-          listenable: widget.grid,
-          builder: (context, _) => Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              _toolbar(context, editable),
-              const Divider(height: 1),
-              if (widget.locked)
-                _banner(context, Icons.lock_outline, [s.lockedWhileRunning])
-              else if (_read.hasErrors)
-                _banner(context, Icons.error_outline, [
-                  s.formHasErrors,
-                  for (final d in _read.diagnostics)
-                    if (d.isError) s.problem(widget.file, d),
-                ]),
-              Expanded(
-                child: _showText
-                    ? SingleChildScrollView(
-                        padding: const EdgeInsets.all(12),
-                        child: SelectableText(_text, style: codeStyle),
-                      )
-                    : Row(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          Toolbox(
-                            tool: _tool,
-                            enabled: editable,
-                            strings: s,
-                            onChoose: _chooseTool,
-                            onPlace: _placeInMiddle,
-                          ),
-                          const VerticalDivider(width: 1),
-                          Expanded(child: _canvas(context, form, editable)),
-                        ],
-                      ),
-              ),
-              const Divider(height: 1),
-              _status(context, form),
-            ],
-          ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Toolbox(
+              tool: _tool,
+              enabled: editable,
+              strings: s,
+              onChoose: _chooseTool,
+              onPlace: _placeInMiddle,
+            ),
+            const VerticalDivider(width: 1),
+            Expanded(child: _canvas(context, form, editable)),
+          ],
         ),
+      ),
+    );
+    return ListenableBuilder(
+      listenable: widget.grid,
+      builder: (context, _) => Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _toolbar(context, editable),
+          const Divider(height: 1),
+          if (widget.locked)
+            _banner(context, Icons.lock_outline, [s.lockedWhileRunning])
+          else if (_read.hasErrors)
+            _banner(context, Icons.error_outline, [
+              s.formHasErrors,
+              for (final d in _read.diagnostics)
+                if (d.isError) s.problem(widget.file, d),
+            ]),
+          Expanded(
+            child: _showText
+                ? SingleChildScrollView(
+                    padding: const EdgeInsets.all(12),
+                    child: SelectableText(_text, style: codeStyle),
+                  )
+                : Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Expanded(child: canvas),
+                      const VerticalDivider(width: 1),
+                      PropertiesPanel(
+                        form: form,
+                        selected: _selectedControl,
+                        editable: editable,
+                        strings: s,
+                        onSelect: _select,
+                        onChange: _setProperty,
+                        onDone: widget.history.seal,
+                        onLeave: _focus.requestFocus,
+                      ),
+                    ],
+                  ),
+          ),
+          const Divider(height: 1),
+          _status(context, form),
+        ],
       ),
     );
   }

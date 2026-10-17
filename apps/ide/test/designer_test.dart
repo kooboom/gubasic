@@ -30,6 +30,11 @@ void main() {
     await tester.pumpAndSettle();
   }
 
+  Finder onForm(String text) => find.descendant(
+    of: find.byKey(designerFormKey),
+    matching: find.text(text),
+  );
+
   OpenProject current(WidgetTester tester) =>
       tester.widget<IdeShell>(find.byType(IdeShell)).controller.current;
   String formText(WidgetTester tester) => current(tester).files[formFile]!;
@@ -91,7 +96,7 @@ void main() {
 
     expect(formText(tester), contains('  - name: Button1\n'));
     expect(formText(tester), contains('      Caption: Button1\n'));
-    expect(find.text('Button1'), findsOneWidget, reason: 'drawn');
+    expect(onForm('Button1'), findsOneWidget, reason: 'drawn');
     expect(
       find.text('Button1 (Button) · Left 200, Top 64 · 104×40'),
       findsOneWidget,
@@ -301,7 +306,7 @@ void main() {
   ) async {
     await open(tester);
     final origin = tester.getTopLeft(find.byKey(designerFormKey));
-    final before = tester.getTopLeft(find.text('Say hello'));
+    final before = tester.getTopLeft(onForm('Say hello'));
     final mouse = await tester.startGesture(
       origin + const Offset(30, 70),
       kind: PointerDeviceKind.mouse,
@@ -312,7 +317,7 @@ void main() {
     await mouse.moveTo(origin + const Offset(75, 91));
     await tester.pump();
     expect(
-      tester.getTopLeft(find.text('Say hello')),
+      tester.getTopLeft(onForm('Say hello')),
       before + const Offset(48, 24),
       reason: 'the widget follows at once',
     );

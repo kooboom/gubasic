@@ -206,6 +206,31 @@ void main() {
       expect(h.canUndo, isFalse);
     });
 
+    test('changes of one group are one step until sealed', () {
+      final g = Object();
+      final h = FormHistory()
+        ..record('a', 'b')
+        ..record('b', 'c', group: g)
+        ..record('c', 'd', group: g);
+      expect(h.undo(), 'b');
+      expect(h.redo(), 'd');
+      h
+        ..record('d', 'e', group: g)
+        ..seal()
+        ..record('e', 'f', group: g);
+      expect(h.undo(), 'e', reason: 'sealed: a new step');
+      expect(h.undo(), 'd');
+    });
+
+    test('a group back where it started is no step', () {
+      final g = Object();
+      final h = FormHistory()
+        ..follow('a')
+        ..record('a', 'b', group: g)
+        ..record('b', 'a', group: g);
+      expect(h.canUndo, isFalse);
+    });
+
     test('the oldest steps are forgotten after the limit', () {
       final h = FormHistory(limit: 3)..follow('0');
       for (var i = 1; i <= 5; i++) {

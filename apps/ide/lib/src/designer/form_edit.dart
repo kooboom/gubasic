@@ -161,13 +161,18 @@ FormFile _copy(FormFile form, List<ControlDecl> controls) => FormFile(
 
 /// The texts a form file had as the designer changed it, to go back and
 /// forth with undo and redo. Each finished action is one step; the
-/// oldest steps are forgotten after [limit].
+/// oldest steps are forgotten after [limit]. Changes recorded with the
+/// same group, such as the letters typed in one field of the Properties
+/// window, make one step until [seal].
 class FormHistory {
   FormHistory({this.limit = 100});
 
   final int limit;
   final _texts = <String>[];
   var _at = -1;
+
+  /// The group of the last step, while it may still grow.
+  Object? _group;
 
   bool get canUndo => _at > 0;
   bool get canRedo => _at < _texts.length - 1;
@@ -181,25 +186,49 @@ class FormHistory {
       ..clear()
       ..add(text);
     _at = 0;
+    _group = null;
   }
 
   /// Records [text] as the next step, after [follow]ing [before]. Steps
   /// that were undone are dropped.
-  void record(String before, String text) {
+  void record(String before, String text, {Object? group}) {
     follow(before);
+    if (group != null && group == _group && _at == _texts.length - 1) {
+      // The same step goes on; back where it started, it is no step.
+      if (text == _texts[_at - 1]) {
+        _texts.removeLast();
+        _at--;
+        _group = null;
+      } else {
+        _texts[_at] = text;
+      }
+      return;
+    }
+    _group = null;
     if (text == before) return;
     _texts
       ..removeRange(_at + 1, _texts.length)
       ..add(text);
     if (_texts.length > limit + 1) _texts.removeAt(0);
     _at = _texts.length - 1;
+    _group = group;
   }
 
+  /// Ends the step of the current group: what is recorded next is a new
+  /// step, even with the same group.
+  void seal() => _group = null;
+
   /// The text one step back, or null.
-  String? undo() => canUndo ? _texts[--_at] : null;
+  String? undo() {
+    seal();
+    return canUndo ? _texts[--_at] : null;
+  }
 
   /// The text one step forward, or null.
-  String? redo() => canRedo ? _texts[++_at] : null;
+  String? redo() {
+    seal();
+    return canRedo ? _texts[++_at] : null;
+  }
 }
 
 /// The smallest width or height the designer gives a form.
@@ -365,3 +394,32 @@ FormFile withFormSize(FormFile form, ({int width, int height}) size) =>
       },
       controls: form.controls,
     );
+
+/// [form] with [property] of the control named [control], or of the form
+/// itself when [control] is null, set to [value].
+FormFile withProperty(
+  FormFile form,
+  String? control,
+  String property,
+  Object value,
+) {
+  if (control == null) {
+    return FormFile(
+      name: form.name,
+      properties: {...form.properties, property: value},
+      controls: form.controls,
+    );
+  }
+  return _copy(form, [
+    for (final c in form.controls)
+      if (c.name.toLowerCase() == control.toLowerCase())
+        ControlDecl(
+          name: c.name,
+          component: c.component,
+          properties: {...c.properties, property: value},
+          line: c.line,
+        )
+      else
+        c,
+  ]);
+}

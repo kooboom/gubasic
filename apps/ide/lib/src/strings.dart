@@ -74,6 +74,10 @@ class IdeStrings {
     required this.viewDesigner,
     required this.lockedWhileRunning,
     required this.formHasErrors,
+    required this.properties,
+    required this.integerRange,
+    required this.numberNeeded,
+    required this.formNameIsFile,
   });
 
   /// The words on MsgBox and InputBox.
@@ -202,6 +206,16 @@ class IdeStrings {
   final String lockedWhileRunning;
   final String formHasErrors;
 
+  // The Properties window (D35).
+  final String properties;
+
+  /// `{0}` the property, `{1}` the smallest value, `{2}` the largest.
+  final String integerRange;
+
+  /// `{0}` the property.
+  final String numberNeeded;
+  final String formNameIsFile;
+
   /// [diagnostic] in [file], in this language.
   String problem(String file, Diagnostic diagnostic) => errorAt
       .replaceAll('{0}', file)
@@ -283,6 +297,10 @@ class IdeStrings {
     viewDesigner: 'View designer',
     lockedWhileRunning: 'The form cannot be changed while the program runs. Stop it (Shift+F5) to change it.',
     formHasErrors: 'This form file has errors, so the designer only shows it: changing it would drop what could not be read. Fix the file in a text editor, then open the project again.',
+    properties: 'Properties',
+    integerRange: '{0} takes a whole number from {1} to {2}.',
+    numberNeeded: '{0} takes a number, such as 1.5.',
+    formNameIsFile: 'A form is named after its file. Renaming a form comes with several forms in one project (stage 2).',
   );
 
   static const ko = IdeStrings(
@@ -362,6 +380,10 @@ class IdeStrings {
     viewDesigner: '그리기 화면 보기',
     lockedWhileRunning: '프로그램이 실행되는 동안에는 폼을 고칠 수 없습니다. 고치려면 중지(Shift+F5)합니다.',
     formHasErrors: '이 폼 파일에는 오류가 있어서 그리기 화면에서 보기만 합니다. 고치면 읽지 못한 부분이 사라지기 때문입니다. 텍스트 편집기로 파일을 고친 뒤 프로젝트를 다시 엽니다.',
+    properties: '속성',
+    integerRange: '{0} 속성에는 정수만 쓸 수 있습니다. 범위: {1} ~ {2}',
+    numberNeeded: '{0} 속성에는 1.5 같은 숫자만 쓸 수 있습니다.',
+    formNameIsFile: '폼 이름은 파일 이름입니다. 폼 이름 바꾸기는 한 프로젝트에 폼을 여러 개 두는 2단계에서 합니다.',
   );
 
   /// Korean when the system language is Korean, else English.
