@@ -52,7 +52,12 @@ class _GbPlaced extends StatelessWidget {
 }
 
 /// A Button: shows `Caption`; a click raises `Click`. It takes the focus
-/// when clicked, as buttons do on desktops.
+/// when clicked, as buttons do on desktops. Its text has
+/// [gbButtonPadding] on each side: the Material default, 24, left a
+/// Button of the default width (96) too little room for its own name.
+/// The room between a Button's edge and its text, left and right.
+const gbButtonPadding = 8.0;
+
 class GbButton extends StatefulWidget {
   const GbButton({super.key, required this.model, required this.state});
 
@@ -77,6 +82,9 @@ class _GbButtonState extends State<GbButton> {
     listenable: widget.state,
     builder: (context, _) => OutlinedButton(
       focusNode: _focus,
+      style: OutlinedButton.styleFrom(
+        padding: const EdgeInsets.symmetric(horizontal: gbButtonPadding),
+      ),
       onPressed: () {
         _focus.requestFocus();
         widget.model.raise(widget.state.name, 'Click');
