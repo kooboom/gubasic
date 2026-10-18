@@ -170,12 +170,16 @@ void _properties(YamlReader r, YamlNode node, ComponentSpec component,
     final keyNode = key as YamlNode;
     final name = '${keyNode.value}';
     final spec = component.properties[name.toLowerCase()];
-    if (spec == null) {
+    if (spec == null || spec.internal) {
       r.report(keyNode.span, DiagnosticCode.unknownProperty, [
         name,
         component.name,
-        component.properties.values.map((p) => p.name).join(', ')
+        component.designProperties.map((p) => p.name).join(', ')
       ]);
+      continue;
+    }
+    if (!spec.designTime) {
+      r.report(keyNode.span, DiagnosticCode.notDesignProperty, [spec.name]);
       continue;
     }
     final v = _value(value, spec.type);

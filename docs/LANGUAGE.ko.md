@@ -143,6 +143,7 @@ Handles ReDim Preserve Optional Of ByVal
 | A031 | **경고.** 컨트롤과 같은 이름이라서 그 컨트롤을 가리는 지역 변수 |
 | A032 | 이벤트가 정한 형태와 다르게 쓴 이벤트 처리기(8절) |
 | A033 | 컨트롤 타입에 쓴 `New`: 컨트롤은 아직 코드로 만들 수 없음(2단계) |
+| A034 | 프로그램이 읽기만 할 수 있는 속성에 값을 넣음(`lstNames.ListCount = 3`, `names.Count = 0`) |
 
 **폼·프로젝트 파일**
 
@@ -162,6 +163,7 @@ Handles ReDim Preserve Optional Of ByVal
 | F010 | 타입이 틀린 속성 값 |
 | F011 | `startup`에 적은 폼이 `forms`에 없음 |
 | F012 | 범위를 벗어난 `Integer` 속성 값(11.1절) |
+| F013 | 폼 파일에 쓸 수 없는 속성: 프로그램이 실행 중에 정하거나(`ListIndex`) 읽기만 하는 속성(11.1절) |
 
 **실행 중**
 
@@ -197,7 +199,7 @@ Handles ReDim Preserve Optional Of ByVal
 - **`Nothing`(null)은 객체에만 있습니다.** 값 타입은 항상 값이 있으므로 초보자가 null 오류를 만날 일이 거의 없습니다.
 - **객체가 `Nothing`인지는 `Is`로 비교합니다:** `If player Is Nothing Then`. 반대는 `If Not player Is Nothing Then`으로 씁니다. (`=`는 객체가 아니라 값을 비교합니다.)
 - **`Variant`는 없습니다.** 정말 아무 값이나 담아야 하면 `Object`를 씁니다.
-- **컨트롤 타입**(`Form`, `Button`, `Label`, `TextBox`, `CheckBox`. 11.1절)은 `As` 뒤에 쓸 수 있고, 컨트롤은 객체입니다: `Dim b As Button = btnSave`, `If b Is Nothing Then`. 컨트롤은 아직 `New`로 만들 수 없으며(A033), 컨트롤은 폼에 있는 것들입니다.
+- **컨트롤 타입**(`Form`, `Button`, `Label`, `TextBox`, `CheckBox`, `ListBox`. 11.1절)은 `As` 뒤에 쓸 수 있고, 컨트롤은 객체입니다: `Dim b As Button = btnSave`, `If b Is Nothing Then`. 컨트롤은 아직 `New`로 만들 수 없으며(A033), 컨트롤은 폼에 있는 것들입니다.
 
 ### 2.1 자동 변환
 
@@ -572,7 +574,7 @@ End Sub
 
 - `Me`는 현재 폼을 가리키며, 속성은 `Form`의 속성입니다(11.1절).
 - 컨트롤은 폼 파일(11.2절)에 있는 것들입니다. 컨트롤 이름은 폼 변수처럼 그 폼의 코드 어디서나 쓸 수 있습니다. 폼 변수나 프로시저에는 컨트롤의 이름을 쓸 수 없습니다(A030). 지역 변수에는 쓸 수 있지만 그러면 컨트롤을 가립니다(경고 A031).
-- **컨트롤이 겹치면** 폼 파일의 순서와 상관없이 `Label`은 언제나 다른 컨트롤(`Button`, `TextBox`, `CheckBox`) 아래에 있고, 클릭은 위에 있는 컨트롤이 받습니다. 같은 층의 컨트롤끼리는 폼 파일에서 뒤에 있는 것이 위에 있습니다(DESIGN.md D41).
+- **컨트롤이 겹치면** 폼 파일의 순서와 상관없이 `Label`은 언제나 다른 컨트롤(`Button`, `TextBox`, `CheckBox`, `ListBox`) 아래에 있고, 클릭은 위에 있는 컨트롤이 받습니다. 같은 층의 컨트롤끼리는 폼 파일에서 뒤에 있는 것이 위에 있습니다(DESIGN.md D41).
 - 놀이터의 프로그램처럼 폼이 없는 코드에서는 컨트롤과 `Me`를 쓸 수 없습니다(A003).
 - 2단계: 실행 중에 컨트롤을 만들 수 있습니다.
 
@@ -591,6 +593,7 @@ End Sub
 | `Label` | `Caption` (`String`), `Left`, `Top`, `Width`, `Height` (`Integer`) | `Click` |
 | `TextBox` | `Text` (`String`), `Left`, `Top`, `Width`, `Height` (`Integer`) | `Changed` |
 | `CheckBox` | `Caption` (`String`), `Checked` (`Boolean`), `Left`, `Top`, `Width`, `Height` (`Integer`) | `Changed` |
+| `ListBox` | `ListIndex` (`Integer`, 코드에서만 정함), `ListCount` (`Integer`)와 `Text` (`String`)는 읽기만 함, `Left`, `Top`, `Width`, `Height` (`Integer`). 메서드: `AddItem(item)`, `RemoveItem(index)`, `Clear()`, `List(index)` | `Changed` |
 
 - 컨트롤은 모두 컴포넌트이며, 기본값과 함께 `components/이름/component.yaml`에 정의되어 있습니다(DESIGN.ko.md 5절). 위 표의 이벤트는 기본 이벤트, 곧 디자이너에서 더블클릭하면 만들어지는 이벤트를 먼저 적었습니다.
 - `Left`, `Top`, `Width`, `Height`는 논리 픽셀(화면 밀도가 달라도 같은 크기) 단위이며, 폼 안쪽의 왼쪽 위 모서리부터 잽니다. 폼의 `Width`와 `Height`는 창의 제목 표시줄과 테두리를 뺀 안쪽 크기입니다. 나중 단계에서는 이 속성들의 뜻을 바꾸지 않고 속성(`Anchor` 등)을 더합니다(D12).
@@ -598,7 +601,9 @@ End Sub
 - **`TextBox.Changed`**는 `Text`가 바뀐 뒤에 실행됩니다. 사용자가 입력했든 프로그램이 `Text`를 바꿨든 같습니다. 프로그램이 `Text`를 바꾸면 처리기는 그 대입의 일부로 바로 실행되므로, 다음 줄에서 이미 처리기가 한 일을 볼 수 있습니다. 같은 글자를 다시 넣으면 실행되지 않습니다. 처리기가 자기 TextBox의 `Text`를 바꿔도 그 변화로 처리기가 다시 시작되지는 않습니다(8.1절).
 - **입력기(IME)로 입력할 때.** `Text`에는 입력기가 **확정한** 글자만 들어 있고, `Changed`는 입력기가 글자를 확정할 때마다 실행됩니다. 화면에 보이는 글자가 아직 확정되지 않았을 수 있습니다. 한글은 받침이 다음 글자로 넘어갈 수 있기 때문입니다(도깨비불). 갈가를 입력하면 갈, 갉, 갈가 순서로 보이는데, 갈은 ㅏ를 칠 때 비로소 확정되고 ㄱ은 다음 글자로 넘어갑니다. 그래서 처리기가 음절 중간에 글자를 바꾸는 일이 없습니다. 음절 중간에 글자를 바꾸면 Windows의 Flutter에서 입력이 깨지는 문제가 알려져 있습니다([flutter/flutter#121376](https://github.com/flutter/flutter/issues/121376)). 대가: 글자 수 세기처럼 키를 누를 때마다 따라가는 코드는 입력 중인 음절을 입력기가 확정한 뒤에야 봅니다. 어느 글자가 아직 조합 중인지 플랫폼이 알려 주지 않는 곳(macOS 앱, D37)에서는 runtime이 글자가 바뀌는 모양으로 알아내며, 결과는 같습니다.
 - **`CheckBox.Changed`**는 `Checked`가 바뀐 뒤에 실행됩니다. 사용자가 상자나 `Caption`을 클릭했을 때, 그리고 프로그램이 `Checked`를 바꿨을 때입니다. `TextBox.Changed`와 같이, 프로그램이 바꾸면 처리기가 바로 실행되고, 같은 값을 다시 넣으면 실행되지 않으며, 처리기가 자기 `Checked`를 바꿔도 그 변화로 다시 시작되지 않습니다. CheckBox의 `Changed`가 실행 중일 때 그 CheckBox를 클릭하면 무시되고 상자도 그대로이므로, 상자는 처리기가 다루는 상태를 보여 줍니다(8.1절). CheckBox의 상태는 두 가지이며, Visual Basic 6의 세 번째 상태(회색)는 넣지 않았습니다(DESIGN.md D44).
-- **글자를 조합하는 중에 클릭할 때.** 클릭이 프로그램에 전달되기 전에, 어느 TextBox에서든 아직 조합 중인 글자를 확정합니다. 순서는 항상 같습니다: 글자 확정, `TextBox.Changed` 실행, 그다음 `Click` 실행(CheckBox를 클릭했다면 `CheckBox.Changed` 실행). 그래서 사용자가 한글을 스페이스 없이 치고 바로 버튼을 누르면, `Click` 처리기의 `txtName.Text`는 이미 한글입니다.
+- **ListBox의 항목**은 코드에서 넣으며 번호는 0부터입니다. `AddItem(item)`은 끝에 하나를 넣고, `RemoveItem(index)`는 하나를 지우고, `Clear()`는 모두 지우며, `List(index)`는 한 항목의 글자를 돌려줍니다. `ListCount`는 항목 수, `ListIndex`는 고른 항목의 번호(고른 것이 없으면 −1), `Text`는 고른 항목의 글자(고른 것이 없으면 `""`)입니다. `ListCount`와 `Text`는 읽기만 할 수 있습니다(A034). `ListIndex`는 폼 파일이 아니라 코드에서만 정합니다(F013). 없는 항목 번호는 실행 중 오류(R003)이고, `ListIndex = -1`은 아무것도 고르지 않습니다. 디자이너에서 항목을 넣는 기능은 아직 없습니다(DESIGN.md D46).
+- **`ListBox.Changed`**는 `ListIndex`가 바뀔 때마다 실행됩니다. 사용자가 다른 항목을 고를 때, 프로그램이 `ListIndex`를 바꿀 때(`TextBox.Changed`처럼 그 대입의 일부로 바로), 그리고 `RemoveItem`이나 `Clear`가 고른 항목을 옮기거나 지울 때(그 호출의 일부로)입니다. 고른 항목보다 위의 항목을 지우면 고른 번호가 하나 당겨져 같은 항목이 계속 골라져 있고, 고른 항목을 지우거나 `Clear`하면 아무것도 고르지 않은 상태가 됩니다. 고른 항목을 다시 고르거나 같은 `ListIndex`를 넣으면 실행되지 않습니다. ListBox의 `Changed`가 실행 중일 때 그 ListBox에서 고르면 무시되고 아무것도 바뀌지 않습니다(8.1절).
+- **글자를 조합하는 중에 클릭할 때.** 클릭이 프로그램에 전달되기 전에, 어느 TextBox에서든 아직 조합 중인 글자를 확정합니다. 순서는 항상 같습니다: 글자 확정, `TextBox.Changed` 실행, 그다음 `Click` 실행(CheckBox나 ListBox를 클릭했다면 그 컨트롤의 `Changed` 실행). 그래서 사용자가 한글을 스페이스 없이 치고 바로 버튼을 누르면, `Click` 처리기의 `txtName.Text`는 이미 한글입니다.
 
 ### 11.2 폼 파일
 

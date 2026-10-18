@@ -1,0 +1,8 @@
+formatVersion: 1
+controls:
+  - { name: lstCity, type: ListBox }
+  - { name: btnRemove, type: Button, properties: { Top: 130 } }
+  - { name: btnRefill, type: Button, properties: { Top: 170 } }
+  - { name: btnClear, type: Button, properties: { Top: 210 } }
+  - { name: btnObject, type: Button, properties: { Top: 250 } }
+  - { name: btnBad, type: Button, properties: { Top: 290 } }

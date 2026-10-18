@@ -31,6 +31,7 @@ class Toolbox extends StatelessWidget {
     'label' => Icons.title,
     'textbox' => Icons.text_fields,
     'checkbox' => Icons.check_box_outlined,
+    'listbox' => Icons.list_alt,
     _ => Icons.widgets_outlined,
   };
 

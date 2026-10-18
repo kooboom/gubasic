@@ -107,6 +107,37 @@ void main() {
         throwsFormatException);
   });
 
+  test('methods and property flags (D45)', () {
+    final c = readComponentFile('name: X\nversion: 1\ndefaultEvent: A\n'
+        'properties:\n'
+        '  - { name: P, type: Integer, default: 0, designTime: false }\n'
+        '  - { name: R, type: String, default: "", readOnly: true }\n'
+        '  - { name: S, type: List(Of String), default: [a], internal: true }\n'
+        'events: [A()]\n'
+        'methods:\n'
+        '  - Go()\n'
+        '  - Get(i As Integer, s As String) As Boolean\n');
+    expect(c.designProperties, isEmpty);
+    expect(c.properties['r']!.isStored, isFalse);
+    expect(c.properties['s']!.defaultValue, ['a']);
+    expect(c.methods['get']!.parameters.map((p) => p.name), ['i', 's']);
+    expect(c.methods['get']!.returnType, GbType.boolean);
+    expect(c.methods['go']!.returnType, GbType.void_);
+    String yaml(String rest) =>
+        'name: X\nversion: 1\ndefaultEvent: A\nevents: [A()]\n$rest';
+    for (final bad in [
+      'properties: []\nmethods: [Go]\n',
+      'properties: []\nmethods: ["Go() As Thing"]\n',
+      'properties: [{name: P, type: String, default: "", readOnly: true, '
+          'changeEvent: A}]\n',
+      'properties: [{name: P, type: List(Of String), default: []}]\n',
+      'properties: [{name: P, type: Integer, default: 0, readOnly: 1}]\n',
+    ]) {
+      expect(() => readComponentFile(yaml(bad)), throwsFormatException,
+          reason: bad);
+    }
+  });
+
   test('a broken component.yaml is refused', () {
     expect(
         () => readComponentFile('name: X\nversion: 1\ndefaultEvent: A\n'

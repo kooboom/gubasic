@@ -18,14 +18,19 @@ class PropertySpec {
     this.min = integerPropertyMin,
     this.max = integerPropertyMax,
     this.changeEvent,
-  });
+    bool designTime = true,
+    this.readOnly = false,
+    this.internal = false,
+  }) : designTime = designTime && !readOnly && !internal;
 
   final String name;
 
-  /// Integer, Double, Boolean or String.
+  /// Integer, Double, Boolean or String; `List(Of String)` for an
+  /// [internal] property.
   final GbType type;
 
-  /// An `int`, `double`, `bool` or `String`, matching [type].
+  /// An `int`, `double`, `bool`, `String` or `List<String>`, matching
+  /// [type].
   final Object defaultValue;
 
   /// For Integer properties: the smallest and largest value allowed.
@@ -35,6 +40,24 @@ class PropertySpec {
   /// The event that runs after the value changes, also when the program
   /// sets it (`Changed` for TextBox.Text). Null for most properties.
   final String? changeEvent;
+
+  /// Whether the form file and the Properties window can set it. False
+  /// for a property only the program sets while it runs (ListBox's
+  /// ListIndex), and always false for [readOnly] and [internal] ones
+  /// (docs/DESIGN.md D45).
+  final bool designTime;
+
+  /// The program can read it but not set it. Its value is not kept: the
+  /// component's code works it out from the others (ListBox's ListCount
+  /// from its items).
+  final bool readOnly;
+
+  /// State the runtime keeps for the component's code, which programs do
+  /// not see as a property (ListBox's items, read through its methods).
+  final bool internal;
+
+  /// Whether a host keeps its value: all but the [readOnly] ones.
+  bool get isStored => !readOnly;
 
   /// Whether [value] (an int for Integer properties) is in range.
   bool accepts(Object value) =>
@@ -58,6 +81,18 @@ class EventSpec {
   }
 }
 
+/// A method of a component: `AddItem(item As String)`,
+/// `List(index As Integer) As String`.
+class MethodSpec {
+  const MethodSpec(this.name, this.parameters, this.returnType);
+
+  final String name;
+  final List<ParamSpec> parameters;
+
+  /// [GbType.void_] for one that gives nothing back.
+  final GbType returnType;
+}
+
 /// The layer a control is drawn in (docs/DESIGN.md D41): [graphic]
 /// controls (Label) under all the others, whatever their order in the
 /// form file; within a layer, a control later in the file is on top.
@@ -71,9 +106,11 @@ class ComponentSpec {
     required this.defaultEvent,
     required List<PropertySpec> properties,
     required List<EventSpec> events,
+    List<MethodSpec> methods = const [],
     this.layer = ComponentLayer.control,
   })  : properties = {for (final p in properties) p.name.toLowerCase(): p},
-        events = {for (final e in events) e.name.toLowerCase(): e};
+        events = {for (final e in events) e.name.toLowerCase(): e},
+        methods = {for (final m in methods) m.name.toLowerCase(): m};
 
   final String name;
   final int version;
@@ -87,6 +124,13 @@ class ComponentSpec {
 
   /// By lower-case name, in declaration order.
   final Map<String, EventSpec> events;
+
+  /// By lower-case name, in declaration order.
+  final Map<String, MethodSpec> methods;
+
+  /// The properties the form file and the Properties window can set.
+  Iterable<PropertySpec> get designProperties =>
+      properties.values.where((p) => p.designTime);
 
   /// The GuBASIC type of controls of this kind (`Button`).
   late final ControlType type = ControlType(this);
@@ -127,13 +171,24 @@ ComponentSpec readComponentFile(String text) {
   for (final p in field<YamlList>(doc, 'properties')) {
     if (p is! YamlMap) throw const FormatException('a property is not a map');
     final name = field<String>(p, 'name');
-    final type = _valueTypes[field<String>(p, 'type').toLowerCase()];
+    final typeName = field<String>(p, 'type').toLowerCase();
+    final internal = p['internal'] ?? false;
+    final readOnly = p['readOnly'] ?? false;
+    final designTime = p['designTime'] ?? true;
+    if (internal is! bool || readOnly is! bool || designTime is! bool) {
+      throw FormatException('$name: internal, readOnly and designTime are '
+          'true or false');
+    }
+    final type = typeName == 'list(of string)' && internal
+        ? const ListType(GbType.string)
+        : _valueTypes[typeName];
     if (type == null) throw FormatException('$name: unsupported type');
     final value = p['default'];
     final ok = switch (type) {
       GbType.integer => value is int,
       GbType.double_ => value is num,
       GbType.boolean => value is bool,
+      ListType() => value is YamlList && value.every((v) => v is String),
       _ => value is String,
     };
     if (!ok) throw FormatException('$name: default does not match its type');
@@ -150,9 +205,24 @@ ComponentSpec readComponentFile(String text) {
     if (changeEvent != null && changeEvent is! String) {
       throw FormatException('$name: bad changeEvent');
     }
-    final spec = PropertySpec(name, type,
-        type == GbType.double_ ? (value as num).toDouble() : value as Object,
-        min: min, max: max, changeEvent: changeEvent as String?);
+    if (changeEvent != null && (readOnly || internal)) {
+      throw FormatException('$name: only a property the program sets can '
+          'have a changeEvent');
+    }
+    final spec = PropertySpec(
+        name,
+        type,
+        switch (type) {
+          GbType.double_ => (value as num).toDouble(),
+          ListType() => List<String>.unmodifiable(value as YamlList),
+          _ => value as Object,
+        },
+        min: min,
+        max: max,
+        changeEvent: changeEvent as String?,
+        designTime: designTime,
+        readOnly: readOnly,
+        internal: internal);
     if (!spec.accepts(spec.defaultValue)) {
       throw FormatException('$name: default is out of range');
     }
@@ -161,18 +231,22 @@ ComponentSpec readComponentFile(String text) {
 
   final events = <EventSpec>[];
   final eventPattern = RegExp(r'^([A-Za-z][A-Za-z0-9_]*)\((.*)\)$');
-  final paramPattern = RegExp(r'^([A-Za-z][A-Za-z0-9_]*) As ([A-Za-z]+)$');
   for (final e in field<YamlList>(doc, 'events')) {
     final m = e is String ? eventPattern.firstMatch(e.trim()) : null;
     if (m == null) throw FormatException('bad event: $e');
-    final params = <ParamSpec>[];
-    for (final part in m[2]!.split(',').where((s) => s.trim().isNotEmpty)) {
-      final pm = paramPattern.firstMatch(part.trim());
-      final type = pm == null ? null : _valueTypes[pm[2]!.toLowerCase()];
-      if (type == null) throw FormatException('bad parameter: $part');
-      params.add(ParamSpec(pm![1]!, type));
-    }
-    events.add(EventSpec(m[1]!, params));
+    events.add(EventSpec(m[1]!, _parameters(m[2]!)));
+  }
+
+  final methods = <MethodSpec>[];
+  final methodPattern =
+      RegExp(r'^([A-Za-z][A-Za-z0-9_]*)\((.*)\)(?: As ([A-Za-z]+))?$');
+  for (final m in doc['methods'] as YamlList? ?? YamlList()) {
+    final mm = m is String ? methodPattern.firstMatch(m.trim()) : null;
+    if (mm == null) throw FormatException('bad method: $m');
+    final returnType =
+        mm[3] == null ? GbType.void_ : _valueTypes[mm[3]!.toLowerCase()];
+    if (returnType == null) throw FormatException('bad return type: $m');
+    methods.add(MethodSpec(mm[1]!, _parameters(mm[2]!), returnType));
   }
 
   final layerName = doc['layer'] ?? 'control';
@@ -186,6 +260,7 @@ ComponentSpec readComponentFile(String text) {
     defaultEvent: field<String>(doc, 'defaultEvent'),
     properties: properties,
     events: events,
+    methods: methods,
     layer: layer,
   );
   if (!spec.events.containsKey(spec.defaultEvent.toLowerCase())) {
@@ -199,4 +274,17 @@ ComponentSpec readComponentFile(String text) {
     }
   }
   return spec;
+}
+
+/// `a As Integer, b As String`: the parameters of an event or a method.
+List<ParamSpec> _parameters(String text) {
+  final paramPattern = RegExp(r'^([A-Za-z][A-Za-z0-9_]*) As ([A-Za-z]+)$');
+  return [
+    for (final part in text.split(',').where((s) => s.trim().isNotEmpty))
+      switch (paramPattern.firstMatch(part.trim())) {
+        final pm? when _valueTypes[pm[2]!.toLowerCase()] != null =>
+          ParamSpec(pm[1]!, _valueTypes[pm[2]!.toLowerCase()]!),
+        _ => throw FormatException('bad parameter: $part'),
+      },
+  ];
 }

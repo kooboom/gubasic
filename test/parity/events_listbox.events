@@ -1,0 +1,9 @@
+lstCity.Select 0
+lstCity.Select 0     ' the same item again: no Changed
+lstCity.Select 1
+btnRemove.Click
+btnRefill.Click
+btnClear.Click
+btnRefill.Click
+btnObject.Click
+btnBad.Click         ' List(5): there is no item 5

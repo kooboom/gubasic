@@ -1,0 +1,50 @@
+' ListBox: AddItem, RemoveItem, Clear and List change and read its items;
+' ListCount, ListIndex and Text say what is there and what is chosen.
+' Changed runs whenever ListIndex changes: the user picks an item, the
+' program sets ListIndex, or RemoveItem / Clear moves or removes the
+' chosen item (D46). An item number that does not exist is R003.
+Sub Form_Load()
+    lstCity.AddItem("Seoul")
+    lstCity.AddItem("Busan")
+    lstCity.AddItem("Daegu")
+    Debug.Print(lstCity.ListCount & " items, chosen " & lstCity.ListIndex & ", text [" & lstCity.Text & "]")
+    Debug.Print("item 1: " & lstCity.List(1))
+    lstCity.ListIndex = 2
+    lstCity.ListIndex = 2
+    Debug.Print("same index again: no Changed")
+End Sub
+
+Sub lstCity_Changed()
+    Debug.Print("Changed: " & lstCity.ListIndex & " [" & lstCity.Text & "]")
+End Sub
+
+Sub btnRemove_Click()
+    lstCity.RemoveItem(0)                  ' before the chosen one: it moves up
+    lstCity.RemoveItem(lstCity.ListIndex)  ' the chosen one: nothing is chosen
+    lstCity.RemoveItem(0)                  ' nothing was chosen: no Changed
+    Debug.Print(lstCity.ListCount & " items")
+End Sub
+
+Sub btnRefill_Click()
+    lstCity.AddItem("Incheon")
+    lstCity.AddItem("Gwangju")
+    lstCity.ListIndex = 1
+End Sub
+
+Sub btnClear_Click()
+    lstCity.Clear()
+    Debug.Print("cleared: " & lstCity.ListCount & " items, chosen " & lstCity.ListIndex)
+    lstCity.Clear                          ' nothing was chosen: no Changed
+End Sub
+
+Sub btnObject_Click()
+    ' Through an Object variable, the same rules apply.
+    Dim box As Object = lstCity
+    box.RemoveItem(1)
+    box.ListIndex = 0
+    Debug.Print(box.Text & ", " & box.ListCount)
+End Sub
+
+Sub btnBad_Click()
+    Debug.Print(lstCity.List(5))
+End Sub

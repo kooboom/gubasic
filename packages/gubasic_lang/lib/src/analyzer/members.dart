@@ -77,7 +77,10 @@ Map<String, MemberSpec>? membersOf(GbType type) {
     case ControlType(:final component):
       list = [
         for (final p in component.properties.values)
-          MemberSpec.property(p.name, p.type, readOnly: false),
+          if (!p.internal)
+            MemberSpec.property(p.name, p.type, readOnly: p.readOnly),
+        for (final m in component.methods.values)
+          MemberSpec.method(m.name, m.parameters, m.returnType),
       ];
     case GbType.integer ||
           GbType.double_ ||

@@ -82,6 +82,18 @@ Problems we know about and have **deliberately** left unfixed for now. Each entr
 - **Why deferred:** the IDE uses one font list on every platform (D30), and the web's support is not documented; it was not tried.
 - **Revisit:** if Flutter documents WOFF2 for the web, or if the first visit is still too slow on the school network.
 
+## A ListBox's items are added only in code
+
+- **What:** the designer cannot enter a ListBox's items, as Visual Basic 6's List property in the Properties window does; a program adds them with `AddItem`, usually in `Form_Load` (D46).
+- **Why deferred:** it needs a property that holds a list of texts in the form file and a Properties window field with one item per line. The quiz of stage 1 fills its lists from code, question by question.
+- **Revisit:** when a program needs fixed items (a list of choices that never changes), or with the next form file change.
+
+## A ListBox is used with the mouse only
+
+- **What:** a ListBox's item is chosen by clicking it. The arrow keys and typing a letter do not move the choice.
+- **Why deferred:** the controls of a running form do not take the keyboard focus in turn yet (Tab), and a quiz is answered with the mouse.
+- **Revisit:** when the run window gets keyboard focus for its controls (Tab between them).
+
 ## No copy and paste in the form designer
 
 - **What:** the form designer cannot copy, cut or paste controls (⌘C / ⌘X / ⌘V, Ctrl+C / Ctrl+X / Ctrl+V).

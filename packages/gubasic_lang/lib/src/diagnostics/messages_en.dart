@@ -191,6 +191,8 @@ const Map<DiagnosticCode, String> englishMessages = {
       'not meant to handle the event.',
   DiagnosticCode.newControlNotAvailable: 'A {0} cannot be created by code '
       'yet. Put the control on the form instead.',
+  DiagnosticCode.readOnlyProperty:
+      '"{0}" can only be read: the program cannot give it a value.',
 
   // Form and project files
   DiagnosticCode.fileSyntax: 'This file cannot be read from here on: the '
@@ -220,6 +222,9 @@ const Map<DiagnosticCode, String> englishMessages = {
       'list of forms. Add it to forms, or choose a form that is listed.',
   DiagnosticCode.propertyOutOfRange: 'The value of {0} must be from {1} '
       'to {2}. Check the value.',
+  DiagnosticCode.notDesignProperty: '{0} cannot be set in the form file: it '
+      'is set or worked out while the program runs. Remove this line, and '
+      'set it in code if needed (for example in Form_Load).',
 
   // Run time
   DiagnosticCode.integerOverflow: 'The result is too large for an Integer '

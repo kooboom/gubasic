@@ -240,6 +240,11 @@ enum DiagnosticCode {
   /// Args: the type.
   newControlNotAvailable('A033'),
 
+  /// A value given to a property the program can only read
+  /// (`lstNames.ListCount = 3`, `names.Count = 0`). Args: the property as
+  /// written.
+  readOnlyProperty('A034'),
+
   // Form and project files (.form.yaml, .gbproj)
 
   /// The file is not in the expected layout (YAML syntax).
@@ -282,6 +287,10 @@ enum DiagnosticCode {
   /// An Integer property value outside its range. Args: property, the
   /// smallest and the largest value allowed.
   propertyOutOfRange('F012'),
+
+  /// A property the form file cannot set: the program sets it while it
+  /// runs (ListBox's ListIndex) or only reads it. Args: the property.
+  notDesignProperty('F013'),
 
   // Run time (the interpreter)
 

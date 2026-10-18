@@ -1,0 +1,31 @@
+# A list the user picks one item from (docs/DESIGN.md D46). The program
+# fills it with AddItem and reads it with List, ListCount, ListIndex and
+# Text. Changed runs whenever ListIndex changes: the user picks an item,
+# the program sets ListIndex, or RemoveItem / Clear changes it.
+# Items are set only in code for now (docs/KNOWN_ISSUES.md).
+name: ListBox
+version: 1
+visual: true
+defaultEvent: Changed
+properties:
+  - { name: Left, type: Integer, default: 0 }
+  - { name: Top, type: Integer, default: 0 }
+  - { name: Width, type: Integer, min: 0, default: 160 }
+  - { name: Height, type: Integer, min: 0, default: 120 }
+  # -1 when nothing is chosen; set only while the program runs (D45).
+  - name: ListIndex
+    type: Integer
+    default: -1
+    min: -1
+    designTime: false
+    changeEvent: Changed
+  - { name: ListCount, type: Integer, default: 0, readOnly: true }
+  - { name: Text, type: String, default: "", readOnly: true }
+  - { name: Items, type: List(Of String), default: [], internal: true }
+events:
+  - Changed()
+methods:
+  - AddItem(item As String)
+  - RemoveItem(index As Integer)
+  - Clear()
+  - List(index As Integer) As String

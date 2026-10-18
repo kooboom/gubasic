@@ -185,6 +185,28 @@ void main() {
     expect(shown(), isTrue, reason: 'the designer does not run the box');
   });
 
+  testWidgets('a ListBox: placed from the toolbox, it shows its name; the '
+      'Properties window has only where it is and its size', (tester) async {
+    await open(tester);
+    final tool = find.byKey(const ValueKey('toolbox.ListBox'));
+    await tester.tap(tool);
+    await tester.pump(kDoubleTapMinTime);
+    await tester.tap(tool);
+    await tester.pumpAndSettle();
+    expect(
+      find.text('ListBox1 (ListBox) · Left 80, Top 0 · 160×120'),
+      findsOneWidget,
+    );
+    expect(onForm('ListBox1'), findsOneWidget);
+    for (final name in ['Left', 'Top', 'Width', 'Height']) {
+      expect(find.byKey(propertyFieldKey(name)), findsOneWidget, reason: name);
+    }
+    for (final name in ['ListIndex', 'ListCount', 'Text', 'Items']) {
+      expect(find.byKey(propertyFieldKey(name)), findsNothing, reason: name);
+    }
+    expect(formText(tester), isNot(contains('ListIndex')));
+  });
+
   testWidgets('undo and redo, back to the saved text', (tester) async {
     await open(tester);
     final saved = formText(tester);

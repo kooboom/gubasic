@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 
 /// The kinds of built-in controls (components/NAME/component.yaml).
-enum GbControlKind { form, button, label, textBox, checkBox }
+enum GbControlKind { form, button, label, textBox, checkBox, listBox }
 
 /// The layer a control is drawn in, its component.yaml's `layer`
 /// (docs/DESIGN.md D41): [graphic] controls (Label) under all the others,
@@ -11,7 +11,7 @@ enum GbLayer { graphic, control }
 
 /// One control's current properties: `Caption`, `Text`, `Left`, `Top`,
 /// `Width`, `Height`, named as in its component.yaml. Values are `int`,
-/// `double`, `bool` or `String`. Its widget rebuilds when they change.
+/// `double`, `bool`, `String`, or for a ListBox's `Items` a `List<String>`. Its widget rebuilds when they change.
 class GbControlState extends ChangeNotifier {
   GbControlState(
     this.name,
@@ -60,6 +60,7 @@ class GbFormModel {
     required List<GbControlState> controls,
     required this.onEvent,
     GbEventFilter? accepts,
+    this.designing = false,
   }) : accepts = accepts ?? _acceptAll,
        form = GbControlState(null, GbControlKind.form, form),
        controls = List.unmodifiable(controls);
@@ -70,6 +71,10 @@ class GbFormModel {
   final List<GbControlState> controls;
   final GbEventSink onEvent;
   final GbEventFilter accepts;
+
+  /// Whether the form is shown in a designer rather than run: an empty
+  /// ListBox then shows its name, so that it can be seen.
+  final bool designing;
 
   static bool _acceptAll(String? control, String event) => true;
 

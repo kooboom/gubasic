@@ -6,6 +6,7 @@ import '../analyzer/analysis_result.dart';
 import '../analyzer/builtins.dart';
 import '../analyzer/compile.dart';
 import '../analyzer/conversions.dart';
+import '../analyzer/members.dart';
 import '../analyzer/symbols.dart';
 import '../analyzer/types.dart';
 import '../ast/ast.dart';
@@ -477,7 +478,8 @@ class Interpreter {
           when _assignmentMayRunEvent(target):
         return true;
       case InvokeExpr():
-        if (_a.invokeKinds[node] == InvokeKind.call &&
+        // Not an item: a call, or through an Object maybe one.
+        if (_a.invokeKinds[node] != InvokeKind.item &&
             _callWaits(node.target)) {
           return true;
         }
@@ -488,6 +490,18 @@ class Interpreter {
       default:
     }
     return node.children.any(_awaits);
+  }
+
+  /// Whether calling the method [target] may run a change event
+  /// (ListBox.Clear -> Changed): a control's method, known from the
+  /// component or decided at run time through an Object. Other built-in
+  /// methods never wait.
+  bool _methodMayRunEvent(MemberExpr target) {
+    final type = _a.types[target.target];
+    if (type is ControlType) {
+      return type.component.methods.containsKey(target.name.name.toLowerCase());
+    }
+    return type == GbType.object;
   }
 
   /// Whether assigning to [target] may run a change event (TextBox.Text ->
@@ -503,7 +517,7 @@ class Interpreter {
   }
 
   bool _callWaits(Expr target) {
-    if (target is MemberExpr) return false; // built-in methods never wait
+    if (target is MemberExpr) return _methodMayRunEvent(target);
     final symbol = _a.symbols[target];
     if (symbol == null) return false;
     if (symbol.kind == SymbolKind.procedure) return true;
@@ -837,12 +851,17 @@ class Interpreter {
   // Controls (docs/LANGUAGE.md §11)
 
   PropertySpec _property(GbControl c, MemberExpr e) =>
-      c.component.properties[e.name.name.toLowerCase()] ??
-      _fail(DiagnosticCode.memberNotFound, e, [e.name.name, c.component.name]);
+      switch (c.component.properties[e.name.name.toLowerCase()]) {
+        final p? when !p.internal => p,
+        _ => _fail(
+            DiagnosticCode.memberNotFound, e, [e.name.name, c.component.name]),
+      };
 
   Object? _getProperty(GbControl c, MemberExpr e) {
     final spec = _property(c, e);
-    final value = _formHost.getProperty(c.name, spec.name);
+    final value = spec.readOnly
+        ? _computedProperty(c, spec)
+        : _formHost.getProperty(c.name, spec.name);
     if (spec.type == GbType.integer) return GbInt.of(value as int);
     if (spec.type == GbType.double_) return (value as num).toDouble();
     return value;
@@ -852,7 +871,17 @@ class Interpreter {
   /// changed and the handler is not already running (D5).
   ProcedureDecl? _setProperty(GbControl c, MemberExpr e, Object? value) {
     final spec = _property(c, e);
+    if (spec.readOnly) {
+      // Only through an Object: the analyzer reports it otherwise (A034).
+      _fail(DiagnosticCode.memberNotFound, e, [e.name.name, c.component.name]);
+    }
     final v = _propertyValue(spec, value, e);
+    if (c.component.name == 'ListBox' && spec.name == 'ListIndex') {
+      final count = _items(c).length;
+      if ((v as int) >= count) {
+        _fail(DiagnosticCode.indexOutOfRange, e, ['$v', '$count']);
+      }
+    }
     final old = _formHost.getProperty(c.name, spec.name);
     _formHost.setProperty(c.name, spec.name, v);
     final event = spec.changeEvent;
@@ -890,6 +919,73 @@ class Interpreter {
     }
     _fail(DiagnosticCode.conversionFailed, at,
         [formatValue(value), spec.type.displayName]);
+  }
+
+  /// A [PropertySpec.readOnly] property, worked out by the component's
+  /// code: ListBox's ListCount and Text.
+  Object _computedProperty(GbControl c, PropertySpec spec) =>
+      switch ((c.component.name, spec.name)) {
+        ('ListBox', 'ListCount') => _items(c).length,
+        ('ListBox', 'Text') => switch (_listIndex(c)) {
+            -1 => '',
+            final i => _items(c)[i],
+          },
+        _ => throw StateError('no code for ${c.component.name}.${spec.name}'),
+      };
+
+  /// The change event a control's method left to run, if any.
+  ProcedureDecl? _pendingChange;
+
+  List<String> _items(GbControl c) =>
+      _formHost.getProperty(c.name, 'Items') as List<String>;
+  int _listIndex(GbControl c) =>
+      _formHost.getProperty(c.name, 'ListIndex') as int;
+
+  /// Calls a method of a control (docs/DESIGN.md D45). The ListBox's
+  /// methods change its items and, when the chosen item moves or goes,
+  /// ListIndex, whose Changed then runs as part of the call (D46).
+  Object? _controlMethod(
+      GbControl c, MethodSpec method, List<Object?> args, Node at) {
+    switch ((c.component.name, method.name)) {
+      case ('ListBox', 'AddItem'):
+        _formHost.setProperty(c.name, 'Items',
+            List<String>.unmodifiable([..._items(c), args[0] as String]));
+        return null;
+      case ('ListBox', 'RemoveItem'):
+        final items = [..._items(c)];
+        final i = _itemIndex(items, args[0], at);
+        items.removeAt(i);
+        _formHost.setProperty(
+            c.name, 'Items', List<String>.unmodifiable(items));
+        final chosen = _listIndex(c);
+        _changeListIndex(
+            c,
+            i == chosen
+                ? -1
+                : i < chosen
+                    ? chosen - 1
+                    : chosen);
+        return null;
+      case ('ListBox', 'Clear'):
+        _formHost.setProperty(c.name, 'Items', const <String>[]);
+        _changeListIndex(c, -1);
+        return null;
+      case ('ListBox', 'List'):
+        final items = _items(c);
+        return items[_itemIndex(items, args[0], at)];
+    }
+    throw StateError('no code for ${c.component.name}.${method.name}');
+  }
+
+  /// Sets a ListBox's ListIndex to [index] if it differs; its Changed is
+  /// then left to run ([_pendingChange]).
+  void _changeListIndex(GbControl c, int index) {
+    if (_listIndex(c) == index) return;
+    _formHost.setProperty(c.name, 'ListIndex', index);
+    final handler = _handlers[_eventKey(c.name, 'Changed')];
+    if (handler != null && !_running.contains(handler)) {
+      _pendingChange = handler;
+    }
   }
 
   /// Runs a change event's handler right away, as part of the statement
@@ -947,10 +1043,10 @@ class Interpreter {
         }
         return _read(symbol);
       case MemberExpr():
-        return _member(e, _memberReceiverSync(e), const []);
+        return _noChange(_member(e, _memberReceiverSync(e), const []));
       case InvokeExpr():
         final args = [for (final a in e.arguments) _valueSync(a)];
-        return _invoke(e, args, _memberReceiverSync);
+        return _noChange(_invoke(e, args, _memberReceiverSync));
       case NewExpr():
         return _construct(_a.types[e] ?? GbType.unknown,
             [for (final a in e.arguments ?? const <Expr>[]) _valueSync(a)]);
@@ -978,7 +1074,7 @@ class Interpreter {
         return _callNamed(symbol, const [], e);
       case MemberExpr():
         final receiver = await _memberReceiverAsync(e);
-        return _member(e, receiver, const []);
+        return _afterChange(_member(e, receiver, const []));
       case InvokeExpr():
         final args = [for (final a in e.arguments) await _value(a)];
         final target = e.target;
@@ -987,8 +1083,8 @@ class Interpreter {
         }
         final receiver =
             target is MemberExpr ? await _memberReceiverAsync(target) : null;
-        return _invoke(e, args, (_) => receiver,
-            container: target is MemberExpr ? null : await _value(target));
+        return _afterChange(_invoke(e, args, (_) => receiver,
+            container: target is MemberExpr ? null : await _value(target)));
       case NewExpr():
         return _construct(_a.types[e] ?? GbType.unknown,
             [for (final a in e.arguments ?? const <Expr>[]) await _value(a)]);
@@ -1005,6 +1101,26 @@ class Interpreter {
       default:
         return _evalSync(e);
     }
+  }
+
+  /// [value], after running the change event a control's method left to
+  /// run (ListBox.Clear -> Changed), as part of the call.
+  Future<Object?> _afterChange(Object? value) async {
+    final handler = _pendingChange;
+    if (handler != null) {
+      _pendingChange = null;
+      await _runChangeEvent(handler);
+    }
+    return value;
+  }
+
+  /// [value]; a method that runs a change event is always called through
+  /// [_evalAsync] ([_methodMayRunEvent]).
+  Object? _noChange(Object? value) {
+    if (_pendingChange != null) {
+      throw StateError('a change event is always run asynchronously');
+    }
+    return value;
   }
 
   /// Calls a user procedure or built-in function by its symbol.
@@ -1045,6 +1161,13 @@ class Interpreter {
         return _member(target, receiverOf(target), args, at: e);
       }
     }
+    // Through an Object, whether it is a call is decided here.
+    if (kind != InvokeKind.item && target is MemberExpr) {
+      final receiver = receiverOf(target);
+      if (_isMethod(receiver, target.name.name.toLowerCase())) {
+        return _member(target, receiver, args, at: e);
+      }
+    }
     // An item, decided by the analyzer or (through Object) at run time.
     final c = container ??
         (target is MemberExpr
@@ -1052,6 +1175,16 @@ class Interpreter {
             : _evalSync(target));
     return _getItem(c, args.isEmpty ? null : args.first, e);
   }
+
+  /// Whether [name] (lower case) is a method of [receiver]: what decides,
+  /// through an Object, between `o.Add(3)` and `o.Items(3)`.
+  bool _isMethod(Object? receiver, String name) => switch (receiver) {
+        GbList() =>
+          membersOf(const ListType(GbType.object))?[name]?.isMethod == true,
+        String() => membersOf(GbType.string)?[name]?.isMethod == true,
+        GbControl c => c.component.methods.containsKey(name),
+        _ => false,
+      };
 
   int _itemIndex(List<Object?> items, Object? index, Node at) {
     final i = (index as GbInt).toSmallInt();
@@ -1212,8 +1345,11 @@ class Interpreter {
         return _stringMember(s, name, args, node, e);
       case GbException ex when name == 'message':
         return ex.message;
-      case GbControl c when args.isEmpty:
-        return _getProperty(c, e);
+      case GbControl c:
+        if (c.component.methods[name] case final method?) {
+          return _controlMethod(c, method, args, node);
+        }
+        if (args.isEmpty) return _getProperty(c, e);
       default:
     }
     _fail(DiagnosticCode.memberNotFound, node,

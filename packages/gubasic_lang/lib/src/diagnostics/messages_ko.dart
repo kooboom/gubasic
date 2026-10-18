@@ -163,6 +163,8 @@ const Map<DiagnosticCode, String> koreanMessages = {
           '그렇게 고치거나, 이벤트를 처리할 프로시저가 아니라면 이름을 바꿔 주세요.',
   DiagnosticCode.newControlNotAvailable:
       '{0} 컨트롤은 아직 코드로 만들 수 없습니다. 폼에 컨트롤을 올려 주세요.',
+  DiagnosticCode.readOnlyProperty:
+      '"{0}" 값은 읽기만 할 수 있습니다. 프로그램에서 값을 넣을 수 없습니다.',
 
   // Form and project files
   DiagnosticCode.fileSyntax:
@@ -187,6 +189,9 @@ const Map<DiagnosticCode, String> koreanMessages = {
       '시작 폼으로 정한 {0} 폼이 폼 목록에 없습니다. forms 목록에 추가하거나 목록에 있는 폼을 골라 주세요.',
   DiagnosticCode.propertyOutOfRange:
       '{0} 속성의 값은 {1} 이상 {2} 이하여야 합니다. 값을 확인해 주세요.',
+  DiagnosticCode.notDesignProperty: '{0} 속성은 폼 파일에 쓸 수 없습니다. '
+      '프로그램이 실행될 때 정하거나 계산하는 속성입니다. 이 줄을 지우고, '
+      '필요하면 코드(예: Form_Load)에서 정해 주세요.',
 
   // Run time
   DiagnosticCode.integerOverflow:

@@ -97,7 +97,7 @@ void main() {
               'l.RemoveAt(0)\nl.Clear()'),
           isEmpty);
       expect(inMain('Dim l As New List(Of Integer)\nl.Add("x")'), ['A009']);
-      expect(inMain('Dim l As New List(Of Integer)\nl.Count = 3'), ['A020']);
+      expect(inMain('Dim l As New List(Of Integer)\nl.Count = 3'), ['A034']);
     });
 
     test('String members count from 0', () {

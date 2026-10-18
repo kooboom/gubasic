@@ -37,7 +37,7 @@ void _properties(StringBuffer out, String indent, ComponentSpec component,
   final lines = [
     for (final MapEntry(:key, value: spec) in component.properties.entries)
       if (byName[key] case final value?
-          when !_isDefault(value, spec.defaultValue))
+          when spec.designTime && !_isDefault(value, spec.defaultValue))
         '$indent  ${spec.name}: ${_scalar(value)}'
   ];
   if (lines.isEmpty) return;

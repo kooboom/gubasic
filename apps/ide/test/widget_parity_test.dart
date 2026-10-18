@@ -144,7 +144,8 @@ class _WidgetDriver implements ScriptDriver {
       GbButton(:final state) ||
       GbLabel(:final state) ||
       GbTextBox(:final state) ||
-      GbCheckBox(
+      GbCheckBox(:final state) ||
+      GbListBox(
         :final state,
       ) => state.name?.toLowerCase() == name.toLowerCase(),
       _ => false,
@@ -193,6 +194,23 @@ class _WidgetDriver implements ScriptDriver {
     }
     host.lastOutcome = null;
     await tester.enterText(field, value);
+    await tester.pump();
+    return host.lastOutcome;
+  }
+
+  @override
+  Future<EventOutcome?> select(String control, int index) async {
+    if (!session.formShown) return EventOutcome.blocked;
+    final box = tester.widget<GbListBox>(_control(control)).state;
+    if (index >= (box['Items'] as List<String>).length) {
+      throw StateError('$control has no item $index');
+    }
+    final item = find.byKey(gbListItemKey(box.name!, index));
+    await tester.ensureVisible(item);
+    if (item.hitTestable().evaluate().isEmpty) return EventOutcome.blocked;
+    if (box['ListIndex'] == index) return null;
+    host.lastOutcome = null;
+    await tester.tap(item);
     await tester.pump();
     return host.lastOutcome;
   }

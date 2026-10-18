@@ -112,7 +112,7 @@ class _FormDesignerState extends State<FormDesigner> {
       _readText = text;
       _read = readFormFile(text, name: _formName);
       // A new model each time, never changed: the designer only shows it.
-      _model = formModelOf(_read.form, onEvent: (_, _) {});
+      _model = formModelOf(_read.form, onEvent: (_, _) {}, designing: true);
       _modelVersion++;
       _showPreview();
     }

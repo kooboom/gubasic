@@ -9,6 +9,7 @@ GbFormModel formModelOf(
   FormFile form, {
   required GbEventSink onEvent,
   GbEventFilter? accepts,
+  bool designing = false,
 }) => GbFormModel(
   form: {
     for (final p in form.component.properties.values)
@@ -21,7 +22,7 @@ GbFormModel formModelOf(
         _kind(c.component.name),
         {
           for (final p in c.component.properties.values)
-            p.name: c.valueOf(p.name),
+            if (p.isStored) p.name: c.valueOf(p.name),
         },
         layer: switch (c.component.layer) {
           ComponentLayer.graphic => GbLayer.graphic,
@@ -31,6 +32,7 @@ GbFormModel formModelOf(
   ],
   onEvent: onEvent,
   accepts: accepts,
+  designing: designing,
 );
 
 GbControlKind _kind(String component) => switch (component.toLowerCase()) {
@@ -38,6 +40,7 @@ GbControlKind _kind(String component) => switch (component.toLowerCase()) {
   'label' => GbControlKind.label,
   'textbox' => GbControlKind.textBox,
   'checkbox' => GbControlKind.checkBox,
+  'listbox' => GbControlKind.listBox,
   _ => throw ArgumentError('no widget for component $component'),
 };
 

@@ -506,8 +506,11 @@ class _Analyzer {
       case MemberExpr():
         final t = _member(target, asCall: false, valueNeeded: true);
         final spec = _result.members[target];
-        if (spec != null && (spec.isMethod || spec.readOnly)) {
+        if (spec != null && spec.isMethod) {
           _reportAt(target, DiagnosticCode.notAssignable, [_text(target)]);
+          targetType = GbType.unknown;
+        } else if (spec != null && spec.readOnly) {
+          _reportAt(target, DiagnosticCode.readOnlyProperty, [_text(target)]);
           targetType = GbType.unknown;
         } else {
           targetType = t;

@@ -1,0 +1,48 @@
+Set lstCity.Items: [Seoul]
+Set lstCity.Items: [Seoul, Busan]
+Set lstCity.Items: [Seoul, Busan, Daegu]
+Debug.Print: 3 items, chosen -1, text []
+Debug.Print: item 1: Busan
+Set lstCity.ListIndex: 2
+Debug.Print: Changed: 2 [Daegu]
+Set lstCity.ListIndex: 2
+Debug.Print: same index again: no Changed
+> lstCity.Select 0
+Debug.Print: Changed: 0 [Seoul]
+> lstCity.Select 0
+> lstCity.Select 1
+Debug.Print: Changed: 1 [Busan]
+> btnRemove.Click
+Set lstCity.Items: [Busan, Daegu]
+Set lstCity.ListIndex: 0
+Debug.Print: Changed: 0 [Busan]
+Set lstCity.Items: [Daegu]
+Set lstCity.ListIndex: -1
+Debug.Print: Changed: -1 []
+Set lstCity.Items: []
+Debug.Print: 0 items
+> btnRefill.Click
+Set lstCity.Items: [Incheon]
+Set lstCity.Items: [Incheon, Gwangju]
+Set lstCity.ListIndex: 1
+Debug.Print: Changed: 1 [Gwangju]
+> btnClear.Click
+Set lstCity.Items: []
+Set lstCity.ListIndex: -1
+Debug.Print: Changed: -1 []
+Debug.Print: cleared: 0 items, chosen -1
+Set lstCity.Items: []
+> btnRefill.Click
+Set lstCity.Items: [Incheon]
+Set lstCity.Items: [Incheon, Gwangju]
+Set lstCity.ListIndex: 1
+Debug.Print: Changed: 1 [Gwangju]
+> btnObject.Click
+Set lstCity.Items: [Incheon]
+Set lstCity.ListIndex: -1
+Debug.Print: Changed: -1 []
+Set lstCity.ListIndex: 0
+Debug.Print: Changed: 0 [Incheon]
+Debug.Print: Incheon, 1
+> btnBad.Click
+Error R003 @ 49

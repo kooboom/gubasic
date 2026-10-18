@@ -137,7 +137,7 @@ class PropertiesPanel extends StatelessWidget {
                           onLeave: onLeave,
                         ),
                 ),
-                for (final p in component.properties.values)
+                for (final p in component.designProperties)
                   _row(
                     context,
                     p.name,

@@ -33,6 +33,15 @@ class TypeStep extends ScriptStep {
   final String value;
 }
 
+/// `lstCity.Select 2`: the user picks item 2 of a ListBox; its Changed
+/// runs if ListIndex changed (D46).
+class SelectStep extends ScriptStep {
+  const SelectStep(super.text, this.control, this.index);
+
+  final String control;
+  final int index;
+}
+
 /// `OK`: closes the open MsgBox.
 class OkStep extends ScriptStep {
   const OkStep(super.text);
@@ -53,6 +62,7 @@ class CloseStep extends ScriptStep {
 
 final _event = RegExp(r'^([A-Za-z][A-Za-z0-9_]*)\.([A-Za-z][A-Za-z0-9_]*)$');
 final _type = RegExp(r'^([A-Za-z][A-Za-z0-9_]*)\.Type\s+"((?:[^"]|"")*)"$');
+final _select = RegExp(r'^([A-Za-z][A-Za-z0-9_]*)\.Select\s+(\d+)$');
 final _answer = RegExp(r'^Answer\s+"((?:[^"]|"")*)"$');
 
 /// Reads an event script. Each line is one step; `'` starts a comment.
@@ -72,6 +82,8 @@ List<ScriptStep> parseEventScript(String text) {
       steps.add(CloseStep(line));
     } else if ((m = _answer.firstMatch(line)) != null) {
       steps.add(AnswerStep(line, m![1]!.replaceAll('""', '"')));
+    } else if ((m = _select.firstMatch(line)) != null) {
+      steps.add(SelectStep(line, m![1]!, int.parse(m[2]!)));
     } else if ((m = _type.firstMatch(line)) != null) {
       steps.add(TypeStep(line, m![1]!, m[2]!.replaceAll('""', '"')));
     } else if ((m = _event.firstMatch(line)) != null) {
@@ -134,7 +146,7 @@ class ScriptedHost implements FormHost {
     }
     for (final c in form.controls) {
       _components[c.name.toLowerCase()] = c.component.name;
-      for (final p in c.component.properties.values) {
+      for (final p in c.component.properties.values.where((p) => p.isStored)) {
         _properties[_key(c.name, p.name)] = c.valueOf(p.name);
       }
     }
@@ -239,6 +251,10 @@ abstract interface class ScriptDriver {
   /// it already was [value], so that nothing happens.
   Future<EventOutcome?> type(String control, String value);
 
+  /// The user picks item [index] of ListBox [control]. Null when it was
+  /// already chosen, so that nothing happens.
+  Future<EventOutcome?> select(String control, int index);
+
   /// Closes the open MsgBox; false if there is none.
   Future<bool> ok();
 
@@ -303,6 +319,9 @@ Future<List<String>> driveEventScript(
         _record(out, step.text, await driver.raise(control, event));
       case TypeStep(:final control, :final value):
         final outcome = await driver.type(control, value);
+        if (outcome != null) _record(out, step.text, outcome);
+      case SelectStep(:final control, :final index):
+        final outcome = await driver.select(control, index);
         if (outcome != null) _record(out, step.text, outcome);
       case OkStep():
         if (!await driver.ok()) {
@@ -373,6 +392,22 @@ class _HostDriver implements ScriptDriver {
     if (host.hasOpenDialog) return EventOutcome.blocked;
     if (host.getProperty(control, 'Text') == value) return null;
     host.userSets(control, 'Text', value);
+    return interpreter.raiseEvent(control, 'Changed');
+  }
+
+  @override
+  Future<EventOutcome?> select(String control, int index) async {
+    final items = host.getProperty(control, 'Items') as List<String>;
+    if (index >= items.length) {
+      throw StateError('$control has no item $index');
+    }
+    if (host.hasOpenDialog) return EventOutcome.blocked;
+    if (host.getProperty(control, 'ListIndex') == index) return null;
+    // A pick the program would ignore leaves the choice as it was.
+    if (interpreter.refusal(control, 'Changed') case final refused?) {
+      return refused;
+    }
+    host.userSets(control, 'ListIndex', index);
     return interpreter.raiseEvent(control, 'Changed');
   }
 
