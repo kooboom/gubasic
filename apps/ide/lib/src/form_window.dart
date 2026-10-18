@@ -10,6 +10,7 @@ GbFormModel formModelOf(
   required GbEventSink onEvent,
   GbEventFilter? accepts,
   bool designing = false,
+  GbPictureSource? pictures,
 }) => GbFormModel(
   form: {
     for (final p in form.component.properties.values)
@@ -33,6 +34,7 @@ GbFormModel formModelOf(
   onEvent: onEvent,
   accepts: accepts,
   designing: designing,
+  pictures: pictures,
 );
 
 GbControlKind _kind(String component) => switch (component.toLowerCase()) {
@@ -41,6 +43,7 @@ GbControlKind _kind(String component) => switch (component.toLowerCase()) {
   'textbox' => GbControlKind.textBox,
   'checkbox' => GbControlKind.checkBox,
   'listbox' => GbControlKind.listBox,
+  'image' => GbControlKind.image,
   _ => throw ArgumentError('no widget for component $component'),
 };
 

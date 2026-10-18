@@ -135,6 +135,8 @@ const Map<DiagnosticCode, String> koreanMessages = {
   DiagnosticCode.unknownMember: '{0} 타입에는 {1} 멤버가 없습니다. 철자를 확인해 주세요.',
   DiagnosticCode.unknownMemberDidYouMean:
       '{0} 타입에는 {1} 멤버가 없습니다. 비슷한 멤버로 {2} 멤버가 있으니 철자를 확인해 주세요.',
+  DiagnosticCode.unknownPictureInCode:
+      '"{0}" 그림은 이 프로젝트에 없어서, 실행하면 여기서 프로그램이 멈춥니다. 그림을 프로젝트에 넣거나 이름을 확인해 주세요.',
   DiagnosticCode.memberHasOtherName:
       '{0} 타입에는 {1} 멤버가 없습니다. GuBASIC에서는 이름이 달라서 {2} 멤버를 씁니다.',
   DiagnosticCode.notAssignable: '{0} 부분에는 값을 넣을 수 없습니다. '
@@ -189,6 +191,12 @@ const Map<DiagnosticCode, String> koreanMessages = {
       '시작 폼으로 정한 {0} 폼이 폼 목록에 없습니다. forms 목록에 추가하거나 목록에 있는 폼을 골라 주세요.',
   DiagnosticCode.propertyOutOfRange:
       '{0} 속성의 값은 {1} 이상 {2} 이하여야 합니다. 값을 확인해 주세요.',
+  DiagnosticCode.invalidPictureName: '"{0}" 이름은 그림 이름으로 쓸 수 없습니다. '
+      '그림 이름은 .png, .jpg, .jpeg, .gif로 끝나야 하고 / \\ : * ? " < > | 글자를 쓸 수 없습니다.',
+  DiagnosticCode.duplicatePicture: '"{0}" 그림은 "{1}" 그림({2}번 줄)과 대소문자만 다릅니다. '
+      'GuBASIC은 Windows, macOS처럼 둘을 같은 이름으로 보므로 한 프로젝트에 함께 둘 수 없습니다. 하나의 이름을 바꿔 주세요.',
+  DiagnosticCode.unknownPicture:
+      '프로젝트에 "{0}" 그림이 없습니다. 프로젝트의 그림에 넣거나 다른 그림을 골라 주세요.',
   DiagnosticCode.notDesignProperty: '{0} 속성은 폼 파일에 쓸 수 없습니다. '
       '프로그램이 실행될 때 정하거나 계산하는 속성입니다. 이 줄을 지우고, '
       '필요하면 코드(예: Form_Load)에서 정해 주세요.',
@@ -211,6 +219,8 @@ const Map<DiagnosticCode, String> koreanMessages = {
       '{0} 함수에 넘긴 값이 받을 수 있는 범위를 벗어났습니다. 인수를 확인해 주세요.',
   DiagnosticCode.settingsTooLarge: '이 프로그램의 설정이 65536자를 넘게 됩니다. '
       '저장하는 값을 줄이거나 짧게 해 주세요.',
+  DiagnosticCode.pictureNotFound:
+      '이 프로젝트에 "{0}" 그림이 없습니다. 그림을 프로젝트에 넣거나 이름을 확인해 주세요.',
   DiagnosticCode.settingsNotSaved: '설정을 저장하지 못했습니다({0}). '
       '설정을 보관하는 곳에 자리가 없을 수 있습니다.',
   DiagnosticCode.unhandledException:

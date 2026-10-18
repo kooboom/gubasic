@@ -256,6 +256,11 @@ enum DiagnosticCode {
   /// type, the member as written, GuBASIC's member(s).
   memberHasOtherName('A036'),
 
+  /// Text given to a picture property (`imgShape.Picture = "tri.png"`)
+  /// that is not a picture of the project: the program would stop there
+  /// (R013). Args: the text.
+  unknownPictureInCode('A037', DiagnosticSeverity.warning),
+
   // Form and project files (.form.yaml, .gbproj)
 
   /// The file is not in the expected layout (YAML syntax).
@@ -303,6 +308,18 @@ enum DiagnosticCode {
   /// runs (ListBox's ListIndex) or only reads it. Args: the property.
   notDesignProperty('F013'),
 
+  /// A project's picture with a name a picture cannot have. Args: the
+  /// name.
+  invalidPictureName('F014'),
+
+  /// Two pictures whose names differ only in the case of English letters
+  /// (or in how Hangul is encoded). Args: the second, the first, its line.
+  duplicatePicture('F015'),
+
+  /// A picture property naming a picture the project does not have.
+  /// Args: the name.
+  unknownPicture('F016'),
+
   // Run time (the interpreter)
 
   /// An Integer result outside the 64-bit range.
@@ -344,7 +361,11 @@ enum DiagnosticCode {
   settingsTooLarge('R011'),
 
   /// SaveSetting could not keep the settings. Args: what went wrong.
-  settingsNotSaved('R012');
+  settingsNotSaved('R012'),
+
+  /// A picture property set to a name the project has no picture of.
+  /// Args: the name.
+  pictureNotFound('R013');
 
   const DiagnosticCode(this.code, [this.severity = DiagnosticSeverity.error]);
 

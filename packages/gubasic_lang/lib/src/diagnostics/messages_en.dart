@@ -158,6 +158,9 @@ const Map<DiagnosticCode, String> englishMessages = {
       '{0} has no member named "{1}". Check the spelling.',
   DiagnosticCode.unknownMemberDidYouMean: '{0} has no member named "{1}". '
       'There is a similar member, "{2}"; check the spelling.',
+  DiagnosticCode.unknownPictureInCode: '"{0}" is not one of this project\'s '
+      'pictures, so the program will stop here when it runs. Add the picture '
+      'to the project, or check its name.',
   DiagnosticCode.memberHasOtherName: '{0} has no member named "{1}". '
       'GuBASIC calls it differently: use {2}.',
   DiagnosticCode.notAssignable: '"{0}" cannot be given a value. Only '
@@ -222,6 +225,14 @@ const Map<DiagnosticCode, String> englishMessages = {
       'list of forms. Add it to forms, or choose a form that is listed.',
   DiagnosticCode.propertyOutOfRange: 'The value of {0} must be from {1} '
       'to {2}. Check the value.',
+  DiagnosticCode.invalidPictureName: '"{0}" cannot be the name of a picture. '
+      'A picture\'s name ends in .png, .jpg, .jpeg or .gif and has none of '
+      '/ \\ : * ? " < > |.',
+  DiagnosticCode.duplicatePicture: '"{0}" differs from "{1}" (line {2}) only '
+      'in upper and lower case. GuBASIC does not tell them apart, as on '
+      'Windows and macOS, so a project cannot have both; rename one.',
+  DiagnosticCode.unknownPicture: 'The project has no picture "{0}". Add it '
+      'to the project\'s pictures, or choose another.',
   DiagnosticCode.notDesignProperty: '{0} cannot be set in the form file: it '
       'is set or worked out while the program runs. Remove this line, and '
       'set it in code if needed (for example in Form_Load).',
@@ -244,6 +255,8 @@ const Map<DiagnosticCode, String> englishMessages = {
       'accepts. Check the arguments.',
   DiagnosticCode.settingsTooLarge: 'The settings of this program would be '
       'longer than 65536 characters. Save fewer or shorter values.',
+  DiagnosticCode.pictureNotFound: 'This project has no picture "{0}". Add it '
+      'to the project, or check the name.',
   DiagnosticCode.settingsNotSaved: 'The setting could not be saved ({0}). '
       'There may be no room left where settings are kept.',
   DiagnosticCode.unhandledException: 'An error was thrown and not caught: '

@@ -1,0 +1,4 @@
+btnNext.Click
+imgShape.Click   ' R013, caught
+btnNext.Click
+imgShape.Click   ' an Image with no picture still takes clicks

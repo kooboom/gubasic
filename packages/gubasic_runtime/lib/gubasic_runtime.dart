@@ -8,6 +8,7 @@ export 'src/composing.dart';
 export 'src/dialogs.dart';
 export 'src/form_model.dart';
 export 'src/form_view.dart';
+export 'src/image.dart';
 export 'src/list_box.dart';
 export 'src/settings.dart';
 export 'src/text_box.dart';

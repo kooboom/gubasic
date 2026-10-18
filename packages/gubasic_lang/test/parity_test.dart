@@ -24,6 +24,8 @@ import 'interpreter/fake_host.dart';
 ///
 /// - NAME.form.yaml  its form
 /// - NAME.events     the event script: clicks, typing, dialog answers
+/// - NAME.pictures   the project's pictures, one name per line (optional;
+///                   only the names matter, D51)
 ///
 /// and its output echoes each step as "> step" (see runEventScript).
 ///
@@ -54,16 +56,23 @@ void main() {
       final settings = settingsFile.existsSync()
           ? settingsFile.readAsStringSync().trim()
           : null;
+      final picturesFile =
+          File(program.path.replaceFirst('.gbas', '.pictures'));
+      final pictures = picturesFile.existsSync()
+          ? picturesFile.readAsLinesSync().where((l) => l.isNotEmpty).toList()
+          : <String>[];
       final List<String> lines;
       if (formFile.existsSync()) {
-        final form = readFormFile(formFile.readAsStringSync(), name: 'Form1');
+        final form = readFormFile(formFile.readAsStringSync(),
+            name: 'Form1', pictures: pictures);
         expect(form.diagnostics, isEmpty);
         lines = await runEventScript(
             program.readAsStringSync(),
             form.form,
             File(program.path.replaceFirst('.gbas', '.events'))
                 .readAsStringSync(),
-            settings: settings);
+            settings: settings,
+            pictures: pictures);
       } else {
         final input = File(program.path.replaceFirst('.gbas', '.in'));
         final answers =

@@ -146,6 +146,7 @@ The analyzer checks names and types (§2.1, §3.2, §5.2). It runs even when the
 | A034 | A value given to a property the program can only read (`lstNames.ListCount = 3`, `names.Count = 0`) |
 | A035 | A member the type does not have, and a similar member it has (`lstCity.ListIndx`: "did you mean ListIndex") |
 | A036 | A member the type does not have, under the name other versions of BASIC use for a member GuBASIC calls differently (`btnOK.Text`: use `Caption`; DESIGN.md D50) |
+| A037 | **Warning.** Text given to a picture property that is not one of the project's pictures (`imgShape.Picture = "tri.png"`); the program would stop there (R013) (§11.1) |
 
 **Form and project files**
 
@@ -166,6 +167,9 @@ Form files and project files (§11.2, §11.3) are checked the same way: a proble
 | F011 | `startup` names a form that is not in `forms` |
 | F012 | An `Integer` property value outside its range (§11.1) |
 | F013 | A property the form file cannot set: the program sets it while it runs (`ListIndex`) or only reads it (§11.1) |
+| F014 | A picture of the project with a name a picture cannot have (§11.3) |
+| F015 | Two pictures of the project whose names differ only in case (§11.3) |
+| F016 | A picture property in a form file naming a picture the project does not have (§11.1) |
 
 **Run time**
 
@@ -185,6 +189,7 @@ Errors found while a program runs. Each stops the program and points at its line
 | R010 | An `Integer` property set to a value outside its range (§11.1) |
 | R011 | `SaveSetting` would make the program's settings longer than 65536 characters (§10) |
 | R012 | `SaveSetting` could not keep the settings, for example because the browser's storage is full (§10) |
+| R013 | A picture property set to a name the project has no picture of (§11.1) |
 
 ## 2. Types
 
@@ -599,6 +604,7 @@ End Sub
 | `Label` | `Caption` (`String`); `Left`, `Top`, `Width`, `Height` (`Integer`) | `Click` |
 | `TextBox` | `Text` (`String`); `Left`, `Top`, `Width`, `Height` (`Integer`) | `Changed` |
 | `CheckBox` | `Caption` (`String`); `Checked` (`Boolean`); `Left`, `Top`, `Width`, `Height` (`Integer`) | `Changed` |
+| `Image` | `Picture` (`String`, the name of one of the project's pictures); `Stretch` (`Boolean`); `Left`, `Top`, `Width`, `Height` (`Integer`) | `Click` |
 | `ListBox` | `ListIndex` (`Integer`, set only in code); `ListCount` (`Integer`), `Text` (`String`), both read only; `Left`, `Top`, `Width`, `Height` (`Integer`). Methods: `AddItem(item)`, `RemoveItem(index)`, `Clear()`, `List(index)` | `Changed` |
 
 - Each control is a component, defined with its default values in `components/NAME/component.yaml` (DESIGN.md §5). The table above lists the events with the default one first: the one a double-click in the designer creates.
@@ -609,6 +615,7 @@ End Sub
 - **`CheckBox.Changed`** runs after `Checked` changes: when the user clicks the box or its `Caption`, or when the program sets `Checked`. As with `TextBox.Changed`, a change by the program runs the handler right away, setting the same value again does not run it, and a handler that sets its own `Checked` is not started again by that. While a CheckBox's `Changed` is running, a click on that CheckBox is ignored and leaves it as it was, so the box shows what the handler is dealing with (§8.1). A CheckBox has two states; Visual Basic 6's third, grayed state is left out (DESIGN.md D44).
 - **A ListBox's items** are added in code, numbered from 0: `AddItem(item)` adds one at the end, `RemoveItem(index)` removes one, `Clear()` removes them all, and `List(index)` gives the text of one. `ListCount` is how many there are, `ListIndex` the number of the chosen one (−1 when nothing is chosen), and `Text` the chosen item's text (`""` when nothing is chosen). `ListCount` and `Text` can only be read (A034); `ListIndex` is set only in code, not in the form file (F013). A number that is not an item is a run-time error (R003); `ListIndex = -1` chooses nothing. Items cannot be entered in the designer yet (DESIGN.md D46).
 - **`ListBox.Changed`** runs whenever `ListIndex` changes: when the user picks another item, when the program sets `ListIndex` (right away, as part of the assignment, as for `TextBox.Changed`), and when `RemoveItem` or `Clear` moves or removes the chosen item, as part of that call. Removing an item above the chosen one moves the choice up by one, so the same item stays chosen; removing the chosen one, or `Clear`, leaves nothing chosen. Picking the chosen item again, or setting the same `ListIndex`, does not run it. While a ListBox's `Changed` is running, a pick in that ListBox is ignored and changes nothing (§8.1).
+- **An Image** shows one of the project's pictures (§11.3): `imgShape.Picture = "triangle.png"` shows it, `""` shows none. The name is compared as names in code are, without case (`"Triangle.PNG"` is `triangle.png`), and reads back with the project's spelling. A name the project has no picture of stops the program (R013); written as text in the code, the analyzer warns first (A037), and in a form file it is F016. With `Stretch = False` (the default) the whole picture is fitted inside the control, keeping its proportions; with `True` it fills the control and may look squeezed. Unlike Visual Basic 6, whose Image grows or shrinks to its picture when `Stretch` is False ([Microsoft](https://learn.microsoft.com/en-us/previous-versions/visualstudio/visual-basic-6/aa242027(v=vs.60))), the control keeps the size it was drawn at. An Image is drawn under the other controls, as a Label is (DESIGN.md D41), and takes clicks over its whole area, picture or not.
 - **A click while a character is being composed.** Before a click reaches the program, the characters still being composed in any TextBox are committed. The order is always: the characters are committed, `TextBox.Changed` runs, then `Click` runs (or, for a click on a CheckBox or a ListBox, its `Changed`). So if the user types 한글 and clicks a button straight away, without a space, `txtName.Text` in the `Click` handler is already 한글.
 
 ### 11.2 Form files
@@ -649,15 +656,19 @@ controls:
 A project is a `.gbproj` file with its forms next to it:
 
 ```yaml
-formatVersion: 1
-name: Hello
+formatVersion: 2
+name: Shapes
 startup: Form1
 forms:
   - Form1
+pictures:
+  - triangle.png
+  - circle.png
 ```
 
 - `forms` lists the forms, each a pair of files as in §11.2. At least one is needed.
 - `startup` is the form the program starts with; without it, the first form in `forms`.
+- `pictures` lists the project's pictures, which are files in its `pictures/` folder: `pictures/triangle.png`. Only PNG, JPEG and GIF pictures are taken (`.png`, `.jpg`, `.jpeg`, `.gif`), and a name cannot have `/ \ : * ? " < > |` (F014). Names are compared without the case of English letters, and Hangul as syllables, the same on every platform: so a project cannot have two pictures whose names differ only in case (F015), as Windows and macOS could not keep both in one folder. A project with pictures is written as `formatVersion: 2`, which an older GuBASIC refuses to open rather than lose its pictures; one without is still version 1 (DESIGN.md D51).
 - [examples/hello](../examples/hello) is the README example as a project.
 
 ## 12. Open questions

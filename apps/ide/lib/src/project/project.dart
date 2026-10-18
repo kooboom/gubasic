@@ -34,12 +34,17 @@ class Project {
       if (!read.hasErrors && formName != null) {
         final formFile = '$formName.form.yaml';
         final codeFile = '$formName.gbas';
-        final form = readFormFile(files[formFile] ?? '', name: formName);
+        final pictures = read.project.pictures;
+        final form = readFormFile(
+          files[formFile] ?? '',
+          name: formName,
+          pictures: pictures,
+        );
         diagnostics.addAll([
           for (final d in form.diagnostics) FileDiagnostic(formFile, d),
         ]);
         final source = files[codeFile] ?? '';
-        final program = compile(source, form: form.form);
+        final program = compile(source, form: form.form, pictures: pictures);
         diagnostics.addAll([
           for (final d in program.diagnostics) FileDiagnostic(codeFile, d),
         ]);

@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 
 /// The kinds of built-in controls (components/NAME/component.yaml).
-enum GbControlKind { form, button, label, textBox, checkBox, listBox }
+enum GbControlKind { form, button, label, textBox, checkBox, listBox, image }
 
 /// The layer a control is drawn in, its component.yaml's `layer`
 /// (docs/DESIGN.md D41): [graphic] controls (Label) under all the others,
@@ -51,6 +51,11 @@ typedef GbEventSink = void Function(String? control, String event);
 /// changes nothing (docs/DESIGN.md D44).
 typedef GbEventFilter = bool Function(String? control, String event);
 
+/// The bytes of the project's picture [name] (PNG, JPEG or GIF), or null
+/// when there is none. The IDE looks it up as the language does, in any
+/// case (docs/DESIGN.md D51); a generated app from its assets.
+typedef GbPictureSource = Uint8List? Function(String name);
+
 /// A form and its controls while a program runs. The interpreter (through
 /// the IDE) or a generated app reads and sets properties here; the widgets
 /// show them and report what the user does through [onEvent].
@@ -61,7 +66,9 @@ class GbFormModel {
     required this.onEvent,
     GbEventFilter? accepts,
     this.designing = false,
-  }) : accepts = accepts ?? _acceptAll,
+    GbPictureSource? pictures,
+  }) : pictures = pictures ?? _noPictures,
+       accepts = accepts ?? _acceptAll,
        form = GbControlState(null, GbControlKind.form, form),
        controls = List.unmodifiable(controls);
 
@@ -76,7 +83,11 @@ class GbFormModel {
   /// ListBox then shows its name, so that it can be seen.
   final bool designing;
 
+  /// The bytes of the project's picture named by an Image's `Picture`.
+  final GbPictureSource pictures;
+
   static bool _acceptAll(String? control, String event) => true;
+  static Uint8List? _noPictures(String name) => null;
 
   /// [controls] in the order they are drawn, the last on top: the
   /// graphic layer first, each layer in the form file's order (D41).

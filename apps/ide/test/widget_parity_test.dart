@@ -31,13 +31,19 @@ void main() {
     final base = script.path.substring(0, script.path.length - 7);
     final name = base.split('/').last;
     testWidgets('$name runs the same in the run window', (tester) async {
+      final picturesFile = File('$base.pictures');
+      final pictures = picturesFile.existsSync()
+          ? picturesFile.readAsLinesSync().where((l) => l.isNotEmpty).toList()
+          : <String>[];
       final form = readFormFile(
         File('$base.form.yaml').readAsStringSync(),
         name: 'Form1',
+        pictures: pictures,
       ).form;
       final program = compile(
         File('$base.gbas').readAsStringSync(),
         form: form,
+        pictures: pictures,
       );
       final expected = File('$base.out').readAsStringSync().trimRight();
       final settings = File('$base.settings');
@@ -156,9 +162,8 @@ class _WidgetDriver implements ScriptDriver {
       GbLabel(:final state) ||
       GbTextBox(:final state) ||
       GbCheckBox(:final state) ||
-      GbListBox(
-        :final state,
-      ) => state.name?.toLowerCase() == name.toLowerCase(),
+      GbListBox(:final state) ||
+      GbImage(:final state) => state.name?.toLowerCase() == name.toLowerCase(),
       _ => false,
     },
   );

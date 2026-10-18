@@ -27,11 +27,11 @@ void main(List<String> args) {
     ..writeln()
     ..writeln(
         '/// (name, program, InputBox answers, expected output, form file,')
-    ..writeln('/// event script, saved settings); the form file and the event')
-    ..writeln('/// script are null without a form, the settings without')
-    ..writeln('/// NAME.settings.')
+    ..writeln('/// event script, saved settings, pictures); the form file and')
+    ..writeln('/// the event script are null without a form, the settings')
+    ..writeln('/// without NAME.settings; the pictures are NAME.pictures.')
     ..writeln('const parityCases = <(String, String, List<String>, String, '
-        'String?, String?, String?)>[');
+        'String?, String?, String?, List<String>)>[');
   for (final p in programs) {
     final name = p.uri.pathSegments.last.replaceFirst('.gbas', '');
     final input = read(p.path.replaceFirst('.gbas', '.in'));
@@ -50,6 +50,8 @@ void main(List<String> args) {
           '    ${jsonEncode(read(p.path.replaceFirst('.gbas', '.events')))},')
       ..writeln(
           '    ${jsonEncode(read(p.path.replaceFirst('.gbas', '.settings'))?.trim())},')
+      ..writeln(
+          '    ${jsonEncode(const LineSplitter().convert(read(p.path.replaceFirst('.gbas', '.pictures')) ?? '').where((l) => l.isNotEmpty).toList())},')
       ..writeln('  ),');
   }
   out.writeln('];');

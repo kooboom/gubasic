@@ -187,6 +187,7 @@ void main() {
         'Double',
         'Exception',
         'Form',
+        'Image',
         'Integer',
         'Label',
         'List',

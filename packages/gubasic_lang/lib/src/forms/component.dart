@@ -21,6 +21,7 @@ class PropertySpec {
     bool designTime = true,
     this.readOnly = false,
     this.internal = false,
+    this.picture = false,
   }) : designTime = designTime && !readOnly && !internal;
 
   final String name;
@@ -55,6 +56,11 @@ class PropertySpec {
   /// State the runtime keeps for the component's code, which programs do
   /// not see as a property (ListBox's items, read through its methods).
   final bool internal;
+
+  /// A String property that names one of the project's pictures, or ""
+  /// for none (Image's Picture, D51): the form file and the program may
+  /// give it only those names (F016, A037, R013), in any case.
+  final bool picture;
 
   /// Whether a host keeps its value: all but the [readOnly] ones.
   bool get isStored => !readOnly;
@@ -181,9 +187,13 @@ ComponentSpec readComponentFile(String text) {
     final internal = p['internal'] ?? false;
     final readOnly = p['readOnly'] ?? false;
     final designTime = p['designTime'] ?? true;
-    if (internal is! bool || readOnly is! bool || designTime is! bool) {
-      throw FormatException('$name: internal, readOnly and designTime are '
-          'true or false');
+    final picture = p['picture'] ?? false;
+    if (internal is! bool ||
+        readOnly is! bool ||
+        designTime is! bool ||
+        picture is! bool) {
+      throw FormatException('$name: internal, readOnly, designTime and '
+          'picture are true or false');
     }
     final type = typeName == 'list(of string)' && internal
         ? const ListType(GbType.string)
@@ -228,7 +238,12 @@ ComponentSpec readComponentFile(String text) {
         changeEvent: changeEvent as String?,
         designTime: designTime,
         readOnly: readOnly,
-        internal: internal);
+        internal: internal,
+        picture: picture);
+    if (picture && (type != GbType.string || spec.defaultValue != '')) {
+      throw FormatException('$name: a picture property is a String, '
+          'empty by default');
+    }
     if (!spec.accepts(spec.defaultValue)) {
       throw FormatException('$name: default is out of range');
     }

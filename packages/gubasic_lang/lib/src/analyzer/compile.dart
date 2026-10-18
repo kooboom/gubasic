@@ -25,8 +25,13 @@ class CompileResult {
 }
 
 /// Lexes, parses and analyzes [source]; [form] is the form the code
-/// belongs to, if any (see [analyze]).
-CompileResult compile(String source, {FormFile? form}) {
+/// belongs to, if any, and [pictures] the project's pictures (see
+/// [analyze]).
+CompileResult compile(
+  String source, {
+  FormFile? form,
+  List<String>? pictures,
+}) {
   final parsed = parse(source);
-  return CompileResult(parsed, analyze(parsed, form: form));
+  return CompileResult(parsed, analyze(parsed, form: form, pictures: pictures));
 }

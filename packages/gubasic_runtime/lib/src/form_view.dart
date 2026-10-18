@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'check_box.dart';
 import 'form_model.dart';
+import 'image.dart';
 import 'list_box.dart';
 import 'text_box.dart';
 
@@ -55,6 +56,7 @@ class _GbPlaced extends StatelessWidget {
       GbControlKind.textBox => GbTextBox(model: model, state: state),
       GbControlKind.checkBox => GbCheckBox(model: model, state: state),
       GbControlKind.listBox => GbListBox(model: model, state: state),
+      GbControlKind.image => GbImage(model: model, state: state),
       GbControlKind.form => throw ArgumentError('a form inside a form'),
     },
   );

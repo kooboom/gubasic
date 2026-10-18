@@ -43,13 +43,13 @@ void main() {
     expect(parityCases.length, greaterThanOrEqualTo(12));
   });
 
-  for (final (name, source, answers, expected, form, events, settings)
+  for (final (name, source, answers, expected, form, events, settings, pictures)
       in parityCases) {
     if (form != null) {
       test(name, () async {
-        final lines = await runEventScript(
-            source, readFormFile(form, name: 'Form1').form, events!,
-            settings: settings);
+        final lines = await runEventScript(source,
+            readFormFile(form, name: 'Form1', pictures: pictures).form, events!,
+            settings: settings, pictures: pictures);
         expect('${lines.join('\n')}\n', expected);
       });
       continue;

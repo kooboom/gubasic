@@ -3,6 +3,7 @@ import '../ast/line_map.dart';
 import '../diagnostics/diagnostic.dart';
 import '../forms/component.dart';
 import '../forms/form_file.dart';
+import '../forms/pictures.dart';
 import '../lexer/keyword.dart';
 import '../parser/parse_result.dart';
 import 'analysis_result.dart';
@@ -21,8 +22,16 @@ import 'types.dart';
 /// Never throws. Runs even when the parser found errors: anything it cannot
 /// work out gets the unknown type, which is never checked again, so one
 /// mistake is reported once.
-AnalysisResult analyze(ParseResult parsed, {FormFile? form}) =>
-    _Analyzer(parsed, form).run();
+///
+/// [pictures] are the project's pictures: text given to a picture property
+/// that names none of them is reported (A037). Without them it is not
+/// checked.
+AnalysisResult analyze(
+  ParseResult parsed, {
+  FormFile? form,
+  List<String>? pictures,
+}) =>
+    _Analyzer(parsed, form, pictures).run();
 
 /// A procedure being analyzed.
 class _ProcedureContext {
@@ -48,7 +57,7 @@ class _ProcedureContext {
 }
 
 class _Analyzer {
-  _Analyzer(this.parsed, this.form)
+  _Analyzer(this.parsed, this.form, List<String>? pictures)
       : _lines = LineMap(parsed.source),
         _builtins = Scope(ScopeKind.builtins, null) {
     for (final f in builtinFunctions.values) {
@@ -74,8 +83,14 @@ class _Analyzer {
       }
     }
     _file = Scope(ScopeKind.file, outer);
-    _result =
-        AnalysisResult(diagnostics: _diagnostics, fileScope: _file, form: form);
+    _result = AnalysisResult(
+      diagnostics: _diagnostics,
+      fileScope: _file,
+      form: form,
+      pictures: pictures == null
+          ? null
+          : {for (final p in pictures) pictureKey(p): p},
+    );
   }
 
   final ParseResult parsed;
@@ -516,6 +531,7 @@ class _Analyzer {
           targetType = GbType.unknown;
         } else {
           targetType = t;
+          _pictureName(target, s.value);
         }
       case InvokeExpr():
         final t = _invoke(target, valueNeeded: true);
@@ -532,6 +548,21 @@ class _Analyzer {
         targetType = GbType.unknown;
     }
     _expect(s.value, targetType);
+  }
+
+  /// Warns when text that names no picture of the project is given to a
+  /// picture property (A037): the program would stop there (R013).
+  void _pictureName(MemberExpr target, Expr value) {
+    final pictures = _result.pictures;
+    final type = _result.types[target.target];
+    if (pictures == null || value is! StringLiteral || type is! ControlType) {
+      return;
+    }
+    final property = type.component.properties[target.name.name.toLowerCase()];
+    if (property == null || !property.picture || value.value.isEmpty) return;
+    if (!pictures.containsKey(pictureKey(value.value))) {
+      _reportAt(value, DiagnosticCode.unknownPictureInCode, [value.value]);
+    }
   }
 
   void _expressionStatement(Expr e) {

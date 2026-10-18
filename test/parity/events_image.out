@@ -1,0 +1,18 @@
+Debug.Print: Picture: triangle.png
+Debug.Print: Stretch: False
+> btnNext.Click
+Set imgShape.Picture: circle.png
+Set imgShape.Stretch: True
+Debug.Print: Picture: [circle.png] Stretch: True
+> imgShape.Click
+Debug.Print: Caught: This project has no picture "square.png". Add it to the project, or check the name.
+Debug.Print: Still: [circle.png]
+> btnNext.Click
+Set imgShape.Picture: 
+Set imgShape.Stretch: False
+Debug.Print: Picture: [] Stretch: False
+> imgShape.Click
+Debug.Print: Caught: This project has no picture "square.png". Add it to the project, or check the name.
+Debug.Print: Still: []
+Still open
+Closed

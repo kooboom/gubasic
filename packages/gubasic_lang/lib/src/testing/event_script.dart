@@ -289,10 +289,12 @@ abstract interface class ScriptDriver {
 
 /// Runs [source] with [form] and drives it with [script] (an event
 /// script) on a [ScriptedHost]. See [driveEventScript] for the transcript.
+///
+/// [pictures] are the project's pictures (a test's NAME.pictures).
 Future<List<String>> runEventScript(String source, FormFile form, String script,
-    {String? settings}) async {
+    {String? settings, List<String> pictures = const []}) async {
   final steps = parseEventScript(script);
-  final program = compile(source, form: form);
+  final program = compile(source, form: form, pictures: pictures);
   if (program.hasErrors) {
     return [
       for (final d in program.diagnostics)

@@ -1,0 +1,26 @@
+# A picture from the project (docs/DESIGN.md D51). Picture names one of
+# the project's pictures (pictures/ in its folder), in any case; "" shows
+# none. Stretch: True fills the control, maybe changing the picture's
+# proportions; False (the default) fits the whole picture inside, keeping
+# them. Unlike Visual Basic 6, the control never changes its own size to
+# the picture's. Drawn under the other controls, like a Label.
+name: Image
+version: 1
+visual: true
+layer: graphic
+defaultEvent: Click
+properties:
+  - { name: Picture, type: String, default: "", picture: true }
+  - { name: Stretch, type: Boolean, default: false }
+  - { name: Left, type: Integer, default: 0 }
+  - { name: Top, type: Integer, default: 0 }
+  - { name: Width, type: Integer, min: 0, default: 120 }
+  - { name: Height, type: Integer, min: 0, default: 120 }
+events:
+  - Click()
+methods: []
+# Names other versions of BASIC use, pointed to GuBASIC's (A036,
+# docs/DESIGN.md D50).
+otherNames:
+  Image: Picture
+  SizeMode: Stretch

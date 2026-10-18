@@ -15,6 +15,7 @@ import '../ast/line_map.dart';
 import '../diagnostics/diagnostic.dart';
 import '../diagnostics/messages_en.dart';
 import '../forms/component.dart';
+import '../forms/pictures.dart';
 import '../lexer/keyword.dart';
 import 'checked_math.dart';
 import 'host.dart';
@@ -882,7 +883,13 @@ class Interpreter {
       // Only through an Object: the analyzer reports it otherwise (A034).
       _fail(DiagnosticCode.memberNotFound, e, [e.name.name, c.component.name]);
     }
-    final v = _propertyValue(spec, value, e);
+    var v = _propertyValue(spec, value, e);
+    if (spec.picture && v is String && v.isNotEmpty) {
+      // Any case names the picture; the property keeps the project's
+      // spelling (D51).
+      v = _a.pictures?[pictureKey(v)] ??
+          _fail(DiagnosticCode.pictureNotFound, e, [v]);
+    }
     if (c.component.name == 'ListBox' && spec.name == 'ListIndex') {
       final count = _items(c).length;
       if ((v as int) >= count) {

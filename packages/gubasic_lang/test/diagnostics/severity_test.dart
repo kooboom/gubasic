@@ -10,6 +10,8 @@ void main() {
       DiagnosticCode.localHidesField,
       DiagnosticCode.localHidesControl,
       DiagnosticCode.unknownKey,
+      // The line may never run, and the picture may be added later (D51).
+      DiagnosticCode.unknownPictureInCode,
     };
     for (final code in DiagnosticCode.values) {
       expect(

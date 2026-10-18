@@ -1,0 +1,15 @@
+formatVersion: 1
+properties:
+  Caption: Shapes
+controls:
+  - name: imgShape
+    type: Image
+    properties:
+      Picture: Triangle.png
+      Width: 96
+      Height: 96
+  - name: btnNext
+    type: Button
+    properties:
+      Caption: Next
+      Left: 120

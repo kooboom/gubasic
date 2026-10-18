@@ -28,11 +28,16 @@ class AnalysisResult {
     required this.diagnostics,
     required this.fileScope,
     this.form,
+    this.pictures,
   });
 
   /// The form the code belongs to, or null for code without a form (the
   /// playground).
   final FormFile? form;
+
+  /// The project's pictures by [pictureKey], each with the project's
+  /// spelling; null when they are not known (code without a project).
+  final Map<String, String>? pictures;
 
   /// Analyzer diagnostics only (A codes).
   final List<Diagnostic> diagnostics;

@@ -1,0 +1,27 @@
+' Image: Picture names a picture of the project in any case and keeps
+' the project's spelling; "" shows none; a name the project does not
+' have stops the program (R013). Click runs as for a Label.
+Sub Form_Load()
+    Debug.Print("Picture: " & imgShape.Picture)
+    Debug.Print("Stretch: " & imgShape.Stretch)
+End Sub
+
+Sub btnNext_Click()
+    If imgShape.Picture = "triangle.png" Then
+        imgShape.Picture = "CIRCLE.PNG"
+    Else
+        imgShape.Picture = ""
+    End If
+    imgShape.Stretch = Not imgShape.Stretch
+    Debug.Print("Picture: [" & imgShape.Picture & "] Stretch: " & imgShape.Stretch)
+End Sub
+
+Sub imgShape_Click()
+    Dim name As String = "square.png"
+    Try
+        imgShape.Picture = name
+    Catch ex As Exception
+        Debug.Print("Caught: " & ex.Message)
+    End Try
+    Debug.Print("Still: [" & imgShape.Picture & "]")
+End Sub

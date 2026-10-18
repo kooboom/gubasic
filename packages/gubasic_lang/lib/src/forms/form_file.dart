@@ -3,6 +3,7 @@ import 'package:yaml/yaml.dart';
 import '../analyzer/types.dart';
 import '../diagnostics/diagnostic.dart';
 import 'component.dart';
+import 'pictures.dart';
 import 'yaml_reader.dart';
 
 /// The newest form file layout this GuBASIC reads (docs/LANGUAGE.md §11.2).
@@ -78,8 +79,18 @@ class FormFileResult {
 
 /// Reads a form file. [name] is the form's name, from the file name.
 /// Never throws: problems are F diagnostics, and everything else is read.
-FormFileResult readFormFile(String text, {required String name}) {
+///
+/// [pictures] are the project's pictures: a picture property must name
+/// one of them, in any case (F016), and is read with the project's
+/// spelling. Without them (a form read on its own) any name is taken.
+FormFileResult readFormFile(
+  String text, {
+  required String name,
+  List<String>? pictures,
+}) {
   final r = YamlReader();
+  final pictureNames =
+      pictures == null ? null : {for (final p in pictures) pictureKey(p): p};
   final properties = <String, Object>{};
   final controls = <ControlDecl>[];
   final result = FormFileResult(
@@ -93,7 +104,7 @@ FormFileResult readFormFile(String text, {required String name}) {
 
   final formProps = top['properties'];
   if (formProps != null) {
-    _properties(r, formProps, formComponent, properties);
+    _properties(r, formProps, formComponent, properties, pictureNames);
   }
 
   final list = top['controls'] == null
@@ -143,7 +154,7 @@ FormFileResult readFormFile(String text, {required String name}) {
 
     final values = <String, Object>{};
     if (component != null && keys['properties'] != null) {
-      _properties(r, keys['properties']!, component, values);
+      _properties(r, keys['properties']!, component, values, pictureNames);
     }
     if (controlName != null && component != null) {
       controls.add(ControlDecl(
@@ -163,7 +174,7 @@ String _controlTypeNames() => [
 
 /// Reads a `properties:` map for [component] into [into].
 void _properties(YamlReader r, YamlNode node, ComponentSpec component,
-    Map<String, Object> into) {
+    Map<String, Object> into, Map<String, String>? pictures) {
   final map = r.map(node, 'properties');
   if (map == null) return;
   for (final MapEntry(:key, :value) in map.nodes.entries) {
@@ -191,6 +202,20 @@ void _properties(YamlReader r, YamlNode node, ComponentSpec component,
     if (!spec.accepts(v)) {
       r.report(value.span, DiagnosticCode.propertyOutOfRange,
           [spec.name, '${spec.min}', '${spec.max}']);
+      continue;
+    }
+    if (spec.picture && v is String && v.isNotEmpty) {
+      final picture = composeHangul(v);
+      if (pictures != null) {
+        final known = pictures[pictureKey(picture)];
+        if (known == null) {
+          r.report(value.span, DiagnosticCode.unknownPicture, [picture]);
+          continue;
+        }
+        into[spec.name] = known;
+        continue;
+      }
+      into[spec.name] = picture;
       continue;
     }
     into[spec.name] = v;

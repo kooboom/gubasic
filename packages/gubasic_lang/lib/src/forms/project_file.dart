@@ -1,19 +1,32 @@
 import 'package:yaml/yaml.dart';
 
 import '../diagnostics/diagnostic.dart';
+import 'pictures.dart';
 import 'yaml_reader.dart';
 
 /// The newest project file layout this GuBASIC reads
-/// (docs/LANGUAGE.md §11.3).
-const projectFileVersion = 1;
+/// (docs/LANGUAGE.md §11.3). Version 2 added `pictures`; a project
+/// without pictures is still written as version 1, which older GuBASICs
+/// read, and one with pictures as 2, which they refuse (F003) rather than
+/// drop its pictures when saving (D51).
+const projectFileVersion = 2;
 
 /// A project (`App.gbproj`): its name, its forms and the one it starts
-/// with. Form `F` lives in `F.form.yaml` and `F.gbas` next to it.
+/// with, and its pictures. Form `F` lives in `F.form.yaml` and `F.gbas`
+/// next to it; picture `P` in `pictures/P`.
 class ProjectFile {
-  ProjectFile({required this.name, required this.forms, this.startup});
+  ProjectFile({
+    required this.name,
+    required this.forms,
+    this.startup,
+    this.pictures = const [],
+  });
 
   final String name;
   final List<String> forms;
+
+  /// The pictures' file names, as written, with Hangul as syllables.
+  final List<String> pictures;
 
   /// The startup form as written, or null for the first form.
   final String? startup;
@@ -43,14 +56,18 @@ class ProjectFileResult {
 ProjectFileResult readProjectFile(String text) {
   final r = YamlReader();
   final forms = <String>[];
+  final pictures = <String>[];
   var name = '';
   String? startup;
   ProjectFileResult result() => ProjectFileResult(
-      ProjectFile(name: name, forms: forms, startup: startup), r.diagnostics);
+      ProjectFile(
+          name: name, forms: forms, startup: startup, pictures: pictures),
+      r.diagnostics);
 
   final doc = r.load(text);
   if (doc == null) return result();
-  final top = r.entries(doc, {'formatversion', 'name', 'startup', 'forms'});
+  final top =
+      r.entries(doc, {'formatversion', 'name', 'startup', 'forms', 'pictures'});
   if (!r.checkVersion(doc, top, projectFileVersion)) return result();
 
   if (top['name'] != null) {
@@ -76,6 +93,29 @@ ProjectFileResult readProjectFile(String text) {
   if (list != null && list.nodes.isEmpty) {
     r.report(top['forms']!.span, DiagnosticCode.wrongValueForm,
         ['forms', '- Form1']);
+  }
+
+  final pictureList = top['pictures'] == null
+      ? null
+      : r.list(top['pictures']!, 'pictures', '- triangle.png');
+  final pictureLines = <String, (String, int)>{};
+  for (final node in pictureList?.nodes ?? const <YamlNode>[]) {
+    final value = node.value;
+    final picture =
+        composeHangul(node is YamlScalar && value != null ? '$value' : '');
+    if (pictureNameProblem(picture) != null) {
+      r.report(node.span, DiagnosticCode.invalidPictureName, [picture]);
+      continue;
+    }
+    final line = node.span.start.line + 1;
+    final first = pictureLines[pictureKey(picture)];
+    if (first != null) {
+      r.report(node.span, DiagnosticCode.duplicatePicture,
+          [picture, first.$1, '${first.$2}']);
+      continue;
+    }
+    pictureLines[pictureKey(picture)] = (picture, line);
+    pictures.add(picture);
   }
 
   final startupNode = top['startup'];

@@ -2,11 +2,19 @@
 // Do not edit by hand.
 
 /// (name, program, InputBox answers, expected output, form file,
-/// event script, saved settings); the form file and the event
-/// script are null without a form, the settings without
-/// NAME.settings.
-const parityCases =
-    <(String, String, List<String>, String, String?, String?, String?)>[
+/// event script, saved settings, pictures); the form file and
+/// the event script are null without a form, the settings
+/// without NAME.settings; the pictures are NAME.pictures.
+const parityCases = <(
+  String,
+  String,
+  List<String>,
+  String,
+  String?,
+  String?,
+  String?,
+  List<String>
+)>[
   (
     "arithmetic",
     "' Integer and Double arithmetic, operator results, precedence.\nSub Main()\n    Debug.Print(7 + 3 * 2)\n    Debug.Print(7 / 2)\n    Debug.Print(7 \\ 2)\n    Debug.Print(-7 \\ 2)\n    Debug.Print(7 Mod 3)\n    Debug.Print(-7 Mod 3)\n    Debug.Print(7.5 Mod 2)\n    Debug.Print(2 ^ 10)\n    Debug.Print(2 ^ 3 ^ 2)\n    Debug.Print(-2 ^ 2)\n    Debug.Print(1 + 2 * 3 ^ 2)\n    Debug.Print(10 / 4 * 2)\n    Debug.Print(0.1 + 0.2)\n    Debug.Print(1 / 3)\n    Debug.Print(10.0 ^ 20 * 10)\n    Debug.Print(10.0 ^ 400)\nEnd Sub\n",
@@ -15,6 +23,7 @@ const parityCases =
     null,
     null,
     null,
+    [],
   ),
   (
     "big_integers",
@@ -24,6 +33,7 @@ const parityCases =
     null,
     null,
     null,
+    [],
   ),
   (
     "conditions",
@@ -33,6 +43,7 @@ const parityCases =
     null,
     null,
     null,
+    [],
   ),
   (
     "dialogs",
@@ -42,6 +53,7 @@ const parityCases =
     null,
     null,
     null,
+    [],
   ),
   (
     "divide_by_zero",
@@ -51,6 +63,7 @@ const parityCases =
     null,
     null,
     null,
+    [],
   ),
   (
     "end_statement",
@@ -60,6 +73,7 @@ const parityCases =
     null,
     null,
     null,
+    [],
   ),
   (
     "events_changed",
@@ -69,6 +83,7 @@ const parityCases =
     "formatVersion: 1\ncontrols:\n  - { name: txtName, type: TextBox }\n  - { name: lblEcho, type: Label, properties: { Top: 40 } }\n  - { name: btnObject, type: Button, properties: { Top: 80 } }\n",
     "txtName.Type \"lee\"     ' the user types: Changed runs\ntxtName.Type \"LEE\"     ' no change, no Changed\nbtnObject.Click\nClose\n",
     null,
+    [],
   ),
   (
     "events_checkbox",
@@ -78,6 +93,7 @@ const parityCases =
     "formatVersion: 1\ncontrols:\n  - { name: chkShow, type: CheckBox, properties: { Caption: Show } }\n  - { name: chkOff, type: CheckBox, properties: { Caption: Off, Top: 40 } }\n  - { name: chkWait, type: CheckBox, properties: { Caption: Wait, Top: 80 } }\n  - name: chkLate\n    type: CheckBox\n    properties: { Caption: Late, Top: 120, Checked: true }\n  - { name: lblState, type: Label, properties: { Top: 160 } }\n  - { name: btnGo, type: Button, properties: { Top: 200 } }\n  - { name: btnObject, type: Button, properties: { Top: 240 } }\n",
     "chkShow.Click       ' the user unchecks it: Changed runs\nchkOff.Click        ' checks it; its handler unchecks it again\nchkWait.Click       ' Changed waits in DoEvents\nchkWait.Click       ' ignored, and the box stays checked\nbtnGo.Click\nchkLate.Click       ' no handler: it only changes\nbtnObject.Click\nClose\n",
     null,
+    [],
   ),
   (
     "events_end",
@@ -87,6 +103,7 @@ const parityCases =
     "formatVersion: 1\ncontrols:\n  - { name: btnWait, type: Button }\n  - { name: btnEnd, type: Button, properties: { Top: 40 } }\n",
     "btnWait.Click\nbtnEnd.Click\n",
     null,
+    [],
   ),
   (
     "events_error",
@@ -96,6 +113,17 @@ const parityCases =
     "formatVersion: 1\ncontrols:\n  - { name: btnSize, type: Button }\n  - { name: btnBad, type: Button, properties: { Top: 40 } }\n",
     "btnSize.Click\nbtnBad.Click\nbtnSize.Click     ' not run: the program has stopped\n",
     null,
+    [],
+  ),
+  (
+    "events_image",
+    "' Image: Picture names a picture of the project in any case and keeps\n' the project's spelling; \"\" shows none; a name the project does not\n' have stops the program (R013). Click runs as for a Label.\nSub Form_Load()\n    Debug.Print(\"Picture: \" & imgShape.Picture)\n    Debug.Print(\"Stretch: \" & imgShape.Stretch)\nEnd Sub\n\nSub btnNext_Click()\n    If imgShape.Picture = \"triangle.png\" Then\n        imgShape.Picture = \"CIRCLE.PNG\"\n    Else\n        imgShape.Picture = \"\"\n    End If\n    imgShape.Stretch = Not imgShape.Stretch\n    Debug.Print(\"Picture: [\" & imgShape.Picture & \"] Stretch: \" & imgShape.Stretch)\nEnd Sub\n\nSub imgShape_Click()\n    Dim name As String = \"square.png\"\n    Try\n        imgShape.Picture = name\n    Catch ex As Exception\n        Debug.Print(\"Caught: \" & ex.Message)\n    End Try\n    Debug.Print(\"Still: [\" & imgShape.Picture & \"]\")\nEnd Sub\n",
+    [],
+    "Debug.Print: Picture: triangle.png\nDebug.Print: Stretch: False\n> btnNext.Click\nSet imgShape.Picture: circle.png\nSet imgShape.Stretch: True\nDebug.Print: Picture: [circle.png] Stretch: True\n> imgShape.Click\nDebug.Print: Caught: This project has no picture \"square.png\". Add it to the project, or check the name.\nDebug.Print: Still: [circle.png]\n> btnNext.Click\nSet imgShape.Picture: \nSet imgShape.Stretch: False\nDebug.Print: Picture: [] Stretch: False\n> imgShape.Click\nDebug.Print: Caught: This project has no picture \"square.png\". Add it to the project, or check the name.\nDebug.Print: Still: []\nStill open\nClosed\n",
+    "formatVersion: 1\nproperties:\n  Caption: Shapes\ncontrols:\n  - name: imgShape\n    type: Image\n    properties:\n      Picture: Triangle.png\n      Width: 96\n      Height: 96\n  - name: btnNext\n    type: Button\n    properties:\n      Caption: Next\n      Left: 120\n",
+    "btnNext.Click\nimgShape.Click   ' R013, caught\nbtnNext.Click\nimgShape.Click   ' an Image with no picture still takes clicks\n",
+    null,
+    ["triangle.png", "circle.png"],
   ),
   (
     "events_listbox",
@@ -105,6 +133,7 @@ const parityCases =
     "formatVersion: 1\ncontrols:\n  - { name: lstCity, type: ListBox }\n  - { name: btnRemove, type: Button, properties: { Top: 130 } }\n  - { name: btnRefill, type: Button, properties: { Top: 170 } }\n  - { name: btnClear, type: Button, properties: { Top: 210 } }\n  - { name: btnObject, type: Button, properties: { Top: 250 } }\n  - { name: btnBad, type: Button, properties: { Top: 290 } }\n",
     "lstCity.Select 0\nlstCity.Select 0     ' the same item again: no Changed\nlstCity.Select 1\nbtnRemove.Click\nbtnRefill.Click\nbtnClear.Click\nbtnRefill.Click\nbtnObject.Click\nbtnBad.Click         ' List(5): there is no item 5\n",
     null,
+    [],
   ),
   (
     "events_load",
@@ -114,6 +143,7 @@ const parityCases =
     "formatVersion: 1\nproperties:\n  Caption: Untitled\ncontrols:\n  - name: btnSave\n    type: Button\n    properties:\n      Caption: Save\n      Left: 10\n",
     "btnSave.Click   ' blocked: Form_Load's MsgBox is still open\nOK\nbtnSave.Click\nClose\n",
     null,
+    [],
   ),
   (
     "events_modal",
@@ -123,6 +153,7 @@ const parityCases =
     "formatVersion: 1\ncontrols:\n  - { name: btnAsk, type: Button }\n  - { name: btnOther, type: Button, properties: { Top: 40 } }\n  - { name: txtName, type: TextBox, properties: { Top: 80 } }\n",
     "btnAsk.Click\nbtnOther.Click      ' blocked by the MsgBox\ntxtName.Type \"x\"    ' blocked too\nClose               ' and so is closing the form\nOK\nbtnOther.Click      ' blocked by the InputBox\nAnswer \"Kim\"\nbtnOther.Click\ntxtName.Type \"Lee\"\nClose\n",
     null,
+    [],
   ),
   (
     "events_reentry",
@@ -132,6 +163,7 @@ const parityCases =
     "formatVersion: 1\ncontrols:\n  - { name: btnA, type: Button }\n  - { name: btnStop, type: Button, properties: { Top: 40 } }\n",
     "btnA.Click\nbtnA.Click      ' ignored: A is still running\nbtnStop.Click\nbtnA.Click      ' runs again: A had finished\nClose\n",
     null,
+    [],
   ),
   (
     "events_shared",
@@ -141,6 +173,7 @@ const parityCases =
     "formatVersion: 1\ncontrols:\n  - { name: btnWait, type: Button }\n  - { name: btnChange, type: Button, properties: { Top: 40 } }\n",
     "btnWait.Click     ' A starts and waits in DoEvents\nbtnChange.Click   ' B runs while A waits\nClose\n",
     null,
+    [],
   ),
   (
     "events_static",
@@ -150,6 +183,7 @@ const parityCases =
     "formatVersion: 1\ncontrols:\n  - { name: btnA, type: Button }\n  - { name: btnB, type: Button, properties: { Top: 40 } }\n",
     "btnA.Click\nbtnB.Click\nbtnA.Click\nbtnB.Click\nClose\n",
     null,
+    [],
   ),
   (
     "integer_overflow",
@@ -159,6 +193,7 @@ const parityCases =
     null,
     null,
     null,
+    [],
   ),
   (
     "lists_arrays",
@@ -168,6 +203,7 @@ const parityCases =
     null,
     null,
     null,
+    [],
   ),
   (
     "loops",
@@ -177,6 +213,7 @@ const parityCases =
     null,
     null,
     null,
+    [],
   ),
   (
     "overflow_caught",
@@ -186,6 +223,7 @@ const parityCases =
     null,
     null,
     null,
+    [],
   ),
   (
     "overflow_edges",
@@ -195,6 +233,7 @@ const parityCases =
     null,
     null,
     null,
+    [],
   ),
   (
     "quiz_best",
@@ -204,6 +243,7 @@ const parityCases =
     "formatVersion: 1\nproperties:\n  Caption: 퀴즈\n  Width: 400\n  Height: 300\ncontrols:\n  - name: lblNumber\n    type: Label\n    properties:\n      Left: 16\n      Top: 12\n      Width: 368\n  - name: lblQuestion\n    type: Label\n    properties:\n      Left: 16\n      Top: 40\n      Width: 368\n  - name: lstChoices\n    type: ListBox\n    properties:\n      Left: 16\n      Top: 72\n      Width: 368\n      Height: 116\n  - name: chkShowAnswer\n    type: CheckBox\n    properties:\n      Caption: 틀리면 정답 보여 주기\n      Left: 16\n      Top: 200\n      Width: 240\n  - name: btnCheck\n    type: Button\n    properties:\n      Caption: 정답 확인\n      Left: 16\n      Top: 248\n      Width: 136\n  - name: lblScore\n    type: Label\n    properties:\n      Left: 168\n      Top: 252\n      Width: 216\n",
     "' examples/quiz played as in quiz_example, after an earlier run saved a\n' best score of 4 (quiz_best.settings): 3 points do not beat it, so\n' nothing is saved.\nbtnCheck.Click              ' nothing chosen yet\nOK\nlstChoices.Select 1         ' 서울: right\nbtnCheck.Click\nOK\nlstChoices.Select 0         ' wrong; the answer is not shown\nbtnCheck.Click\nOK\nchkShowAnswer.Click         ' show the answer when wrong\nlstChoices.Select 3\nbtnCheck.Click\nOK\nlstChoices.Select 1         ' 한글: right\nbtnCheck.Click\nOK\nlstChoices.Select 1         ' 56: right, the last question\nbtnCheck.Click\nOK\nOK                          ' the score; it starts again\nClose\n",
     "{\"best\":\"4\"}",
+    [],
   ),
   (
     "quiz_example",
@@ -213,6 +253,7 @@ const parityCases =
     "formatVersion: 1\nproperties:\n  Caption: 퀴즈\n  Width: 400\n  Height: 300\ncontrols:\n  - name: lblNumber\n    type: Label\n    properties:\n      Left: 16\n      Top: 12\n      Width: 368\n  - name: lblQuestion\n    type: Label\n    properties:\n      Left: 16\n      Top: 40\n      Width: 368\n  - name: lstChoices\n    type: ListBox\n    properties:\n      Left: 16\n      Top: 72\n      Width: 368\n      Height: 116\n  - name: chkShowAnswer\n    type: CheckBox\n    properties:\n      Caption: 틀리면 정답 보여 주기\n      Left: 16\n      Top: 200\n      Width: 240\n  - name: btnCheck\n    type: Button\n    properties:\n      Caption: 정답 확인\n      Left: 16\n      Top: 248\n      Width: 136\n  - name: lblScore\n    type: Label\n    properties:\n      Left: 168\n      Top: 252\n      Width: 216\n",
     "' examples/quiz played to the end and started again (a test keeps\n' quiz_example.gbas and .form.yaml the same as the example's files).\nbtnCheck.Click              ' nothing chosen yet\nOK\nlstChoices.Select 1         ' 서울: right\nbtnCheck.Click\nOK\nlstChoices.Select 0         ' wrong; the answer is not shown\nbtnCheck.Click\nOK\nchkShowAnswer.Click         ' show the answer when wrong\nlstChoices.Select 3\nbtnCheck.Click\nOK\nlstChoices.Select 1         ' 한글: right\nbtnCheck.Click\nOK\nlstChoices.Select 1         ' 56: right, the last question\nbtnCheck.Click\nOK\nOK                          ' the score; it starts again\nClose\n",
     null,
+    [],
   ),
   (
     "random_seeded",
@@ -222,6 +263,7 @@ const parityCases =
     null,
     null,
     null,
+    [],
   ),
   (
     "recursion",
@@ -231,6 +273,7 @@ const parityCases =
     null,
     null,
     null,
+    [],
   ),
   (
     "rounding",
@@ -240,6 +283,7 @@ const parityCases =
     null,
     null,
     null,
+    [],
   ),
   (
     "settings",
@@ -249,6 +293,7 @@ const parityCases =
     null,
     null,
     "{\"visits\":\"4\"}",
+    [],
   ),
   (
     "settings_limit",
@@ -258,6 +303,7 @@ const parityCases =
     null,
     null,
     null,
+    [],
   ),
   (
     "static_and_scope",
@@ -267,6 +313,7 @@ const parityCases =
     null,
     null,
     null,
+    [],
   ),
   (
     "strings",
@@ -276,6 +323,7 @@ const parityCases =
     null,
     null,
     null,
+    [],
   ),
   (
     "text_form",
@@ -285,6 +333,7 @@ const parityCases =
     null,
     null,
     null,
+    [],
   ),
   (
     "try_catch",
@@ -294,5 +343,6 @@ const parityCases =
     null,
     null,
     null,
+    [],
   ),
 ];
