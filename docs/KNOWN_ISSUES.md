@@ -72,7 +72,7 @@ Problems we know about and have **deliberately** left unfixed for now. Each entr
 
 ## The loading percentage is not checked in Firefox
 
-- **What:** the web IDE's "Loading… 37%" (D43) was checked in Chrome and in WebKit, the engine of Safari (Playwright 1.56, a local server, a throttled network): the percentage rose to 94–99%, went away with the first frame, and every file was fetched once. Firefox was not checked: Playwright's Firefox (142) does not start on this macOS, and Firefox is not installed. Firefox takes the same path as WebKit (the full CanvasKit build, `fetch` and `ReadableStream`), so it should behave the same.
+- **What:** the web IDE's "Loading… 37%" (D43) was checked in Chrome and in WebKit, the engine of Safari (Playwright 1.56, a local server, a throttled network): the percentage rose to 94–99%, went away with the first frame, and every file was fetched once. Firefox was not checked: Playwright's Firefox (142) does not start on this macOS, and Firefox is not installed. Firefox runs on its own engine, Gecko ([MDN](https://developer.mozilla.org/en-US/docs/Glossary/Gecko)), so the Chrome and WebKit results do not stand for it. The only part it shares with Safari is the build Flutter's loader picks: without Chrome's `Intl.v8BreakIterator` it gets the full CanvasKit build, not the Chromium one.
 - **Why deferred:** checking it needs a Firefox that runs; nothing in the code is specific to one browser.
 - **Revisit:** when Firefox is at hand (a school PC, or a Playwright release that starts here): open the IDE with the cache off and check that the percentage rises and each file is fetched once.
 

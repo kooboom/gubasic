@@ -72,7 +72,7 @@
 
 ## 불러오는 중 퍼센트는 Firefox에서 확인하지 않았습니다
 
-- **무엇:** 웹 IDE의 "불러오는 중… 37%"(D43)는 Chrome과 WebKit(Safari의 엔진)에서 확인했습니다(Playwright 1.56, 로컬 서버, 느린 망 흉내). 퍼센트가 94~99%까지 오르고 첫 화면과 함께 사라졌으며, 모든 파일을 한 번씩만 받았습니다. Firefox는 확인하지 못했습니다. Playwright의 Firefox(142)가 이 macOS에서 시작되지 않고, Firefox도 설치되어 있지 않습니다. Firefox는 WebKit과 같은 경로(전체 CanvasKit 빌드, `fetch`, `ReadableStream`)를 지나므로 같게 동작할 것으로 봅니다.
+- **무엇:** 웹 IDE의 "불러오는 중… 37%"(D43)는 Chrome과 WebKit(Safari의 엔진)에서 확인했습니다(Playwright 1.56, 로컬 서버, 느린 망 흉내). 퍼센트가 94~99%까지 오르고 첫 화면과 함께 사라졌으며, 모든 파일을 한 번씩만 받았습니다. Firefox는 확인하지 못했습니다. Playwright의 Firefox(142)가 이 macOS에서 시작되지 않고, Firefox도 설치되어 있지 않습니다. Firefox는 자체 엔진인 Gecko에서 돌아가므로([MDN](https://developer.mozilla.org/en-US/docs/Glossary/Gecko)) Chrome과 WebKit의 결과로 대신할 수 없습니다. Safari와 같은 점은 Flutter 로더가 고르는 빌드 하나뿐입니다. Chrome의 `Intl.v8BreakIterator`가 없으므로 Chromium용이 아니라 전체 CanvasKit 빌드를 받습니다.
 - **왜 미뤘나:** 확인하려면 실행되는 Firefox가 있어야 합니다. 코드에는 특정 브라우저만을 위한 부분이 없습니다.
 - **다시 볼 때:** Firefox를 쓸 수 있을 때(학교 PC, 또는 여기서 시작되는 Playwright 버전): 캐시를 끄고 IDE를 열어, 퍼센트가 오르는지와 파일마다 한 번씩만 받는지 확인합니다.
 
