@@ -18,6 +18,8 @@ flutter run -d macos --release      # the macOS app's path
 flutter run -d windows --release    # the Windows app's path (on Windows)
 ```
 
+**On a Windows PC without Flutter:** download the artifact `ime-probe-windows` of the latest `test` run on `main` (GitHub, Actions, the run, Artifacts), unzip it and run `ime_probe.exe`; the Visual C++ runtime is in the folder, so nothing needs installing (DESIGN D47). Windows may warn that the app is not signed: More info, Run anyway.
+
 The browser and the desktop apps take different paths from the input method to Flutter, so each is recorded on its own: the desktop app saves `ime-log-macos-app.json` or `ime-log-windows-app.json` in the Downloads folder (the snack bar says where), and the file is copied without the `ime-log-` prefix, as below.
 
 1. Switch the system input method to Korean (2-set, 두벌식).

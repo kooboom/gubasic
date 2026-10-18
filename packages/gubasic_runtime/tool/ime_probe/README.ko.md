@@ -18,6 +18,8 @@ flutter run -d macos --release      # macOS 앱의 경로
 flutter run -d windows --release    # Windows 앱의 경로(Windows에서)
 ```
 
+**Flutter가 없는 Windows PC에서는:** `main`의 가장 최근 `test` 실행에서 artifact `ime-probe-windows`를 내려받아(GitHub, Actions, 그 실행, Artifacts) 풀고 `ime_probe.exe`를 실행합니다. Visual C++ 런타임이 폴더에 들어 있어서 따로 설치할 것이 없습니다(DESIGN D47). 서명하지 않은 앱이라 Windows가 경고하면 "추가 정보", "실행"을 누릅니다.
+
 브라우저와 데스크톱 앱은 입력기에서 Flutter까지 오는 길이 달라서 따로 기록합니다. 데스크톱 앱은 다운로드 폴더에 `ime-log-macos-app.json`이나 `ime-log-windows-app.json`을 저장하고(아래에 뜨는 알림이 위치를 알려 줌), 아래처럼 `ime-log-` 없이 복사합니다.
 
 1. 시스템 입력기를 한글(두벌식)로 바꿉니다.
