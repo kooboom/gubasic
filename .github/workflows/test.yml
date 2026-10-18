@@ -132,6 +132,34 @@ jobs:
       - run: flutter build windows --release
       - run: flutter build windows --release
         working-directory: apps/ide
+      - run: flutter build windows --release
+        working-directory: packages/gubasic_runtime/tool/ime_probe
+      # The IDE and the IME probe as folders that run on a Windows PC
+      # without Flutter or Visual Studio: the Release folder with the
+      # Visual C++ runtime next to the .exe ("application-local", as the
+      # Flutter documentation describes). Downloaded from the run's
+      # Artifacts on GitHub (docs/DESIGN.md D47).
+      - name: Add the Visual C++ runtime to the Release folders
+        working-directory: .
+        shell: pwsh
+        run: |
+          foreach ($dir in 'apps/ide', 'packages/gubasic_runtime/tool/ime_probe') {
+            foreach ($dll in 'msvcp140.dll', 'vcruntime140.dll', 'vcruntime140_1.dll') {
+              Copy-Item "$env:WINDIR/System32/$dll" "$dir/build/windows/x64/runner/Release"
+            }
+          }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: gubasic-ide-windows
+          path: apps/ide/build/windows/x64/runner/Release
+          retention-days: 30
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ime-probe-windows
+          path: packages/gubasic_runtime/tool/ime_probe/build/windows/x64/runner/Release
+          retention-days: 30
+          if-no-files-found: error
 
   # macOS runners are slow and scarce: build on pull requests only.
   macos:
