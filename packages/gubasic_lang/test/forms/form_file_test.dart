@@ -148,7 +148,7 @@ controls:
         name: 'F');
     expect(r.diagnostics.map((d) => '${d.code.code}@${d.line}'),
         ['F008@3', 'F008@4']);
-    expect(r.diagnostics.first.args, ['Buton', 'Button, Label, TextBox']);
+    expect(r.diagnostics.first.args, ['Buton', 'Button, CheckBox, Label, TextBox']);
     expect(r.form.controls, isEmpty);
   });
 

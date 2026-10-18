@@ -1,0 +1,8 @@
+chkShow.Click       ' the user unchecks it: Changed runs
+chkOff.Click        ' checks it; its handler unchecks it again
+chkWait.Click       ' Changed waits in DoEvents
+chkWait.Click       ' ignored, and the box stays checked
+btnGo.Click
+chkLate.Click       ' no handler: it only changes
+btnObject.Click
+Close

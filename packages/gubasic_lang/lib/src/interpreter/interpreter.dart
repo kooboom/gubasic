@@ -138,13 +138,25 @@ class Interpreter {
   /// Runs the handler of [event] of [control] (null: the form), following
   /// D5 and D28. Does not wait for the handler to finish.
   EventOutcome raiseEvent(String? control, String event) {
+    if (refusal(control, event) case final refused?) return refused;
+    final handler = _handlers[_eventKey(control, event)];
+    if (handler == null) return EventOutcome.noHandler;
+    _runHandler(handler);
+    return EventOutcome.started;
+  }
+
+  /// Why [raiseEvent] would not take [event] of [control] now: the program
+  /// is not running, a dialog is open, or its handler is running. Null
+  /// when it would. A CheckBox asks before the user's click changes it, so
+  /// that a click whose Changed would be ignored changes nothing (D44).
+  EventOutcome? refusal(String? control, String event) {
     if (_formRun == null || _ended != null) return EventOutcome.notRunning;
     if (_openDialogs > 0) return EventOutcome.blocked;
     final handler = _handlers[_eventKey(control, event)];
-    if (handler == null) return EventOutcome.noHandler;
-    if (_running.contains(handler)) return EventOutcome.ignored;
-    _runHandler(handler);
-    return EventOutcome.started;
+    if (handler != null && _running.contains(handler)) {
+      return EventOutcome.ignored;
+    }
+    return null;
   }
 
   /// The procedure a run starts with: `Sub Main()`, or else

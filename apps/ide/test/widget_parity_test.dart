@@ -143,7 +143,8 @@ class _WidgetDriver implements ScriptDriver {
     (w) => switch (w) {
       GbButton(:final state) ||
       GbLabel(:final state) ||
-      GbTextBox(
+      GbTextBox(:final state) ||
+      GbCheckBox(
         :final state,
       ) => state.name?.toLowerCase() == name.toLowerCase(),
       _ => false,

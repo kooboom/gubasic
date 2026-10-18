@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:gubasic_ide/main.dart';
 import 'package:gubasic_ide/src/designer/form_designer.dart';
 import 'package:gubasic_ide/src/designer/form_edit.dart';
+import 'package:gubasic_ide/src/designer/properties_panel.dart';
 import 'package:gubasic_ide/src/ide_shell.dart';
 import 'package:gubasic_ide/src/project/examples.g.dart';
 import 'package:gubasic_ide/src/project/open_project.dart';
@@ -148,6 +149,40 @@ void main() {
       findsOneWidget,
     );
     expect(formText(tester), contains('  - name: Label1\n'));
+  });
+
+  testWidgets('a CheckBox: placed from the toolbox, Checked set in the '
+      'Properties window; a click on the form only selects it', (tester) async {
+    await open(tester);
+    final tool = find.byKey(const ValueKey('toolbox.CheckBox'));
+    await tester.tap(tool);
+    await tester.pump(kDoubleTapMinTime);
+    await tester.tap(tool);
+    await tester.pumpAndSettle();
+    expect(
+      find.text('CheckBox1 (CheckBox) · Left 104, Top 48 · 120×32'),
+      findsOneWidget,
+    );
+    final onDesigner = find.descendant(
+      of: find.byKey(designerFormKey),
+      matching: find.byType(Checkbox),
+    );
+    bool shown() => tester.widget<Checkbox>(onDesigner).value!;
+    expect(shown(), isFalse);
+
+    await tester.tap(
+      find.descendant(
+        of: find.byType(PropertiesPanel),
+        matching: find.byType(Checkbox),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(formText(tester), contains('      Checked: true\n'));
+    expect(shown(), isTrue);
+
+    await tester.tap(onDesigner);
+    await tester.pumpAndSettle();
+    expect(shown(), isTrue, reason: 'the designer does not run the box');
   });
 
   testWidgets('undo and redo, back to the saved text', (tester) async {

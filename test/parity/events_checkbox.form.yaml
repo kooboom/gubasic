@@ -1,0 +1,11 @@
+formatVersion: 1
+controls:
+  - { name: chkShow, type: CheckBox, properties: { Caption: Show } }
+  - { name: chkOff, type: CheckBox, properties: { Caption: Off, Top: 40 } }
+  - { name: chkWait, type: CheckBox, properties: { Caption: Wait, Top: 80 } }
+  - name: chkLate
+    type: CheckBox
+    properties: { Caption: Late, Top: 120, Checked: true }
+  - { name: lblState, type: Label, properties: { Top: 160 } }
+  - { name: btnGo, type: Button, properties: { Top: 200 } }
+  - { name: btnObject, type: Button, properties: { Top: 240 } }

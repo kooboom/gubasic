@@ -22,7 +22,7 @@ int snap(num value, {required bool grid}) =>
 
 /// The control types the toolbox offers, in its order.
 List<ComponentSpec> get toolboxComponents => [
-  for (final name in const ['button', 'label', 'textbox'])
+  for (final name in const ['button', 'label', 'textbox', 'checkbox'])
     builtinComponents[name]!,
 ];
 

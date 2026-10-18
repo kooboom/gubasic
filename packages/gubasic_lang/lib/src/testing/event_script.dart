@@ -14,7 +14,8 @@ sealed class ScriptStep {
   final String text;
 }
 
-/// `btnSave.Click`: the user causes an event.
+/// `btnSave.Click`: the user causes an event. On a CheckBox, `Click` is
+/// the user's click: it changes Checked, and Changed runs (D44).
 class EventStep extends ScriptStep {
   const EventStep(super.text, this.control, this.event);
 
@@ -114,7 +115,8 @@ abstract final class TranscriptLine {
       title.isEmpty ? 'InputBox: $prompt' : 'InputBox [$title]: $prompt';
 
   static String setProperty(String? control, String property, Object value) =>
-      'Set ${control ?? 'Form'}.$property: $value';
+      'Set ${control ?? 'Form'}.$property: '
+      '${value is bool ? (value ? 'True' : 'False') : value}';
 }
 
 /// A [FormHost] for tests: properties start as in the form file, dialogs
@@ -131,11 +133,17 @@ class ScriptedHost implements FormHost {
       _properties[_key(null, p.name)] = form.valueOf(p.name);
     }
     for (final c in form.controls) {
+      _components[c.name.toLowerCase()] = c.component.name;
       for (final p in c.component.properties.values) {
         _properties[_key(c.name, p.name)] = c.valueOf(p.name);
       }
     }
   }
+
+  final _components = <String, String>{};
+
+  /// The component of [control] (`CheckBox`), or null if there is none.
+  String? componentOf(String control) => _components[control.toLowerCase()];
 
   final transcript = <String>[];
   final _properties = <String, Object>{};
@@ -192,7 +200,8 @@ class ScriptedHost implements FormHost {
     _dialogs.clear();
   }
 
-  /// The user changes a property (the text of a TextBox).
+  /// The user changes a property (the text of a TextBox, a CheckBox's
+  /// Checked).
   void userSets(String control, String property, Object value) =>
       _properties[_key(control, property)] = value;
 
@@ -221,7 +230,9 @@ abstract interface class ScriptDriver {
   /// Lets the program go on a little: a timer tick, or a frame.
   Future<void> tick();
 
-  /// The user causes [event] of [control] (null: the form).
+  /// The user causes [event] of [control] (null: the form). `Click` on a
+  /// CheckBox changes its Checked first, unless the program would ignore
+  /// the Changed that follows.
   Future<EventOutcome> raise(String? control, String event);
 
   /// The user changes the text of TextBox [control] to [value]. Null when
@@ -342,8 +353,20 @@ class _HostDriver implements ScriptDriver {
   Future<void> tick() => Future<void>.delayed(Duration.zero);
 
   @override
-  Future<EventOutcome> raise(String? control, String event) async =>
-      interpreter.raiseEvent(control, event);
+  Future<EventOutcome> raise(String? control, String event) async {
+    if (control != null &&
+        event == 'Click' &&
+        host.componentOf(control) == 'CheckBox') {
+      // A click the program would ignore leaves the box as it was (D44).
+      if (interpreter.refusal(control, 'Changed') case final refused?) {
+        return refused;
+      }
+      final checked = host.getProperty(control, 'Checked') as bool;
+      host.userSets(control, 'Checked', !checked);
+      return interpreter.raiseEvent(control, 'Changed');
+    }
+    return interpreter.raiseEvent(control, event);
+  }
 
   @override
   Future<EventOutcome?> type(String control, String value) async {

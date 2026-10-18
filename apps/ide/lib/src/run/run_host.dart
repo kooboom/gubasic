@@ -11,7 +11,7 @@ import '../form_window.dart';
 class RunHost implements FormHost {
   RunHost(FormFile form, {GbStrings strings = GbStrings.en})
     : dialogs = GbDialogs(strings: strings) {
-    model = formModelOf(form, onEvent: _onEvent);
+    model = formModelOf(form, onEvent: _onEvent, accepts: _accepts);
   }
 
   late final GbFormModel model;
@@ -36,6 +36,13 @@ class RunHost implements FormHost {
 
   void _onEvent(String? control, String event) =>
       lastOutcome = interpreter.raiseEvent(control, event);
+
+  /// A CheckBox asks before a click changes it (D44).
+  bool _accepts(String? control, String event) {
+    final refused = interpreter.refusal(control, event);
+    if (refused != null) lastOutcome = refused;
+    return refused == null;
+  }
 
   BuildContext get _context =>
       dialogContext?.call() ?? (throw StateError('no run window'));

@@ -5,34 +5,39 @@ import 'package:gubasic_runtime/gubasic_runtime.dart';
 /// A model of [form] as its file describes it, before any code has run:
 /// what the run window starts from and what the designer shows, so that
 /// both draw a form the same way (docs/DESIGN.md §2.3).
-GbFormModel formModelOf(FormFile form, {required GbEventSink onEvent}) =>
-    GbFormModel(
-      form: {
-        for (final p in form.component.properties.values)
-          p.name: form.valueOf(p.name),
-      },
-      controls: [
-        for (final c in form.controls)
-          GbControlState(
-            c.name,
-            _kind(c.component.name),
-            {
-              for (final p in c.component.properties.values)
-                p.name: c.valueOf(p.name),
-            },
-            layer: switch (c.component.layer) {
-              ComponentLayer.graphic => GbLayer.graphic,
-              ComponentLayer.control => GbLayer.control,
-            },
-          ),
-      ],
-      onEvent: onEvent,
-    );
+GbFormModel formModelOf(
+  FormFile form, {
+  required GbEventSink onEvent,
+  GbEventFilter? accepts,
+}) => GbFormModel(
+  form: {
+    for (final p in form.component.properties.values)
+      p.name: form.valueOf(p.name),
+  },
+  controls: [
+    for (final c in form.controls)
+      GbControlState(
+        c.name,
+        _kind(c.component.name),
+        {
+          for (final p in c.component.properties.values)
+            p.name: c.valueOf(p.name),
+        },
+        layer: switch (c.component.layer) {
+          ComponentLayer.graphic => GbLayer.graphic,
+          ComponentLayer.control => GbLayer.control,
+        },
+      ),
+  ],
+  onEvent: onEvent,
+  accepts: accepts,
+);
 
 GbControlKind _kind(String component) => switch (component.toLowerCase()) {
   'button' => GbControlKind.button,
   'label' => GbControlKind.label,
   'textbox' => GbControlKind.textBox,
+  'checkbox' => GbControlKind.checkBox,
   _ => throw ArgumentError('no widget for component $component'),
 };
 

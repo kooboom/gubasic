@@ -63,6 +63,14 @@ void main() {
         'Text As String = , Left As Integer = 0, Top As Integer = 0, '
         'Width As Integer = 160, Height As Integer = 32 | x_Changed() | '
         'default Changed');
+    expect(
+        describe('CheckBox'),
+        'Caption As String = , Checked As Boolean = false, '
+        'Left As Integer = 0, Top As Integer = 0, '
+        'Width As Integer = 120, Height As Integer = 32 | x_Changed() | '
+        'default Changed');
+    expect(builtinComponents['checkbox']!.properties['checked']!.changeEvent,
+        'Changed');
   });
 
   test('ranges and change events', () {
@@ -89,7 +97,7 @@ void main() {
 
   test('Label is drawn in the graphic layer, the others in front (D41)', () {
     expect(builtinComponents['label']!.layer, ComponentLayer.graphic);
-    for (final name in ['button', 'textbox', 'form']) {
+    for (final name in ['button', 'textbox', 'checkbox', 'form']) {
       expect(builtinComponents[name]!.layer, ComponentLayer.control,
           reason: name);
     }

@@ -67,7 +67,7 @@ IDE를 C로 만드는 방안도 검토했지만 제외했습니다. C로 GUI를 
 GuBASIC의 각 릴리스는 검증한 Flutter 버전에 고정됩니다(D29). Flutter 업그레이드는 업데이트마다 따라가는 일이 아니라, 원할 때 하는 별도 작업입니다. 런타임은 기본적이고 안정적인 Flutter 위젯만 씁니다.
 
 구조는 이렇습니다.
-- **`GbFormModel`**은 폼과 컨트롤의 현재 속성(`GbControlState`, 이름과 타입은 `component.yaml`과 같음)을 담습니다. **`GbFormView`**가 이를 보여 줍니다: 각 컨트롤을 `Stack` 안의 `Left`, `Top` 위치에 둡니다(6절). Button은 테두리와 글자 사이를 8픽셀로 둡니다. 그래야 기본 너비의 Button에 자기 이름(`Button1`)이 다 보입니다. Material의 기본값 24로는 96픽셀 가운데 48픽셀만 글자에 남았습니다. 사용자가 한 일은 이벤트로 돌아옵니다: `Click`, 그리고 사용자가 TextBox의 확정된 글자를 바꿀 때의 `Changed`.
+- **`GbFormModel`**은 폼과 컨트롤의 현재 속성(`GbControlState`, 이름과 타입은 `component.yaml`과 같음)을 담습니다. **`GbFormView`**가 이를 보여 줍니다: 각 컨트롤을 `Stack` 안의 `Left`, `Top` 위치에 둡니다(6절). Button은 테두리와 글자 사이를 8픽셀로 둡니다. 그래야 기본 너비의 Button에 자기 이름(`Button1`)이 다 보입니다. Material의 기본값 24로는 96픽셀 가운데 48픽셀만 글자에 남았습니다. 사용자가 한 일은 이벤트로 돌아옵니다: `Click`, 그리고 사용자가 TextBox의 확정된 글자나 CheckBox를 바꿀 때의 `Changed`.
 - **`GbDialogs`**는 `MsgBox`와 `InputBox`를 모달로 보여 주고(D28), 프로그램이 끝나면 모두 닫습니다.
 - **`gubasic_runtime`은 `gubasic_lang`에 의존하지 않습니다.** 둘은 IDE가 이어 줍니다(인터프리터의 `FormHost`). 그래서 생성된 앱에는 인터프리터가 들어가지 않습니다.
 - **IDE의 실행 창**(`apps/ide`): `RunHost`가 `GbFormModel`과 `GbDialogs` 위에 `FormHost`를 구현합니다. 속성 값은 모델 한 곳에만 있고, 프로그램이 넣고 사용자가 바꿉니다. 클릭과 입력은 이벤트로 인터프리터에 갑니다. 실행 창은 IDE 가운데를 채우고 자기 내비게이터를 가집니다. 그래서 MsgBox나 InputBox는 폼과 폼의 닫기 단추를 가리지만(D28) IDE의 도구 막대는 가리지 않아, 중지(Shift+F5)는 언제나 됩니다. 폼은 `Form_Load`가 끝나면 나타납니다.
@@ -157,7 +157,7 @@ gubasic/
 
 ## 5. 컴포넌트
 
-기본 제공되는 Button, Label, TextBox까지 포함해 **모든 컨트롤은 `component.yaml`로 설명되는 컴포넌트**입니다.
+기본 제공되는 Button, Label, TextBox, CheckBox까지 포함해 **모든 컨트롤은 `component.yaml`로 설명되는 컴포넌트**입니다.
 
 ```yaml
 name: QRScanner
@@ -181,7 +181,7 @@ permissions:
 
 같은 메타데이터가 도구상자, 속성 창, 자동완성, 트랜스파일러에 모두 쓰입니다. `layer: graphic`(Label)은 컨트롤을 다른 것들 아래에, `layer: control`(기본값)은 그 앞에 그립니다(D41).
 
-기본 컴포넌트는 `components/`에 있습니다(`Form`, `Button`, `Label`, `TextBox`. [LANGUAGE.ko.md](LANGUAGE.ko.md) 11.1절). 분석기는 파일을 읽을 수 없는 웹을 포함한 모든 플랫폼에서 이 컴포넌트들의 속성과 이벤트를 알아야 합니다. 그래서 `tool/embed_components.dart`가 `component.yaml`을 `gubasic_lang` 안으로 복사하고, CI가 복사본이 최신인지 확인합니다(D27).
+기본 컴포넌트는 `components/`에 있습니다(`Form`, `Button`, `Label`, `TextBox`, `CheckBox`. [LANGUAGE.ko.md](LANGUAGE.ko.md) 11.1절). 분석기는 파일을 읽을 수 없는 웹을 포함한 모든 플랫폼에서 이 컴포넌트들의 속성과 이벤트를 알아야 합니다. 그래서 `tool/embed_components.dart`가 `component.yaml`을 `gubasic_lang` 안으로 복사하고, CI가 복사본이 최신인지 확인합니다(D27).
 
 ### 5.1 기본 컴포넌트와 추가 컴포넌트
 
@@ -276,6 +276,7 @@ IDE 메시지와 오류 설명은 **영어와 한국어**로 제공됩니다.
 ```
 btnHello.Click        ' 클릭
 txtName.Type "Kim"    ' 사용자가 TextBox의 글자를 바꿈. Changed가 실행됨
+chkShow.Click         ' CheckBox를 클릭함. Checked가 바뀌고 Changed가 실행됨
 OK                    ' 열린 MsgBox를 닫음
 Answer "Kim"          ' 열린 InputBox에 답함 (Cancel은 "")
 Close                 ' 폼을 닫음
@@ -388,3 +389,4 @@ iOS/macOS 요구 사항은 GuBASIC이 아니라 애플의 정책에서 옵니다
 | D41 | **컨트롤은 두 층으로 그립니다: graphic(Label)이 control(Button, TextBox) 아래에 있습니다.** component.yaml의 `layer`가 컨트롤을 graphic 층에 두거나, 정하지 않으면 control 층에 둡니다. 폼 파일의 순서와 상관없이 graphic 층을 먼저 그리고, 같은 층 안에서는 폼 파일 `controls` 목록에서 뒤에 있는 컨트롤을 위에 그립니다. 컨트롤이 겹친 곳에서는 위에 있는 컨트롤이 클릭을 받고 아래의 것을 가리며, 실행 화면과 디자이너가 같습니다. Button은 테마의 `surfaceContainerHigh`, 폼보다 한 단계 짙은 색으로 채웁니다(`gbButtonFace`). 순서는 `gubasic_runtime`의 `GbFormModel.drawingOrder`가 정합니다. 실행 화면은 이 순서로 그리고, 디자이너는 이 순서로 그리고 고르며, 트랜스파일러가 만들 앱도 같은 런타임을 쓰므로 이 순서로 그립니다(2.3절). **바뀐 점:** 전에는 파일의 순서만으로 정해졌으므로, Button보다 뒤에 적힌 Label이 Button을 덮고 클릭을 가져갔습니다. 이제 그런 폼에서는 Button이 위에 보입니다. 폼 파일 형식은 바뀌지 않습니다(`formatVersion: 1`). 1단계는 아직 출시되지 않았고, 어떤 마이그레이션으로도 이번에 고치는 예전 모습을 지킬 수 없기 때문입니다. 예제에는 겹친 컨트롤이 없어 전과 같이 보입니다(`designer_test.dart`) | Label을 Button 위에 놓으면 실행 화면에서도 디자이너에서도 Button을 클릭할 수 없었습니다. Visual Basic 6의 폼에는 세 층이 있어서 그래픽 컨트롤과 Label은 가운데 층에, 다른 컨트롤은 맨 앞 층에 있고, ZOrder는 같은 층 안에서만 순서를 바꿉니다([ZOrder Method](https://learn.microsoft.com/en-us/previous-versions/visualstudio/visual-basic-6/aa267180(v=vs.60))). GuBASIC에는 아직 그리기 층이 없으므로 두 층이 남습니다. 폼을 보여 주는 모든 곳이 함수 하나로 정하므로, 디자이너와 프로그램이 다르게 보일 수 없습니다 |
 | D42 | **디자이너에서 Tab과 Option+클릭으로 컨트롤을 고르고, ⌘J / ⌘K로 순서를 바꾸며, 오른쪽 클릭으로 디자이너 메뉴를 엽니다.** 폼에 포커스가 있을 때 Tab과 Shift+Tab은 폼 파일 순서로 다음 컨트롤과 이전 컨트롤을 고르고, 끝에서는 처음으로 돌아갑니다. 속성 창과 코드 편집기에서 Tab은 그대로 그쪽의 것입니다. 클릭은 맨 위의 컨트롤을 고릅니다(D41). Option+클릭(Alt+클릭)은 그 자리에서 고른 컨트롤 바로 아래의 컨트롤을 고르고, 맨 아래 다음에는 맨 위로 돌아가며, 코드는 열지 않습니다. ⌘J / Ctrl+J(맨 앞으로)는 고른 컨트롤을 폼 파일 목록의 끝으로 옮겨 그 층의 맨 위에 두고, ⌘K / Ctrl+K(맨 뒤로)는 목록의 처음으로 옮겨 맨 아래에 둡니다. 도구 막대에도 두 버튼이 있고, 바꿀 때마다 실행 취소 한 단계입니다. 두 단축키는 글자가 아니라 키의 자리로 받습니다. 한글 입력기가 켜져 있으면 Mac의 Chrome은 Ctrl+K를 ㅏ로 알리기 때문입니다. 오른쪽 클릭, 두 손가락 클릭, Apple 시스템에서 Control+클릭은 디자이너의 컨텍스트 메뉴를 열고, 그 자리의 컨트롤을 먼저 고릅니다. 컨트롤 위에서는 코드 보기(더블클릭과 같음, D38), 맨 앞으로, 맨 뒤로, 삭제, 속성(속성 창의 첫 칸이 포커스를 받음)이 있고, 빈 폼 위에서는 코드 보기(Form_Load)와 격자가 있습니다. 프로그램이 실행되는 동안에는 코드 보기만 됩니다. 웹에서는 마우스가 폼 위에 있는 동안 브라우저의 메뉴를 끕니다. 메뉴는 폼 위의 위치를 받는 함수 하나가 열므로, 나중에 터치 화면의 길게 누르기도 같은 메뉴를 열 수 있습니다 | 겹친 컨트롤(D41)은 아래에 깔린 것에 닿는 방법이 필요합니다. Visual Studio의 Visual Basic 6.0 단축키 구성에서 Tab은 디자인 화면의 다음 컨트롤을 고르고, Ctrl+J는 맨 앞으로 보냅니다([Microsoft](https://learn.microsoft.com/en-us/previous-versions/visualstudio/visual-studio-2008/ms172689(v=vs.90))). Ctrl+K는 VBA UserForm 창의 맨 뒤로입니다([Microsoft](https://learn.microsoft.com/en-us/office/vba/language/reference/user-interface-help/userform-windowc-visual-basic-user-interface)). 그냥 클릭할 때마다 돌아가며 고르면 더블클릭(D38), 끌어 옮기기와 부딪힙니다. 목록 안에서 옮기므로 폼 파일 형식은 그대로입니다(D41). 컨텍스트 메뉴는 마우스 아래에 있는 것으로 디자이너가 할 수 있는 일을, 처음 배우는 사람이 찾는 자리에 모읍니다 |
 | D43 | **웹에서 불러오는 중 글자에 받은 양을 보여 줌: "불러오는 중… 37%".** 빌드 단계(`apps/ide/tool/web_load_sizes.dart`. CI와 Pages 워크플로가 실행함)가 `load_sizes.json`을 씀: 앱 코드(`main.dart.js`), CanvasKit 빌드 각각, 글꼴 목록에 있는 글꼴 각각의 크기. `web/flutter_bootstrap.js`는 Flutter 로더가 시작하기 전에 `fetch`를 감싸서, 엔진과 글꼴의 바이트를 Flutter가 읽었는지와 상관없이 도착하는 대로 셈. `<script>` 태그로 받는 `main.dart.js`는 다 받았을 때 셈(Resource Timing). 퍼센트는 페이지에 필요한 파일 가운데 받은 양이며, CanvasKit은 로더가 고른 빌드만 셈. 99%에서 멈추고 첫 화면과 함께 사라짐. `load_sizes.json`이 없으면 "불러오는 중…"만 보임. 파일은 여전히 Flutter가 직접 한 번씩만 받음: 느린 망을 흉내 낸 Chrome과 WebKit(Safari의 엔진)에서 확인함 | 느린 망(D30: 느린 4G 설정에서 약 100초)에서는 바뀌지 않는 글자가 멈춘 페이지처럼 보여서, 학생이 새로고침하고 처음부터 다시 받게 됨. 받은 바이트의 퍼센트는 망을 따라 움직임. 세기 위해 파일을 Flutter보다 먼저 받으면 브라우저 캐시가 넘겨주기를 기대해야 하고, 그러지 않는 곳에서는 두 번 받음. Flutter가 직접 받는 것을 세면 그런 일이 없음. 단계 이름("엔진", "글꼴")만 보여 주는 것이 대안이었지만, 가장 큰 단계에서 1분 동안 멈춰 있음 |
+| D44 | **CheckBox: `Caption`, `Checked` As Boolean, 이벤트는 `Changed` 하나.** 상자나 `Caption`을 클릭하면 `Checked`가 바뀌고 `Changed`가 실행됨. 프로그램이 `Checked`를 바꿔도 `TextBox.Changed`처럼 바로 실행됨(LANGUAGE 11.1절). 상태는 두 가지뿐. 자기 `Changed`가 실행 중일 때 CheckBox를 클릭하면 무시되고 상자도 바뀌지 않음: 위젯이 먼저 물어봄(`Interpreter.refusal`, 런타임의 `GbEventFilter`를 거침). 클릭은 `Click` 전과 같이 조합 중인 글자를 먼저 확정함. 이벤트 스크립트에서는 `chkShow.Click`이 사용자의 클릭. 기본 크기 120 × 32 | Visual Basic 6의 `Value`(0, 1, 회색은 2)는 Visual Basic .NET에서 `Checked`(Boolean)와 `CheckState`가 되었고, VB6의 `Click`은 프로그램이 상태를 바꿀 때도 일어나서 .NET에서는 대신 `CheckStateChanged`를 씀([Microsoft](https://learn.microsoft.com/en-us/previous-versions/visualstudio/visual-studio-2008/kk8bb7ac(v=vs.90))). Windows Forms CheckBox의 기본 이벤트는 `CheckedChanged`임([dotnet/winforms](https://github.com/dotnet/winforms/blob/main/src/System.Windows.Forms/System/Windows/Forms/Controls/Buttons/CheckBox.cs)). `If chkShow.Checked Then`은 뜻 그대로 읽히고 외울 상수도 없으며, 회색인 세 번째 상태는 초보자의 폼에서 쓸 데가 없음. `Caption`은 Button, Label과 같은 이름. 프로그램이 바꿀 때도 실행되는 이벤트를 `Click`이라 부르면 하는 일을 말하지 못함. `Changed`는 TextBox를 따름. 실행 중인 처리기 밑에서 상자가 바뀌면 처리기가 본 적 없는 상태를 보여 주게 됨 |

@@ -1,0 +1,45 @@
+' CheckBox.Changed runs when Checked changes: the user's click, or the
+' program setting Checked, right away as part of the assignment. The same
+' value again does not run it, and a handler that sets its own Checked is
+' not started again by that (D5, D44). A click whose Changed would be
+' ignored leaves the box as it was.
+Dim waiting As Boolean
+
+Sub Form_Load()
+    Debug.Print("chkLate starts " & chkLate.Checked)
+    chkShow.Checked = True
+    Debug.Print("after setting: " & lblState.Caption)
+    chkShow.Checked = True
+    Debug.Print("same value again: no Changed")
+End Sub
+
+Sub chkShow_Changed()
+    lblState.Caption = "show " & chkShow.Checked
+End Sub
+
+Sub chkOff_Changed()
+    ' Turns itself back off: not started again by that.
+    Debug.Print("chkOff is " & chkOff.Checked)
+    chkOff.Checked = False
+End Sub
+
+Sub chkWait_Changed()
+    Debug.Print("wait starts, " & chkWait.Checked)
+    waiting = True
+    Do While waiting
+        DoEvents
+    Loop
+    Debug.Print("wait ends, " & chkWait.Checked)
+End Sub
+
+Sub btnGo_Click()
+    waiting = False
+End Sub
+
+Sub btnObject_Click()
+    ' Through an Object variable, the same rules apply.
+    Dim box As Object = chkShow
+    box.Checked = True
+    Debug.Print(lblState.Caption)
+    Debug.Print("chkLate is " & chkLate.Checked)
+End Sub

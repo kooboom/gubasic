@@ -197,7 +197,7 @@ Errors found while a program runs. Each stops the program and points at its line
 - **`Nothing` (null) exists only for objects.** Value types always have a value, so beginners rarely meet null errors.
 - **To check whether an object is `Nothing`, compare with `Is`:** `If player Is Nothing Then`. For the opposite, write `If Not player Is Nothing Then`. (`=` compares values, not objects.)
 - There is **no `Variant`**. Use `Object` when a variable really must hold anything.
-- **Control types** (`Form`, `Button`, `Label`, `TextBox`; §11.1) can be written after `As`, and controls are objects: `Dim b As Button = btnSave`, `If b Is Nothing Then`. A control cannot be created with `New` yet (A033); the controls are the ones on the form.
+- **Control types** (`Form`, `Button`, `Label`, `TextBox`, `CheckBox`; §11.1) can be written after `As`, and controls are objects: `Dim b As Button = btnSave`, `If b Is Nothing Then`. A control cannot be created with `New` yet (A033); the controls are the ones on the form.
 
 ### 2.1 Automatic conversions
 
@@ -572,7 +572,7 @@ End Sub
 
 - `Me` refers to the current form; its properties are those of `Form` (§11.1).
 - The controls are the ones in the form file (§11.2). Their names can be used anywhere in the form's code, like form-level variables. A form-level variable or procedure cannot have a control's name (A030); a local can, but then hides the control (warning A031).
-- **Where controls overlap**, a `Label` is always under a `Button` or a `TextBox`, whatever their order in the form file, and the control on top takes the click. Among controls of the same kind of layer, the one later in the form file is on top (DESIGN.md D41).
+- **Where controls overlap**, a `Label` is always under the other controls (`Button`, `TextBox`, `CheckBox`), whatever their order in the form file, and the control on top takes the click. Among controls of the same kind of layer, the one later in the form file is on top (DESIGN.md D41).
 - Code without a form, such as a program in the playground, cannot use controls or `Me` (A003).
 - Stage 2: controls can be created at run time.
 
@@ -590,13 +590,15 @@ End Sub
 | `Button` | `Caption` (`String`); `Left`, `Top`, `Width`, `Height` (`Integer`) | `Click` |
 | `Label` | `Caption` (`String`); `Left`, `Top`, `Width`, `Height` (`Integer`) | `Click` |
 | `TextBox` | `Text` (`String`); `Left`, `Top`, `Width`, `Height` (`Integer`) | `Changed` |
+| `CheckBox` | `Caption` (`String`); `Checked` (`Boolean`); `Left`, `Top`, `Width`, `Height` (`Integer`) | `Changed` |
 
 - Each control is a component, defined with its default values in `components/NAME/component.yaml` (DESIGN.md §5). The table above lists the events with the default one first: the one a double-click in the designer creates.
 - `Left`, `Top`, `Width` and `Height` are in logical pixels (the same size on screens of different densities), measured from the top-left corner of the inside of the form. A form's `Width` and `Height` are the size of that inside area, without the window's title bar and borders. Later stages add properties (`Anchor`, …) without changing these (D12).
 - `Integer` properties are 32-bit: from −2147483648 to 2147483647, the same on every platform. `Width` and `Height` cannot be negative. A value outside the range is a run-time error (R010) when the program sets it, and F012 in a form file.
 - **`TextBox.Changed`** runs after `Text` changes, whether the user typed or the program set `Text`. When the program sets `Text`, the handler runs right away, as part of that assignment, so the next line already sees what it did. Setting the same text again does not run it. A handler that sets `Text` of its own TextBox is not started again by that change (§8.1).
 - **Typing with an input method (IME).** `Text` holds only the characters the input method has **committed**, and `Changed` runs each time it commits one. What is on the screen may not be committed yet: in Korean, a final consonant can still move to the next syllable. Typing 갈가 shows 갈, then 갉, then 갈가: 갈 is committed only when ㅏ is typed and the ㄱ moves on. A handler therefore never changes the text in the middle of a syllable, which is known to break typing in Flutter on Windows ([flutter/flutter#121376](https://github.com/flutter/flutter/issues/121376)). The cost: code that follows every keystroke, such as a character counter, sees the syllable being typed only once the input method commits it. Where the platform does not say which characters are still being composed (the macOS app; D37), the runtime tells it from how the text changes, with the same result.
-- **A click while a character is being composed.** Before a click reaches the program, the characters still being composed in any TextBox are committed. The order is always: the characters are committed, `TextBox.Changed` runs, then `Click` runs. So if the user types 한글 and clicks a button straight away, without a space, `txtName.Text` in the `Click` handler is already 한글.
+- **`CheckBox.Changed`** runs after `Checked` changes: when the user clicks the box or its `Caption`, or when the program sets `Checked`. As with `TextBox.Changed`, a change by the program runs the handler right away, setting the same value again does not run it, and a handler that sets its own `Checked` is not started again by that. While a CheckBox's `Changed` is running, a click on that CheckBox is ignored and leaves it as it was, so the box shows what the handler is dealing with (§8.1). A CheckBox has two states; Visual Basic 6's third, grayed state is left out (DESIGN.md D44).
+- **A click while a character is being composed.** Before a click reaches the program, the characters still being composed in any TextBox are committed. The order is always: the characters are committed, `TextBox.Changed` runs, then `Click` runs (or, for a click on a CheckBox, `CheckBox.Changed`). So if the user types 한글 and clicks a button straight away, without a space, `txtName.Text` in the `Click` handler is already 한글.
 
 ### 11.2 Form files
 

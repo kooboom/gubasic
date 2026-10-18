@@ -5,6 +5,8 @@
 const builtinComponentFiles = <String, String>{
   "Button":
       "name: Button\nversion: 1\nvisual: true\ndefaultEvent: Click\nproperties:\n  - { name: Caption, type: String, default: \"\" }\n  - { name: Left, type: Integer, default: 0 }\n  - { name: Top, type: Integer, default: 0 }\n  - { name: Width, type: Integer, min: 0, default: 96 }\n  - { name: Height, type: Integer, min: 0, default: 32 }\nevents:\n  - Click()\nmethods: []\n",
+  "CheckBox":
+      "# A box the user checks and unchecks, with a Caption beside it\n# (docs/DESIGN.md D44). Changed runs after Checked changes, also when the\n# program sets Checked (changeEvent), as TextBox.Changed does.\nname: CheckBox\nversion: 1\nvisual: true\ndefaultEvent: Changed\nproperties:\n  - { name: Caption, type: String, default: \"\" }\n  - { name: Checked, type: Boolean, default: false, changeEvent: Changed }\n  - { name: Left, type: Integer, default: 0 }\n  - { name: Top, type: Integer, default: 0 }\n  - { name: Width, type: Integer, min: 0, default: 120 }\n  - { name: Height, type: Integer, min: 0, default: 32 }\nevents:\n  - Changed()\nmethods: []\n",
   "Form":
       "# The form a program's controls sit on (docs/DESIGN.md §5).\n# Width and Height are the size of the area inside the window.\n# Integer properties are 32-bit (min and max narrow that); a value outside\n# is a run-time error (R007) or, in a form file, F012.\nname: Form\nversion: 1\nvisual: true\ndefaultEvent: Load\nproperties:\n  - { name: Caption, type: String, default: \"\" }\n  - { name: Width, type: Integer, min: 0, default: 480 }\n  - { name: Height, type: Integer, min: 0, default: 360 }\nevents:\n  - Load()\nmethods: []\n",
   "Label":

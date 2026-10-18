@@ -1,0 +1,25 @@
+Debug.Print: chkLate starts True
+Set chkShow.Checked: True
+Set lblState.Caption: show True
+Debug.Print: after setting: show True
+Set chkShow.Checked: True
+Debug.Print: same value again: no Changed
+> chkShow.Click
+Set lblState.Caption: show False
+> chkOff.Click
+Debug.Print: chkOff is True
+Set chkOff.Checked: False
+> chkWait.Click
+Debug.Print: wait starts, True
+> chkWait.Click
+Ignored: chkWait.Click
+> btnGo.Click
+Debug.Print: wait ends, True
+> chkLate.Click
+> btnObject.Click
+Set chkShow.Checked: True
+Set lblState.Caption: show True
+Debug.Print: show True
+Debug.Print: chkLate is False
+> Close
+Closed
