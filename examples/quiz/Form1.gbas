@@ -1,0 +1,71 @@
+' 작은 퀴즈: 문제를 보여 주고, ListBox의 보기 가운데 하나를 고르면
+' 맞았는지 알려 주며 점수를 셉니다.
+Dim questions(4) As String
+Dim choices(4) As String    ' 보기들을 | 로 이어 붙인 글자
+Dim answers(4) As Integer   ' 정답 보기의 번호(0부터)
+Dim current As Integer
+Dim score As Integer
+
+Sub Form_Load()
+    questions(0) = "대한민국의 수도는 어디일까요?"
+    choices(0) = "부산|서울|대구|인천"
+    answers(0) = 1
+    questions(1) = "윤년이 아닌 해는 며칠일까요?"
+    choices(1) = "360일|365일|366일|370일"
+    answers(1) = 1
+    questions(2) = "1기압에서 물이 끓는 온도는?"
+    choices(2) = "50도|80도|100도|120도"
+    answers(2) = 2
+    questions(3) = "세종대왕이 만든 글자는?"
+    choices(3) = "한자|한글|가나|알파벳"
+    answers(3) = 1
+    questions(4) = "7 × 8은 얼마일까요?"
+    choices(4) = "54|56|58|64"
+    answers(4) = 1
+    ShowQuestion(0)
+End Sub
+
+Sub ShowQuestion(number As Integer)
+    current = number
+    lblNumber.Caption = "문제 " & (number + 1) & " / " & (UBound(questions) + 1)
+    lblQuestion.Caption = questions(number)
+    ' Clear()는 고른 항목도 지웁니다. 그래서 고른 것이 있었다면
+    ' lstChoices_Changed가 실행되고, ListIndex는 -1(고른 것 없음)이 됩니다.
+    lstChoices.Clear()
+    For Each choice In Split(choices(number), "|")
+        lstChoices.AddItem(choice)
+    Next
+    lblScore.Caption = "점수: " & score
+End Sub
+
+Sub lstChoices_Changed()
+    ' ListIndex가 바뀔 때마다 실행됩니다: 보기를 고를 때, 그리고 Clear()로
+    ' 고른 것이 없어질 때(ListIndex = -1).
+    If lstChoices.ListIndex = -1 Then
+        btnCheck.Caption = "정답 확인"
+    Else
+        btnCheck.Caption = "확인: " & lstChoices.Text
+    End If
+End Sub
+
+Sub btnCheck_Click()
+    If lstChoices.ListIndex = -1 Then
+        MsgBox("먼저 보기를 하나 고르세요.")
+        Exit Sub
+    End If
+    If lstChoices.ListIndex = answers(current) Then
+        score = score + 1
+        MsgBox("정답입니다!")
+    ElseIf chkShowAnswer.Checked Then
+        MsgBox("틀렸습니다. 정답: " & lstChoices.List(answers(current)))
+    Else
+        MsgBox("틀렸습니다.")
+    End If
+    If current < UBound(questions) Then
+        ShowQuestion(current + 1)
+    Else
+        MsgBox((UBound(questions) + 1) & "문제 가운데 " & score & "문제를 맞혔습니다. 처음부터 다시 합니다.")
+        score = 0
+        ShowQuestion(0)
+    End If
+End Sub

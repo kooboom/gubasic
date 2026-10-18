@@ -19,7 +19,8 @@ The core Visual Basic experience, entirely inside the IDE.
 - [x] IDE shell on macOS (Windows build kept working; also runs on the web)
 - [x] Form designer: toolbox, canvas, drag / resize, Properties window
 - [x] Built-in components: `Form`, `Button`, `Label`, `TextBox`
-- [ ] Built-in components: `CheckBox`, `ListBox`, `Image`
+- [x] Built-in components: `CheckBox`, `ListBox` (example: [quiz](../examples/quiz))
+- [ ] Built-in component: `Image`
 - [x] Absolute layout (`Left`, `Top`, `Width`, `Height`)
 - [ ] `Anchor`; form size presets (Phone / Tablet / Desktop)
 - [x] Project files in plain text (`.gbproj`, `.form.yaml`, `.gbas`)
@@ -46,6 +47,7 @@ The core Visual Basic experience, entirely inside the IDE.
 - [ ] GitHub Actions template for cloud builds
 - [ ] Layout: `LayoutMode` (Vertical / Horizontal / Grid), `Dock`
 - [ ] `Handles` clause; run-time control creation
+- [ ] `OptionButton`: radio buttons, of which one in a group is chosen, with a way to form groups (in Visual Basic 6 the option buttons on a form are one group and those in each frame another: [Microsoft](https://learn.microsoft.com/en-us/previous-versions/visualstudio/visual-basic-6/aa241737(v=vs.60))). A natural control for a quiz's choices; the stage 1 quiz uses a ListBox
 - [ ] Menus in students' apps: a menu bar and right-click menus (Visual Basic 6's [Menu Editor](https://learn.microsoft.com/en-us/previous-versions/visualstudio/visual-studio-2008/62aawczc(v=vs.90)) and [PopupMenu](https://learn.microsoft.com/en-us/previous-versions/visualstudio/visual-basic-6/aa716251(v=vs.60)); Visual Basic .NET's `ContextMenuStrip`, same source)
 - [ ] `Database` (SQLite) and `Http` + JSON
 - [ ] Multiple forms and `Form2.Show` platform behavior; decide then whether one form can be saved on its own (Visual Basic 6's "Save Form1 As"; until then Save saves the whole project, D32)
