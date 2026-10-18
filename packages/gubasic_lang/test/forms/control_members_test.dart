@@ -62,7 +62,8 @@ void main() {
   });
 
   test('the items are not a property programs see', () {
-    expect(_codes('Debug.Print(lstCity.Items)'), ['A019']);
+    // Pointed to the methods that reach them (A036).
+    expect(_codes('Debug.Print(lstCity.Items)'), ['A036']);
   });
 
   test('the form file sets only design-time properties (F013, F009)', () {

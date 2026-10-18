@@ -138,6 +138,38 @@ void main() {
     }
   });
 
+  test('other names point to members (A036, D50)', () {
+    final c = readComponentFile('name: X\nversion: 1\ndefaultEvent: A\n'
+        'properties:\n'
+        '  - { name: P, type: Integer, default: 0 }\n'
+        '  - { name: S, type: List(Of String), default: [], internal: true }\n'
+        'events: [A()]\n'
+        'methods: [Go()]\n'
+        'otherNames:\n'
+        '  Value: P\n'
+        '  S: [Go, P]\n');
+    expect(c.otherNames, {
+      'value': ['P'],
+      's': ['Go', 'P'],
+    });
+    expect(builtinComponents['button']!.otherNames, {
+      'text': ['Caption'],
+    });
+    String yaml(String others) => 'name: X\nversion: 1\ndefaultEvent: A\n'
+        'properties: [{ name: P, type: Integer, default: 0 }]\n'
+        'events: [A()]\notherNames:\n$others';
+    for (final bad in [
+      '  P: P\n', // a member already
+      '  Value: Nope\n', // not a member
+      '  Value: A\n', // an event, not a member
+      '  Value: []\n',
+      '  Value: 3\n',
+    ]) {
+      expect(() => readComponentFile(yaml(bad)), throwsFormatException,
+          reason: bad);
+    }
+  });
+
   test('a broken component.yaml is refused', () {
     expect(
         () => readComponentFile('name: X\nversion: 1\ndefaultEvent: A\n'

@@ -245,6 +245,17 @@ enum DiagnosticCode {
   /// written.
   readOnlyProperty('A034'),
 
+  /// A member the type does not have, with a similar one it has
+  /// (`lstCity.ListIndx`). Args: the type, the member as written, the
+  /// similar member.
+  unknownMemberDidYouMean('A035'),
+
+  /// A member the type does not have, under a name other versions of
+  /// BASIC use for one GuBASIC calls differently (`btnOK.Text` for
+  /// `Caption`), listed as `otherNames` in the component.yaml. Args: the
+  /// type, the member as written, GuBASIC's member(s).
+  memberHasOtherName('A036'),
+
   // Form and project files (.form.yaml, .gbproj)
 
   /// The file is not in the expected layout (YAML syntax).
@@ -356,6 +367,7 @@ class Diagnostic {
     required this.offset,
     required this.length,
     this.args = const [],
+    this.replacements = const [],
   });
 
   final DiagnosticCode code;
@@ -370,6 +382,11 @@ class Diagnostic {
 
   /// Values substituted into the message template as `{0}`, `{1}`, ….
   final List<String> args;
+
+  /// Names that could replace the text the diagnostic points at, for "did
+  /// you mean" in the code editor: the similar name of A002 or A035, the
+  /// GuBASIC member(s) of A036. Empty for most diagnostics.
+  final List<String> replacements;
 
   /// The English message.
   String get message => formatMessage(englishMessages);

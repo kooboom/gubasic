@@ -156,6 +156,10 @@ const Map<DiagnosticCode, String> englishMessages = {
       'Only arrays and lists can be used with (index); for text, use Mid.',
   DiagnosticCode.unknownMember:
       '{0} has no member named "{1}". Check the spelling.',
+  DiagnosticCode.unknownMemberDidYouMean: '{0} has no member named "{1}". '
+      'There is a similar member, "{2}"; check the spelling.',
+  DiagnosticCode.memberHasOtherName: '{0} has no member named "{1}". '
+      'GuBASIC calls it differently: use {2}.',
   DiagnosticCode.notAssignable: '"{0}" cannot be given a value. Only '
       'variables, items of arrays or lists, and properties can be on the '
       'left of "=" (constants, procedures and call results cannot change).',

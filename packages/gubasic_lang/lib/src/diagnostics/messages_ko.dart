@@ -133,6 +133,10 @@ const Map<DiagnosticCode, String> koreanMessages = {
   DiagnosticCode.notIndexable: '{0} 타입 값에는 번호로 꺼낼 항목이 없습니다. '
       '(번호)는 배열과 List에만 쓸 수 있고, 문자열에는 Mid 함수를 써 주세요.',
   DiagnosticCode.unknownMember: '{0} 타입에는 {1} 멤버가 없습니다. 철자를 확인해 주세요.',
+  DiagnosticCode.unknownMemberDidYouMean:
+      '{0} 타입에는 {1} 멤버가 없습니다. 비슷한 멤버로 {2} 멤버가 있으니 철자를 확인해 주세요.',
+  DiagnosticCode.memberHasOtherName:
+      '{0} 타입에는 {1} 멤버가 없습니다. GuBASIC에서는 이름이 달라서 {2} 멤버를 씁니다.',
   DiagnosticCode.notAssignable: '{0} 부분에는 값을 넣을 수 없습니다. '
       '= 왼쪽에는 변수, 배열이나 List의 항목, 속성만 올 수 있습니다(상수, 프로시저, 호출 결과는 바꿀 수 없음).',
   DiagnosticCode.assignToFunctionName: 'GuBASIC의 Function은 Return으로 값을 돌려줍니다. '

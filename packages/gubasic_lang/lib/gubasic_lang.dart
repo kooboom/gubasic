@@ -21,6 +21,7 @@ export 'src/analyzer/analysis_result.dart';
 export 'src/analyzer/analyzer.dart';
 export 'src/analyzer/compile.dart';
 export 'src/analyzer/symbols.dart';
+export 'src/completion/completion.dart';
 export 'src/forms/component.dart';
 export 'src/forms/form_file.dart';
 export 'src/forms/form_writer.dart';

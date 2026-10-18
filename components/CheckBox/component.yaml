@@ -15,3 +15,8 @@ properties:
 events:
   - Changed()
 methods: []
+# Names other versions of BASIC use, pointed to GuBASIC's (A036,
+# docs/DESIGN.md D50).
+otherNames:
+  Text: Caption
+  Value: Checked

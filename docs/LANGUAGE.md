@@ -144,6 +144,8 @@ The analyzer checks names and types (§2.1, §3.2, §5.2). It runs even when the
 | A032 | An event handler not written as its event expects (§8) |
 | A033 | `New` with a control type: controls cannot be created by code yet (stage 2) |
 | A034 | A value given to a property the program can only read (`lstNames.ListCount = 3`, `names.Count = 0`) |
+| A035 | A member the type does not have, and a similar member it has (`lstCity.ListIndx`: "did you mean ListIndex") |
+| A036 | A member the type does not have, under the name other versions of BASIC use for a member GuBASIC calls differently (`btnOK.Text`: use `Caption`; DESIGN.md D50) |
 
 **Form and project files**
 

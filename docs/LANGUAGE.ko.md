@@ -144,6 +144,8 @@ Handles ReDim Preserve Optional Of ByVal
 | A032 | 이벤트가 정한 형태와 다르게 쓴 이벤트 처리기(8절) |
 | A033 | 컨트롤 타입에 쓴 `New`: 컨트롤은 아직 코드로 만들 수 없음(2단계) |
 | A034 | 프로그램이 읽기만 할 수 있는 속성에 값을 넣음(`lstNames.ListCount = 3`, `names.Count = 0`) |
+| A035 | 타입에 없는 멤버. 철자가 비슷한 멤버가 있음(`lstCity.ListIndx`: "혹시 ListIndex인가요") |
+| A036 | 타입에 없는 멤버. 다른 버전의 BASIC에서 쓰는 이름이고, GuBASIC에서는 이름이 다름(`btnOK.Text`: `Caption`을 씀. DESIGN.ko.md D50) |
 
 **폼·프로젝트 파일**
 

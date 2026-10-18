@@ -11,6 +11,14 @@ controls:
   - { name: txtName, type: TextBox }
 ''', name: 'Form1').form;
 
+/// A form with a ListBox and a CheckBox too, for their members.
+final _formWithList = readFormFile('''
+formatVersion: 1
+controls:
+  - { name: lstCity, type: ListBox }
+  - { name: chkShow, type: CheckBox }
+''', name: 'Form1').form;
+
 CompileResult _compile(String source) => compile(source, form: _form);
 
 List<String> diagnose(String source) => _compile(source)
@@ -49,7 +57,37 @@ void main() {
 
     test('A019: a property the control does not have', () {
       expect(inSub('txtName.Caption = "x"'), ['A019']);
-      expect(inSub('lblMessage.Text = "x"'), ['A019']);
+      expect(inSub('lblMessage.Size = 3'), ['A019']);
+    });
+
+    test('A035: a member close to one the control has', () {
+      final d = compile('Sub W()\nDebug.Print(lstCity.ListIndx)\nEnd Sub\n',
+              form: _formWithList)
+          .diagnostics
+          .single;
+      expect(d.code.code, 'A035');
+      expect(d.args, ['ListBox', 'ListIndx', 'ListIndex']);
+      expect(d.replacements, ['ListIndex']);
+      expect(d.formatMessage(koreanMessages),
+          'ListBox 타입에는 ListIndx 멤버가 없습니다. 비슷한 멤버로 ListIndex 멤버가 있으니 철자를 확인해 주세요.');
+    });
+
+    test('A036: a name other versions of BASIC use (otherNames)', () {
+      expect(inSub('lblMessage.Text = "x"'), ['A036']);
+      expect(inSub('btnSave.Text = "x"'), ['A036']);
+      final d = compile(
+              'Sub W()\nlstCity.Items.Add("a")\nchkShow.Value = 1\nEnd Sub\n',
+              form: _formWithList)
+          .diagnostics;
+      expect(d.map((d) => d.code.code), ['A036', 'A036']);
+      expect(d[0].replacements, ['AddItem', 'List', 'ListCount']);
+      expect(
+          d[0].message,
+          'ListBox has no member named "Items". GuBASIC '
+          'calls it differently: use AddItem, List, ListCount.');
+      expect(d[1].replacements, ['Checked']);
+      expect(d[1].formatMessage(koreanMessages),
+          'CheckBox 타입에는 Value 멤버가 없습니다. GuBASIC에서는 이름이 달라서 Checked 멤버를 씁니다.');
     });
 
     test('a control itself cannot be assigned, called or used as a value', () {
@@ -82,7 +120,8 @@ void main() {
   group('Me', () {
     test('is the form, with the form\'s properties', () {
       expect(inSub('Me.Caption = "Score"\nMe.Width = Me.Height * 2'), isEmpty);
-      expect(inSub('Me.Text = "x"'), ['A019']);
+      expect(inSub('Me.Text = "x"'), ['A036']);
+      expect(inSub('Me.Size = 3'), ['A019']);
     });
 
     test('without a form it is reported (A003), as are controls', () {

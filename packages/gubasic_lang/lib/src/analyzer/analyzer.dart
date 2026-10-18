@@ -96,7 +96,7 @@ class _Analyzer {
   // Diagnostics
 
   void _report(DiagnosticCode code, int start, int end,
-      [List<String> args = const []]) {
+      [List<String> args = const [], List<String> replacements = const []]) {
     final (line, column) = _lines.locate(start);
     _diagnostics.add(Diagnostic(
       code: code,
@@ -105,12 +105,14 @@ class _Analyzer {
       offset: start,
       length: end - start,
       args: args,
+      replacements: replacements,
     ));
   }
 
   void _reportAt(Node node, DiagnosticCode code,
-          [List<String> args = const []]) =>
-      _report(code, node.start, node.end, args);
+          [List<String> args = const [],
+          List<String> replacements = const []]) =>
+      _report(code, node.start, node.end, args, replacements);
 
   int _line(Node node) => _lines.locate(node.start).$1;
 
@@ -847,34 +849,14 @@ class _Analyzer {
       _reportAt(e, DiagnosticCode.unknownNameMaybeControl, [e.name]);
       return;
     }
-    final suggestion = _suggest(e.name);
+    final suggestion =
+        closestName(e.name, _scope.visible.map((s) => s.name).toSet());
     if (suggestion != null) {
-      _reportAt(e, DiagnosticCode.unknownNameDidYouMean, [e.name, suggestion]);
+      _reportAt(e, DiagnosticCode.unknownNameDidYouMean, [e.name, suggestion],
+          [suggestion]);
     } else {
       _reportAt(e, DiagnosticCode.unknownName, [e.name]);
     }
-  }
-
-  /// The closest visible name, if it is close enough to be a typo.
-  String? _suggest(String name) {
-    // One- and two-letter names are too short for a useful guess (y → x).
-    if (name.length < 3) return null;
-    final lower = name.toLowerCase();
-    // One edit for names up to 6 letters, two for longer ones: looser
-    // limits suggest unrelated names (total → Today).
-    final limit = name.length <= 6 ? 1 : 2;
-    String? best;
-    var bestDistance = limit + 1;
-    final candidates = _scope.visible.map((s) => s.name).toSet().toList()
-      ..sort();
-    for (final candidate in candidates) {
-      final d = _editDistance(lower, candidate.toLowerCase());
-      if (d < bestDistance) {
-        bestDistance = d;
-        best = candidate;
-      }
-    }
-    return best;
   }
 
   GbType _name(NameExpr e, {required bool valueNeeded}) {
@@ -921,8 +903,7 @@ class _Analyzer {
     if (members == null || e.name.name.isEmpty) return GbType.unknown;
     final spec = members[e.name.name.toLowerCase()];
     if (spec == null) {
-      _reportAt(e.name, DiagnosticCode.unknownMember,
-          [_result.types[target]?.displayName ?? '?', e.name.name]);
+      _unknownMember(e, members);
       return GbType.unknown;
     }
     _result.members[e] = spec;
@@ -930,6 +911,29 @@ class _Analyzer {
       return _implicitCall(e, spec.method!, valueNeeded: valueNeeded);
     }
     return spec.type;
+  }
+
+  /// Reports a member [members] does not have: under another name GuBASIC
+  /// spells differently (A036), close to one it has (A035), or not at all
+  /// (A019).
+  void _unknownMember(MemberExpr e, Map<String, MemberSpec> members) {
+    final type = _result.types[e.target];
+    final name = e.name.name;
+    final args = [type?.displayName ?? '?', name];
+    final others = type is ControlType
+        ? type.component.otherNames[name.toLowerCase()]
+        : null;
+    final suggestion =
+        closestName(name, [for (final m in members.values) m.name]);
+    if (others != null) {
+      _reportAt(e.name, DiagnosticCode.memberHasOtherName,
+          [...args, others.join(', ')], others);
+    } else if (suggestion != null) {
+      _reportAt(e.name, DiagnosticCode.unknownMemberDidYouMean,
+          [...args, suggestion], [suggestion]);
+    } else {
+      _reportAt(e.name, DiagnosticCode.unknownMember, args);
+    }
   }
 
   GbType _invoke(InvokeExpr e, {required bool valueNeeded}) {
@@ -1222,6 +1226,31 @@ class _Analyzer {
           [op.symbol, l.displayName, r.displayName]);
     }
   }
+}
+
+/// The name among [candidates] closest to [name], if it is close enough to
+/// be a typo: for "did you mean" (A002, A035). Ties go to the first in
+/// sorted order.
+String? closestName(String name, Iterable<String> candidates) {
+  // One- and two-letter names are too short for a useful guess (y → x).
+  if (name.length < 3) return null;
+  final lower = name.toLowerCase();
+  // One edit for names up to 6 letters, two for longer ones: looser
+  // limits suggest unrelated names (total → Today).
+  final limit = name.length <= 6 ? 1 : 2;
+  String? best;
+  var bestDistance = limit + 1;
+  for (final candidate in candidates) {
+    // Names whose lengths differ by more than the limit cannot be close.
+    if ((candidate.length - name.length).abs() > limit) continue;
+    final d = _editDistance(lower, candidate.toLowerCase());
+    if (d < bestDistance ||
+        d == bestDistance && best != null && candidate.compareTo(best) < 0) {
+      bestDistance = d;
+      best = candidate;
+    }
+  }
+  return best;
 }
 
 /// Levenshtein distance.

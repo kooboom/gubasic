@@ -108,6 +108,7 @@ class ComponentSpec {
     required List<EventSpec> events,
     List<MethodSpec> methods = const [],
     this.layer = ComponentLayer.control,
+    this.otherNames = const {},
   })  : properties = {for (final p in properties) p.name.toLowerCase(): p},
         events = {for (final e in events) e.name.toLowerCase(): e},
         methods = {for (final m in methods) m.name.toLowerCase(): m};
@@ -127,6 +128,11 @@ class ComponentSpec {
 
   /// By lower-case name, in declaration order.
   final Map<String, MethodSpec> methods;
+
+  /// Names other versions of BASIC use for a member GuBASIC calls
+  /// differently, by lower-case name: `text` → `[Caption]` for a Button.
+  /// The analyzer points to GuBASIC's member(s) (A036).
+  final Map<String, List<String>> otherNames;
 
   /// The properties the form file and the Properties window can set.
   Iterable<PropertySpec> get designProperties =>
@@ -254,6 +260,20 @@ ComponentSpec readComponentFile(String text) {
       ComponentLayer.values.where((l) => l.name == layerName).firstOrNull;
   if (layer == null) throw FormatException('bad layer: $layerName');
 
+  final otherNames = <String, List<String>>{};
+  final others = doc['otherNames'] ?? YamlMap();
+  if (others is! YamlMap) throw const FormatException('bad otherNames');
+  for (final MapEntry(:key, :value) in others.entries) {
+    final names = value is String ? [value] : value;
+    if (key is! String ||
+        names is! List ||
+        names.isEmpty ||
+        names.any((n) => n is! String)) {
+      throw FormatException('bad otherNames: $key');
+    }
+    otherNames[key.toLowerCase()] = List.unmodifiable(names.cast<String>());
+  }
+
   final spec = ComponentSpec(
     name: field<String>(doc, 'name'),
     version: field<int>(doc, 'version'),
@@ -262,6 +282,7 @@ ComponentSpec readComponentFile(String text) {
     events: events,
     methods: methods,
     layer: layer,
+    otherNames: otherNames,
   );
   if (!spec.events.containsKey(spec.defaultEvent.toLowerCase())) {
     throw FormatException('${spec.name}: defaultEvent is not an event');
@@ -271,6 +292,22 @@ ComponentSpec readComponentFile(String text) {
     if (e != null && spec.events[e.toLowerCase()]?.parameters.isEmpty != true) {
       throw FormatException('${p.name}: changeEvent is not an event '
           'without parameters');
+    }
+  }
+  // A program sees the properties that are not internal, and the methods.
+  bool isMember(String name) =>
+      spec.methods.containsKey(name.toLowerCase()) ||
+      spec.properties[name.toLowerCase()]?.internal == false;
+  for (final MapEntry(:key, :value) in spec.otherNames.entries) {
+    if (isMember(key)) {
+      throw FormatException('${spec.name}: $key is a member, not another '
+          'name');
+    }
+    for (final name in value) {
+      if (!isMember(name)) {
+        throw FormatException('${spec.name}: $name in otherNames is not a '
+            'member');
+      }
     }
   }
   return spec;

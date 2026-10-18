@@ -29,3 +29,8 @@ methods:
   - RemoveItem(index As Integer)
   - Clear()
   - List(index As Integer) As String
+# Names other versions of BASIC use, pointed to GuBASIC's (A036,
+# docs/DESIGN.md D50).
+otherNames:
+  SelectedIndex: ListIndex
+  Items: [AddItem, List, ListCount]
