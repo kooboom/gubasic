@@ -72,6 +72,14 @@ After changing `components/`, `examples/` or `test/parity/`, run the generator i
 - Stage files by explicit path; never commit build output or files containing local paths. Generated files that are checked in: the `*.g.dart` files listed under Layout, and the plugin registrants Flutter writes under each app's `macos/` and `windows/` folders (commit them when a plugin is added).
 - Never force-push `main` without the author's explicit approval.
 
+## Checking on the author's Mac
+
+The Mac is the author's own computer, in use while you work.
+
+- **Real mouse and keyboard events** (CGEvent, System Events, `cliclick` and the like) only after the author says the Mac is free to use ("지금 맥 안 쓴다, 해도 된다"). Before starting, say about how many minutes it will take; when done, say that it is done.
+- **Without that permission**, check only in ways that do not use the author's mouse and keyboard: tests that run inside the app (Flutter `integration_test`, widget tests) and Playwright for the web.
+- **Even with permission**, before every event check that the frontmost app is the GuBASIC IDE you started (by its process id), and stop at once if it is not.
+
 ## Before you finish a task
 
 - `dart tool/check_flutter.dart` in `packages/gubasic_runtime` passes (the pinned Flutter, D29)
