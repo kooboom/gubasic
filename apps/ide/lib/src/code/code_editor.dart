@@ -25,7 +25,7 @@ const codeErrorLineKey = ValueKey('code.errorLine');
 
 /// The size of the code, and the height of a line, so that the line
 /// numbers stay level with the lines whatever font a character takes.
-const codeFontSize = 14.0;
+const codeFontSize = 13.0;
 const codeLineHeight = 1.5;
 
 /// How many spaces Tab indents by.

@@ -95,8 +95,11 @@ class _GbTextBoxState extends State<GbTextBox> {
     controller: _controller,
     focusNode: _focus,
     decoration: const InputDecoration(
-      border: OutlineInputBorder(),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.all(Radius.circular(2)),
+      ),
       isDense: true,
+      contentPadding: EdgeInsets.symmetric(horizontal: 6, vertical: 8),
     ),
   );
 }

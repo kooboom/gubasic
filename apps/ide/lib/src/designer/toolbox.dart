@@ -93,12 +93,12 @@ class Toolbox extends StatelessWidget {
         onTapDown: enabled ? (_) => onTapDown() : null,
         onDoubleTap: enabled ? onDoubleTap : null,
         child: Container(
-          height: 36,
-          margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+          height: 26,
+          margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 1),
           padding: const EdgeInsets.symmetric(horizontal: 8),
           decoration: BoxDecoration(
             color: selected && enabled ? scheme.secondaryContainer : null,
-            borderRadius: BorderRadius.circular(6),
+            borderRadius: BorderRadius.circular(4),
           ),
           child: Row(
             children: [

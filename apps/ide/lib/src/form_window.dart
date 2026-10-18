@@ -71,7 +71,7 @@ class FormWindowFrame extends StatelessWidget {
       child: Material(
         elevation: 8,
         color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(4),
         clipBehavior: Clip.antiAlias,
         child: Column(
           mainAxisSize: MainAxisSize.min,

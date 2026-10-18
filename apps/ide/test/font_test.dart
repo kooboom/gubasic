@@ -6,19 +6,20 @@ import 'package:gubasic_ide/main.dart';
 import 'package:gubasic_ide/src/project/examples.g.dart';
 import 'package:gubasic_ide/src/strings.dart';
 import 'package:gubasic_ide/src/theme.dart';
+import 'package:gubasic_runtime/gubasic_runtime.dart';
 
 void main() {
   test('the font and its license are in the app', () {
     for (final f in [
-      'fonts/NotoSansKR-Regular.otf',
-      'fonts/NotoSansKR-Bold.otf',
-      'fonts/OFL.txt',
+      'fonts/pretendard/Pretendard-Regular.otf',
+      'fonts/pretendard/Pretendard-Bold.otf',
+      'fonts/pretendard/LICENSE.txt',
     ]) {
       expect(File(f).existsSync(), isTrue, reason: f);
     }
     expect(
-      File('fonts/OFL.txt').readAsStringSync(),
-      contains('SIL Open Font License'),
+      File('fonts/pretendard/LICENSE.txt').readAsStringSync(),
+      allOf(contains('SIL Open Font License'), contains('Kil Hyung-jin')),
     );
   });
 
@@ -49,6 +50,15 @@ void main() {
     );
     final theme = Theme.of(tester.element(find.text('Hello').first));
     expect(theme.textTheme.bodyMedium!.fontFamily, ideFontFamily);
+    // The l with a tail (D49), in the IDE and on its forms.
+    expect(theme.textTheme.bodyMedium!.fontFeatures, ideFontFeatures);
+    expect(
+      Theme.of(tester.element(find.byType(GbFormView)))
+          .textTheme
+          .bodyMedium!
+          .fontFeatures,
+      ideFontFeatures,
+    );
     expect(codeStyle.fontFamilyFallback, [ideFontFamily]);
   });
 }

@@ -31,11 +31,11 @@ flutter:
   # first opens, not on the IDE's first visit (D36).
   assets:
     - fonts/d2coding/D2Coding-Ver1.3.2-20180524.ttf
-    # Noto Sans KR Bold: loaded after the first frame (D30, BoldFont).
-    - fonts/NotoSansKR-Bold.otf
-  # Noto Sans KR 2.004 (OFL, fonts/OFL.txt), the IDE's font on every
-  # platform (D30). The source is in README.md.
+    # Pretendard Bold: loaded after the first frame (D30, BoldFont).
+    - fonts/pretendard/Pretendard-Bold.otf
+  # Pretendard 1.3.9 (OFL, fonts/pretendard/LICENSE.txt), the IDE's font
+  # on every platform (D30, D49). The source is in README.md.
   fonts:
-    - family: NotoSansKR
+    - family: Pretendard
       fonts:
-        - asset: fonts/NotoSansKR-Regular.otf
+        - asset: fonts/pretendard/Pretendard-Regular.otf

@@ -188,7 +188,7 @@ class PropertiesPanel extends StatelessWidget {
         SizedBox(
           width: 72,
           child: Padding(
-            padding: const EdgeInsets.only(top: 8),
+            padding: const EdgeInsets.only(top: 4),
             child: Text(
               name,
               overflow: TextOverflow.ellipsis,

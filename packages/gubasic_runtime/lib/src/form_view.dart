@@ -15,7 +15,12 @@ class GbFormView extends StatelessWidget {
   final GbFormModel model;
 
   @override
-  Widget build(BuildContext context) => ListenableBuilder(
+  Widget build(BuildContext context) => Theme(
+    data: gbFormTheme(Theme.of(context)),
+    child: Builder(builder: _form),
+  );
+
+  Widget _form(BuildContext context) => ListenableBuilder(
     listenable: model.form,
     builder: (context, _) => SizedBox(
       width: model.form.integer('Width').toDouble(),
@@ -52,6 +57,47 @@ class _GbPlaced extends StatelessWidget {
       GbControlKind.listBox => GbListBox(model: model, state: state),
       GbControlKind.form => throw ArgumentError('a form inside a form'),
     },
+  );
+}
+
+/// The corners of the controls on a form: square, as in Visual Basic 6
+/// (docs/DESIGN.md D49).
+const gbControlRadius = BorderRadius.all(Radius.circular(3));
+
+/// The theme of a form's controls (D49): calm, square and dense, 13 px
+/// text of normal weight, greys with a blue accent. It is the form's own,
+/// apart from the app around it, so that a change of the IDE's look does
+/// not change the forms students draw; only the font (family and features)
+/// comes from [ambient], as the runtime does not choose fonts (§2.3).
+ThemeData gbFormTheme(ThemeData ambient) {
+  final font = ambient.textTheme.bodyMedium;
+  final base = ThemeData(
+    colorScheme: ColorScheme.fromSeed(
+      seedColor: const Color(0xFF3B6EA5),
+      dynamicSchemeVariant: DynamicSchemeVariant.neutral,
+    ),
+    fontFamily: font?.fontFamily,
+    visualDensity: VisualDensity.compact,
+    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+  );
+  // Sizes and weight only: the colours stay the theme's own.
+  TextStyle? text(TextStyle? from) => from?.copyWith(
+    fontFamily: font?.fontFamily,
+    fontFeatures: font?.fontFeatures,
+    fontSize: 13,
+    fontWeight: FontWeight.w400,
+  );
+  return base.copyWith(
+    textTheme: base.textTheme.copyWith(
+      bodyLarge: text(base.textTheme.bodyLarge),
+      bodyMedium: text(base.textTheme.bodyMedium),
+      labelLarge: text(base.textTheme.labelLarge),
+    ),
+    checkboxTheme: const CheckboxThemeData(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.all(Radius.circular(2)),
+      ),
+    ),
   );
 }
 
@@ -94,6 +140,11 @@ class _GbButtonState extends State<GbButton> {
       style: OutlinedButton.styleFrom(
         padding: const EdgeInsets.symmetric(horizontal: gbButtonPadding),
         backgroundColor: gbButtonFace(Theme.of(context).colorScheme),
+        // Dark text, as on an enabled button; a Button that cannot be
+        // clicked (an Enabled property, later) keeps Material's grey.
+        foregroundColor: Theme.of(context).colorScheme.onSurface,
+        shape: const RoundedRectangleBorder(borderRadius: gbControlRadius),
+        minimumSize: Size.zero,
       ),
       onPressed: () {
         _focus.requestFocus();

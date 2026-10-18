@@ -52,9 +52,9 @@ Problems we know about and have **deliberately** left unfixed for now. Each entr
 
 ## Apps built later may cut off text drawn in the IDE
 
-- **What:** the runtime does not choose fonts (DESIGN §2.3), so apps made later by the transpiler will use the device's default font, while the IDE uses its bundled Noto Sans KR (D30). Letters can then be wider in the released app than in the IDE, and text in a Label drawn to fit can be cut off.
+- **What:** the runtime does not choose fonts (DESIGN §2.3), so apps made later by the transpiler will use the device's default font, while the IDE uses its bundled Pretendard (D30). Letters can then be wider in the released app than in the IDE, and text in a Label drawn to fit can be cut off.
 - **Why deferred:** there is no transpiler yet.
-- **Revisit:** in the transpiler stage. Options include putting the same font into generated apps (they grow by about 9 MB), or having the designer warn when text may be cut off.
+- **Revisit:** in the transpiler stage. Options include putting the same font into generated apps (they grow by about 3 MB), or having the designer warn when text may be cut off.
 
 ## The web IDE's font loading is not checked on the school network
 
@@ -72,7 +72,7 @@ Problems we know about and have **deliberately** left unfixed for now. Each entr
 
 ## The web IDE's fonts are sent as OTF, not WOFF2
 
-- **What:** Noto Sans KR goes to the browser as an OTF file that GitHub Pages compresses with gzip (Regular 4.6 MB, 3.7 MB on the wire). WOFF2 compresses fonts better, but Flutter's documentation lists only `.ttc`, `.ttf` and `.otf`, says WOFF and WOFF2 are not supported on desktop platforms, and says nothing of the web ([Flutter](https://docs.flutter.dev/cookbook/design/fonts)).
+- **What:** Pretendard goes to the browser as an OTF file that GitHub Pages compresses with gzip (Regular 1.6 MB, 1.05 MB on the wire). WOFF2 compresses fonts better, but Flutter's documentation lists only `.ttc`, `.ttf` and `.otf`, says WOFF and WOFF2 are not supported on desktop platforms, and says nothing of the web ([Flutter](https://docs.flutter.dev/cookbook/design/fonts)).
 - **Why deferred:** the IDE uses one font list on every platform (D30), and the web's support is not documented; it was not tried.
 - **Revisit:** if Flutter documents WOFF2 for the web, or if the first visit is still too slow on the school network.
 

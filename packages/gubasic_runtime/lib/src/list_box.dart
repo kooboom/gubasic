@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'form_model.dart';
 
 /// The height of one item of a ListBox.
-const gbListItemHeight = 28.0;
+const gbListItemHeight = 22.0;
 
 /// The key of item [index] of ListBox [control], for tests.
 Key gbListItemKey(String control, int index) =>
@@ -43,10 +43,10 @@ class GbListBox extends StatelessWidget {
           decoration: BoxDecoration(
             color: scheme.surface,
             border: Border.all(color: scheme.outline),
-            borderRadius: BorderRadius.circular(4),
+            borderRadius: BorderRadius.circular(2),
           ),
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(4),
+            borderRadius: BorderRadius.circular(2),
             child: items.isEmpty && model.designing
                 ? Padding(
                     padding: const EdgeInsets.all(8),
