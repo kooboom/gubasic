@@ -9,13 +9,25 @@ import '../form_window.dart';
 /// MsgBox and InputBox are [dialogs]. What the user does on the form goes
 /// to the interpreter as events.
 class RunHost implements FormHost {
-  RunHost(FormFile form, {GbStrings strings = GbStrings.en})
-    : dialogs = GbDialogs(strings: strings) {
+  RunHost(
+    FormFile form, {
+    GbStrings strings = GbStrings.en,
+    this.project = '',
+    this._settings,
+  }) : dialogs = GbDialogs(strings: strings) {
     model = formModelOf(form, onEvent: _onEvent, accepts: _accepts);
   }
 
   late final GbFormModel model;
   final GbDialogs dialogs;
+
+  /// The project's name: its settings are kept by it (D48).
+  final String project;
+
+  /// Where the program's settings are kept; shared_preferences unless
+  /// given, made only when the program uses them.
+  GbSettingsStore? _settings;
+  GbSettingsStore get settings => _settings ??= GbPreferencesSettings();
 
   /// Set before the program starts.
   late final Interpreter interpreter;
@@ -69,6 +81,12 @@ class RunHost implements FormHost {
   @override
   void setProperty(String? control, String property, Object value) =>
       model.control(control)!.set(property, value);
+
+  @override
+  Future<String?> loadSettings() => settings.load(project);
+
+  @override
+  Future<void> saveSettings(String text) => settings.save(project, text);
 
   @override
   void showForm() => onShowForm?.call();

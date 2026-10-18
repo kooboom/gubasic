@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
+import 'package:gubasic_runtime/gubasic_runtime.dart';
 
 import 'src/ide_shell.dart';
 import 'src/project/examples.g.dart';
@@ -69,6 +70,7 @@ class IdeApp extends StatefulWidget {
     this.pickers,
     this.browser,
     this.pickZip,
+    this.settings,
   });
 
   /// The built-in projects: name → files.
@@ -88,6 +90,9 @@ class IdeApp extends StatefulWidget {
   final Browser? browser;
   final Future<List<int>?> Function()? pickZip;
 
+  /// Where the programs' settings are kept; shared_preferences when null.
+  final GbSettingsStore? settings;
+
   @override
   State<IdeApp> createState() => _IdeAppState();
 }
@@ -101,6 +106,7 @@ class _IdeAppState extends State<IdeApp> {
     pickers: widget.pickers,
     browser: widget.browser,
     pickZip: widget.pickZip,
+    settings: widget.settings,
     open: widget.open,
   );
 

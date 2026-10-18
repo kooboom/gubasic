@@ -12,12 +12,6 @@ Problems we know about and have **deliberately** left unfixed for now. Each entr
 - **Why deferred:** it is not a correctness problem, and programs of the size beginners write do not notice it.
 - **Revisit:** when someone finds the playground or the IDE noticeably slow in practice, or in the transpiler stage.
 
-## Settings are not available yet
-
-- **What:** `SaveSetting` and `GetSetting` are reported before running (A029) and cannot be used.
-- **Why deferred:** where settings are stored differs between platforms (shared_preferences in apps, the browser's storage in the playground). It belongs with `gubasic_runtime`, so that the interpreter and generated apps store them the same way (D11).
-- **Revisit:** when `gubasic_runtime` arrives.
-
 ## The playground does not run forms
 
 - **What:** forms run in the IDE's run window (`apps/ide`) and in the parity tests, but the playground runs only programs without a form: there, controls and `Me` are still reported (A003).

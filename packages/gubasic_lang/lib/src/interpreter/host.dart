@@ -14,6 +14,15 @@ abstract interface class Host {
   /// and regularly while the program runs; it never changes what the
   /// program computes.
   Future<void> yieldNow();
+
+  /// The saved settings of the program (`GetSetting`), as the text the
+  /// interpreter last gave [saveSettings], or null if there are none. The
+  /// IDE keeps them for each project, by its name (docs/DESIGN.md D48).
+  Future<String?> loadSettings();
+
+  /// `SaveSetting`: keeps [text], all of the program's settings. Throws if
+  /// they cannot be kept; the program then stops with R012.
+  Future<void> saveSettings(String text);
 }
 
 /// What a program with a form needs besides [Host]: the form and its

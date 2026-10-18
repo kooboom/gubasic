@@ -138,7 +138,7 @@ The analyzer checks names and types (§2.1, §3.2, §5.2). It runs even when the
 | A026 | **Warning.** A local variable that is never used |
 | A027 | **Warning.** A `Function` with no `Return` |
 | A028 | **Warning.** A local that hides a form-level variable of the same name |
-| A029 | `SaveSetting` / `GetSetting`: not available yet (reported before running) |
+| A029 | **Retired** (D48 made it unnecessary): it said `SaveSetting` and `GetSetting` were not available yet. The code is not reused |
 | A030 | A form-level variable or procedure with the name of a control (§11) |
 | A031 | **Warning.** A local with the name of a control, which it hides |
 | A032 | An event handler not written as its event expects (§8) |
@@ -181,6 +181,8 @@ Errors found while a program runs. Each stops the program and points at its line
 | R008 | An exception that was thrown and not caught |
 | R009 | Procedures calling each other more than 10,000 deep (endless recursion) |
 | R010 | An `Integer` property set to a value outside its range (§11.1) |
+| R011 | `SaveSetting` would make the program's settings longer than 65536 characters (§10) |
+| R012 | `SaveSetting` could not keep the settings, for example because the browser's storage is full (§10) |
 
 ## 2. Types
 
@@ -557,7 +559,9 @@ String functions follow classic BASIC and **count from 1**. String *methods* (`.
   ```
 
 - `Now` and `Today` use the device's local time.
-- `SaveSetting` and `GetSetting` are not available yet (A029).
+- **`SaveSetting(key, value)` and `GetSetting(key, default)`** keep text from one run of a program to the next. `GetSetting` gives what was saved under `key`, or `default` if nothing was. Keys do not tell case apart (`best` and `Best` are one key); an empty key is R007. Values are text: a number is saved as its text (§2.2), so read it back with a conversion: `CInt(GetSetting("best", "0"))`.
+- **Each project has its own settings, by its name** (the `name` in its `.gbproj`, §11.3): two projects with the same name share them, and a project saved under a new name starts without them. They are not part of the project's files or its `.zip`. In the IDE, **File → Clear Saved Settings** forgets the open project's settings. The playground, which has no projects, keeps one set for all its programs.
+- A program's settings are at most 65536 characters of text in all (R011), so that a program cannot fill the browser's storage, where the web IDE keeps its projects too. Settings are kept as plain text: do not save passwords in them (DESIGN.md D48).
 
 ## 11. Forms and controls
 

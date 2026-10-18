@@ -9,8 +9,9 @@ import 'parity_cases.g.dart';
 /// NAME.out on both platforms (D26: exact 64-bit Integers, same text form,
 /// same random numbers).
 class _Host implements Host {
-  _Host(List<String> answers) : _answers = List.of(answers);
+  _Host(List<String> answers, this.settings) : _answers = List.of(answers);
   final List<String> _answers;
+  String? settings;
   final transcript = <String>[];
   @override
   void debugPrint(String line) => transcript.add('Debug.Print: $line');
@@ -26,6 +27,15 @@ class _Host implements Host {
 
   @override
   Future<void> yieldNow() async {}
+
+  @override
+  Future<String?> loadSettings() async => settings;
+
+  @override
+  Future<void> saveSettings(String text) async {
+    settings = text;
+    transcript.add(TranscriptLine.saveSettings(text));
+  }
 }
 
 void main() {
@@ -33,17 +43,19 @@ void main() {
     expect(parityCases.length, greaterThanOrEqualTo(12));
   });
 
-  for (final (name, source, answers, expected, form, events) in parityCases) {
+  for (final (name, source, answers, expected, form, events, settings)
+      in parityCases) {
     if (form != null) {
       test(name, () async {
         final lines = await runEventScript(
-            source, readFormFile(form, name: 'Form1').form, events!);
+            source, readFormFile(form, name: 'Form1').form, events!,
+            settings: settings);
         expect('${lines.join('\n')}\n', expected);
       });
       continue;
     }
     test(name, () async {
-      final host = _Host(answers);
+      final host = _Host(answers, settings);
       final result = await runProgram(source, host);
       final lines = [
         ...host.transcript,

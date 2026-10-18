@@ -14,6 +14,8 @@ import 'interpreter/fake_host.dart';
 ///
 /// - NAME.gbas  the program
 /// - NAME.in    InputBox answers, one per line (optional)
+/// - NAME.settings  the settings an earlier run saved, as SaveSetting
+///              writes them (optional; D48)
 /// - NAME.out   expected output: "Debug.Print: …", "MsgBox: …",
 ///              "InputBox: … → …", and a last line "Error R0xx @ line" or
 ///              "Ended" when the run ends that way
@@ -47,6 +49,11 @@ void main() {
   for (final program in programs) {
     test(program.uri.pathSegments.last, () async {
       final formFile = File(program.path.replaceFirst('.gbas', '.form.yaml'));
+      final settingsFile =
+          File(program.path.replaceFirst('.gbas', '.settings'));
+      final settings = settingsFile.existsSync()
+          ? settingsFile.readAsStringSync().trim()
+          : null;
       final List<String> lines;
       if (formFile.existsSync()) {
         final form = readFormFile(formFile.readAsStringSync(), name: 'Form1');
@@ -55,13 +62,14 @@ void main() {
             program.readAsStringSync(),
             form.form,
             File(program.path.replaceFirst('.gbas', '.events'))
-                .readAsStringSync());
+                .readAsStringSync(),
+            settings: settings);
       } else {
         final input = File(program.path.replaceFirst('.gbas', '.in'));
         final answers =
             input.existsSync() ? input.readAsLinesSync() : <String>[];
-        lines =
-            await runAndRecord(program.readAsStringSync(), answers: answers);
+        lines = await runAndRecord(program.readAsStringSync(),
+            answers: answers, settings: settings);
       }
       final actual = '${lines.join('\n')}\n';
       final expected = File(program.path.replaceFirst('.gbas', '.out'));

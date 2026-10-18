@@ -25,6 +25,16 @@ String? loadSetting(String key) {
   }
 }
 
+/// localStorage for what a program keeps (SaveSetting): a failure, such
+/// as a full storage, is the program's to report.
+void saveOrThrow(String key, String value) {
+  try {
+    web.window.localStorage.setItem(key, value);
+  } catch (e) {
+    throw Exception('$e');
+  }
+}
+
 void saveSetting(String key, String value) {
   try {
     web.window.localStorage.setItem(key, value);

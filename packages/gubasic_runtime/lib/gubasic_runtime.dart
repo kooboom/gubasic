@@ -9,4 +9,5 @@ export 'src/dialogs.dart';
 export 'src/form_model.dart';
 export 'src/form_view.dart';
 export 'src/list_box.dart';
+export 'src/settings.dart';
 export 'src/text_box.dart';

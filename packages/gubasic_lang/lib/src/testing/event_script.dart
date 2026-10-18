@@ -126,6 +126,8 @@ abstract final class TranscriptLine {
   static String inputBox(String prompt, String title) =>
       title.isEmpty ? 'InputBox: $prompt' : 'InputBox [$title]: $prompt';
 
+  static String saveSettings(String text) => 'Settings: $text';
+
   static String setProperty(String? control, String property, Object value) =>
       'Set ${control ?? 'Form'}.$property: '
       '${value is bool ? (value ? 'True' : 'False') : value}';
@@ -139,8 +141,12 @@ abstract final class TranscriptLine {
 ///     MsgBox: <prompt>        (or "MsgBox [<title>]: <prompt>")
 ///     InputBox: <prompt>      (or "InputBox [<title>]: <prompt>")
 ///     Set <control>.<property>: <value>
+///     Settings: <the settings as SaveSetting left them>
+///
+/// The program's settings start as [settings] (a test's NAME.settings),
+/// as if an earlier run had saved them.
 class ScriptedHost implements FormHost {
-  ScriptedHost(FormFile form) {
+  ScriptedHost(FormFile form, {this.settings}) {
     for (final p in form.component.properties.values) {
       _properties[_key(null, p.name)] = form.valueOf(p.name);
     }
@@ -158,6 +164,9 @@ class ScriptedHost implements FormHost {
   String? componentOf(String control) => _components[control.toLowerCase()];
 
   final transcript = <String>[];
+
+  /// The program's saved settings: what [saveSettings] was given last.
+  String? settings;
   final _properties = <String, Object>{};
   final _dialogs = <_Dialog>[];
   var shown = false;
@@ -199,6 +208,15 @@ class ScriptedHost implements FormHost {
   void setProperty(String? control, String property, Object value) {
     _properties[_key(control, property)] = value;
     transcript.add(TranscriptLine.setProperty(control, property, value));
+  }
+
+  @override
+  Future<String?> loadSettings() async => settings;
+
+  @override
+  Future<void> saveSettings(String text) async {
+    settings = text;
+    transcript.add(TranscriptLine.saveSettings(text));
   }
 
   @override
@@ -271,8 +289,8 @@ abstract interface class ScriptDriver {
 
 /// Runs [source] with [form] and drives it with [script] (an event
 /// script) on a [ScriptedHost]. See [driveEventScript] for the transcript.
-Future<List<String>> runEventScript(
-    String source, FormFile form, String script) async {
+Future<List<String>> runEventScript(String source, FormFile form, String script,
+    {String? settings}) async {
   final steps = parseEventScript(script);
   final program = compile(source, form: form);
   if (program.hasErrors) {
@@ -281,7 +299,7 @@ Future<List<String>> runEventScript(
         if (d.isError) 'Not started: ${d.code.code} @ ${d.line}'
     ];
   }
-  final host = ScriptedHost(form);
+  final host = ScriptedHost(form, settings: settings);
   return driveEventScript(steps, _HostDriver(Interpreter(program, host), host));
 }
 

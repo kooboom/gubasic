@@ -43,6 +43,10 @@ class IdeStrings {
     required this.downloadZip,
     required this.uploadZip,
     required this.openPlayground,
+    required this.clearSettings,
+    required this.clearSettingsQuestion,
+    required this.clearSettingsYes,
+    required this.settingsCleared,
     required this.changedSinceDownloadHint,
     required this.keptStatus,
     required this.exampleStatus,
@@ -171,6 +175,13 @@ class IdeStrings {
 
   /// The web IDE's link to the playground next to it (`../`).
   final String openPlayground;
+
+  /// File → Clear Saved Settings: forgets what the project's program saved
+  /// with SaveSetting (D48). {0}: the project's name.
+  final String clearSettings;
+  final String clearSettingsQuestion;
+  final String clearSettingsYes;
+  final String settingsCleared;
   final String changedSinceDownloadHint;
 
   /// `{0}` the time of the last download, or [none].
@@ -312,6 +323,12 @@ class IdeStrings {
     downloadZip: 'Download .zip',
     uploadZip: 'Upload .zip…',
     openPlayground: 'Open the Playground',
+    clearSettings: 'Clear Saved Settings…',
+    clearSettingsQuestion:
+        'Clear what the program of {0} saved with SaveSetting? '
+        'The next run starts without it. This cannot be undone.',
+    clearSettingsYes: 'Clear',
+    settingsCleared: 'The saved settings of {0} were cleared.',
     changedSinceDownloadHint:
         'Changed since the last download. Download a .zip to keep it safe.',
     keptStatus: 'Kept in this browser · last download: {0}',
@@ -408,6 +425,12 @@ class IdeStrings {
     downloadZip: '.zip으로 내려받기',
     uploadZip: '.zip 올리기…',
     openPlayground: '놀이터 열기',
+    clearSettings: '저장된 설정 지우기…',
+    clearSettingsQuestion:
+        '{0} 프로젝트의 프로그램이 SaveSetting으로 저장한 설정을 지울까요? '
+        '다음 실행은 설정 없이 시작합니다. 되돌릴 수 없습니다.',
+    clearSettingsYes: '지우기',
+    settingsCleared: '{0} 프로젝트에 저장된 설정을 지웠습니다.',
     changedSinceDownloadHint:
         '마지막으로 내려받은 뒤 바뀐 내용이 있습니다. 안전하게 보관하려면 .zip으로 내려받습니다.',
     keptStatus: '이 브라우저에 보관 중 · 마지막 내려받기: {0}',

@@ -1,0 +1,14 @@
+' SaveSetting and GetSetting keep text for the program (D48): what an
+' earlier run saved comes back (settings.settings), a missing key gives
+' the default, keys do not tell case apart, numbers are saved as their
+' text, and an empty key is R007.
+Sub Main()
+    Debug.Print("saved before: " & GetSetting("visits", "0"))
+    Debug.Print("missing: [" & GetSetting("name", "") & "]")
+    SaveSetting("visits", CInt(GetSetting("Visits", "0")) + 1)
+    Debug.Print("after: " & GetSetting("VISITS", "?"))
+    SaveSetting("name", "김민준")
+    SaveSetting("Name", "Lee")
+    Debug.Print("name: " & GetSetting("name", ""))
+    SaveSetting("", "x")
+End Sub

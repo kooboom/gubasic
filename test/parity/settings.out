@@ -1,0 +1,8 @@
+Debug.Print: saved before: 4
+Debug.Print: missing: []
+Settings: {"visits":"5"}
+Debug.Print: after: 5
+Settings: {"visits":"5","name":"김민준"}
+Settings: {"visits":"5","name":"Lee"}
+Debug.Print: name: Lee
+Error R007 @ 13

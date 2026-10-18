@@ -20,7 +20,7 @@ void main() {
         .toList();
     expect(all.toSet(), hasLength(all.length));
     // Retired codes stay unused, so they leave a gap on purpose.
-    const retired = {'L007'};
+    const retired = {'L007', 'A029'};
     for (final prefix in ['L', 'P', 'A', 'F', 'R']) {
       final numbers = {
         ...all.where((c) => c.startsWith(prefix)),

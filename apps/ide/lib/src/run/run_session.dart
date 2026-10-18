@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:gubasic_lang/gubasic_lang.dart';
+import 'package:gubasic_runtime/gubasic_runtime.dart';
 
 import '../project/project.dart';
 import '../strings.dart';
@@ -8,8 +9,20 @@ import 'run_host.dart';
 /// One run of a project's startup form: the interpreter, its [host], what
 /// the program printed and how the run ended.
 class RunSession extends ChangeNotifier {
-  RunSession(this.startup, {required this.strings, RunHost? host})
-    : host = host ?? RunHost(startup.form, strings: strings.runtime) {
+  RunSession(
+    this.startup, {
+    required this.strings,
+    RunHost? host,
+    String project = '',
+    GbSettingsStore? settings,
+  }) : host =
+           host ??
+           RunHost(
+             startup.form,
+             strings: strings.runtime,
+             project: project,
+             settings: settings,
+           ) {
     interpreter = Interpreter(
       startup.program,
       this.host,

@@ -32,7 +32,7 @@ The core Visual Basic experience, entirely inside the IDE.
 - [x] **Async interpreter**, running programs in the playground's Run tab
 - [x] F5 runs the app inside the IDE
 - [x] `MsgBox`, `InputBox`, `DoEvents`, `Try…Catch`
-- [ ] `Settings` (`SaveSetting`, `GetSetting`)
+- [x] `Settings` (`SaveSetting`, `GetSetting`), each project's own (D48)
 - [x] Run-time errors with plain-language messages (English / Korean), click to jump to the line (playground)
 - [x] Run-time errors highlighted in the IDE's code editor
 

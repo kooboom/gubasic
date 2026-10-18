@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:collection';
+import 'dart:convert';
 import 'dart:math' as math;
 
 import '../analyzer/analysis_result.dart';
@@ -28,6 +29,11 @@ const int maxCallDepth = 10000;
 /// After this many loop rounds and calls, the interpreter lets the screen
 /// update (Host.yieldNow). It does not change what the program computes.
 const int _stepsPerYield = 1000;
+
+/// The longest the text of a program's settings can be, in characters
+/// (about 64 KB), so that a program cannot fill the browser's storage,
+/// where the web IDE keeps its projects too (D48).
+const settingsLimit = 65536;
 
 /// What became of an event passed to [Interpreter.raiseEvent].
 enum EventOutcome {
@@ -521,7 +527,8 @@ class Interpreter {
     final symbol = _a.symbols[target];
     if (symbol == null) return false;
     if (symbol.kind == SymbolKind.procedure) return true;
-    return const {'MsgBox', 'InputBox', 'DoEvents'}.contains(symbol.name);
+    return const {'MsgBox', 'InputBox', 'DoEvents', 'SaveSetting', 'GetSetting'}
+        .contains(symbol.name);
   }
 
   Future<_Flow> _block(Block block) async {
@@ -1569,9 +1576,59 @@ class Interpreter {
             s(0), args.length > 1 ? s(1) : '', args.length > 2 ? s(2) : ''));
       case 'DoEvents':
         return _doEvents();
+
+      // Settings (D48)
+      case 'GetSetting':
+        return _getSetting(s(0), s(1), at);
+      case 'SaveSetting':
+        return _saveSetting(s(0), s(1), at);
     }
-    // SaveSetting / GetSetting are refused by the analyzer (A029).
     throw StateError('built-in ${f.name} is not available');
+  }
+
+  /// The program's settings, read from the host the first time they are
+  /// needed; keys in lower case, as the language does not tell case apart.
+  Map<String, String>? _settings;
+
+  Future<Map<String, String>> _loadSettings() async {
+    if (_settings case final settings?) return settings;
+    final text = await host.loadSettings();
+    final settings = <String, String>{};
+    if (text != null) {
+      try {
+        if (jsonDecode(text) case final Map<String, Object?> map) {
+          for (final MapEntry(:key, :value) in map.entries) {
+            if (value is String) settings[key.toLowerCase()] = value;
+          }
+        }
+      } on FormatException {
+        // Not settings this interpreter wrote: start again without them.
+      }
+    }
+    return _settings ??= settings;
+  }
+
+  String _settingKey(String key, String function, Node at) {
+    if (key.isEmpty) _fail(DiagnosticCode.invalidArgument, at, [function]);
+    return key.toLowerCase();
+  }
+
+  Future<String> _getSetting(String key, String fallback, Node at) async {
+    final k = _settingKey(key, 'GetSetting', at);
+    return (await _loadSettings())[k] ?? fallback;
+  }
+
+  Future<void> _saveSetting(String key, String value, Node at) async {
+    final k = _settingKey(key, 'SaveSetting', at);
+    final settings = {...await _loadSettings(), k: value};
+    final text = jsonEncode(settings);
+    if (text.length > settingsLimit) _fail(DiagnosticCode.settingsTooLarge, at);
+    try {
+      await host.saveSettings(text);
+    } on Exception catch (e) {
+      _fail(DiagnosticCode.settingsNotSaved, at, ['$e']);
+    }
+    _settings = settings;
   }
 
   GbInt _toInteger(Object? v, Node at) {

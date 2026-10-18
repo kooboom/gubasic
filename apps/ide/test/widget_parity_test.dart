@@ -40,7 +40,11 @@ void main() {
         form: form,
       );
       final expected = File('$base.out').readAsStringSync().trimRight();
-      final host = _RecordingHost(form);
+      final settings = File('$base.settings');
+      final host = _RecordingHost(
+        form,
+        settings.existsSync() ? settings.readAsStringSync().trim() : null,
+      );
       final session = RunSession(
         StartupForm(form, '$name.gbas', program),
         strings: IdeStrings.en,
@@ -65,7 +69,8 @@ void main() {
 
 /// Records what the program shows, as [ScriptedHost] does.
 class _RecordingHost extends RunHost {
-  _RecordingHost(super.form);
+  _RecordingHost(super.form, String? settings)
+    : super(settings: GbMemorySettings()..values.addAll({'': ?settings}));
 
   final transcript = <String>[];
   final _yields = <Completer<void>>[];
@@ -104,6 +109,12 @@ class _RecordingHost extends RunHost {
   Future<String> inputBox(String prompt, String title, String defaultValue) {
     transcript.add(TranscriptLine.inputBox(prompt, title));
     return super.inputBox(prompt, title, defaultValue);
+  }
+
+  @override
+  Future<void> saveSettings(String text) {
+    transcript.add(TranscriptLine.saveSettings(text));
+    return super.saveSettings(text);
   }
 
   @override

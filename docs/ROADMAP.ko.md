@@ -32,7 +32,7 @@ IDE 안에서 완결되는 비주얼 베이직의 핵심 경험입니다.
 - [x] **비동기 인터프리터**, 놀이터의 실행 탭에서 프로그램 실행
 - [x] F5로 IDE 안에서 앱 실행
 - [x] `MsgBox`, `InputBox`, `DoEvents`, `Try…Catch`
-- [ ] `Settings` (`SaveSetting`, `GetSetting`)
+- [x] `Settings` (`SaveSetting`, `GetSetting`), 프로젝트마다 따로(D48)
 - [x] 실행 중 오류를 쉬운 설명으로 표시하고, 누르면 그 줄로 이동 (영어 / 한국어, 놀이터)
 - [x] IDE 코드 편집기에서 실행 중 오류 줄 강조
 

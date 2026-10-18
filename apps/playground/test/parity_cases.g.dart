@@ -2,13 +2,17 @@
 // Do not edit by hand.
 
 /// (name, program, InputBox answers, expected output, form file,
-/// event script); the last two are null without a form.
-const parityCases = <(String, String, List<String>, String, String?, String?)>[
+/// event script, saved settings); the form file and the event
+/// script are null without a form, the settings without
+/// NAME.settings.
+const parityCases =
+    <(String, String, List<String>, String, String?, String?, String?)>[
   (
     "arithmetic",
     "' Integer and Double arithmetic, operator results, precedence.\nSub Main()\n    Debug.Print(7 + 3 * 2)\n    Debug.Print(7 / 2)\n    Debug.Print(7 \\ 2)\n    Debug.Print(-7 \\ 2)\n    Debug.Print(7 Mod 3)\n    Debug.Print(-7 Mod 3)\n    Debug.Print(7.5 Mod 2)\n    Debug.Print(2 ^ 10)\n    Debug.Print(2 ^ 3 ^ 2)\n    Debug.Print(-2 ^ 2)\n    Debug.Print(1 + 2 * 3 ^ 2)\n    Debug.Print(10 / 4 * 2)\n    Debug.Print(0.1 + 0.2)\n    Debug.Print(1 / 3)\n    Debug.Print(10.0 ^ 20 * 10)\n    Debug.Print(10.0 ^ 400)\nEnd Sub\n",
     [],
     "Debug.Print: 13\nDebug.Print: 3.5\nDebug.Print: 3\nDebug.Print: -3\nDebug.Print: 1\nDebug.Print: -1\nDebug.Print: 1.5\nDebug.Print: 1024\nDebug.Print: 64\nDebug.Print: -4\nDebug.Print: 19\nDebug.Print: 5\nDebug.Print: 0.30000000000000004\nDebug.Print: 0.3333333333333333\nDebug.Print: 1E+21\nDebug.Print: Infinity\n",
+    null,
     null,
     null,
   ),
@@ -19,12 +23,14 @@ const parityCases = <(String, String, List<String>, String, String?, String?)>[
     "Debug.Print: 9007199254740993\nDebug.Print: 9007199254740995\nDebug.Print: 9007199254740993000\nDebug.Print: 17636684144620811\nDebug.Print: 678\nDebug.Print: 9223372036854775807\nDebug.Print: -9223372036854775808\nDebug.Print: 9223372036854775806\nDebug.Print: -9223372036854775807\nDebug.Print: -9223372036854775807\nDebug.Print: 9223372036854775807\n",
     null,
     null,
+    null,
   ),
   (
     "conditions",
     "' If, ElseIf, single-line If, Select Case, And/Or short-circuit.\nFunction Grade(score As Integer) As String\n    If score >= 90 Then\n        Return \"A\"\n    ElseIf score >= 80 Then\n        Return \"B\"\n    Else\n        Return \"C\"\n    End If\nEnd Function\n\nFunction Kind(day As Integer) As String\n    Select Case day\n        Case 1, 7\n            Return \"Weekend\"\n        Case 2 To 6\n            Return \"Weekday\"\n        Case Is > 7\n            Return \"Invalid\"\n        Case Else\n            Return \"?\"\n    End Select\nEnd Function\n\nFunction Noisy(value As Boolean) As Boolean\n    Debug.Print(\"evaluated\")\n    Return value\nEnd Function\n\nSub Main()\n    Debug.Print(Grade(95) & Grade(85) & Grade(10))\n    Debug.Print(Kind(1) & \" \" & Kind(3) & \" \" & Kind(9) & \" \" & Kind(0))\n    Dim x As Integer = 5\n    If x > 3 Then Debug.Print(\"big\") Else Debug.Print(\"small\")\n    If False And Noisy(True) Then Debug.Print(\"no\")\n    If True Or Noisy(True) Then Debug.Print(\"short-circuit\")\n    Debug.Print(True Xor True)\n    Debug.Print(Not (1 = 2))\nEnd Sub\n",
     [],
     "Debug.Print: ABC\nDebug.Print: Weekend Weekday Invalid ?\nDebug.Print: big\nDebug.Print: short-circuit\nDebug.Print: False\nDebug.Print: True\n",
+    null,
     null,
     null,
   ),
@@ -35,12 +41,14 @@ const parityCases = <(String, String, List<String>, String, String?, String?)>[
     "InputBox: What is your name? → Kim\nMsgBox: Hello, Kim!\nInputBox: How old are you? → 41\nMsgBox [Age]: Next year you will be 42\nInputBox: Cancel me → \nDebug.Print: []\n",
     null,
     null,
+    null,
   ),
   (
     "divide_by_zero",
     "' Division by zero is an error for /, \\ and Mod (R002).\nSub Main()\n    Dim zero As Integer = 0\n    Try\n        Debug.Print(1 / zero)\n    Catch\n        Debug.Print(\"/ by zero\")\n    End Try\n    Try\n        Debug.Print(1 \\ zero)\n    Catch\n        Debug.Print(\"\\ by zero\")\n    End Try\n    Try\n        Debug.Print(1 Mod zero)\n    Catch\n        Debug.Print(\"Mod by zero\")\n    End Try\n    Debug.Print(5.0 / 0)\nEnd Sub\n",
     [],
     "Debug.Print: / by zero\nDebug.Print: \\ by zero\nDebug.Print: Mod by zero\nError R002 @ 19\n",
+    null,
     null,
     null,
   ),
@@ -51,6 +59,7 @@ const parityCases = <(String, String, List<String>, String, String?, String?)>[
     "Debug.Print: Start\nDebug.Print: Stopping\nEnded\n",
     null,
     null,
+    null,
   ),
   (
     "events_changed",
@@ -59,6 +68,7 @@ const parityCases = <(String, String, List<String>, String, String?, String?)>[
     "Set txtName.Text: Kim\nSet lblEcho.Caption: echo Kim\nSet txtName.Text: KIM\nDebug.Print: after setting: echo Kim\nSet txtName.Text: KIM\nDebug.Print: same text again: no Changed\n> txtName.Type \"lee\"\nSet lblEcho.Caption: echo lee\nSet txtName.Text: LEE\n> txtName.Type \"LEE\"\n> btnObject.Click\nSet txtName.Text: obj\nSet lblEcho.Caption: echo obj\nSet txtName.Text: OBJ\nDebug.Print: echo obj\n> Close\nClosed\n",
     "formatVersion: 1\ncontrols:\n  - { name: txtName, type: TextBox }\n  - { name: lblEcho, type: Label, properties: { Top: 40 } }\n  - { name: btnObject, type: Button, properties: { Top: 80 } }\n",
     "txtName.Type \"lee\"     ' the user types: Changed runs\ntxtName.Type \"LEE\"     ' no change, no Changed\nbtnObject.Click\nClose\n",
+    null,
   ),
   (
     "events_checkbox",
@@ -67,6 +77,7 @@ const parityCases = <(String, String, List<String>, String, String?, String?)>[
     "Debug.Print: chkLate starts True\nSet chkShow.Checked: True\nSet lblState.Caption: show True\nDebug.Print: after setting: show True\nSet chkShow.Checked: True\nDebug.Print: same value again: no Changed\n> chkShow.Click\nSet lblState.Caption: show False\n> chkOff.Click\nDebug.Print: chkOff is True\nSet chkOff.Checked: False\n> chkWait.Click\nDebug.Print: wait starts, True\n> chkWait.Click\nIgnored: chkWait.Click\n> btnGo.Click\nDebug.Print: wait ends, True\n> chkLate.Click\n> btnObject.Click\nSet chkShow.Checked: True\nSet lblState.Caption: show True\nDebug.Print: show True\nDebug.Print: chkLate is False\n> Close\nClosed\n",
     "formatVersion: 1\ncontrols:\n  - { name: chkShow, type: CheckBox, properties: { Caption: Show } }\n  - { name: chkOff, type: CheckBox, properties: { Caption: Off, Top: 40 } }\n  - { name: chkWait, type: CheckBox, properties: { Caption: Wait, Top: 80 } }\n  - name: chkLate\n    type: CheckBox\n    properties: { Caption: Late, Top: 120, Checked: true }\n  - { name: lblState, type: Label, properties: { Top: 160 } }\n  - { name: btnGo, type: Button, properties: { Top: 200 } }\n  - { name: btnObject, type: Button, properties: { Top: 240 } }\n",
     "chkShow.Click       ' the user unchecks it: Changed runs\nchkOff.Click        ' checks it; its handler unchecks it again\nchkWait.Click       ' Changed waits in DoEvents\nchkWait.Click       ' ignored, and the box stays checked\nbtnGo.Click\nchkLate.Click       ' no handler: it only changes\nbtnObject.Click\nClose\n",
+    null,
   ),
   (
     "events_end",
@@ -75,6 +86,7 @@ const parityCases = <(String, String, List<String>, String, String?, String?)>[
     "> btnWait.Click\nDebug.Print: A waits\n> btnEnd.Click\nDebug.Print: B ends the program\nEnded\n",
     "formatVersion: 1\ncontrols:\n  - { name: btnWait, type: Button }\n  - { name: btnEnd, type: Button, properties: { Top: 40 } }\n",
     "btnWait.Click\nbtnEnd.Click\n",
+    null,
   ),
   (
     "events_error",
@@ -83,6 +95,7 @@ const parityCases = <(String, String, List<String>, String, String?, String?)>[
     "> btnSize.Click\nDebug.Print: caught: The value of Width must be from 0 to 2147483647. Check the value before setting it.\nDebug.Print: caught: \"far\" cannot be turned into Integer. Check the value before converting it.\nSet btnSize.Left: 2147483647\nDebug.Print: 2147483647\n> btnBad.Click\nScript not finished: btnSize.Click was not run\nError R002 @ 22\n",
     "formatVersion: 1\ncontrols:\n  - { name: btnSize, type: Button }\n  - { name: btnBad, type: Button, properties: { Top: 40 } }\n",
     "btnSize.Click\nbtnBad.Click\nbtnSize.Click     ' not run: the program has stopped\n",
+    null,
   ),
   (
     "events_listbox",
@@ -91,6 +104,7 @@ const parityCases = <(String, String, List<String>, String, String?, String?)>[
     "Set lstCity.Items: [Seoul]\nSet lstCity.Items: [Seoul, Busan]\nSet lstCity.Items: [Seoul, Busan, Daegu]\nDebug.Print: 3 items, chosen -1, text []\nDebug.Print: item 1: Busan\nSet lstCity.ListIndex: 2\nDebug.Print: Changed: 2 [Daegu]\nSet lstCity.ListIndex: 2\nDebug.Print: same index again: no Changed\n> lstCity.Select 0\nDebug.Print: Changed: 0 [Seoul]\n> lstCity.Select 0\n> lstCity.Select 1\nDebug.Print: Changed: 1 [Busan]\n> btnRemove.Click\nSet lstCity.Items: [Busan, Daegu]\nSet lstCity.ListIndex: 0\nDebug.Print: Changed: 0 [Busan]\nSet lstCity.Items: [Daegu]\nSet lstCity.ListIndex: -1\nDebug.Print: Changed: -1 []\nSet lstCity.Items: []\nDebug.Print: 0 items\n> btnRefill.Click\nSet lstCity.Items: [Incheon]\nSet lstCity.Items: [Incheon, Gwangju]\nSet lstCity.ListIndex: 1\nDebug.Print: Changed: 1 [Gwangju]\n> btnClear.Click\nSet lstCity.Items: []\nSet lstCity.ListIndex: -1\nDebug.Print: Changed: -1 []\nDebug.Print: cleared: 0 items, chosen -1\nSet lstCity.Items: []\n> btnRefill.Click\nSet lstCity.Items: [Incheon]\nSet lstCity.Items: [Incheon, Gwangju]\nSet lstCity.ListIndex: 1\nDebug.Print: Changed: 1 [Gwangju]\n> btnObject.Click\nSet lstCity.Items: [Incheon]\nSet lstCity.ListIndex: -1\nDebug.Print: Changed: -1 []\nSet lstCity.ListIndex: 0\nDebug.Print: Changed: 0 [Incheon]\nDebug.Print: Incheon, 1\n> btnBad.Click\nError R003 @ 49\n",
     "formatVersion: 1\ncontrols:\n  - { name: lstCity, type: ListBox }\n  - { name: btnRemove, type: Button, properties: { Top: 130 } }\n  - { name: btnRefill, type: Button, properties: { Top: 170 } }\n  - { name: btnClear, type: Button, properties: { Top: 210 } }\n  - { name: btnObject, type: Button, properties: { Top: 250 } }\n  - { name: btnBad, type: Button, properties: { Top: 290 } }\n",
     "lstCity.Select 0\nlstCity.Select 0     ' the same item again: no Changed\nlstCity.Select 1\nbtnRemove.Click\nbtnRefill.Click\nbtnClear.Click\nbtnRefill.Click\nbtnObject.Click\nbtnBad.Click         ' List(5): there is no item 5\n",
+    null,
   ),
   (
     "events_load",
@@ -99,6 +113,7 @@ const parityCases = <(String, String, List<String>, String, String?, String?)>[
     "Debug.Print: Hello from Save\nDebug.Print: Untitled 480x360\nSet Form.Caption: Score Book\nMsgBox [Score Book]: Welcome\n> btnSave.Click\nBlocked: btnSave.Click\n> OK\nDebug.Print: loaded\n> btnSave.Click\nSet btnSave.Left: 106\nSet btnSave.Caption: 106\nDebug.Print: 106 True\n> Close\nClosed\n",
     "formatVersion: 1\nproperties:\n  Caption: Untitled\ncontrols:\n  - name: btnSave\n    type: Button\n    properties:\n      Caption: Save\n      Left: 10\n",
     "btnSave.Click   ' blocked: Form_Load's MsgBox is still open\nOK\nbtnSave.Click\nClose\n",
+    null,
   ),
   (
     "events_modal",
@@ -107,6 +122,7 @@ const parityCases = <(String, String, List<String>, String, String?, String?)>[
     "> btnAsk.Click\nMsgBox: Wait\n> btnOther.Click\nBlocked: btnOther.Click\n> txtName.Type \"x\"\nBlocked: txtName.Type \"x\"\n> Close\nBlocked: Close\n> OK\nInputBox: Name?\n> btnOther.Click\nBlocked: btnOther.Click\n> Answer \"Kim\"\nDebug.Print: after the dialogs: Kim\n> btnOther.Click\nDebug.Print: other ran\n> txtName.Type \"Lee\"\nDebug.Print: changed to Lee\n> Close\nClosed\n",
     "formatVersion: 1\ncontrols:\n  - { name: btnAsk, type: Button }\n  - { name: btnOther, type: Button, properties: { Top: 40 } }\n  - { name: txtName, type: TextBox, properties: { Top: 80 } }\n",
     "btnAsk.Click\nbtnOther.Click      ' blocked by the MsgBox\ntxtName.Type \"x\"    ' blocked too\nClose               ' and so is closing the form\nOK\nbtnOther.Click      ' blocked by the InputBox\nAnswer \"Kim\"\nbtnOther.Click\ntxtName.Type \"Lee\"\nClose\n",
+    null,
   ),
   (
     "events_reentry",
@@ -115,6 +131,7 @@ const parityCases = <(String, String, List<String>, String, String?, String?)>[
     "> btnA.Click\nDebug.Print: A starts, time 1\n> btnA.Click\nIgnored: btnA.Click\n> btnStop.Click\nDebug.Print: A ends, time 1\n> btnA.Click\nDebug.Print: A starts, time 2\nDebug.Print: A ends, time 2\n> Close\nClosed\n",
     "formatVersion: 1\ncontrols:\n  - { name: btnA, type: Button }\n  - { name: btnStop, type: Button, properties: { Top: 40 } }\n",
     "btnA.Click\nbtnA.Click      ' ignored: A is still running\nbtnStop.Click\nbtnA.Click      ' runs again: A had finished\nClose\n",
+    null,
   ),
   (
     "events_shared",
@@ -123,6 +140,7 @@ const parityCases = <(String, String, List<String>, String, String?, String?)>[
     "> btnWait.Click\nDebug.Print: A sees 1\n> btnChange.Click\nDebug.Print: B set 42 with B's local 3\nDebug.Print: A sees 42 and A's local\n> Close\nClosed\n",
     "formatVersion: 1\ncontrols:\n  - { name: btnWait, type: Button }\n  - { name: btnChange, type: Button, properties: { Top: 40 } }\n",
     "btnWait.Click     ' A starts and waits in DoEvents\nbtnChange.Click   ' B runs while A waits\nClose\n",
+    null,
   ),
   (
     "events_static",
@@ -131,12 +149,14 @@ const parityCases = <(String, String, List<String>, String, String?, String?)>[
     "> btnA.Click\nDebug.Print: A: ticket 1, call 1\n> btnB.Click\nDebug.Print: B: ticket 2, calls 10\nDebug.Print: A: ticket 3, call 1\n> btnA.Click\nDebug.Print: A: ticket 4, call 2\n> btnB.Click\nDebug.Print: B: ticket 5, calls 20\nDebug.Print: A: ticket 6, call 2\n> Close\nClosed\n",
     "formatVersion: 1\ncontrols:\n  - { name: btnA, type: Button }\n  - { name: btnB, type: Button, properties: { Top: 40 } }\n",
     "btnA.Click\nbtnB.Click\nbtnA.Click\nbtnB.Click\nClose\n",
+    null,
   ),
   (
     "integer_overflow",
     "' An Integer result outside 64 bits stops the program with R001.\nSub Main()\n    Dim big As Integer = Integer.MaxValue\n    Debug.Print(\"Before\")\n    big = big + 1\n    Debug.Print(\"Never printed\")\nEnd Sub\n",
     [],
     "Debug.Print: Before\nError R001 @ 5\n",
+    null,
     null,
     null,
   ),
@@ -147,12 +167,14 @@ const parityCases = <(String, String, List<String>, String, String?, String?)>[
     "Debug.Print: 3 Park Lee\nDebug.Print: True 1 -1\nDebug.Print: 1 Lee\nDebug.Print: 9 0 6\nDebug.Print: Out of range\nDebug.Print: Choi\n",
     null,
     null,
+    null,
   ),
   (
     "loops",
     "' For with Step, For Each, the four Do forms, Exit.\nSub Main()\n    Dim line As String = \"\"\n    For i = 10 To 1 Step -3\n        line = line & i & \" \"\n    Next\n    Debug.Print(line)\n    For d = 0 To 1 Step 0.25\n        line = line & d & \";\"\n    Next\n    Debug.Print(line)\n    Dim n As Integer = 0\n    Do While n < 3\n        n = n + 1\n    Loop\n    Do Until n = 0\n        n = n - 1\n    Loop\n    Do\n        n = n + 2\n    Loop While n < 5\n    Do\n        n = n + 1\n    Loop Until n >= 10\n    Debug.Print(n)\n    For i = 1 To 100\n        If i = 4 Then Exit For\n        Debug.Print(\"i=\" & i)\n    Next\n    Do\n        Exit Do\n    Loop\n    Dim count As Integer\n    For Each word In Split(\"one two three\", \" \")\n        count = count + 1\n    Next\n    Debug.Print(count)\n    For i = 1 To 0\n        Debug.Print(\"never\")\n    Next\nEnd Sub\n",
     [],
     "Debug.Print: 10 7 4 1 \nDebug.Print: 10 7 4 1 0;0.25;0.5;0.75;1;\nDebug.Print: 10\nDebug.Print: i=1\nDebug.Print: i=2\nDebug.Print: i=3\nDebug.Print: 3\n",
+    null,
     null,
     null,
   ),
@@ -163,12 +185,14 @@ const parityCases = <(String, String, List<String>, String, String?, String?)>[
     "Debug.Print: Caught overflow\nDebug.Print: Caught negation\nDebug.Print: Caught division\nDebug.Print: Caught CInt\n",
     null,
     null,
+    null,
   ),
   (
     "overflow_edges",
     "' Integer limits: which operations overflow (R001) and which do not.\nSub Main()\n    Try\n        Debug.Print(Integer.MinValue \\ -1)\n    Catch ex As Exception\n        Debug.Print(\"MinValue \\ -1: \" & ex.Message)\n    End Try\n    Try\n        Debug.Print(-Integer.MinValue)\n    Catch ex As Exception\n        Debug.Print(\"-MinValue: \" & ex.Message)\n    End Try\n    Try\n        Debug.Print(Abs(Integer.MinValue))\n    Catch ex As Exception\n        Debug.Print(\"Abs(MinValue): \" & ex.Message)\n    End Try\n    Try\n        Debug.Print(\"MinValue Mod -1 = \" & (Integer.MinValue Mod -1))\n    Catch ex As Exception\n        Debug.Print(\"MinValue Mod -1: \" & ex.Message)\n    End Try\n    Try\n        Debug.Print(CInt(9.3E+18))\n    Catch ex As Exception\n        Debug.Print(\"CInt(9.3E+18): \" & ex.Message)\n    End Try\n    Debug.Print(\"Done\")\nEnd Sub\n",
     [],
     "Debug.Print: MinValue \\ -1: The result is too large for an Integer (from -9223372036854775808 to 9223372036854775807). If an approximate value is enough, calculate with Double instead.\nDebug.Print: -MinValue: The result is too large for an Integer (from -9223372036854775808 to 9223372036854775807). If an approximate value is enough, calculate with Double instead.\nDebug.Print: Abs(MinValue): The result is too large for an Integer (from -9223372036854775808 to 9223372036854775807). If an approximate value is enough, calculate with Double instead.\nDebug.Print: MinValue Mod -1 = 0\nDebug.Print: CInt(9.3E+18): The result is too large for an Integer (from -9223372036854775808 to 9223372036854775807). If an approximate value is enough, calculate with Double instead.\nDebug.Print: Done\n",
+    null,
     null,
     null,
   ),
@@ -179,12 +203,14 @@ const parityCases = <(String, String, List<String>, String, String?, String?)>[
     "Set lblNumber.Caption: 문제 1 / 5\nSet lblQuestion.Caption: 대한민국의 수도는 어디일까요?\nSet lstChoices.Items: []\nSet lstChoices.Items: [부산]\nSet lstChoices.Items: [부산, 서울]\nSet lstChoices.Items: [부산, 서울, 대구]\nSet lstChoices.Items: [부산, 서울, 대구, 인천]\nSet lblScore.Caption: 점수: 0\n> btnCheck.Click\nMsgBox: 먼저 보기를 하나 고르세요.\n> OK\n> lstChoices.Select 1\nSet btnCheck.Caption: 확인: 서울\n> btnCheck.Click\nMsgBox: 정답입니다!\n> OK\nSet lblNumber.Caption: 문제 2 / 5\nSet lblQuestion.Caption: 윤년이 아닌 해는 며칠일까요?\nSet lstChoices.Items: []\nSet lstChoices.ListIndex: -1\nSet btnCheck.Caption: 정답 확인\nSet lstChoices.Items: [360일]\nSet lstChoices.Items: [360일, 365일]\nSet lstChoices.Items: [360일, 365일, 366일]\nSet lstChoices.Items: [360일, 365일, 366일, 370일]\nSet lblScore.Caption: 점수: 1\n> lstChoices.Select 0\nSet btnCheck.Caption: 확인: 360일\n> btnCheck.Click\nMsgBox: 틀렸습니다.\n> OK\nSet lblNumber.Caption: 문제 3 / 5\nSet lblQuestion.Caption: 1기압에서 물이 끓는 온도는?\nSet lstChoices.Items: []\nSet lstChoices.ListIndex: -1\nSet btnCheck.Caption: 정답 확인\nSet lstChoices.Items: [50도]\nSet lstChoices.Items: [50도, 80도]\nSet lstChoices.Items: [50도, 80도, 100도]\nSet lstChoices.Items: [50도, 80도, 100도, 120도]\nSet lblScore.Caption: 점수: 1\n> chkShowAnswer.Click\n> lstChoices.Select 3\nSet btnCheck.Caption: 확인: 120도\n> btnCheck.Click\nMsgBox: 틀렸습니다. 정답: 100도\n> OK\nSet lblNumber.Caption: 문제 4 / 5\nSet lblQuestion.Caption: 세종대왕이 만든 글자는?\nSet lstChoices.Items: []\nSet lstChoices.ListIndex: -1\nSet btnCheck.Caption: 정답 확인\nSet lstChoices.Items: [한자]\nSet lstChoices.Items: [한자, 한글]\nSet lstChoices.Items: [한자, 한글, 가나]\nSet lstChoices.Items: [한자, 한글, 가나, 알파벳]\nSet lblScore.Caption: 점수: 1\n> lstChoices.Select 1\nSet btnCheck.Caption: 확인: 한글\n> btnCheck.Click\nMsgBox: 정답입니다!\n> OK\nSet lblNumber.Caption: 문제 5 / 5\nSet lblQuestion.Caption: 7 × 8은 얼마일까요?\nSet lstChoices.Items: []\nSet lstChoices.ListIndex: -1\nSet btnCheck.Caption: 정답 확인\nSet lstChoices.Items: [54]\nSet lstChoices.Items: [54, 56]\nSet lstChoices.Items: [54, 56, 58]\nSet lstChoices.Items: [54, 56, 58, 64]\nSet lblScore.Caption: 점수: 2\n> lstChoices.Select 1\nSet btnCheck.Caption: 확인: 56\n> btnCheck.Click\nMsgBox: 정답입니다!\n> OK\nMsgBox: 5문제 가운데 3문제를 맞혔습니다. 처음부터 다시 합니다.\n> OK\nSet lblNumber.Caption: 문제 1 / 5\nSet lblQuestion.Caption: 대한민국의 수도는 어디일까요?\nSet lstChoices.Items: []\nSet lstChoices.ListIndex: -1\nSet btnCheck.Caption: 정답 확인\nSet lstChoices.Items: [부산]\nSet lstChoices.Items: [부산, 서울]\nSet lstChoices.Items: [부산, 서울, 대구]\nSet lstChoices.Items: [부산, 서울, 대구, 인천]\nSet lblScore.Caption: 점수: 0\n> Close\nClosed\n",
     "formatVersion: 1\nproperties:\n  Caption: 퀴즈\n  Width: 400\n  Height: 300\ncontrols:\n  - name: lblNumber\n    type: Label\n    properties:\n      Left: 16\n      Top: 12\n      Width: 368\n  - name: lblQuestion\n    type: Label\n    properties:\n      Left: 16\n      Top: 40\n      Width: 368\n  - name: lstChoices\n    type: ListBox\n    properties:\n      Left: 16\n      Top: 72\n      Width: 368\n      Height: 116\n  - name: chkShowAnswer\n    type: CheckBox\n    properties:\n      Caption: 틀리면 정답 보여 주기\n      Left: 16\n      Top: 200\n      Width: 240\n  - name: btnCheck\n    type: Button\n    properties:\n      Caption: 정답 확인\n      Left: 16\n      Top: 248\n      Width: 136\n  - name: lblScore\n    type: Label\n    properties:\n      Left: 168\n      Top: 252\n      Width: 216\n",
     "' examples/quiz played to the end and started again (a test keeps\n' quiz_example.gbas and .form.yaml the same as the example's files).\nbtnCheck.Click              ' nothing chosen yet\nOK\nlstChoices.Select 1         ' 서울: right\nbtnCheck.Click\nOK\nlstChoices.Select 0         ' wrong; the answer is not shown\nbtnCheck.Click\nOK\nchkShowAnswer.Click         ' show the answer when wrong\nlstChoices.Select 3\nbtnCheck.Click\nOK\nlstChoices.Select 1         ' 한글: right\nbtnCheck.Click\nOK\nlstChoices.Select 1         ' 56: right, the last question\nbtnCheck.Click\nOK\nOK                          ' the score; it starts again\nClose\n",
+    null,
   ),
   (
     "random_seeded",
     "' Rnd with a fixed seed gives the same numbers everywhere (J2).\nSub Main()\n    Randomize(42)\n    For i = 1 To 3\n        Debug.Print(Rnd())\n    Next\n    Randomize(42)\n    Debug.Print(Rnd())\n    Randomize(7)\n    Dim total As Integer = 0\n    For i = 1 To 1000\n        total = total + CInt(Int(Rnd() * 6) + 1)\n    Next\n    Debug.Print(total)\nEnd Sub\n",
     [],
     "Debug.Print: 0.7415648787718233\nDebug.Print: 0.1599103928769201\nDebug.Print: 0.27860113025513866\nDebug.Print: 0.7415648787718233\nDebug.Print: 3436\n",
+    null,
     null,
     null,
   ),
@@ -195,12 +221,32 @@ const parityCases = <(String, String, List<String>, String, String?, String?)>[
     "Debug.Print: 2432902008176640000\nDebug.Print: 6765\nDebug.Print: 21! does not fit\n",
     null,
     null,
+    null,
   ),
   (
     "rounding",
     "' CInt and Round: half away from zero; Int rounds down (LANGUAGE 2.1).\nSub Main()\n    Debug.Print(CInt(2.5) & \" \" & CInt(3.5) & \" \" & CInt(-2.5) & \" \" & CInt(2.4))\n    Debug.Print(Int(2.5) & \" \" & Int(-2.5) & \" \" & Int(3.0))\n    Debug.Print(Round(2.5) & \" \" & Round(-2.5) & \" \" & Round(2.675, 2) & \" \" & Round(1.005, 2))\n    Debug.Print(CInt(\"42\") & \" \" & CInt(\" 7 \") & \" \" & CInt(\"2.5\"))\n    Debug.Print(CDbl(\"1.25\") & \" \" & Val(\"12abc\") & \" \" & Val(\"abc\") & \" \" & Val(\"  -3.5e2x\"))\n    Debug.Print(CBool(\"true\") & \" \" & CBool(0) & \" \" & CBool(2.5))\n    Debug.Print(Abs(-7) & \" \" & Abs(-7.5) & \" \" & Max(3, 9) & \" \" & Min(2, 1.5))\n    Debug.Print(Sqr(16))\n    Try\n        Debug.Print(CInt(\"abc\"))\n    Catch ex As Exception\n        Debug.Print(\"Cannot convert\")\n    End Try\nEnd Sub\n",
     [],
     "Debug.Print: 3 4 -3 2\nDebug.Print: 2 -3 3\nDebug.Print: 3 -3 2.68 1.01\nDebug.Print: 42 7 3\nDebug.Print: 1.25 12 0 -350\nDebug.Print: True False True\nDebug.Print: 7 7.5 9 1.5\nDebug.Print: 4\nDebug.Print: Cannot convert\n",
+    null,
+    null,
+    null,
+  ),
+  (
+    "settings",
+    "' SaveSetting and GetSetting keep text for the program (D48): what an\n' earlier run saved comes back (settings.settings), a missing key gives\n' the default, keys do not tell case apart, numbers are saved as their\n' text, and an empty key is R007.\nSub Main()\n    Debug.Print(\"saved before: \" & GetSetting(\"visits\", \"0\"))\n    Debug.Print(\"missing: [\" & GetSetting(\"name\", \"\") & \"]\")\n    SaveSetting(\"visits\", CInt(GetSetting(\"Visits\", \"0\")) + 1)\n    Debug.Print(\"after: \" & GetSetting(\"VISITS\", \"?\"))\n    SaveSetting(\"name\", \"김민준\")\n    SaveSetting(\"Name\", \"Lee\")\n    Debug.Print(\"name: \" & GetSetting(\"name\", \"\"))\n    SaveSetting(\"\", \"x\")\nEnd Sub\n",
+    [],
+    "Debug.Print: saved before: 4\nDebug.Print: missing: []\nSettings: {\"visits\":\"5\"}\nDebug.Print: after: 5\nSettings: {\"visits\":\"5\",\"name\":\"김민준\"}\nSettings: {\"visits\":\"5\",\"name\":\"Lee\"}\nDebug.Print: name: Lee\nError R007 @ 13\n",
+    null,
+    null,
+    "{\"visits\":\"4\"}",
+  ),
+  (
+    "settings_limit",
+    "' A program's settings are at most 65536 characters of text (D48): a\n' SaveSetting that would make them longer stops with R011, and what was\n' saved before stays.\nSub Main()\n    Dim s As String = \"x\"\n    For i = 1 To 16\n        s = s & s\n    Next\n    SaveSetting(\"small\", \"kept\")\n    Debug.Print(Len(s))\n    SaveSetting(\"big\", s)\nEnd Sub\n",
+    [],
+    "Settings: {\"small\":\"kept\"}\nDebug.Print: 65536\nError R011 @ 11\n",
+    null,
     null,
     null,
   ),
@@ -211,12 +257,14 @@ const parityCases = <(String, String, List<String>, String, String?, String?)>[
     "Debug.Print: 1 2 3\nDebug.Print: 3\nDebug.Print: 1\nDebug.Print: 2\nDebug.Print: 3\n",
     null,
     null,
+    null,
   ),
   (
     "strings",
     "' Text functions count from 1; String methods count from 0.\nSub Main()\n    Dim s As String = \"Hello, World\"\n    Debug.Print(Len(s))\n    Debug.Print(Left(s, 5))\n    Debug.Print(Right(s, 5))\n    Debug.Print(Mid(s, 8))\n    Debug.Print(Mid(s, 8, 3))\n    Debug.Print(InStr(s, \"World\"))\n    Debug.Print(InStr(s, \"xyz\"))\n    Debug.Print(UCase(s) & \" \" & LCase(s))\n    Debug.Print(\"[\" & Trim(\"  pad  \") & \"]\")\n    Debug.Print(Replace(s, \"l\", \"L\"))\n    Debug.Print(Join(Split(\"a,b,c\", \",\"), \"-\"))\n    Debug.Print(s.Length)\n    Debug.Print(s.Substring(7))\n    Debug.Print(s.Substring(0, 5))\n    Debug.Print(s.IndexOf(\"o\"))\n    Debug.Print(s.Contains(\"World\") & \" \" & s.StartsWith(\"Hell\") & \" \" & s.EndsWith(\"x\"))\n    Debug.Print(\"한글 \" & Len(\"한글\"))\n    Debug.Print(\"say \"\"hi\"\"\")\nEnd Sub\n",
     [],
     "Debug.Print: 12\nDebug.Print: Hello\nDebug.Print: World\nDebug.Print: World\nDebug.Print: Wor\nDebug.Print: 8\nDebug.Print: 0\nDebug.Print: HELLO, WORLD hello, world\nDebug.Print: [pad]\nDebug.Print: HeLLo, WorLd\nDebug.Print: a-b-c\nDebug.Print: 12\nDebug.Print: World\nDebug.Print: Hello\nDebug.Print: 4\nDebug.Print: True True False\nDebug.Print: 한글 2\nDebug.Print: say \"hi\"\n",
+    null,
     null,
     null,
   ),
@@ -227,12 +275,14 @@ const parityCases = <(String, String, List<String>, String, String?, String?)>[
     "Debug.Print: 1\nDebug.Print: -0.5\nDebug.Print: 25\nDebug.Print: 0.6666666666666666\nDebug.Print: 1E+15\nDebug.Print: 1E+21\nDebug.Print: 123456789012345\nDebug.Print: 0.000001\nDebug.Print: 1E-7\nDebug.Print: True False\nDebug.Print: 424.57\nDebug.Print: Score: 90\n",
     null,
     null,
+    null,
   ),
   (
     "try_catch",
     "' Throw, Catch, Finally, and an exception that nobody catches (R008).\nSub Risky(fail As Boolean)\n    Try\n        If fail Then Throw New Exception(\"Something broke\")\n        Debug.Print(\"Risky worked\")\n    Finally\n        Debug.Print(\"Finally runs\")\n    End Try\nEnd Sub\n\nSub Main()\n    Try\n        Risky(False)\n        Risky(True)\n    Catch ex As Exception\n        Debug.Print(\"Caught: \" & ex.Message)\n    End Try\n    Throw New Exception(\"Nobody catches this\")\nEnd Sub\n",
     [],
     "Debug.Print: Risky worked\nDebug.Print: Finally runs\nDebug.Print: Finally runs\nDebug.Print: Caught: Something broke\nError R008 @ 18\n",
+    null,
     null,
     null,
   ),

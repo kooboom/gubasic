@@ -1,0 +1,12 @@
+' A program's settings are at most 65536 characters of text (D48): a
+' SaveSetting that would make them longer stops with R011, and what was
+' saved before stays.
+Sub Main()
+    Dim s As String = "x"
+    For i = 1 To 16
+        s = s & s
+    Next
+    SaveSetting("small", "kept")
+    Debug.Print(Len(s))
+    SaveSetting("big", s)
+End Sub

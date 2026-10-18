@@ -219,8 +219,8 @@ enum DiagnosticCode {
   /// form-level declaration.
   localHidesField('A028', DiagnosticSeverity.warning),
 
-  /// SaveSetting / GetSetting: not available yet. Args: the name.
-  settingsNotAvailable('A029'),
+  // A029 (SaveSetting / GetSetting not available yet) is retired: they
+  // work since D48. The code is not reused.
 
   // Analyzer: forms and controls
 
@@ -326,7 +326,14 @@ enum DiagnosticCode {
 
   /// An Integer property set to a value outside its range. Args: the
   /// property, the smallest and the largest value allowed.
-  propertyValueOutOfRange('R010');
+  propertyValueOutOfRange('R010'),
+
+  /// SaveSetting would make the program's settings longer than
+  /// [settingsLimit] characters.
+  settingsTooLarge('R011'),
+
+  /// SaveSetting could not keep the settings. Args: what went wrong.
+  settingsNotSaved('R012');
 
   const DiagnosticCode(this.code, [this.severity = DiagnosticSeverity.error]);
 

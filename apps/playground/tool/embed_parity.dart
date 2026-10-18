@@ -27,9 +27,11 @@ void main(List<String> args) {
     ..writeln()
     ..writeln(
         '/// (name, program, InputBox answers, expected output, form file,')
-    ..writeln('/// event script); the last two are null without a form.')
+    ..writeln('/// event script, saved settings); the form file and the event')
+    ..writeln('/// script are null without a form, the settings without')
+    ..writeln('/// NAME.settings.')
     ..writeln('const parityCases = <(String, String, List<String>, String, '
-        'String?, String?)>[');
+        'String?, String?, String?)>[');
   for (final p in programs) {
     final name = p.uri.pathSegments.last.replaceFirst('.gbas', '');
     final input = read(p.path.replaceFirst('.gbas', '.in'));
@@ -46,6 +48,8 @@ void main(List<String> args) {
           '    ${jsonEncode(read(p.path.replaceFirst('.gbas', '.form.yaml')))},')
       ..writeln(
           '    ${jsonEncode(read(p.path.replaceFirst('.gbas', '.events')))},')
+      ..writeln(
+          '    ${jsonEncode(read(p.path.replaceFirst('.gbas', '.settings'))?.trim())},')
       ..writeln('  ),');
   }
   out.writeln('];');
@@ -69,8 +73,10 @@ String _formatted(String source) {
   final dir = Directory.systemTemp.createTempSync('parity');
   try {
     final file = File('${dir.path}/cases.dart')..writeAsStringSync(source);
-    final r =
-        Process.runSync(Platform.resolvedExecutable, ['format', file.path]);
+    // Outside the package the formatter would take the newest language
+    // version; the package's (pubspec.yaml) gives what `dart format .` does.
+    final r = Process.runSync(Platform.resolvedExecutable,
+        ['format', '--language-version=3.5', file.path]);
     if (r.exitCode != 0) throw StateError('dart format failed: ${r.stderr}');
     return file.readAsStringSync();
   } finally {

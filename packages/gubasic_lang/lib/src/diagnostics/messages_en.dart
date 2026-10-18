@@ -178,10 +178,6 @@ const Map<DiagnosticCode, String> englishMessages = {
   DiagnosticCode.functionWithoutReturn: 'Function {0} has no Return, so it '
       'always gives back the default value. Add Return with the value to '
       'give back.',
-  DiagnosticCode.settingsNotAvailable: '{0} is not available yet. For now, '
-      'keep the value in a form-level variable while the program runs.',
-
-  // Analyzer: forms and controls
   DiagnosticCode.nameIsControl: '"{0}" is already the name of a control on '
       'the form. Use a different name here, or rename the control.',
   DiagnosticCode.localHidesControl: 'This local "{0}" hides the control of '
@@ -242,6 +238,10 @@ const Map<DiagnosticCode, String> englishMessages = {
       'Check what the Object variable holds.',
   DiagnosticCode.invalidArgument: 'The value given to {0} is outside what it '
       'accepts. Check the arguments.',
+  DiagnosticCode.settingsTooLarge: 'The settings of this program would be '
+      'longer than 65536 characters. Save fewer or shorter values.',
+  DiagnosticCode.settingsNotSaved: 'The setting could not be saved ({0}). '
+      'There may be no room left where settings are kept.',
   DiagnosticCode.unhandledException: 'An error was thrown and not caught: '
       '{0}. Use Try ... Catch to handle it.',
   DiagnosticCode.callsTooDeep: 'Procedures called each other too deeply '

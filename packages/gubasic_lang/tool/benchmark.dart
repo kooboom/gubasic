@@ -100,6 +100,10 @@ class _Host implements FormHost {
   void setProperty(String? control, String property, Object value) =>
       _properties['$control.$property'] = value;
   @override
+  Future<String?> loadSettings() async => null;
+  @override
+  Future<void> saveSettings(String text) async {}
+  @override
   void showForm() => shown.complete();
   @override
   void endProgram() {}

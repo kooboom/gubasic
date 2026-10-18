@@ -4,6 +4,12 @@ import '../model/i18n.dart';
 import '../model/run_state.dart';
 import '../model/snapshot.dart';
 import 'dialog.dart';
+import 'html.dart';
+
+/// Where SaveSetting keeps a program's settings. The playground has no
+/// projects, so all its programs share them (docs/DESIGN.md D48); the
+/// web IDE's keys start with gubasic.ide. and gubasic.settings.
+const programSettingsKey = 'gubasic.playground.settings';
 
 /// Runs the program shown in the editor and keeps the Run tab's state.
 class RunController {
@@ -98,4 +104,11 @@ class _PlaygroundHost implements Host {
   /// microtask, so that events can run.
   @override
   Future<void> yieldNow() => Future<void>.delayed(Duration.zero);
+
+  @override
+  Future<String?> loadSettings() async => loadSetting(programSettingsKey);
+
+  @override
+  Future<void> saveSettings(String text) async =>
+      saveOrThrow(programSettingsKey, text);
 }

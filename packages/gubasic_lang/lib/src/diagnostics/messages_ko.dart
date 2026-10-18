@@ -150,10 +150,6 @@ const Map<DiagnosticCode, String> koreanMessages = {
   DiagnosticCode.unusedLocal: '{0} 변수를 선언했지만 쓰지 않았습니다. 필요 없으면 지워 주세요.',
   DiagnosticCode.functionWithoutReturn:
       '{0} 함수에 Return 문이 없어서 항상 기본값을 돌려줍니다. 돌려줄 값과 함께 Return을 써 주세요.',
-  DiagnosticCode.settingsNotAvailable:
-      '{0} 기능은 아직 준비 중입니다. 지금은 프로그램이 도는 동안 폼 변수에 값을 담아 두세요.',
-
-  // Analyzer: forms and controls
   DiagnosticCode.nameIsControl:
       '{0} 이름은 이미 폼에 있는 컨트롤의 이름입니다. 여기서 다른 이름을 쓰거나 컨트롤의 이름을 바꿔 주세요.',
   DiagnosticCode.localHidesControl:
@@ -209,6 +205,10 @@ const Map<DiagnosticCode, String> koreanMessages = {
       '{1} 타입 값에는 {0} 멤버가 없습니다. Object 변수에 무엇이 들어 있는지 확인해 주세요.',
   DiagnosticCode.invalidArgument:
       '{0} 함수에 넘긴 값이 받을 수 있는 범위를 벗어났습니다. 인수를 확인해 주세요.',
+  DiagnosticCode.settingsTooLarge: '이 프로그램의 설정이 65536자를 넘게 됩니다. '
+      '저장하는 값을 줄이거나 짧게 해 주세요.',
+  DiagnosticCode.settingsNotSaved: '설정을 저장하지 못했습니다({0}). '
+      '설정을 보관하는 곳에 자리가 없을 수 있습니다.',
   DiagnosticCode.unhandledException:
       '오류가 발생했지만 처리하지 않았습니다: {0}. Try ... Catch로 잡아서 처리해 주세요.',
   DiagnosticCode.callsTooDeep:

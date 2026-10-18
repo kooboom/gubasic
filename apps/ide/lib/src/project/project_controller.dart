@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:gubasic_runtime/gubasic_runtime.dart';
 
 import '../strings.dart';
 import 'browser.dart';
@@ -40,6 +41,7 @@ class ProjectController extends ChangeNotifier {
     this.browser,
     this.pickZip,
     this.autosaveDelay = const Duration(seconds: 2),
+    this._settings,
     String open = 'hello',
   }) : _current = OpenProject(ExampleLocation(open), examples[open]!) {
     if (browser case final browser?) {
@@ -559,6 +561,29 @@ class ProjectController extends ChangeNotifier {
           .replaceAll('{1}', reason ?? strings.notText),
     FolderExists(:final name) => strings.folderExists.replaceAll('{0}', name),
   };
+
+  /// Where the programs' settings are kept (SaveSetting, D48), each
+  /// project's by its name; shared_preferences unless given, made only
+  /// when needed.
+  GbSettingsStore get settings => _settings ??= GbPreferencesSettings();
+  GbSettingsStore? _settings;
+
+  /// File → Clear Saved Settings: forgets what the open project's program
+  /// saved with SaveSetting, after asking (D48).
+  Future<void> clearSettings(BuildContext context) async {
+    final name = current.project.name;
+    if (!await _confirm(
+      context,
+      strings.clearSettingsQuestion.replaceAll('{0}', name),
+      strings.clearSettingsYes,
+    )) {
+      return;
+    }
+    await settings.clear(name);
+    if (context.mounted) {
+      _snack(context, strings.settingsCleared.replaceAll('{0}', name));
+    }
+  }
 
   /// Tells [message] at the bottom for a while; the title's mark tells
   /// the rest (whether anything is unsaved), so missing it loses nothing.

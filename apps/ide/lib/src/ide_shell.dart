@@ -135,7 +135,12 @@ class _IdeShellState extends State<IdeShell> {
     setState(() {
       _problems = [];
       _runFiles = Map.of(project.files);
-      _session = RunSession(startup, strings: s);
+      _session = RunSession(
+        startup,
+        strings: s,
+        project: project.name,
+        settings: widget.controller.settings,
+      );
       _showRun = true;
     });
     // The view that had the focus is hidden now.
@@ -327,6 +332,14 @@ class _IdeShellState extends State<IdeShell> {
         item(s.open, _open, LogicalKeyboardKey.keyO),
         item(s.save, _save, LogicalKeyboardKey.keyS),
         item(s.saveAs, _saveAs, LogicalKeyboardKey.keyS, shift: true),
+        const Divider(),
+        MenuItemButton(
+          key: const ValueKey('menu.clearSettings'),
+          onPressed: _running
+              ? null
+              : () => widget.controller.clearSettings(context),
+          child: Text(s.clearSettings),
+        ),
         if (widget.controller.canUseBrowser) ...[
           const Divider(),
           item(s.downloadZip, _download, LogicalKeyboardKey.keyE, shift: true),
