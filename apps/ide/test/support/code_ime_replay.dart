@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gubasic_ide/main.dart';
 import 'package:gubasic_ide/src/code/code_controller.dart';
@@ -18,7 +19,8 @@ import 'package:gubasic_runtime/gubasic_runtime.dart';
 /// sent, the colouring keeps the text and its kind, and the final text is
 /// the recording's. Also right after a name being completed (`lbl`): the
 /// completion list closes at the first jamo and never shows while Hangul
-/// is typed (D50).
+/// is typed (D50). And in a comment after `If … Then`, where Enter then
+/// closes the block only if it does not commit Hangul being composed.
 void defineCodeImeTests(Map<String, String> logs) {
   final hello = exampleProjects['hello']!;
   const codeFile = 'Form1.gbas';
@@ -74,6 +76,11 @@ void defineCodeImeTests(Map<String, String> logs) {
       '")\nEnd Sub\n',
       CodeKind.string,
     ),
+    'a comment after If … Then': (
+      "Sub Form_Load()\n    If x Then ' ",
+      '\nEnd Sub\n',
+      CodeKind.comment,
+    ),
     // Hangul is not code (L002), but a beginner may type it there.
     'code, after a name being completed': (
       'Sub Form_Load()\n    lbl',
@@ -82,6 +89,45 @@ void defineCodeImeTests(Map<String, String> logs) {
     ),
   };
   final list = find.byKey(completionListKey);
+
+  /// Enter at the caret, as the platform sends it: while Hangul is being
+  /// composed, a browser commits it first; the macOS app, which sends no
+  /// composing range, only breaks the line. The block of the `If` line
+  /// ([closes] is where its comment starts) gets `End If` only when
+  /// nothing was being composed and the caret was at the line's end.
+  Future<TextEditingValue> enter(
+    WidgetTester t, {
+    required int closes,
+    bool? composing,
+  }) async {
+    final v = editor(t).value;
+    final isComposing = file(t) != v.text;
+    if (composing != null) {
+      expect(isComposing, composing, reason: 'composing as Enter is pressed');
+    }
+    final at = v.selection.baseOffset;
+    await t.sendKeyEvent(LogicalKeyboardKey.enter);
+    if (v.composing.isValid && !v.composing.isCollapsed) {
+      t.testTextInput.updateEditingValue(
+        v.copyWith(composing: TextRange.empty),
+      );
+      await t.pump();
+    }
+    final broken = TextEditingValue(
+      text: v.text.replaceRange(at, at, '\n'),
+      selection: TextSelection.collapsed(offset: at + 1),
+    );
+    t.testTextInput.updateEditingValue(broken);
+    await t.pump();
+    final atEnd = at >= closes && v.text.indexOf('\n', at) == at;
+    expect(
+      editor(t).text.contains('End If'),
+      !isComposing && atEnd,
+      reason:
+          'End If after Enter (composing: $isComposing, at the end: $atEnd)',
+    );
+    return editor(t).value;
+  }
 
   for (final MapEntry(key: source, value: json) in logs.entries) {
     final scenarios = (jsonDecode(json)['scenarios'] as Map<String, Object?>)
@@ -124,7 +170,23 @@ void defineCodeImeTests(Map<String, String> logs) {
             }
             var inField = true;
             var last = const TextEditingValue();
-            for (final e in log) {
+            // After If … Then, Enter is pressed at the last moment the
+            // recording composes (every recording ends committed): the
+            // last value with a composing range, or, in the macOS app,
+            // which sends none, the last value before the focus leaves.
+            final closesBlock = where == 'a comment after If … Then';
+            final app = source.endsWith('-app.json');
+            int? enterAt;
+            for (var i = 0; closesBlock && i < log.length; i++) {
+              final e = log[i];
+              if (e['kind'] == 'focus' && e['hasFocus'] == false) break;
+              if (e['kind'] == 'value' &&
+                  (app || (e['composing']! as List).first as int >= 0)) {
+                enterAt = i;
+              }
+            }
+            for (final (i, e) in log.indexed) {
+              if (i - 1 == enterAt) break;
               switch (e['kind']) {
                 case 'value':
                   final v = shifted(e, before, after);
@@ -173,6 +235,14 @@ void defineCodeImeTests(Map<String, String> logs) {
                   await t.pump();
                   inField = true;
               }
+            }
+            if (enterAt != null) {
+              final chromeComposing = !app;
+              last = await enter(
+                t,
+                closes: before.length,
+                composing: chromeComposing ? true : null,
+              );
             }
             FocusManager.instance.primaryFocus?.unfocus();
             await t.pumpAndSettle();

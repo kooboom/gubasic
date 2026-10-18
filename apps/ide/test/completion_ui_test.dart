@@ -218,7 +218,11 @@ void main() {
     // Only the word itself: nothing to show.
     expect(list(), findsNothing);
     await typeText(t, '\n');
-    expect(editor(t).text, 'Sub Form_Load()\n    If x Then\n    \nEnd Sub\n');
+    // The line break, and the block's closing line (block completion).
+    expect(
+      editor(t).text,
+      'Sub Form_Load()\n    If x Then\n        \n    End If\nEnd Sub\n',
+    );
   });
 
   testWidgets('nothing in strings and comments', (t) async {

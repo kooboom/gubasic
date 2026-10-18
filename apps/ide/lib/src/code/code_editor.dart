@@ -51,7 +51,11 @@ SingleActivator get completionShortcut =>
 /// method has committed reach the file (LANGUAGE.md §11.1), so a syllable
 /// being composed is never saved or run. Tab and Shift+Tab indent, Enter
 /// keeps the line's indentation, and ⌘Z / Ctrl+Z undoes the typing.
-/// A list of the names that can go at the caret opens after a `.` and
+/// Enter at the end of a line that opens a block (`If … Then`, `For`,
+/// `Sub`, …) that is not closed puts in its closing line (`End If`,
+/// `Next`, `End Sub`), unless that Enter committed what the input method
+/// was composing. A list of the names that can go at the caret opens
+/// after a `.` and
 /// after two letters of a name, or with [completionShortcut]; never while
 /// the input method composes (D50). Read-only while [locked] (a program
 /// runs).
@@ -120,6 +124,7 @@ class _CodeEditorState extends State<CodeEditor> {
     _last = _controller.value;
     _tracker.track(_controller.value);
     _controller.addListener(_changed);
+    HardwareKeyboard.instance.addHandler(_countKey);
     _focus.addListener(() {
       // This listener comes before the text field's own, so the selection
       // is still the user's here.
@@ -423,6 +428,7 @@ class _CodeEditorState extends State<CodeEditor> {
 
   @override
   void dispose() {
+    HardwareKeyboard.instance.removeHandler(_countKey);
     _compileTimer?.cancel();
     _completion.dispose();
     _controller.dispose();
@@ -442,6 +448,7 @@ class _CodeEditorState extends State<CodeEditor> {
   late final _tracker = ComposingTracker(_controller.value);
 
   void _changed() {
+    final wasComposing = _composing || _isComposing(_last);
     _tracker.track(_controller.value);
     _followCaret();
     if (_changing) return;
@@ -449,12 +456,38 @@ class _CodeEditorState extends State<CodeEditor> {
     final last = _last;
     _last = value;
     if (!widget.locked && _isNewLine(last, value)) {
+      // An Enter that committed what was being composed, even when the
+      // line break comes in a change of its own after the commit (as
+      // browsers send it), closes no block.
+      final committing = wasComposing || _committedAt == _keyDowns;
+      _committedAt = null;
       _closeCompletion();
-      _indentNewLine(last);
+      _indentNewLine(last, closeBlock: !committing);
       return;
+    }
+    if (value.text == last.text) {
+      if (wasComposing && !_composing && !_isComposing(value)) {
+        _committedAt = _keyDowns;
+      }
+    } else {
+      _committedAt = null;
     }
     _write();
     _completeAfter(last, value);
+  }
+
+  static bool _isComposing(TextEditingValue v) =>
+      v.composing.isValid && !v.composing.isCollapsed;
+
+  /// How many keys went down in the IDE so far, and how many had when the
+  /// input method last committed without changing the text: a line break
+  /// with no key pressed since is that commit's Enter.
+  var _keyDowns = 0;
+  int? _committedAt;
+
+  bool _countKey(KeyEvent event) {
+    if (event is KeyDownEvent) _keyDowns++;
+    return false;
   }
 
   /// Writes what the input method has committed, when it changed.
@@ -767,15 +800,26 @@ class _CodeEditorState extends State<CodeEditor> {
   }
 
   /// After Enter: the new line starts with the indentation of the line
-  /// the break was made in.
-  void _indentNewLine(TextEditingValue before) {
+  /// the break was made in. With [closeBlock], a block that line opens
+  /// and nothing closes gets its closing line, and the caret goes inside.
+  void _indentNewLine(TextEditingValue before, {required bool closeBlock}) {
     final text = _controller.text;
     final at = _controller.selection.baseOffset;
     final lineStart = _lineStart(before.text, before.selection.start);
     final indent = RegExp(r'^[ \t]*')
         .firstMatch(before.text.substring(lineStart, before.selection.start))!
         .group(0)!;
-    if (indent.isNotEmpty) {
+    final closer = closeBlock ? _closerFor(before, lineStart, text) : null;
+    if (closer != null) {
+      final inside = '$indent${' ' * indentWidth}';
+      _changing = true;
+      _controller.value = TextEditingValue(
+        text: text.replaceRange(at, at, '$inside\n$indent$closer'),
+        selection: TextSelection.collapsed(offset: at + inside.length),
+      );
+      _changing = false;
+      _last = _controller.value;
+    } else if (indent.isNotEmpty) {
       _changing = true;
       _controller.value = TextEditingValue(
         text: text.replaceRange(at, at, indent),
@@ -788,6 +832,35 @@ class _CodeEditorState extends State<CodeEditor> {
   }
 
   bool get _composing => _tracker.composing;
+
+  static final _opener = RegExp(
+    r'^[ \t]*(?:(?:public|private)[ \t]+)?(?:if|for|do|select|sub|function|try)\b',
+    caseSensitive: false,
+  );
+
+  /// The closing line (`End If`) for the block that the line at
+  /// [lineStart] of [before] opens, when Enter was pressed at its end and
+  /// the parser finds the block not closed in [now] (P006).
+  static String? _closerFor(
+    TextEditingValue before,
+    int lineStart,
+    String now,
+  ) {
+    final text = before.text;
+    var lineEnd = text.indexOf('\n', before.selection.end);
+    if (lineEnd < 0) lineEnd = text.length;
+    if (text.substring(before.selection.end, lineEnd).trim().isNotEmpty) {
+      return null; // The line was split, not ended.
+    }
+    if (!_opener.hasMatch(text.substring(lineStart, lineEnd))) return null;
+    final line = '\n'.allMatches(text.substring(0, lineStart)).length + 1;
+    for (final d in parse(now).parserDiagnostics) {
+      if (d.code == DiagnosticCode.unclosedBlock && d.line == line) {
+        return d.args[2];
+      }
+    }
+    return null;
+  }
 
   /// The first and the last line of the selection, as offsets: the start
   /// of the first and the end of the last.

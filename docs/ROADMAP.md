@@ -28,7 +28,7 @@ The core Visual Basic experience, entirely inside the IDE.
 - [x] Analyzer: names, scopes and types, with plain-language diagnostics (English / Korean)
 - [x] Web playground for development ([try it](https://kooboom.github.io/gubasic))
 - [x] Code editor: syntax highlighting, double-click → handler stub, rename-safe handlers
-- [ ] Light autocompletion (keywords, controls, members, "did you mean")
+- [x] Light autocompletion (keywords, controls, members, "did you mean")
 - [x] **Async interpreter**, running programs in the playground's Run tab
 - [x] F5 runs the app inside the IDE
 - [x] `MsgBox`, `InputBox`, `DoEvents`, `Try…Catch`
