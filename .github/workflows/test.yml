@@ -113,6 +113,8 @@ jobs:
         run: flutter test --platform chrome test/web
       - name: Build for the web (engine and fonts served with the app, D30)
         run: flutter build web --release --no-web-resources-cdn
+      - name: List the sizes for the loading percentage (D43)
+        run: dart run tool/web_load_sizes.dart
 
   # The runtime's example and the IDE must keep building as desktop apps.
   windows:

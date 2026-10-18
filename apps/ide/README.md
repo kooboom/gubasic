@@ -7,6 +7,7 @@ The IDE: it opens the example projects in `examples/` (`hello`; `typing`, a Text
 ```sh
 flutter run -d macos     # or -d windows, -d chrome
 flutter build web --no-web-resources-cdn   # as CI builds it (D30)
+dart run tool/web_load_sizes.dart          # the sizes for "Loading… 37%" (D43)
 ```
 
 - **File**, at the top left (macOS and Windows; D32):

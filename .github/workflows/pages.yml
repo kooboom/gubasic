@@ -37,6 +37,7 @@ jobs:
         run: |
           flutter pub get
           flutter build web --release --no-web-resources-cdn --base-href /gubasic/ide/
+          dart run tool/web_load_sizes.dart
           cp -R build/web ../playground/build/web/ide
         working-directory: apps/ide
       - uses: actions/configure-pages@v5

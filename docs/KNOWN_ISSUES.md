@@ -69,6 +69,12 @@ Problems we know about and have **deliberately** left unfixed for now. Each entr
 - **Why deferred:** all of this was served from 127.0.0.1, so no real network (such as a school network) was in between. That needs the Pages deploy (E1e).
 - **Revisit:** after the Pages deploy (E1e): open the real address in a normal browser on the school PC, check that it loads on the school network, and measure how long the first visit takes.
 
+## The loading percentage is not checked in Firefox
+
+- **What:** the web IDE's "Loading… 37%" (D43) was checked in Chrome and in WebKit, the engine of Safari (Playwright 1.56, a local server, a throttled network): the percentage rose to 94–99%, went away with the first frame, and every file was fetched once. Firefox was not checked: Playwright's Firefox (142) does not start on this macOS, and Firefox is not installed. Firefox takes the same path as WebKit (the full CanvasKit build, `fetch` and `ReadableStream`), so it should behave the same.
+- **Why deferred:** checking it needs a Firefox that runs; nothing in the code is specific to one browser.
+- **Revisit:** when Firefox is at hand (a school PC, or a Playwright release that starts here): open the IDE with the cache off and check that the percentage rises and each file is fetched once.
+
 ## No copy and paste in the form designer
 
 - **What:** the form designer cannot copy, cut or paste controls (⌘C / ⌘X / ⌘V, Ctrl+C / Ctrl+X / Ctrl+V).

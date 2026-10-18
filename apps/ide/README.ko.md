@@ -7,6 +7,7 @@ IDE입니다. `examples/`의 예제 프로젝트(`hello`, 그리고 입력기를
 ```sh
 flutter run -d macos     # 또는 -d windows, -d chrome
 flutter build web --no-web-resources-cdn   # CI와 같은 빌드(D30)
+dart run tool/web_load_sizes.dart          # "불러오는 중… 37%"에 쓰는 크기(D43)
 ```
 
 - **파일**, 왼쪽 위(macOS, Windows; D32):
