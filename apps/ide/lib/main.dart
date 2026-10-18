@@ -45,6 +45,7 @@ void main() {
       ),
     ),
   );
+  WidgetsBinding.instance.addPostFrameCallback((_) => BoldFont.load());
 }
 
 /// GuBASIC project files, for the system's open and save dialogs.

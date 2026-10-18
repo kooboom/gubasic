@@ -62,18 +62,25 @@
 - **왜 미뤘나:** 트랜스파일러가 아직 없습니다.
 - **다시 볼 때:** 트랜스파일러 단계. 선택지로는 생성 앱에도 같은 글꼴을 넣는 것(약 9 MB 커짐), 디자이너가 글자 잘림 위험을 경고하는 것 등이 있습니다.
 
-## 웹 IDE의 글꼴 불러오기는 로컬 서버로만 확인함
+## 웹 IDE의 글꼴 불러오기는 학교망에서 확인하지 않았습니다
 
 - **무엇:** 외부 주소를 모두 막고(headless Chrome, `--host-resolver-rules="MAP * ~NOTFOUND, EXCLUDE 127.0.0.1"`, 웹 빌드를 로컬 서버로 띄움) 열었을 때, IDE의 한국어 문구가 바르게 나오고 페이지가 외부에서 받는 것이 없었습니다. 엔진, 글꼴, 대체 글꼴 모두 로컬 서버에서 왔습니다. macOS와 Windows(Chrome 155)에서 확인했습니다. 넷 로그에 남은 외부 요청은 업데이트, 맞춤법 사전처럼 Chrome이 스스로 보낸 것뿐이었습니다. 음절이 □로 빠지는 문제([flutter/flutter#188255](https://github.com/flutter/flutter/issues/188255))는 나타나지 않았습니다.
 - **느린 네트워크에서 첫 방문**(Windows, headless Chrome, 캐시 끔, DevTools의 Slow 4G 설정: 지연 562.5 ms, 180 kB/s, 127.0.0.1에서 받음): "불러오는 중…"이 1.1초부터 약 102초의 첫 화면까지 보였습니다. Noto Sans KR 두 파일이 100.3초와 101.3초에 도착했고, 첫 화면은 그 바로 뒤에 그려졌습니다. 모든 프레임을 화면 녹화(screencast)로 보니 불러오는 중 문구에서 Noto Sans KR로 다 그려진 IDE로 바로 넘어갔습니다. 다른 글꼴로 그린 프레임이 없었으므로, 처음에 다른 글꼴로 그렸다가 바로잡히는 문제([flutter/flutter#77023](https://github.com/flutter/flutter/issues/77023))는 나타나지 않았습니다. `typing`을 실행하고 TextBox에 동해물과 백두산이 닭 값을 넣었을 때 TextBox와 Label 모두 □ 없이 나왔습니다.
-- **왜 미뤘나:** 모두 127.0.0.1에서 받았으므로 실제 네트워크(학교망 등)를 거치지 않았습니다. 그러려면 Pages 배포(E1e)가 필요합니다.
-- **다시 볼 때:** Pages 배포(E1e) 뒤, 학교 PC의 보통 브라우저로 실제 주소를 열어 학교망에서 열리는지 확인하고 첫 방문에 걸리는 시간을 잽니다.
+- **Pages 주소에서**(E1e, https://kooboom.github.io/gubasic/ide/, 다른 호스트를 모두 막은 macOS의 headless Chrome): IDE가 열렸고, 모든 파일이 kooboom.github.io에서 왔습니다. 크기는 D30에 있습니다.
+- **왜 미뤘나:** 학교망을 거치지 않았습니다. 그러려면 학교 PC가 필요합니다.
+- **다시 볼 때:** 학교 PC에서 이슈 #14의 단계대로: 학교망의 보통 브라우저로 주소를 열고 첫 방문에 걸리는 시간을 잽니다.
 
 ## 불러오는 중 퍼센트는 Firefox에서 확인하지 않았습니다
 
 - **무엇:** 웹 IDE의 "불러오는 중… 37%"(D43)는 Chrome과 WebKit(Safari의 엔진)에서 확인했습니다(Playwright 1.56, 로컬 서버, 느린 망 흉내). 퍼센트가 94~99%까지 오르고 첫 화면과 함께 사라졌으며, 모든 파일을 한 번씩만 받았습니다. Firefox는 확인하지 못했습니다. Playwright의 Firefox(142)가 이 macOS에서 시작되지 않고, Firefox도 설치되어 있지 않습니다. Firefox는 WebKit과 같은 경로(전체 CanvasKit 빌드, `fetch`, `ReadableStream`)를 지나므로 같게 동작할 것으로 봅니다.
 - **왜 미뤘나:** 확인하려면 실행되는 Firefox가 있어야 합니다. 코드에는 특정 브라우저만을 위한 부분이 없습니다.
 - **다시 볼 때:** Firefox를 쓸 수 있을 때(학교 PC, 또는 여기서 시작되는 Playwright 버전): 캐시를 끄고 IDE를 열어, 퍼센트가 오르는지와 파일마다 한 번씩만 받는지 확인합니다.
+
+## 웹 IDE의 글꼴은 WOFF2가 아니라 OTF로 보냅니다
+
+- **무엇:** Noto Sans KR은 GitHub Pages가 gzip으로 압축한 OTF 파일로 브라우저에 갑니다(Regular 4.6 MB, 전송 3.7 MB). WOFF2는 글꼴을 더 잘 압축하지만, Flutter 문서는 `.ttc`, `.ttf`, `.otf`만 적고 WOFF와 WOFF2는 데스크톱 플랫폼에서 지원하지 않는다고 하며, 웹에 대해서는 말하지 않습니다([Flutter](https://docs.flutter.dev/cookbook/design/fonts)).
+- **왜 미뤘나:** IDE는 모든 플랫폼에서 글꼴 목록 하나를 쓰고(D30), 웹 지원은 문서에 없습니다. 시도하지 않았습니다.
+- **다시 볼 때:** Flutter가 웹의 WOFF2를 문서에 적을 때, 또는 학교망에서 첫 방문이 여전히 너무 느릴 때.
 
 ## 폼 디자이너에서 복사와 붙여넣기가 안 됩니다
 

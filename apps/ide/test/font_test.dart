@@ -35,6 +35,14 @@ void main() {
     expect(pubspec, contains('    - $font'), reason: 'under assets:');
   });
 
+  test('Bold is an asset, loaded after the first frame', () {
+    final pubspec = File('pubspec.yaml').readAsStringSync();
+    final fonts = pubspec.substring(pubspec.indexOf('  fonts:'));
+    expect(fonts, isNot(contains('Bold')), reason: 'not under fonts:');
+    expect(pubspec, contains('    - ${BoldFont.asset}'), reason: 'assets:');
+    expect(File(BoldFont.asset).existsSync(), isTrue);
+  });
+
   testWidgets('the IDE uses the bundled font everywhere', (tester) async {
     await tester.pumpWidget(
       IdeApp(projects: exampleProjects, strings: IdeStrings.en),

@@ -62,18 +62,25 @@ Problems we know about and have **deliberately** left unfixed for now. Each entr
 - **Why deferred:** there is no transpiler yet.
 - **Revisit:** in the transpiler stage. Options include putting the same font into generated apps (they grow by about 9 MB), or having the designer warn when text may be cut off.
 
-## The web IDE's font loading is checked from a local server only
+## The web IDE's font loading is not checked on the school network
 
 - **What:** with all outside hosts blocked (headless Chrome, `--host-resolver-rules="MAP * ~NOTFOUND, EXCLUDE 127.0.0.1"`, the web build served locally), the IDE shows its Korean words correctly and the page fetches nothing from outside: the engine, the fonts and the fallback font come from the local server. Checked on macOS and on Windows (Chrome 155; the only outside requests in the net log were Chrome's own, such as updates and spelling dictionaries). Missing syllables as □ ([flutter/flutter#188255](https://github.com/flutter/flutter/issues/188255)) did not appear.
 - **First visit on a slow network** (Windows, headless Chrome, cache off, DevTools' Slow 4G preset: 562.5 ms latency, 180 kB/s, served from 127.0.0.1): "불러오는 중…" showed from 1.1 s until the first frame at about 102 s. The two Noto Sans KR files arrived at 100.3 s and 101.3 s, and the first frame came right after them. A screencast of every frame went from the loading text straight to the finished IDE in Noto Sans KR: no frame in another font, so text first drawn in the wrong font and corrected later ([flutter/flutter#77023](https://github.com/flutter/flutter/issues/77023)) did not appear. Running `typing` and putting 동해물과 백두산이 닭 값 into its TextBox showed it in the TextBox and the Label without □.
-- **Why deferred:** all of this was served from 127.0.0.1, so no real network (such as a school network) was in between. That needs the Pages deploy (E1e).
-- **Revisit:** after the Pages deploy (E1e): open the real address in a normal browser on the school PC, check that it loads on the school network, and measure how long the first visit takes.
+- **On the Pages address** (E1e, https://kooboom.github.io/gubasic/ide/, headless Chrome on macOS with every other host blocked): the IDE opened, and every file came from kooboom.github.io; D30 has the sizes.
+- **Why deferred:** no school network was in between. That needs a school PC.
+- **Revisit:** on the school PC, following the steps in issue #14: open the address in a normal browser on the school network and measure how long the first visit takes.
 
 ## The loading percentage is not checked in Firefox
 
 - **What:** the web IDE's "Loading… 37%" (D43) was checked in Chrome and in WebKit, the engine of Safari (Playwright 1.56, a local server, a throttled network): the percentage rose to 94–99%, went away with the first frame, and every file was fetched once. Firefox was not checked: Playwright's Firefox (142) does not start on this macOS, and Firefox is not installed. Firefox takes the same path as WebKit (the full CanvasKit build, `fetch` and `ReadableStream`), so it should behave the same.
 - **Why deferred:** checking it needs a Firefox that runs; nothing in the code is specific to one browser.
 - **Revisit:** when Firefox is at hand (a school PC, or a Playwright release that starts here): open the IDE with the cache off and check that the percentage rises and each file is fetched once.
+
+## The web IDE's fonts are sent as OTF, not WOFF2
+
+- **What:** Noto Sans KR goes to the browser as an OTF file that GitHub Pages compresses with gzip (Regular 4.6 MB, 3.7 MB on the wire). WOFF2 compresses fonts better, but Flutter's documentation lists only `.ttc`, `.ttf` and `.otf`, says WOFF and WOFF2 are not supported on desktop platforms, and says nothing of the web ([Flutter](https://docs.flutter.dev/cookbook/design/fonts)).
+- **Why deferred:** the IDE uses one font list on every platform (D30), and the web's support is not documented; it was not tried.
+- **Revisit:** if Flutter documents WOFF2 for the web, or if the first visit is still too slow on the school network.
 
 ## No copy and paste in the form designer
 
