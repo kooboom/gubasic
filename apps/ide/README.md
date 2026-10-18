@@ -2,7 +2,7 @@
 
 [한국어](README.ko.md)
 
-The IDE: it opens the example projects in `examples/` (`hello`; `typing`, a TextBox to try an input method with; `quiz`, a small quiz with a ListBox and a CheckBox) and projects on disk, and runs them in a run window (docs/DESIGN.md §2.3). The menu at the top right switches between them. It runs on macOS, on Windows and on the web.
+The IDE: it opens the example projects in `examples/` (`hello`; `typing`, a TextBox to try an input method with; `quiz`, a small quiz with a ListBox and a CheckBox that keeps its best score with `SaveSetting`) and projects on disk, and runs them in a run window (docs/DESIGN.md §2.3). The menu at the top right switches between them. It runs on macOS, on Windows and on the web.
 
 ```sh
 flutter run -d macos     # or -d windows, -d chrome

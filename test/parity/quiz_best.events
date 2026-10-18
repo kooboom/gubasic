@@ -1,0 +1,23 @@
+' examples/quiz played as in quiz_example, after an earlier run saved a
+' best score of 4 (quiz_best.settings): 3 points do not beat it, so
+' nothing is saved.
+btnCheck.Click              ' nothing chosen yet
+OK
+lstChoices.Select 1         ' 서울: right
+btnCheck.Click
+OK
+lstChoices.Select 0         ' wrong; the answer is not shown
+btnCheck.Click
+OK
+chkShowAnswer.Click         ' show the answer when wrong
+lstChoices.Select 3
+btnCheck.Click
+OK
+lstChoices.Select 1         ' 한글: right
+btnCheck.Click
+OK
+lstChoices.Select 1         ' 56: right, the last question
+btnCheck.Click
+OK
+OK                          ' the score; it starts again
+Close

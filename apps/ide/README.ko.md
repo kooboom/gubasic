@@ -2,7 +2,7 @@
 
 [English](README.md)
 
-IDE입니다. `examples/`의 예제 프로젝트(`hello`, 입력기를 시험할 TextBox가 있는 `typing`, ListBox와 CheckBox로 만든 작은 퀴즈 `quiz`)와 디스크의 프로젝트를 열고 실행 창에서 실행합니다(docs/DESIGN.ko.md 2.3절). 오른쪽 위 메뉴로 프로젝트를 바꿉니다. macOS, Windows, 웹에서 실행됩니다.
+IDE입니다. `examples/`의 예제 프로젝트(`hello`, 입력기를 시험할 TextBox가 있는 `typing`, ListBox와 CheckBox로 만들고 `SaveSetting`으로 최고 점수를 저장하는 작은 퀴즈 `quiz`)와 디스크의 프로젝트를 열고 실행 창에서 실행합니다(docs/DESIGN.ko.md 2.3절). 오른쪽 위 메뉴로 프로젝트를 바꿉니다. macOS, Windows, 웹에서 실행됩니다.
 
 ```sh
 flutter run -d macos     # 또는 -d windows, -d chrome

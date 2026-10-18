@@ -7,13 +7,15 @@ import 'package:gubasic_lang/gubasic_lang.dart';
 import 'package:test/test.dart';
 
 /// examples/quiz, the quiz that stage 1 ends with (docs/ROADMAP.md), is
-/// played through by the parity program quiz_example, which must stay a
-/// copy of it.
+/// played through by the parity programs quiz_example and quiz_best (with
+/// a best score saved before), which must stay copies of it.
 void main() {
-  test('quiz_example is a copy of examples/quiz', () {
+  test('quiz_example and quiz_best are copies of examples/quiz', () {
     for (final (example, parity) in [
       ('Form1.gbas', 'quiz_example.gbas'),
       ('Form1.form.yaml', 'quiz_example.form.yaml'),
+      ('Form1.gbas', 'quiz_best.gbas'),
+      ('Form1.form.yaml', 'quiz_best.form.yaml'),
     ]) {
       expect(
         File('../../test/parity/$parity').readAsStringSync(),

@@ -5,7 +5,7 @@ Set lstChoices.Items: [부산]
 Set lstChoices.Items: [부산, 서울]
 Set lstChoices.Items: [부산, 서울, 대구]
 Set lstChoices.Items: [부산, 서울, 대구, 인천]
-Set lblScore.Caption: 점수: 0
+Set lblScore.Caption: 점수: 0 · 최고 점수: 0
 > btnCheck.Click
 MsgBox: 먼저 보기를 하나 고르세요.
 > OK
@@ -23,7 +23,7 @@ Set lstChoices.Items: [360일]
 Set lstChoices.Items: [360일, 365일]
 Set lstChoices.Items: [360일, 365일, 366일]
 Set lstChoices.Items: [360일, 365일, 366일, 370일]
-Set lblScore.Caption: 점수: 1
+Set lblScore.Caption: 점수: 1 · 최고 점수: 0
 > lstChoices.Select 0
 Set btnCheck.Caption: 확인: 360일
 > btnCheck.Click
@@ -38,7 +38,7 @@ Set lstChoices.Items: [50도]
 Set lstChoices.Items: [50도, 80도]
 Set lstChoices.Items: [50도, 80도, 100도]
 Set lstChoices.Items: [50도, 80도, 100도, 120도]
-Set lblScore.Caption: 점수: 1
+Set lblScore.Caption: 점수: 1 · 최고 점수: 0
 > chkShowAnswer.Click
 > lstChoices.Select 3
 Set btnCheck.Caption: 확인: 120도
@@ -54,7 +54,7 @@ Set lstChoices.Items: [한자]
 Set lstChoices.Items: [한자, 한글]
 Set lstChoices.Items: [한자, 한글, 가나]
 Set lstChoices.Items: [한자, 한글, 가나, 알파벳]
-Set lblScore.Caption: 점수: 1
+Set lblScore.Caption: 점수: 1 · 최고 점수: 0
 > lstChoices.Select 1
 Set btnCheck.Caption: 확인: 한글
 > btnCheck.Click
@@ -69,13 +69,14 @@ Set lstChoices.Items: [54]
 Set lstChoices.Items: [54, 56]
 Set lstChoices.Items: [54, 56, 58]
 Set lstChoices.Items: [54, 56, 58, 64]
-Set lblScore.Caption: 점수: 2
+Set lblScore.Caption: 점수: 2 · 최고 점수: 0
 > lstChoices.Select 1
 Set btnCheck.Caption: 확인: 56
 > btnCheck.Click
 MsgBox: 정답입니다!
 > OK
-MsgBox: 5문제 가운데 3문제를 맞혔습니다. 처음부터 다시 합니다.
+Settings: {"best":"3"}
+MsgBox: 5문제 가운데 3문제를 맞혔습니다. 새 최고 점수입니다! 처음부터 다시 합니다.
 > OK
 Set lblNumber.Caption: 문제 1 / 5
 Set lblQuestion.Caption: 대한민국의 수도는 어디일까요?
@@ -86,6 +87,6 @@ Set lstChoices.Items: [부산]
 Set lstChoices.Items: [부산, 서울]
 Set lstChoices.Items: [부산, 서울, 대구]
 Set lstChoices.Items: [부산, 서울, 대구, 인천]
-Set lblScore.Caption: 점수: 0
+Set lblScore.Caption: 점수: 0 · 최고 점수: 3
 > Close
 Closed
