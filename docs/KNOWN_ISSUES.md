@@ -115,8 +115,9 @@ Problems we know about and have **deliberately** left unfixed for now. Each entr
 ## Typing in a long code file can drop a frame
 
 - **What:** each key re-lays out the whole code file in the code editor (D36). Measured in the macOS Release app, building a frame after a key takes up to 10 ms for 30 lines, 4–18 ms for 100 lines and 8–29 ms for 300 lines (the first keys the slowest), against 16.7 ms per frame at 60 Hz; typing a line into a 300-line file dropped 2 of 27 frames. In Chrome, one of 80 frames took longer than 20 ms there.
+- **With the completion list (D50):** measured inside the app (integration_test, no keyboard events from the OS) in the macOS Profile build, typing a line into a 300-line file, the frame after a key took 8.4 ms at the median and 9.4 ms at the 90th percentile, against 8.3 and 9.0 ms in a build from before the list; no frame missed its budget either way. In headless Chrome, which draws in software, the frame after a key takes 20–34 ms with or without the list, and the first list drawn takes one frame of 50–100 ms (drawing the new list); later lists take as long as any key. Finding a list takes about 40 µs; the code is compiled for it only when typing pauses.
 - **Why deferred:** Flutter's text field lays out its whole text, about 1,000 coloured pieces at 300 lines; the IDE no longer compiles the project or measures every line at each key, which halved it. Programs written in stage 1 are a few dozen lines.
-- **Revisit:** when students write programs of more than about 150 lines, or with the code editor's autocompletion: then lay out only the lines on screen.
+- **Revisit:** when students write programs of more than about 150 lines, or if the completion list's first frame shows on real machines: then lay out only the lines on screen.
 
 ## In the macOS app, the syllable being composed is not underlined
 

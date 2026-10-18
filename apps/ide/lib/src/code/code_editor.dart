@@ -1,5 +1,7 @@
+import 'dart:async';
 import 'dart:math';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gubasic_lang/gubasic_lang.dart';
@@ -11,6 +13,7 @@ import '../strings.dart';
 import '../theme.dart';
 import 'code_controller.dart';
 import 'code_font.dart';
+import 'completion_list.dart';
 import 'handlers.dart';
 
 /// The key of the code editor's text field.
@@ -31,12 +34,27 @@ const codeLineHeight = 1.5;
 /// How many spaces Tab indents by.
 const indentWidth = 4;
 
+/// How long typing pauses before the code is compiled again for the
+/// completion list (D50): names typed since then are not offered yet.
+const completionCompileDelay = Duration(milliseconds: 300);
+
+/// The keys that open the completion list (D50): ⌥Space on a Mac, where
+/// ⌃Space switches the input source, Ctrl+Space elsewhere.
+SingleActivator get completionShortcut =>
+    defaultTargetPlatform == TargetPlatform.macOS ||
+        defaultTargetPlatform == TargetPlatform.iOS
+    ? const SingleActivator(LogicalKeyboardKey.space, alt: true)
+    : const SingleActivator(LogicalKeyboardKey.space, control: true);
+
 /// The code editor (D36): the code file [file] of [project], coloured as
 /// the lexer reads it, with line numbers. Only the characters the input
 /// method has committed reach the file (LANGUAGE.md §11.1), so a syllable
 /// being composed is never saved or run. Tab and Shift+Tab indent, Enter
 /// keeps the line's indentation, and ⌘Z / Ctrl+Z undoes the typing.
-/// Read-only while [locked] (a program runs).
+/// A list of the names that can go at the caret opens after a `.` and
+/// after two letters of a name, or with [completionShortcut]; never while
+/// the input method composes (D50). Read-only while [locked] (a program
+/// runs).
 class CodeEditor extends StatefulWidget {
   const CodeEditor({
     super.key,
@@ -107,6 +125,7 @@ class _CodeEditorState extends State<CodeEditor> {
       // is still the user's here.
       if (!_focus.hasFocus) {
         if (_controller.selection.isValid) _caret = _controller.selection;
+        _closeCompletion();
         _commitComposing();
       } else if (!_controller.selection.isValid) {
         // Back after a run hid the editor: the caret where it was, not at
@@ -133,6 +152,7 @@ class _CodeEditorState extends State<CodeEditor> {
   void didUpdateWidget(CodeEditor old) {
     super.didUpdateWidget(old);
     _updateControls();
+    if (widget.locked) _closeCompletion();
     if (widget.errorLine != old.errorLine) _built = null;
     final goTo = widget.goTo;
     final again = goTo != null && goTo.id != old.goTo?.id;
@@ -188,6 +208,7 @@ class _CodeEditorState extends State<CodeEditor> {
     _formText = form;
     _formRead = true;
     _built = null;
+    _program = null;
     _form = form == null ? null : readFormFile(form, name: '').form;
     _controller.controls = {
       for (final c in _form?.controls ?? const <ControlDecl>[])
@@ -402,6 +423,8 @@ class _CodeEditorState extends State<CodeEditor> {
 
   @override
   void dispose() {
+    _compileTimer?.cancel();
+    _completion.dispose();
     _controller.dispose();
     _focus.dispose();
     _undo.dispose();
@@ -426,10 +449,12 @@ class _CodeEditorState extends State<CodeEditor> {
     final last = _last;
     _last = value;
     if (!widget.locked && _isNewLine(last, value)) {
+      _closeCompletion();
       _indentNewLine(last);
       return;
     }
     _write();
+    _completeAfter(last, value);
   }
 
   /// Writes what the input method has committed, when it changed.
@@ -439,7 +464,283 @@ class _CodeEditorState extends State<CodeEditor> {
     if (committed == _written) return;
     _written = committed;
     widget.project.setFile(widget.file, committed);
+    _compileTimer?.cancel();
+    _compileTimer = Timer(completionCompileDelay, _compile);
   }
+
+  // ---------------------------------------------------------------------
+  // The completion list (D50)
+
+  /// The list shown under the caret, and the row chosen in it; null when
+  /// none is shown.
+  final _completion = ValueNotifier<({Completions list, int selected})?>(null);
+  final _completionPortal = OverlayPortalController();
+  final _caretLink = LayerLink();
+  final _caretKey = GlobalKey();
+
+  /// The code's visible area: the list shows only while its word is in
+  /// it, also when the code scrolls under it.
+  final _viewKey = GlobalKey();
+  late final _scrolled = Listenable.merge([_vertical, _horizontal]);
+
+  /// The last compilation of the code, which the list looks names up in.
+  /// Compiled when typing pauses, not at every key.
+  CompileResult? _program;
+  Timer? _compileTimer;
+
+  /// Where the word was when Esc closed the list: it does not open by
+  /// itself again for that word.
+  int? _dismissedAt;
+
+  /// A completion is being put in: that change opens nothing.
+  var _accepting = false;
+
+  void _compile() {
+    if (!mounted) return;
+    _program = compile(_written, form: _form);
+  }
+
+  /// [_program], compiled now if it is not of the code as it is.
+  CompileResult _freshProgram() {
+    _compileTimer?.cancel();
+    final program = _program;
+    if (program != null && program.parseResult.source == _written) {
+      return program;
+    }
+    return _program = compile(_written, form: _form);
+  }
+
+  bool get _canComplete {
+    final value = _controller.value;
+    return !widget.locked &&
+        _focus.hasFocus &&
+        !_composing &&
+        !(value.composing.isValid && !value.composing.isCollapsed) &&
+        value.selection.isValid &&
+        value.selection.isCollapsed;
+  }
+
+  /// Opens, follows or closes the list after the text or the caret
+  /// changed from [last] to [value].
+  void _completeAfter(TextEditingValue last, TextEditingValue value) {
+    if (_accepting) return;
+    if (!_canComplete) {
+      _closeCompletion();
+      return;
+    }
+    final open = _completion.value != null;
+    final caret = value.selection.baseOffset;
+    if (value.text == last.text) {
+      // The caret moved: the list follows it within the word.
+      if (open) _showCompletions(keepStart: true);
+      return;
+    }
+    final typed = _typed(last, value);
+    if (typed == '.') {
+      _dismissedAt = null;
+      _showCompletions(onlyAfterDot: true);
+    } else if (typed != null && _isNamePart(typed)) {
+      _showCompletions(byTyping: !open);
+    } else if (open && last.text.length == value.text.length + 1) {
+      // Backspace: the list follows the shorter word.
+      _showCompletions(keepStart: true);
+    } else {
+      _closeCompletion();
+    }
+    if (_dismissedAt != null && caret < _dismissedAt!) _dismissedAt = null;
+  }
+
+  /// The one character typed at the caret between [last] and [now]; null
+  /// for any other change.
+  static String? _typed(TextEditingValue last, TextEditingValue now) {
+    final s = last.selection;
+    final c = now.selection.baseOffset;
+    if (!s.isValid ||
+        !s.isCollapsed ||
+        now.text.length != last.text.length + 1) {
+      return null;
+    }
+    if (c != s.baseOffset + 1) return null;
+    final ch = now.text.substring(c - 1, c);
+    return now.text.replaceRange(c - 1, c, '') == last.text ? ch : null;
+  }
+
+  static bool _isNamePart(String ch) => RegExp(r'^[A-Za-z0-9_]$').hasMatch(ch);
+
+  /// Shows the names for the caret, or closes the list when there are
+  /// none. [byTyping]: opened by the letters of a name, so only from two
+  /// of them on, and not for a word Esc closed it on. [onlyAfterDot]:
+  /// only members. [keepStart]: closes it when the caret left the word.
+  void _showCompletions({
+    bool byTyping = false,
+    bool onlyAfterDot = false,
+    bool keepStart = false,
+    bool explicit = false,
+  }) {
+    final value = _controller.value;
+    final caret = value.selection.baseOffset;
+    final c = completionsAt(
+      value.text,
+      caret,
+      program: explicit ? _freshProgram() : _program,
+      form: _form,
+    );
+    final shown = _completion.value;
+    final ok =
+        c != null &&
+        c.items.isNotEmpty &&
+        (!onlyAfterDot || c.afterDot) &&
+        (!keepStart || shown == null || shown.list.start == c.start) &&
+        (!byTyping ||
+            (c.prefix.length >= 2 &&
+                c.prefix.codeUnitAt(0) > 0x39 &&
+                c.start != _dismissedAt)) &&
+        // Nothing to add to a word typed in full, unless asked for.
+        (explicit || !_onlyItself(c, value.text));
+    if (!ok) {
+      _closeCompletion();
+      return;
+    }
+    _completion.value = (list: c, selected: 0);
+    if (!_completionPortal.isShowing) _completionPortal.show();
+  }
+
+  /// Whether the only name offered is the word itself.
+  static bool _onlyItself(Completions c, String text) =>
+      c.items.length == 1 &&
+      c.items.single.kind != CompletionKind.suggestion &&
+      c.items.single.name.toLowerCase() ==
+          text.substring(c.start, c.end).toLowerCase();
+
+  void _closeCompletion() {
+    if (_completion.value == null) return;
+    _completion.value = null;
+    if (_completionPortal.isShowing) _completionPortal.hide();
+  }
+
+  /// [completionShortcut]: the list for the caret, whatever is typed, with
+  /// "did you mean" for the word it is on.
+  void _completeNow() {
+    if (!_canComplete) return;
+    _dismissedAt = null;
+    _showCompletions(explicit: true);
+  }
+
+  /// Puts row [index] of the list in place of the word.
+  void _accept(int index) {
+    final shown = _completion.value;
+    if (shown == null) return;
+    final c = shown.list;
+    final name = c.items[index].name;
+    final text = _controller.text;
+    _closeCompletion();
+    if (c.end > text.length) return;
+    _accepting = true;
+    _controller.value = TextEditingValue(
+      text: text.replaceRange(c.start, c.end, name),
+      selection: TextSelection.collapsed(offset: c.start + name.length),
+    );
+    _accepting = false;
+  }
+
+  /// The keys of the open list: ↑ ↓ choose, Enter and Tab put the choice
+  /// in, Esc closes it. Enter on a word typed in full breaks the line.
+  KeyEventResult _completionKey(FocusNode node, KeyEvent event) {
+    final shown = _completion.value;
+    if (shown == null || event is KeyUpEvent) return KeyEventResult.ignored;
+    final keyboard = HardwareKeyboard.instance;
+    if (keyboard.isControlPressed ||
+        keyboard.isMetaPressed ||
+        keyboard.isAltPressed) {
+      return KeyEventResult.ignored;
+    }
+    final n = shown.list.items.length;
+    void select(int i) => _completion.value = (list: shown.list, selected: i);
+    switch (event.logicalKey) {
+      case LogicalKeyboardKey.arrowDown:
+        select((shown.selected + 1) % n);
+      case LogicalKeyboardKey.arrowUp:
+        select((shown.selected - 1 + n) % n);
+      case LogicalKeyboardKey.enter || LogicalKeyboardKey.numpadEnter:
+        if (event is KeyRepeatEvent) return KeyEventResult.ignored;
+        final c = shown.list;
+        final word = _controller.text.substring(c.start, c.end);
+        if (c.items[shown.selected].name.toLowerCase() == word.toLowerCase()) {
+          _closeCompletion();
+          return KeyEventResult.ignored;
+        }
+        _accept(shown.selected);
+      case LogicalKeyboardKey.tab when !keyboard.isShiftPressed:
+        if (event is KeyRepeatEvent) return KeyEventResult.ignored;
+        _accept(shown.selected);
+      case LogicalKeyboardKey.escape:
+        _dismissedAt = shown.list.start;
+        _closeCompletion();
+      default:
+        return KeyEventResult.ignored;
+    }
+    return KeyEventResult.handled;
+  }
+
+  /// Where the word being completed starts, from the top left of the
+  /// text: lines and columns, the font being monospaced.
+  Offset _wordOffset(int start, TextStyle style) {
+    final text = _controller.text;
+    final lineStart = _lineStart(text, start);
+    final line = '\n'.allMatches(text.substring(0, lineStart)).length;
+    final column = _columns(text.substring(lineStart, start));
+    return Offset(
+      column * _columnWidth(style),
+      line * codeFontSize * codeLineHeight,
+    );
+  }
+
+  Widget _completionOverlay(BuildContext context, TextStyle style) =>
+      ListenableBuilder(
+        listenable: Listenable.merge([_completion, _scrolled]),
+        builder: (context, _) {
+          final shown = _completion.value;
+          if (shown == null) return const SizedBox();
+          final height = CompletionList.heightOf(shown.list);
+          // Above the line when there is no room below it.
+          var below = true;
+          final box = _caretKey.currentContext?.findRenderObject();
+          final view = _viewKey.currentContext?.findRenderObject();
+          if (box is RenderBox && box.attached) {
+            final word = box.localToGlobal(Offset.zero) & box.size;
+            if (view is RenderBox && view.attached) {
+              final area = view.localToGlobal(Offset.zero) & view.size;
+              if (word.top < area.top - 1 ||
+                  word.bottom > area.bottom + 1 ||
+                  word.left < area.left + 40 || // under the line numbers
+                  word.left > area.right) {
+                return const SizedBox();
+              }
+            }
+            below = word.bottom + height <= MediaQuery.sizeOf(context).height;
+          }
+          return CompositedTransformFollower(
+            link: _caretLink,
+            showWhenUnlinked: false,
+            targetAnchor: below ? Alignment.bottomLeft : Alignment.topLeft,
+            followerAnchor: below ? Alignment.topLeft : Alignment.bottomLeft,
+            // Clear of the line's descenders.
+            offset: Offset(0, below ? 2 : -2),
+            child: Align(
+              alignment: below ? Alignment.topLeft : Alignment.bottomLeft,
+              child: TextFieldTapRegion(
+                child: CompletionList(
+                  completions: shown.list,
+                  selected: shown.selected,
+                  strings: widget.strings,
+                  style: style,
+                  onPick: _accept,
+                ),
+              ),
+            ),
+          );
+        },
+      );
 
   /// Takes what is being composed as committed (the field lost the focus
   /// before the input method committed it).
@@ -607,6 +908,7 @@ class _CodeEditorState extends State<CodeEditor> {
     final widest = columns * _columnWidth(style);
     return LayoutBuilder(
       builder: (context, constraints) => Scrollbar(
+        key: _viewKey,
         controller: _vertical,
         child: SingleChildScrollView(
           controller: _vertical,
@@ -639,29 +941,21 @@ class _CodeEditorState extends State<CodeEditor> {
                               LogicalKeyboardKey.tab,
                               shift: true,
                             ): _untab,
+                            completionShortcut: _completeNow,
                           },
-                          child: Actions(
-                            actions: {
-                              UndoTextIntent: _UndoHandlerAdded(
-                                _undoHandlerAdded,
-                              ),
-                            },
-                            child: TextField(
-                              key: codeFieldKey,
-                              controller: _controller,
-                              focusNode: _focus,
-                              undoController: _undo,
-                              readOnly: widget.locked,
-                              maxLines: null,
-                              keyboardType: TextInputType.multiline,
-                              style: style,
-                              strutStyle: strut,
-                              autocorrect: false,
-                              enableSuggestions: false,
-                              smartDashesType: SmartDashesType.disabled,
-                              smartQuotesType: SmartQuotesType.disabled,
-                              decoration: const InputDecoration.collapsed(
-                                hintText: null,
+                          child: Focus(
+                            canRequestFocus: false,
+                            skipTraversal: true,
+                            onKeyEvent: _completionKey,
+                            child: OverlayPortal(
+                              controller: _completionPortal,
+                              overlayChildBuilder: (context) =>
+                                  _completionOverlay(context, style),
+                              child: Stack(
+                                children: [
+                                  _caretTarget(style),
+                                  _field(style, strut),
+                                ],
                               ),
                             ),
                           ),
@@ -677,6 +971,49 @@ class _CodeEditorState extends State<CodeEditor> {
       ),
     );
   }
+
+  /// A point where the word being completed starts, one line high, that
+  /// the completion list hangs from.
+  Widget _caretTarget(TextStyle style) => ValueListenableBuilder(
+    valueListenable: _completion,
+    builder: (context, shown, _) {
+      final at = shown == null
+          ? Offset.zero
+          : _wordOffset(shown.list.start, style);
+      return Positioned(
+        left: at.dx,
+        top: at.dy,
+        child: CompositedTransformTarget(
+          key: _caretKey,
+          link: _caretLink,
+          child: const SizedBox(
+            width: 1,
+            height: codeFontSize * codeLineHeight,
+          ),
+        ),
+      );
+    },
+  );
+
+  Widget _field(TextStyle style, StrutStyle strut) => Actions(
+    actions: {UndoTextIntent: _UndoHandlerAdded(_undoHandlerAdded)},
+    child: TextField(
+      key: codeFieldKey,
+      controller: _controller,
+      focusNode: _focus,
+      undoController: _undo,
+      readOnly: widget.locked,
+      maxLines: null,
+      keyboardType: TextInputType.multiline,
+      style: style,
+      strutStyle: strut,
+      autocorrect: false,
+      enableSuggestions: false,
+      smartDashesType: SmartDashesType.disabled,
+      smartQuotesType: SmartQuotesType.disabled,
+      decoration: const InputDecoration.collapsed(hintText: null),
+    ),
+  );
 
   /// The offset where the line holding [offset] starts.
   static int _lineStart(String text, int offset) =>

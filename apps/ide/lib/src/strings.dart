@@ -91,6 +91,9 @@ class IdeStrings {
     required this.declarations,
     required this.objectList,
     required this.eventList,
+    required this.didYouMean,
+    required this.completionKinds,
+    required this.readOnlyProperty,
     required this.noHandlerWhileRunning,
     required this.goToLine,
     required this.viewCode,
@@ -263,6 +266,15 @@ class IdeStrings {
   final String objectList;
   final String eventList;
 
+  /// Above the suggestions in the completion list (D50).
+  final String didYouMean;
+
+  /// What each completion is, shown beside it (D50).
+  final Map<CompletionKind, String> completionKinds;
+
+  /// Beside a property the program can only read (D45).
+  final String readOnlyProperty;
+
   /// `{0}` the handler.
   final String noHandlerWhileRunning;
 
@@ -376,6 +388,21 @@ class IdeStrings {
     declarations: '(Declarations)',
     objectList: 'Object',
     eventList: 'Event',
+    didYouMean: 'Did you mean?',
+    completionKinds: {
+      CompletionKind.suggestion: '',
+      CompletionKind.keyword: 'keyword',
+      CompletionKind.type: 'type',
+      CompletionKind.variable: 'variable',
+      CompletionKind.constant: 'constant',
+      CompletionKind.procedure: 'procedure',
+      CompletionKind.function: 'function',
+      CompletionKind.object: 'object',
+      CompletionKind.control: 'control',
+      CompletionKind.property: 'property',
+      CompletionKind.method: 'method',
+    },
+    readOnlyProperty: 'read-only',
     noHandlerWhileRunning: 'There is no {0} yet, and code cannot be changed while the program runs. Stop it (Shift+F5) first.',
     goToLine: 'Go to {0}, line {1}',
     viewCode: 'View Code',
@@ -480,6 +507,21 @@ class IdeStrings {
     declarations: '(선언)',
     objectList: '개체',
     eventList: '이벤트',
+    didYouMean: '혹시 이것인가요?',
+    completionKinds: {
+      CompletionKind.suggestion: '',
+      CompletionKind.keyword: '키워드',
+      CompletionKind.type: '타입',
+      CompletionKind.variable: '변수',
+      CompletionKind.constant: '상수',
+      CompletionKind.procedure: '프로시저',
+      CompletionKind.function: '함수',
+      CompletionKind.object: '객체',
+      CompletionKind.control: '컨트롤',
+      CompletionKind.property: '속성',
+      CompletionKind.method: '메서드',
+    },
+    readOnlyProperty: '읽기 전용',
     noHandlerWhileRunning:
         '{0} 처리기가 아직 없고, 프로그램이 실행되는 동안에는 코드를 바꿀 수 없습니다. 먼저 중지(Shift+F5)합니다.',
     goToLine: '{0} 파일 {1}번째 줄로 갑니다',

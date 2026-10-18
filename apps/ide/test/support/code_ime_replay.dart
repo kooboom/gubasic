@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:gubasic_ide/main.dart';
 import 'package:gubasic_ide/src/code/code_controller.dart';
 import 'package:gubasic_ide/src/code/code_editor.dart';
+import 'package:gubasic_ide/src/code/completion_list.dart';
 import 'package:gubasic_ide/src/ide_shell.dart';
 import 'package:gubasic_ide/src/project/examples.g.dart';
 import 'package:gubasic_ide/src/strings.dart';
@@ -15,7 +16,9 @@ import 'package:gubasic_runtime/gubasic_runtime.dart';
 /// comment and in a string, and checks what D36 promises: the file gets
 /// only committed characters, the editor shows what the input method
 /// sent, the colouring keeps the text and its kind, and the final text is
-/// the recording's.
+/// the recording's. Also right after a name being completed (`lbl`): the
+/// completion list closes at the first jamo and never shows while Hangul
+/// is typed (D50).
 void defineCodeImeTests(Map<String, String> logs) {
   final hello = exampleProjects['hello']!;
   const codeFile = 'Form1.gbas';
@@ -63,14 +66,22 @@ void defineCodeImeTests(Map<String, String> logs) {
     );
   }
 
-  final places = {
+  // (before, after, the colour of what is typed; null: not checked).
+  final places = <String, (String, String, CodeKind?)>{
     'a comment': ("' ", '\n', CodeKind.comment),
     'a string': (
       'Sub Form_Load()\n    Debug.Print("',
       '")\nEnd Sub\n',
       CodeKind.string,
     ),
+    // Hangul is not code (L002), but a beginner may type it there.
+    'code, after a name being completed': (
+      'Sub Form_Load()\n    lbl',
+      '\nEnd Sub\n',
+      null,
+    ),
   };
+  final list = find.byKey(completionListKey);
 
   for (final MapEntry(key: source, value: json) in logs.entries) {
     final scenarios = (jsonDecode(json)['scenarios'] as Map<String, Object?>)
@@ -89,7 +100,28 @@ void defineCodeImeTests(Map<String, String> logs) {
               ? TargetPlatformVariant.only(TargetPlatform.macOS)
               : const DefaultTestVariant(),
           (t) async {
-            await open(t, '$before$after');
+            if (kind == null) {
+              // Type the name's last letter: the list opens.
+              final shorter = '${before.substring(0, before.length - 1)}$after';
+              await open(t, shorter);
+              t.testTextInput.updateEditingValue(
+                TextEditingValue(
+                  text: shorter,
+                  selection: TextSelection.collapsed(offset: before.length - 1),
+                ),
+              );
+              await t.pump();
+              t.testTextInput.updateEditingValue(
+                TextEditingValue(
+                  text: '$before$after',
+                  selection: TextSelection.collapsed(offset: before.length),
+                ),
+              );
+              await t.pump();
+              expect(list, findsOneWidget, reason: 'the list for lbl');
+            } else {
+              await open(t, '$before$after');
+            }
             var inField = true;
             var last = const TextEditingValue();
             for (final e in log) {
@@ -117,10 +149,13 @@ void defineCodeImeTests(Map<String, String> logs) {
                       reason: 'the file $at',
                     );
                   }
+                  if (v.text.length > before.length + after.length) {
+                    expect(list, findsNothing, reason: 'the list $at');
+                  }
                   final kinds = codeKinds(v.text, const {});
                   for (
                     var i = before.length;
-                    i < v.text.length - after.length;
+                    kind != null && i < v.text.length - after.length;
                     i++
                   ) {
                     expect(
