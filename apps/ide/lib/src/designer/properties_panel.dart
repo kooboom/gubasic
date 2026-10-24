@@ -453,47 +453,68 @@ class _PropertyFieldState extends State<PropertyField> {
     widget.onDone();
   }
 
-  /// A picture property (D51): a list of the project's pictures, with no
+  /// A picture property (D51): a box like the text fields' showing the
+  /// picture, which opens a menu of the project's pictures, with no
   /// picture first and a way to add one last. A name the project does not
   /// have is shown as it is, marked.
   Widget _pictureList(BuildContext context) {
     final s = widget.strings;
+    final theme = Theme.of(context);
     final value = '${widget.value}';
     final current = value.isEmpty
         ? ''
         : pictureNamed(widget.pictures, value) ?? value;
     final missing = current.isNotEmpty && !widget.pictures.contains(current);
-    DropdownMenuItem<String> item(String value, String label, {Widget? icon}) =>
-        DropdownMenuItem(
-          value: value,
-          child: Row(
-            children: [
-              if (icon != null) ...[icon, const SizedBox(width: 4)],
-              Flexible(child: Text(label, overflow: TextOverflow.ellipsis)),
-            ],
-          ),
+    final broken = Icon(
+      Icons.broken_image_outlined,
+      size: 16,
+      color: theme.colorScheme.error,
+    );
+    final style = theme.textTheme.bodyMedium;
+    MenuItemButton item(String choice, String label, {Widget? icon}) =>
+        MenuItemButton(
+          leadingIcon: icon,
+          onPressed: () => _choosePicture(choice),
+          child: Text(label),
         );
-    return DropdownButton<String>(
-      key: propertyFieldKey(widget.spec.name),
-      isExpanded: true,
-      isDense: true,
-      value: current,
-      onChanged: widget.editable ? _choosePicture : null,
-      items: [
+    return MenuAnchor(
+      menuChildren: [
         item('', s.noPicture),
         for (final p in widget.pictures) item(p, p),
-        if (missing)
-          item(
-            current,
-            current,
-            icon: Icon(
-              Icons.broken_image_outlined,
-              size: 16,
-              color: Theme.of(context).colorScheme.error,
-            ),
-          ),
+        if (missing) item(current, current, icon: broken),
         if (widget.onAddPicture != null) item(_addPicture, s.addPicture),
       ],
+      builder: (context, menu, _) => GestureDetector(
+        key: propertyFieldKey(widget.spec.name),
+        behavior: HitTestBehavior.opaque,
+        onTap: widget.editable
+            ? () => menu.isOpen ? menu.close() : menu.open()
+            : null,
+        child: InputDecorator(
+          decoration: const InputDecoration(
+            isDense: true,
+            border: OutlineInputBorder(),
+          ),
+          child: Row(
+            children: [
+              if (missing) ...[broken, const SizedBox(width: 4)],
+              Expanded(
+                child: Text(
+                  current.isEmpty ? s.noPicture : current,
+                  style: style,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              Icon(
+                Icons.arrow_drop_down,
+                size: 16,
+                color: widget.editable ? null : theme.disabledColor,
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 

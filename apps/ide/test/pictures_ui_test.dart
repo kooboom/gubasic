@@ -291,6 +291,29 @@ void main() {
     expect(current(tester).isDirty, isFalse);
   });
 
+  testWidgets('the Picture list is boxed like the text fields', (tester) async {
+    await start(tester);
+    await placeImage(tester);
+    final box = find.descendant(
+      of: find.byKey(propertyFieldKey('Picture')),
+      matching: find.byType(InputDecorator),
+    );
+    expect(box, findsOneWidget);
+    expect(
+      tester.widget<InputDecorator>(box).decoration.border,
+      isA<OutlineInputBorder>(),
+    );
+    final left = find.descendant(
+      of: find.byKey(propertyFieldKey('Left')),
+      matching: find.byType(InputDecorator),
+    );
+    expect(
+      tester.getSize(box).height,
+      moreOrLessEquals(tester.getSize(left.first).height, epsilon: 2),
+    );
+    expect(tester.getSize(box).width, tester.getSize(left.first).width);
+  });
+
   testWidgets('the run window shows the picture', (tester) async {
     await start(tester);
     await placeImage(tester);
