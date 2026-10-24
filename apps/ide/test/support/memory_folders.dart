@@ -1,9 +1,16 @@
+import 'dart:typed_data';
+
 import 'package:gubasic_ide/src/project/folders.dart';
 
-/// Folders in memory: path → text for files, and a set of folders.
+/// Folders in memory: path → text for files, path → bytes for pictures,
+/// and a set of folders.
 class MemoryFolders implements ProjectFolders {
   final files = <String, String>{};
+  final bytes = <String, Uint8List>{};
   final folders = <String>{};
+
+  /// Every path deleted, in order.
+  final deleted = <String>[];
 
   /// Paths whose writing fails, as a full disk would.
   final failing = <String>{};
@@ -43,8 +50,30 @@ class MemoryFolders implements ProjectFolders {
   }
 
   @override
+  Future<Uint8List?> readBytes(String path) async => bytes[path];
+
+  @override
+  Future<void> writeBytes(String path, Uint8List bytes) async {
+    if (failing.contains(path)) throw FolderIoException(path, 'disk full');
+    if (!folders.contains(parent(path))) {
+      throw FolderIoException(path, 'no such folder');
+    }
+    written.add(path);
+    this.bytes[path] = bytes;
+  }
+
+  @override
+  Future<void> delete(String path) async {
+    deleted.add(path);
+    files.remove(path);
+    bytes.remove(path);
+  }
+
+  @override
   Future<bool> exists(String path) async =>
-      folders.contains(path) || files.containsKey(path);
+      folders.contains(path) ||
+      files.containsKey(path) ||
+      bytes.containsKey(path);
 
   @override
   Future<void> createFolder(String path) async => folders.add(path);

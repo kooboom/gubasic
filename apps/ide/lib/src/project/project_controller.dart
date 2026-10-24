@@ -1,20 +1,31 @@
 import 'dart:async';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:gubasic_lang/gubasic_lang.dart';
 import 'package:gubasic_runtime/gubasic_runtime.dart';
 
 import '../strings.dart';
 import 'browser.dart';
 import 'folders.dart';
 import 'open_project.dart';
+import 'project_pictures.dart';
 import 'project_zip.dart';
+
+/// A picture file the user chose: its name and its bytes.
+typedef PickedPicture = ({String name, Uint8List bytes});
 
 /// The system's dialogs for choosing where projects are (D32).
 class ProjectPickers {
   const ProjectPickers({
     required this.openProjectFile,
     required this.saveLocation,
+    this.openPicture,
   });
+
+  /// Asks for a picture file to add to the project (D51), or null when
+  /// the user cancels. [confirm] is the word on the dialog's button.
+  final Future<PickedPicture?> Function(String confirm)? openPicture;
 
   /// Asks for a `.gbproj` file to open: its path, or null when the user
   /// cancels. [confirm] is the word on the dialog's button.
@@ -140,15 +151,11 @@ class ProjectController extends ChangeNotifier {
       final project = OpenProject(
         FolderLocation(folders!.parent(file)),
         read.files,
+        pictures: read.pictures,
       );
       _folderProject = project;
       _show(project);
-      if (read.missing.isNotEmpty && context.mounted) {
-        await _tell(
-          context,
-          strings.missingFiles.replaceAll('{0}', read.missing.join(', ')),
-        );
-      }
+      if (context.mounted) await _tellMissing(context, read.missing);
     } on FolderProblem catch (p) {
       if (context.mounted) await _tell(context, _describe(p));
     }
@@ -180,6 +187,8 @@ class ProjectController extends ChangeNotifier {
         location.path,
         project.files,
         project.saved,
+        pictures: project.pictures,
+        savedPictures: project.savedPictures,
       );
       if (changed.isNotEmpty) {
         if (!context.mounted) return false;
@@ -190,7 +199,14 @@ class ProjectController extends ChangeNotifier {
         );
         if (!go) return false;
       }
-      await writeChanged(folders!, location.path, project.files, project.saved);
+      await writeChanged(
+        folders!,
+        location.path,
+        project.files,
+        project.saved,
+        pictures: project.pictures,
+        savedPictures: project.savedPictures,
+      );
       project.markSaved();
       if (context.mounted) {
         _snack(context, strings.saved.replaceAll('{0}', location.path));
@@ -239,9 +255,14 @@ class ProjectController extends ChangeNotifier {
           fs.parent(path),
           name,
           project.files,
+          pictures: project.pictures,
         );
         if (project.isExample) {
-          final copy = OpenProject(FolderLocation(folder), files);
+          final copy = OpenProject(
+            FolderLocation(folder),
+            files,
+            pictures: project.pictures,
+          );
           _folderProject = copy;
           _show(copy);
         } else {
@@ -466,7 +487,10 @@ class ProjectController extends ChangeNotifier {
       BrowserLocation(:final name) => name,
       _ => project.project.name,
     };
-    browser!.download('$name.zip', zipProject(name, project.files));
+    browser!.download(
+      '$name.zip',
+      zipProject(name, project.files, pictures: project.pictures),
+    );
     if (project.location is BrowserLocation) {
       try {
         _kept!.markDownloaded(name);
@@ -489,6 +513,12 @@ class ProjectController extends ChangeNotifier {
       unzipped = unzipProject(bytes);
     } on ZipProblem catch (p) {
       await _tell(context, _describeZip(p));
+      return;
+    }
+    // Until the web IDE keeps projects where pictures fit (KNOWN_ISSUES).
+    if (unzipped.pictures.isNotEmpty || unzipped.missing.isNotEmpty) {
+      if (!context.mounted) return;
+      await _tell(context, strings.picturesNotOnWeb);
       return;
     }
     var name = unzipped.name;
@@ -529,6 +559,125 @@ class ProjectController extends ChangeNotifier {
       if (!context.mounted) return;
     }
     await _noticeOnce(context);
+  }
+
+  /// Tells which of the project's files and pictures [missing] lists
+  /// were not there.
+  Future<void> _tellMissing(BuildContext context, List<String> missing) async {
+    final pictures = [
+      for (final m in missing)
+        if (m.startsWith('$picturesFolder/'))
+          m.substring(picturesFolder.length + 1),
+    ];
+    final files = [
+      for (final m in missing)
+        if (!m.startsWith('$picturesFolder/')) m,
+    ];
+    if (files.isNotEmpty) {
+      await _tell(
+        context,
+        strings.missingFiles.replaceAll('{0}', files.join(', ')),
+      );
+    }
+    if (pictures.isNotEmpty && context.mounted) {
+      await _tell(
+        context,
+        strings.missingPictures.replaceAll('{0}', pictures.join(', ')),
+      );
+    }
+  }
+
+  /// Whether pictures can be added to projects here: on the desktop, until
+  /// the web IDE keeps projects where pictures fit (KNOWN_ISSUES).
+  bool get canAddPictures => canUseFolders && pickers!.openPicture != null;
+
+  /// Asks for a picture file and adds it to the open project, or replaces
+  /// the picture of that name after asking (D51). Gives the picture's name
+  /// in the project, or null when none was added.
+  Future<String?> addPicture(BuildContext context) async {
+    if (!canAddPictures) {
+      await _tell(context, strings.picturesNotOnWeb);
+      return null;
+    }
+    final picked = await _whilePicking(
+      () => pickers!.openPicture!(strings.addButton),
+    );
+    if (picked == null || !context.mounted) return null;
+    // A Mac gives Hangul in file names with each syllable split (D51).
+    final name = composeHangul(picked.name);
+    final project = _current;
+    if (checkPicture(name, picked.bytes, project.files, project.pictures)
+        case final refused?) {
+      await _tell(context, _describePicture(refused));
+      return null;
+    }
+    final existing = pictureNamed(project.pictures.keys, name);
+    if (existing != null &&
+        !await _confirm(
+          context,
+          strings.replacePicture.replaceAll('{0}', existing),
+          strings.replaceButton,
+        )) {
+      return null;
+    }
+    project.setPicture(name, picked.bytes);
+    return existing ?? name;
+  }
+
+  /// Takes picture [name] out of the open project after asking, unless a
+  /// control shows it: then tells which ones. Gives whether it was taken
+  /// out; its file goes when the project is saved.
+  Future<bool> removePicture(BuildContext context, String name) async {
+    final project = _current;
+    final users = pictureUsers(project.files, name);
+    if (users.isNotEmpty) {
+      await _tell(
+        context,
+        strings.pictureInUse
+            .replaceAll('{0}', name)
+            .replaceAll('{1}', users.join(', ')),
+      );
+      return false;
+    }
+    if (!await _confirm(
+      context,
+      strings.confirmRemovePicture.replaceAll('{0}', name),
+      strings.removePicture,
+    )) {
+      return false;
+    }
+    project.removePicture(name);
+    return true;
+  }
+
+  String _describePicture(PictureRefused p) {
+    String mb(int bytes) => (bytes / (1024 * 1024)).toStringAsFixed(1);
+    return switch (p) {
+      ProjectFileHasErrors() => strings.pictureProjectFileErrors,
+      BadPictureName(:final name, :final problem) => switch (problem) {
+        PictureNameProblem.length => strings.pictureNameTooLong,
+        PictureNameProblem.character => strings.pictureNameCharacters,
+        PictureNameProblem.extension => strings.pictureNotTaken,
+      }.replaceAll('{0}', name),
+      NotAPicture(:final name, :final format) =>
+        (format == PictureFormat.heic
+                ? strings.pictureIsHeic
+                : strings.pictureNotTaken)
+            .replaceAll('{0}', name),
+      PictureTooLarge(:final name, :final bytes) =>
+        strings.pictureTooLarge
+            .replaceAll('{0}', name)
+            .replaceAll('{1}', mb(bytes)),
+      PictureTooWide(:final name, :final width, :final height) =>
+        strings.pictureTooWide
+            .replaceAll('{0}', name)
+            .replaceAll('{1}', '$width')
+            .replaceAll('{2}', '$height'),
+      ProjectPicturesFull(:final name) => strings.picturesFull.replaceAll(
+        '{0}',
+        name,
+      ),
+    };
   }
 
   String _describeZip(ZipProblem p) => switch (p) {

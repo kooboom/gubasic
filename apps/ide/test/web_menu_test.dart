@@ -6,11 +6,13 @@ import 'package:gubasic_ide/main.dart';
 import 'package:gubasic_ide/src/ide_shell.dart';
 import 'package:gubasic_ide/src/project/examples.g.dart';
 import 'package:gubasic_ide/src/project/open_project.dart';
+import 'package:gubasic_ide/src/project/pictures_dialog.dart';
 import 'package:gubasic_ide/src/project/project_zip.dart';
 import 'package:gubasic_ide/src/strings.dart';
 
 import 'project_zip_test.dart' show zipOf;
 import 'support/fake_browser.dart';
+import 'support/pictures.dart';
 
 void main() {
   final hello = exampleProjects['hello']!;
@@ -366,6 +368,40 @@ void main() {
     expect(find.text(s.storageFailed), findsNWidgets(2));
     await closeDialog(tester);
     expect(current(tester).isDirty, isTrue);
+  });
+
+  testWidgets('pictures cannot be added on the web yet, and say why', (
+    tester,
+  ) async {
+    await start(tester);
+    await menu(tester, s.picturesMenu);
+    await tester.tap(find.byKey(addPictureKey));
+    await tester.pumpAndSettle();
+    expect(find.text(s.picturesNotOnWeb), findsOneWidget);
+    await tester.tap(find.text('OK').last);
+    await tester.pumpAndSettle();
+    expect(current(tester).pictures, isEmpty);
+  });
+
+  testWidgets('a .zip with pictures is not taken on the web yet', (
+    tester,
+  ) async {
+    await start(tester);
+    zips = [
+      zipProject(
+        'Fruit',
+        {
+          ...hello,
+          'Hello.gbproj': helloWithPictures(['a.png']),
+        },
+        pictures: {'a.png': onePixelPng},
+      ),
+    ];
+    await menu(tester, s.uploadZip);
+    expect(find.text(s.picturesNotOnWeb), findsOneWidget);
+    await closeDialog(tester);
+    expect(current(tester).location, isA<ExampleLocation>());
+    expect(browser.storage.keys.where((k) => k.contains('project.')), isEmpty);
   });
 
   testWidgets('Korean words', (tester) async {

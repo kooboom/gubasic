@@ -28,6 +28,7 @@ List<ComponentSpec> get toolboxComponents => [
     'textbox',
     'checkbox',
     'listbox',
+    'image',
   ])
     builtinComponents[name]!,
 ];

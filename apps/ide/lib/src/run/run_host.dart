@@ -14,8 +14,14 @@ class RunHost implements FormHost {
     GbStrings strings = GbStrings.en,
     this.project = '',
     this._settings,
+    GbPictureSource? pictures,
   }) : dialogs = GbDialogs(strings: strings) {
-    model = formModelOf(form, onEvent: _onEvent, accepts: _accepts);
+    model = formModelOf(
+      form,
+      onEvent: _onEvent,
+      accepts: _accepts,
+      pictures: pictures,
+    );
   }
 
   late final GbFormModel model;

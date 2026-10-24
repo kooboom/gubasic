@@ -30,11 +30,11 @@ Problems we know about and have **deliberately** left unfixed for now. Each entr
 - **Why deferred:** a web page cannot keep files on disk by itself. The IDE makes the `.zip` download one click away, asks for it while there are changes that were not downloaded, and says so when a project is first saved.
 - **Revisit:** if students lose work in practice; then consider saving into a folder where browsers allow it (the File System Access API, Chrome and Edge only).
 
-## Browser storage is too small for pictures
+## The web IDE does not take pictures yet
 
-- **What:** `localStorage` holds about 5 MB per site, and the web IDE shares its site with the playground (`kooboom.github.io`; their keys are apart, D33). Projects today are a few kilobytes of text, but once forms can hold pictures (the `Image` control, stage 1) a few projects would fill it.
-- **Why deferred:** nothing stores pictures yet, and `localStorage` is synchronous, so a project is kept even while the page closes.
-- **Revisit:** with the `Image` control: move projects in the browser to IndexedDB (or another larger storage), with a converter for what is kept already.
+- **What:** the desktop IDE adds pictures to projects (D52), but the web IDE does not: Add Picture… says so, and a `.zip` with pictures is not taken. Image controls can be placed there, without a picture.
+- **Why deferred:** the web IDE keeps projects in `localStorage` (D33), which holds about 5 MB per site, shared with the playground (`kooboom.github.io`; their keys are apart). A few photos would fill it, and a project that could not be kept would lose work. Moving the storage is a change of its own.
+- **Revisit:** next: move projects in the browser to IndexedDB, with a converter for what is kept already, and take pictures on the web then.
 
 ## The run window is inside the IDE's window
 

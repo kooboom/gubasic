@@ -1,4 +1,8 @@
+import 'dart:typed_data';
+
 import 'package:gubasic_lang/gubasic_lang.dart';
+
+import 'project_pictures.dart' show samePictures;
 
 /// The few file operations the IDE needs (D32). The app uses the disk
 /// (`folders_io.dart`); tests use memory, so the same logic is tested
@@ -13,6 +17,15 @@ abstract interface class ProjectFolders {
   /// Writes [text] to [path] so that the file is always either the old
   /// one or the new one, never half written.
   Future<void> write(String path, String text);
+
+  /// The bytes of the file at [path], or null when there is none.
+  Future<Uint8List?> readBytes(String path);
+
+  /// Writes [bytes] to [path], as [write] does.
+  Future<void> writeBytes(String path, Uint8List bytes);
+
+  /// Deletes the file at [path], if it is there.
+  Future<void> delete(String path);
 
   Future<bool> exists(String path);
   Future<void> createFolder(String path);
@@ -74,15 +87,23 @@ class FolderExists extends FolderProblem {
 /// A project read from disk. [missing] lists the files its `.gbproj`
 /// names that are not there.
 class ProjectOnDisk {
-  const ProjectOnDisk(this.files, this.missing);
+  const ProjectOnDisk(this.files, this.missing, {this.pictures = const {}});
 
   final Map<String, String> files;
+
+  /// Picture name → bytes (D51).
+  final Map<String, Uint8List> pictures;
   final List<String> missing;
 }
 
+/// The path of picture [name] of the project in [folder].
+String picturePath(ProjectFolders fs, String folder, String name) =>
+    fs.join(fs.join(folder, picturesFolder), name);
+
 /// Reads the project whose `.gbproj` file is [projectFile]: that file
 /// and, for each form it lists, `FORM.form.yaml` and `FORM.gbas` next to
-/// it. Other files in the folder are left alone. Throws a [FolderProblem].
+/// it, and the pictures it lists from `pictures/` (D51). Other files in
+/// the folder are left alone. Throws a [FolderProblem].
 Future<ProjectOnDisk> readProject(ProjectFolders fs, String projectFile) async {
   final folder = fs.parent(projectFile);
   final files = <String, String>{};
@@ -103,21 +124,39 @@ Future<ProjectOnDisk> readProject(ProjectFolders fs, String projectFile) async {
   final projectName = fs.name(projectFile);
   await add(projectName);
   if (missing.isNotEmpty) throw MissingProjectFile(projectName);
-  for (final form in readProjectFile(files[projectName]!).project.forms) {
+  final project = readProjectFile(files[projectName]!).project;
+  for (final form in project.forms) {
     await add('$form.form.yaml');
     await add('$form.gbas');
   }
-  return ProjectOnDisk(files, missing);
+  final pictures = <String, Uint8List>{};
+  for (final name in project.pictures) {
+    final file = '$picturesFolder/$name';
+    final bytes = await _io(
+      file,
+      writing: false,
+      () => fs.readBytes(picturePath(fs, folder, name)),
+    );
+    if (bytes == null) {
+      missing.add(file);
+    } else {
+      pictures[name] = bytes;
+    }
+  }
+  return ProjectOnDisk(files, missing, pictures: pictures);
 }
 
 /// The files of [files] whose text on disk is no longer what was read or
-/// last saved ([saved]): changed by another program since.
+/// last saved ([saved]): changed by another program since. The same for
+/// the [pictures] that would be written or deleted ([savedPictures]).
 Future<List<String>> changedOnDisk(
   ProjectFolders fs,
   String folder,
   Map<String, String> files,
-  Map<String, String> saved,
-) async {
+  Map<String, String> saved, {
+  Map<String, Uint8List> pictures = const {},
+  Map<String, Uint8List> savedPictures = const {},
+}) async {
   final changed = <String>[];
   for (final name in files.keys) {
     if (files[name] == saved[name]) continue;
@@ -128,21 +167,67 @@ Future<List<String>> changedOnDisk(
     );
     if (onDisk != saved[name]) changed.add(name);
   }
+  for (final name in {...pictures.keys, ...savedPictures.keys}) {
+    final now = pictures[name], before = savedPictures[name];
+    if (_samePicture(now, before)) continue;
+    final file = '$picturesFolder/$name';
+    final onDisk = await _io(
+      file,
+      writing: false,
+      () => fs.readBytes(picturePath(fs, folder, name)),
+    );
+    if (!_samePicture(onDisk, before)) changed.add(file);
+  }
   return changed;
 }
 
-/// Writes the files of [files] that differ from [saved] into [folder].
+/// Writes the files of [files] that differ from [saved] into [folder],
+/// and the [pictures] that differ from [savedPictures] into its
+/// `pictures/`. The pictures come first and those taken out of the
+/// project are deleted last, so that the `.gbproj` file never lists a
+/// picture that is not on disk, whichever write fails.
 Future<void> writeChanged(
   ProjectFolders fs,
   String folder,
   Map<String, String> files,
-  Map<String, String> saved,
-) async {
+  Map<String, String> saved, {
+  Map<String, Uint8List> pictures = const {},
+  Map<String, Uint8List> savedPictures = const {},
+}) async {
+  final written = [
+    for (final MapEntry(:key, :value) in pictures.entries)
+      if (!_samePicture(value, savedPictures[key])) key,
+  ];
+  if (written.isNotEmpty) {
+    final dir = fs.join(folder, picturesFolder);
+    await _io(picturesFolder, writing: true, () async {
+      if (!await fs.exists(dir)) await fs.createFolder(dir);
+    });
+  }
+  for (final name in written) {
+    await _io(
+      '$picturesFolder/$name',
+      writing: true,
+      () => fs.writeBytes(picturePath(fs, folder, name), pictures[name]!),
+    );
+  }
   for (final MapEntry(key: name, value: text) in files.entries) {
     if (saved[name] == text) continue;
     await _io(name, writing: true, () => fs.write(fs.join(folder, name), text));
   }
+  // Only pictures the project had: the IDE put them there.
+  for (final name in savedPictures.keys) {
+    if (pictures.containsKey(name)) continue;
+    await _io(
+      '$picturesFolder/$name',
+      writing: true,
+      () => fs.delete(picturePath(fs, folder, name)),
+    );
+  }
 }
+
+bool _samePicture(Uint8List? a, Uint8List? b) =>
+    a == null || b == null ? a == b : samePictures({'': a}, {'': b});
 
 /// Saves a copy of [files] as project [name] in a new folder [name] inside
 /// [parent]. The `.gbproj` file is renamed `NAME.gbproj` and, when it
@@ -152,15 +237,16 @@ Future<(String, Map<String, String>)> saveCopy(
   ProjectFolders fs,
   String parent,
   String name,
-  Map<String, String> files,
-) async {
+  Map<String, String> files, {
+  Map<String, Uint8List> pictures = const {},
+}) async {
   final folder = fs.join(parent, name);
   if (await _io(name, writing: true, () => fs.exists(folder))) {
     throw FolderExists(name);
   }
   final copy = renameProject(files, name);
   await _io(name, writing: true, () => fs.createFolder(folder));
-  await writeChanged(fs, folder, copy, const {});
+  await writeChanged(fs, folder, copy, const {}, pictures: pictures);
   return (folder, copy);
 }
 
@@ -181,6 +267,7 @@ Map<String, String> renameProject(Map<String, String> files, String name) {
               name: name,
               forms: read.project.forms,
               startup: read.project.startup,
+              pictures: read.project.pictures,
             ),
           );
   }

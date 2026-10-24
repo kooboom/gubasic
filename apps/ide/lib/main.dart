@@ -43,6 +43,14 @@ void main() {
           suggestedName: name,
           confirmButtonText: confirm,
         ))?.path,
+        openPicture: (confirm) async {
+          final file = await openFile(
+            acceptedTypeGroups: const [_pictures],
+            confirmButtonText: confirm,
+          );
+          if (file == null) return null;
+          return (name: file.name, bytes: await file.readAsBytes());
+        },
       ),
     ),
   );
@@ -58,6 +66,13 @@ const _gbproj = XTypeGroup(
   label: 'GuBASIC',
   extensions: ['gbproj'],
   uniformTypeIdentifiers: ['io.github.kooboom.gubasic.project'],
+);
+
+/// The pictures a project takes (D51), for the system's open dialog.
+const _pictures = XTypeGroup(
+  label: 'PNG, JPEG, GIF',
+  extensions: ['png', 'jpg', 'jpeg', 'gif'],
+  uniformTypeIdentifiers: ['public.png', 'public.jpeg', 'com.compuserve.gif'],
 );
 
 class IdeApp extends StatefulWidget {

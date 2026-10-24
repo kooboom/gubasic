@@ -4,6 +4,7 @@ import 'package:gubasic_lang/gubasic_lang.dart';
 import 'package:gubasic_runtime/gubasic_runtime.dart'
     show ComposingTracker, committedText;
 
+import '../project/project_pictures.dart';
 import '../strings.dart';
 
 /// The key of the list that chooses what the window shows.
@@ -32,9 +33,17 @@ class PropertiesPanel extends StatelessWidget {
     required this.codeFile,
     required this.onRename,
     this.onPreview,
+    this.pictures = const [],
+    this.onAddPicture,
   });
 
   final FormFile form;
+
+  /// The project's pictures, which a picture property chooses from (D51).
+  final List<String> pictures;
+
+  /// Adds a picture to the project: its name, or null when none was.
+  final Future<String?> Function()? onAddPicture;
 
   /// The form's code, and the name of its file, to see whether a name is
   /// used there.
@@ -154,6 +163,8 @@ class PropertiesPanel extends StatelessWidget {
                           : (text) => onPreview!(target, p.name, text),
                       onDone: onDone,
                       onLeave: onLeave,
+                      pictures: pictures,
+                      onAddPicture: onAddPicture,
                     ),
                   ),
               ],
@@ -226,6 +237,8 @@ class PropertyField extends StatefulWidget {
     required this.onDone,
     required this.onLeave,
     this.onPreview,
+    this.pictures = const [],
+    this.onAddPicture,
   });
 
   final PropertySpec spec;
@@ -238,6 +251,10 @@ class PropertyField extends StatefulWidget {
 
   /// Text as it shows in the field, being composed or not.
   final void Function(String text)? onPreview;
+
+  /// For a picture property: the project's pictures, and how to add one.
+  final List<String> pictures;
+  final Future<String?> Function()? onAddPicture;
 
   @override
   State<PropertyField> createState() => _PropertyFieldState();
@@ -420,8 +437,69 @@ class _PropertyFieldState extends State<PropertyField> {
     widget.onLeave();
   }
 
+  /// The picture list's choice that adds a picture; no picture's name can
+  /// have a control character.
+  static const _addPicture = '\u0000add';
+
+  Future<void> _choosePicture(String? choice) async {
+    if (choice == null) return;
+    var name = choice;
+    if (choice == _addPicture) {
+      final added = await widget.onAddPicture?.call();
+      if (added == null || !mounted) return;
+      name = added;
+    }
+    if (name != widget.value) widget.onChange(name, Object());
+    widget.onDone();
+  }
+
+  /// A picture property (D51): a list of the project's pictures, with no
+  /// picture first and a way to add one last. A name the project does not
+  /// have is shown as it is, marked.
+  Widget _pictureList(BuildContext context) {
+    final s = widget.strings;
+    final value = '${widget.value}';
+    final current = value.isEmpty
+        ? ''
+        : pictureNamed(widget.pictures, value) ?? value;
+    final missing = current.isNotEmpty && !widget.pictures.contains(current);
+    DropdownMenuItem<String> item(String value, String label, {Widget? icon}) =>
+        DropdownMenuItem(
+          value: value,
+          child: Row(
+            children: [
+              if (icon != null) ...[icon, const SizedBox(width: 4)],
+              Flexible(child: Text(label, overflow: TextOverflow.ellipsis)),
+            ],
+          ),
+        );
+    return DropdownButton<String>(
+      key: propertyFieldKey(widget.spec.name),
+      isExpanded: true,
+      isDense: true,
+      value: current,
+      onChanged: widget.editable ? _choosePicture : null,
+      items: [
+        item('', s.noPicture),
+        for (final p in widget.pictures) item(p, p),
+        if (missing)
+          item(
+            current,
+            current,
+            icon: Icon(
+              Icons.broken_image_outlined,
+              size: 16,
+              color: Theme.of(context).colorScheme.error,
+            ),
+          ),
+        if (widget.onAddPicture != null) item(_addPicture, s.addPicture),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    if (widget.spec.picture) return _pictureList(context);
     if (widget.spec.type == GbType.boolean) {
       return Align(
         alignment: Alignment.centerLeft,

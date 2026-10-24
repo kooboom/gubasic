@@ -1,36 +1,56 @@
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:archive/archive.dart';
+import 'package:gubasic_lang/gubasic_lang.dart';
 
-/// The largest `.zip` file the IDE reads (D33). A project is a few
-/// kilobytes of text, so this leaves plenty of room.
-const maxZipBytes = 1024 * 1024;
+/// The largest `.zip` file the IDE reads (D33): a project's text and the
+/// most its pictures may take (D51), with room to spare.
+const maxZipBytes = maxProjectPictureBytes + 2 * 1024 * 1024;
 
-/// The most GuBASIC files a `.zip` may hold.
+/// The most files a `.zip` may hold that the IDE takes.
 const maxZipFiles = 100;
 
 /// The largest size of all the GuBASIC files of a `.zip`, unpacked.
 const maxUnpackedBytes = 2 * 1024 * 1024;
 
 /// A project as a `.zip` file: its files in a folder of the project's
-/// name, `NAME/NAME.gbproj` and the forms' files, so that unpacking it
-/// gives a folder the desktop IDE opens (D33).
-List<int> zipProject(String name, Map<String, String> files) {
+/// name, `NAME/NAME.gbproj`, the forms' files and `NAME/pictures/…`, so
+/// that unpacking it gives a folder the desktop IDE opens (D33).
+List<int> zipProject(
+  String name,
+  Map<String, String> files, {
+  Map<String, Uint8List> pictures = const {},
+}) {
   final archive = Archive();
   for (final MapEntry(key: file, value: text) in files.entries) {
     archive.add(ArchiveFile.bytes('$name/$file', utf8.encode(text)));
+  }
+  for (final MapEntry(key: picture, value: bytes) in pictures.entries) {
+    archive.add(ArchiveFile.bytes('$name/$picturesFolder/$picture', bytes));
   }
   return ZipEncoder().encodeBytes(archive);
 }
 
 /// What a `.zip` file held: the project's name (its `.gbproj` file's
-/// name), its GuBASIC files, and the names of other files left out.
+/// name), its GuBASIC files and pictures, the names of other files left
+/// out, and of the pictures the `.gbproj` lists that were not there.
 class UnzippedProject {
-  const UnzippedProject(this.name, this.files, this.ignored);
+  const UnzippedProject(
+    this.name,
+    this.files,
+    this.ignored, {
+    this.pictures = const {},
+    this.missing = const [],
+  });
 
   final String name;
   final Map<String, String> files;
+
+  /// Picture name, as the `.gbproj` file has it → bytes.
+  final Map<String, Uint8List> pictures;
   final List<String> ignored;
+  final List<String> missing;
 }
 
 /// Why a `.zip` file was refused.
@@ -75,8 +95,9 @@ class ZipNotText extends ZipProblem {
 }
 
 /// Reads a project from the bytes of a `.zip` file. Only `.gbproj`,
-/// `.form.yaml` and `.gbas` files are taken; others are left out and
-/// named in [UnzippedProject.ignored], except the hidden files that
+/// `.form.yaml` and `.gbas` files are taken, and the pictures in
+/// `pictures/` next to them that the `.gbproj` lists; others are left out
+/// and named in [UnzippedProject.ignored], except the hidden files that
 /// systems add (`.DS_Store`, `__MACOSX/`). Throws a [ZipProblem]; never
 /// writes anything.
 UnzippedProject unzipProject(List<int> bytes) {
@@ -94,6 +115,7 @@ UnzippedProject unzipProject(List<int> bytes) {
   }
 
   final kept = <(List<String>, ArchiveFile)>[];
+  final pictureEntries = <(List<String>, ArchiveFile)>[];
   final ignored = <String>[];
   var unpacked = 0;
   for (final entry in archive.files) {
@@ -106,6 +128,10 @@ UnzippedProject unzipProject(List<int> bytes) {
     }
     if (!entry.isFile || parts.isEmpty) continue;
     if (parts.any((p) => p.startsWith('.') || p == '__MACOSX')) continue;
+    if (parts.length >= 2 && parts[parts.length - 2] == picturesFolder) {
+      pictureEntries.add((parts, entry));
+      continue;
+    }
     if (!_isGuBasicFile(parts.last)) {
       ignored.add(path);
       continue;
@@ -144,10 +170,44 @@ UnzippedProject unzipProject(List<int> bytes) {
     }
   }
   final project = projectFiles.single;
+
+  // The pictures the .gbproj lists, from pictures/ next to it.
+  final top = folders.single;
+  final listed = {
+    for (final p in readProjectFile(files[project]!).project.pictures)
+      pictureKey(p): p,
+  };
+  final pictures = <String, Uint8List>{};
+  var pictureBytes = 0;
+  for (final (parts, entry) in pictureEntries) {
+    final name = listed[pictureKey(parts.last)];
+    final inPlace = top == null
+        ? parts.length == 2
+        : parts.length == 3 && parts.first == top;
+    if (name == null || !inPlace || pictures.containsKey(name)) {
+      ignored.add(parts.join('/'));
+      continue;
+    }
+    pictureBytes += entry.size;
+    if (pictures.length + kept.length == maxZipFiles ||
+        entry.size > maxPictureBytes ||
+        pictureBytes > maxProjectPictureBytes) {
+      throw const ZipTooLarge();
+    }
+    final data = Uint8List.fromList(entry.readBytes() ?? const <int>[]);
+    // The size an entry gives may be false; what came out counts.
+    if (data.length > maxPictureBytes) throw const ZipTooLarge();
+    pictures[name] = data;
+  }
   return UnzippedProject(
     project.substring(0, project.length - '.gbproj'.length),
     files,
     ignored,
+    pictures: pictures,
+    missing: [
+      for (final name in listed.values)
+        if (!pictures.containsKey(name)) '$picturesFolder/$name',
+    ],
   );
 }
 

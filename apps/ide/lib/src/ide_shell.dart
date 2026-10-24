@@ -9,7 +9,9 @@ import 'code/handlers.dart';
 import 'designer/form_designer.dart';
 import 'designer/form_edit.dart';
 import 'project/open_project.dart';
+import 'project/pictures_dialog.dart';
 import 'project/project.dart';
+import 'project/project_pictures.dart';
 import 'project/project_controller.dart';
 import 'run/run_session.dart';
 import 'run/run_window.dart';
@@ -140,6 +142,8 @@ class _IdeShellState extends State<IdeShell> {
         strings: s,
         project: project.name,
         settings: widget.controller.settings,
+        // The pictures as the run starts; they cannot change while it runs.
+        pictures: pictureSource(widget.controller.current.pictures),
       );
       _showRun = true;
     });
@@ -312,6 +316,11 @@ class _IdeShellState extends State<IdeShell> {
     );
   }
 
+  void _pictures() => showDialog<void>(
+    context: context,
+    builder: (context) => PicturesDialog(controller: widget.controller),
+  );
+
   void _save() => widget.controller.save(context);
   void _saveAs() => widget.controller.saveAs(context);
 
@@ -333,6 +342,11 @@ class _IdeShellState extends State<IdeShell> {
         item(s.save, _save, LogicalKeyboardKey.keyS),
         item(s.saveAs, _saveAs, LogicalKeyboardKey.keyS, shift: true),
         const Divider(),
+        MenuItemButton(
+          key: const ValueKey('menu.pictures'),
+          onPressed: _running ? null : _pictures,
+          child: Text(s.picturesMenu),
+        ),
         MenuItemButton(
           key: const ValueKey('menu.clearSettings'),
           onPressed: _running
@@ -456,6 +470,7 @@ class _IdeShellState extends State<IdeShell> {
             locked: _running,
             strings: widget.strings,
             onOpenHandler: (control) => _openHandler(file, control),
+            onAddPicture: () => widget.controller.addPicture(context),
           )
         : file.toLowerCase().endsWith('.gbas')
         ? CodeEditor(

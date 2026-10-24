@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'folders.dart';
 
@@ -26,17 +27,36 @@ class _DiskFolders implements ProjectFolders {
   });
 
   @override
-  Future<void> write(String path, String text) => _guard(path, () async {
-    // Written next to the file, then renamed over it: a rename replaces
-    // the file in one step, so a crash leaves the old file or the new one.
-    final temp = File('$path.saving');
-    try {
-      await temp.writeAsBytes(utf8.encode(text), flush: true);
-      await temp.rename(path);
-    } catch (_) {
-      if (await temp.exists()) await temp.delete();
-      rethrow;
-    }
+  Future<void> write(String path, String text) =>
+      writeBytes(path, utf8.encode(text));
+
+  @override
+  Future<Uint8List?> readBytes(String path) => _guard(path, () async {
+    final file = File(path);
+    if (!await file.exists()) return null;
+    return file.readAsBytes();
+  });
+
+  @override
+  Future<void> writeBytes(String path, Uint8List bytes) =>
+      _guard(path, () async {
+        // Written next to the file, then renamed over it: a rename
+        // replaces the file in one step, so a crash leaves the old file or
+        // the new one.
+        final temp = File('$path.saving');
+        try {
+          await temp.writeAsBytes(bytes, flush: true);
+          await temp.rename(path);
+        } catch (_) {
+          if (await temp.exists()) await temp.delete();
+          rethrow;
+        }
+      });
+
+  @override
+  Future<void> delete(String path) => _guard(path, () async {
+    final file = File(path);
+    if (await file.exists()) await file.delete();
   });
 
   @override

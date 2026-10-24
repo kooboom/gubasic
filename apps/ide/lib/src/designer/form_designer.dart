@@ -10,6 +10,7 @@ import 'package:gubasic_runtime/gubasic_runtime.dart';
 
 import '../form_window.dart';
 import '../project/open_project.dart';
+import '../project/project_pictures.dart';
 import '../strings.dart';
 import '../theme.dart';
 import 'form_edit.dart';
@@ -41,6 +42,7 @@ class FormDesigner extends StatefulWidget {
     required this.locked,
     required this.strings,
     this.onOpenHandler,
+    this.onAddPicture,
   });
 
   final OpenProject project;
@@ -57,6 +59,10 @@ class FormDesigner extends StatefulWidget {
   /// A double-click on a control (or on the form: null) opens its default
   /// event's handler in the code editor (D38).
   final void Function(String? control)? onOpenHandler;
+
+  /// Adds a picture to the project from the Properties window (D51): its
+  /// name, or null when none was added.
+  final Future<String?> Function()? onAddPicture;
 
   @override
   State<FormDesigner> createState() => _FormDesignerState();
@@ -96,6 +102,7 @@ class _FormDesignerState extends State<FormDesigner> {
 
   // What was read from the file's text, kept until the text changes.
   String? _readText;
+  int? _readPictures;
   late FormFileResult _read;
   late GbFormModel _model;
 
@@ -108,11 +115,18 @@ class _FormDesignerState extends State<FormDesigner> {
 
   FormFile get _form {
     final text = _text;
-    if (text != _readText) {
+    final pictures = widget.project.picturesVersion;
+    if (text != _readText || pictures != _readPictures) {
       _readText = text;
+      _readPictures = pictures;
       _read = readFormFile(text, name: _formName);
       // A new model each time, never changed: the designer only shows it.
-      _model = formModelOf(_read.form, onEvent: (_, _) {}, designing: true);
+      _model = formModelOf(
+        _read.form,
+        onEvent: (_, _) {},
+        designing: true,
+        pictures: pictureSource(widget.project.pictures),
+      );
       _modelVersion++;
       _showPreview();
     }
@@ -812,6 +826,8 @@ class _FormDesignerState extends State<FormDesigner> {
                           code: widget.project.files[_codeFile] ?? '',
                           codeFile: _codeFile,
                           onRename: _rename,
+                          pictures: widget.project.pictures.keys.toList(),
+                          onAddPicture: widget.onAddPicture,
                         ),
                       ),
                     ],

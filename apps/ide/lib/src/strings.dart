@@ -100,6 +100,27 @@ class IdeStrings {
     required this.bringToFront,
     required this.sendToBack,
     required this.delete,
+    required this.picturesMenu,
+    required this.picturesTitle,
+    required this.noPictures,
+    required this.addPicture,
+    required this.addButton,
+    required this.removePicture,
+    required this.noPicture,
+    required this.confirmRemovePicture,
+    required this.pictureInUse,
+    required this.replacePicture,
+    required this.replaceButton,
+    required this.picturesNotOnWeb,
+    required this.missingPictures,
+    required this.pictureProjectFileErrors,
+    required this.pictureNameTooLong,
+    required this.pictureNameCharacters,
+    required this.pictureNotTaken,
+    required this.pictureIsHeic,
+    required this.pictureTooLarge,
+    required this.pictureTooWide,
+    required this.picturesFull,
   });
 
   /// The words on MsgBox and InputBox.
@@ -287,6 +308,47 @@ class IdeStrings {
   final String sendToBack;
   final String delete;
 
+  // The project's pictures (D51).
+  final String picturesMenu;
+  final String picturesTitle;
+  final String noPictures;
+  final String addPicture;
+
+  /// The button of the system dialog that chooses a picture.
+  final String addButton;
+  final String removePicture;
+
+  /// The first choice of a picture property: no picture.
+  final String noPicture;
+
+  /// `{0}` the picture.
+  final String confirmRemovePicture;
+
+  /// `{0}` the picture, `{1}` the controls (`Form1.imgShape`).
+  final String pictureInUse;
+
+  /// `{0}` the picture.
+  final String replacePicture;
+  final String replaceButton;
+  final String picturesNotOnWeb;
+
+  /// `{0}` the pictures.
+  final String missingPictures;
+  final String pictureProjectFileErrors;
+
+  /// `{0}` the file's name, for each of these.
+  final String pictureNameTooLong;
+  final String pictureNameCharacters;
+  final String pictureNotTaken;
+  final String pictureIsHeic;
+
+  /// `{1}` its size in MB.
+  final String pictureTooLarge;
+
+  /// `{1}` its width, `{2}` its height, in pixels.
+  final String pictureTooWide;
+  final String picturesFull;
+
   /// [diagnostic] in [file], in this language.
   String problem(String file, Diagnostic diagnostic) => errorAt
       .replaceAll('{0}', file)
@@ -357,7 +419,7 @@ class IdeStrings {
     confirmDelete: 'Delete the project {0} from this browser? This cannot be undone. If you may need it, download it as a .zip first.',
     projectExistsInBrowser: 'A project named {0} is already kept in this browser. Enter another name.',
     notAZip: 'This is not a .zip file, or the file is damaged.',
-    zipTooLarge: 'This .zip is too large for a GuBASIC project: at most 1 MB, 100 files and 2 MB unpacked.',
+    zipTooLarge: 'This .zip is too large for a GuBASIC project: at most 12 MB and 100 files; its text files at most 2 MB unpacked, a picture 2 MB and all pictures 10 MB.',
     unsafeZipPath: 'The .zip has a file with an unsafe path ({0}): it is absolute or goes up with "..". Nothing was taken from it.',
     zipLayout: 'The project\'s files must be at the top of the .zip or in one folder there.',
     zipProjectFiles:
@@ -409,6 +471,27 @@ class IdeStrings {
     bringToFront: 'Bring to Front',
     sendToBack: 'Send to Back',
     delete: 'Delete',
+    picturesMenu: 'Pictures…',
+    picturesTitle: 'Pictures',
+    noPictures: 'This project has no pictures yet. Add PNG, JPEG or GIF pictures for its Image controls to show.',
+    addPicture: 'Add Picture…',
+    addButton: 'Add',
+    removePicture: 'Remove',
+    noPicture: '(None)',
+    confirmRemovePicture: 'Take the picture {0} out of the project? Its file in the pictures folder is deleted when the project is saved.',
+    pictureInUse: '{0} is shown by {1}. Choose another picture there, or clear Picture, then remove it.',
+    replacePicture: 'The project already has a picture named {0}. Replace it with the new one? Every control showing it then shows the new picture.',
+    replaceButton: 'Replace',
+    picturesNotOnWeb: 'The web IDE cannot keep pictures yet: the browser storage it uses is too small. Use the desktop IDE for projects with pictures.',
+    missingPictures: 'The project\'s pictures folder does not have these pictures: {0}. Put them there, or remove them in File → Pictures.',
+    pictureProjectFileErrors: 'The .gbproj file has errors, so pictures cannot be added to it. Fix the file in a text editor, then open the project again.',
+    pictureNameTooLong: 'The name "{0}" is too long for a picture: at most 100 characters. Rename the file, then add it again.',
+    pictureNameCharacters: '"{0}" cannot be the name of a picture: it has one of / \\ : * ? " < > |, or starts or ends with a dot or a space. Rename the file, then add it again.',
+    pictureNotTaken: '"{0}" is not a PNG, JPEG or GIF picture, the formats a project takes. Save it in one of them, then add it.',
+    pictureIsHeic: '"{0}" is an HEIC photo, which a project does not take because not every platform shows it. Save it as JPEG or PNG, then add it.',
+    pictureTooLarge: '"{0}" takes {1} MB; a picture can take at most 2 MB. Make it smaller (fewer pixels, or JPEG for a photo), then add it.',
+    pictureTooWide: '"{0}" is {1} × {2} pixels; a picture can be at most 4096 pixels wide and high. Make it smaller, then add it.',
+    picturesFull: 'With "{0}", the project\'s pictures would take more than 10 MB. Remove pictures it does not use, or make them smaller.',
   );
 
   static const ko = IdeStrings(
@@ -476,8 +559,7 @@ class IdeStrings {
         '{0} 프로젝트를 이 브라우저에서 지웁니까? 되돌릴 수 없습니다. 다시 쓸 수도 있다면 먼저 .zip으로 내려받습니다.',
     projectExistsInBrowser: '이 브라우저에 {0} 프로젝트가 이미 있습니다. 다른 이름을 입력합니다.',
     notAZip: '.zip 파일이 아니거나 망가진 파일입니다.',
-    zipTooLarge:
-        '이 .zip 파일은 GuBASIC 프로젝트로 보기에 너무 큽니다. 최대 1MB, 파일 100개, 풀었을 때 2MB까지입니다.',
+    zipTooLarge: '이 .zip 파일은 GuBASIC 프로젝트로 보기에 너무 큽니다. 최대 12MB, 파일 100개까지이고, 풀었을 때 텍스트 파일은 2MB, 그림은 하나에 2MB, 모두 합쳐 10MB까지입니다.',
     unsafeZipPath: '.zip 안에 안전하지 않은 경로의 파일이 있습니다({0}). 절대 경로이거나 ".."로 위 폴더를 가리킵니다. 아무것도 가져오지 않았습니다.',
     zipLayout: '프로젝트 파일은 .zip의 맨 위나 그 바로 아래 폴더 하나 안에 있어야 합니다.',
     zipProjectFiles: '.zip에는 .gbproj 파일이 하나만 있어야 합니다. 들어 있는 것: {0}.',
@@ -529,6 +611,34 @@ class IdeStrings {
     bringToFront: '맨 앞으로',
     sendToBack: '맨 뒤로',
     delete: '삭제',
+    picturesMenu: '그림…',
+    picturesTitle: '그림',
+    noPictures: '이 프로젝트에는 아직 그림이 없습니다. Image 컨트롤에 보일 PNG, JPEG, GIF 그림을 추가합니다.',
+    addPicture: '그림 추가…',
+    addButton: '추가',
+    removePicture: '빼기',
+    noPicture: '(없음)',
+    confirmRemovePicture:
+        '프로젝트에서 {0} 그림을 뺄까요? 프로젝트를 저장할 때 pictures 폴더의 그림 파일도 지웁니다.',
+    pictureInUse:
+        '{0} 그림은 {1} 컨트롤에서 보입니다. 그 컨트롤의 Picture 속성을 다른 그림으로 바꾸거나 비운 뒤 뺍니다.',
+    replacePicture:
+        '프로젝트에 {0} 그림이 이미 있습니다. 새 그림으로 바꿀까요? 이 그림을 보이는 컨트롤은 모두 새 그림을 보입니다.',
+    replaceButton: '바꾸기',
+    picturesNotOnWeb: '웹 IDE에는 아직 그림을 보관할 수 없습니다. 웹 IDE가 쓰는 브라우저 저장 공간이 너무 작기 때문입니다. 그림이 있는 프로젝트는 데스크톱 IDE에서 엽니다.',
+    missingPictures:
+        '프로젝트의 pictures 폴더에 다음 그림이 없습니다: {0}. 그림 파일을 넣거나, 파일 → 그림에서 뺍니다.',
+    pictureProjectFileErrors:
+        '.gbproj 파일에 오류가 있어서 그림을 추가할 수 없습니다. 텍스트 편집기로 파일을 고친 뒤 프로젝트를 다시 엽니다.',
+    pictureNameTooLong:
+        '"{0}" 이름은 그림 이름으로 쓰기에 너무 깁니다. 100자까지 쓸 수 있습니다. 파일 이름을 바꾼 뒤 다시 추가합니다.',
+    pictureNameCharacters: '"{0}" 이름은 그림 이름으로 쓸 수 없습니다. / \\ : * ? " < > | 문자가 들어 있거나, 점이나 공백으로 시작하거나 끝납니다. 파일 이름을 바꾼 뒤 다시 추가합니다.',
+    pictureNotTaken: '"{0}" 파일은 프로젝트에 넣을 수 있는 PNG, JPEG, GIF 그림이 아닙니다. 이 중 한 형식으로 저장한 뒤 추가합니다.',
+    pictureIsHeic: '"{0}" 파일은 HEIC 사진입니다. 모든 플랫폼에서 보이지는 않아서 프로젝트에 넣을 수 없습니다. JPEG나 PNG로 저장한 뒤 추가합니다.',
+    pictureTooLarge: '"{0}" 파일의 크기는 {1}MB입니다. 그림 하나는 2MB까지 넣을 수 있습니다. 픽셀 수를 줄이거나 사진은 JPEG로 저장해 크기를 줄인 뒤 추가합니다.',
+    pictureTooWide: '"{0}" 그림의 크기는 {1} × {2}픽셀입니다. 그림의 가로와 세로는 4096픽셀까지입니다. 크기를 줄인 뒤 추가합니다.',
+    picturesFull:
+        '"{0}" 파일을 넣으면 프로젝트의 그림이 모두 10MB를 넘습니다. 쓰지 않는 그림을 빼거나 그림 크기를 줄입니다.',
   );
 
   /// Korean when the system language is Korean, else English.

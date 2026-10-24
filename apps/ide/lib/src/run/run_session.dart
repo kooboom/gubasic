@@ -15,6 +15,7 @@ class RunSession extends ChangeNotifier {
     RunHost? host,
     String project = '',
     GbSettingsStore? settings,
+    GbPictureSource? pictures,
   }) : host =
            host ??
            RunHost(
@@ -22,6 +23,7 @@ class RunSession extends ChangeNotifier {
              strings: strings.runtime,
              project: project,
              settings: settings,
+             pictures: pictures,
            ) {
     interpreter = Interpreter(
       startup.program,
