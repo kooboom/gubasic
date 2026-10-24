@@ -20,7 +20,7 @@ IDE 안에서 완결되는 비주얼 베이직의 핵심 경험입니다.
 - [x] 폼 디자이너: 도구상자, 캔버스, 끌어 놓기·크기 조절, 속성 창
 - [x] 기본 컴포넌트: `Form`, `Button`, `Label`, `TextBox`
 - [x] 기본 컴포넌트: `CheckBox`, `ListBox` (예제: [quiz](../examples/quiz))
-- [ ] 기본 컴포넌트: `Image` (데스크톱 IDE는 됨, D52. 웹 IDE는 그림이 들어갈 저장소와 함께 다음에)
+- [x] 기본 컴포넌트: `Image` (D51–D53)
 - [x] 절대 배치 (`Left`, `Top`, `Width`, `Height`)
 - [ ] `Anchor`; 폼 크기 프리셋 (폰 / 태블릿 / 데스크톱)
 - [x] 일반 텍스트 프로젝트 파일 (`.gbproj`, `.form.yaml`, `.gbas`)

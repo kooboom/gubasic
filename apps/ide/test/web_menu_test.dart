@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -5,8 +7,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:gubasic_ide/main.dart';
 import 'package:gubasic_ide/src/ide_shell.dart';
 import 'package:gubasic_ide/src/project/examples.g.dart';
+import 'package:gubasic_ide/src/project/browser.dart';
 import 'package:gubasic_ide/src/project/open_project.dart';
 import 'package:gubasic_ide/src/project/pictures_dialog.dart';
+import 'package:gubasic_ide/src/project/project_controller.dart';
 import 'package:gubasic_ide/src/project/project_zip.dart';
 import 'package:gubasic_ide/src/strings.dart';
 
@@ -23,6 +27,9 @@ void main() {
   /// What the .zip dialog gives, in turn; null is Cancel.
   late List<List<int>?> zips;
 
+  /// What the picture dialog gives, in turn; null is Cancel.
+  late List<PickedPicture?> picks;
+
   Future<void> start(WidgetTester tester, {IdeStrings strings = s}) async {
     tester.view.physicalSize = const Size(1400, 800);
     tester.view.devicePixelRatio = 1;
@@ -32,7 +39,13 @@ void main() {
         projects: exampleProjects,
         strings: strings,
         browser: browser,
+        kept: await BrowserProjects.open(browser.projects, browser.storage),
         pickZip: () async => zips.removeAt(0),
+        pickers: ProjectPickers(
+          openProjectFile: (_) async => null,
+          saveLocation: (_, _) async => null,
+          openPicture: (_) async => picks.removeAt(0),
+        ),
       ),
     );
   }
@@ -40,6 +53,7 @@ void main() {
   setUp(() {
     browser = FakeBrowser();
     zips = [];
+    picks = [];
   });
 
   OpenProject current(WidgetTester tester) =>
@@ -99,7 +113,7 @@ void main() {
 
     final location = current(tester).location;
     expect(location, isA<BrowserLocation>());
-    final kept = browser.storage.values['gubasic.ide.project.quiz']!;
+    final kept = browser.projects.records['quiz']!;
     expect(kept, contains('Quiz.gbproj'));
     expect(kept, contains(r'name: Quiz\n'));
     expect(find.text(s.keptStatus.replaceAll('{0}', s.none)), findsOneWidget);
@@ -146,15 +160,13 @@ void main() {
     expect(find.text('Quiz — Edited'), findsOneWidget);
     await tester.pump(const Duration(seconds: 3));
     expect(find.text('Quiz — Edited'), findsNothing);
-    expect(
-      browser.storage.values['gubasic.ide.project.quiz'],
-      contains("' one"),
-    );
+    expect(browser.projects.records['quiz'], contains("' one"));
 
     current(tester).setFile('Form1.gbas', "' two\n");
     browser.hide();
+    await tester.pump();
     expect(
-      browser.storage.values['gubasic.ide.project.quiz'],
+      browser.projects.records['quiz'],
       contains("' two"),
       reason: 'kept at once',
     );
@@ -178,10 +190,7 @@ void main() {
     expect(find.text('Quiz — Edited'), findsOneWidget);
     await tester.pump(const Duration(seconds: 3));
     expect(find.text('Quiz — Edited'), findsNothing);
-    expect(
-      browser.storage.values['gubasic.ide.project.quiz'],
-      contains('name: Label1'),
-    );
+    expect(browser.projects.records['quiz'], contains('name: Label1'));
   });
 
   testWidgets('Download gives NAME.zip; the browser asks before leaving '
@@ -263,14 +272,8 @@ void main() {
     await tester.pump();
     await tester.tap(find.widgetWithText(FilledButton, s.saveButton));
     await tester.pumpAndSettle();
-    expect(
-      browser.storage.values['gubasic.ide.project.hello2'],
-      contains('Hello2.gbproj'),
-    );
-    expect(
-      browser.storage.values['gubasic.ide.project.hello2'],
-      contains(r'name: Hello2\n'),
-    );
+    expect(browser.projects.records['hello2'], contains('Hello2.gbproj'));
+    expect(browser.projects.records['hello2'], contains(r'name: Hello2\n'));
   });
 
   testWidgets('a bad .zip says why and changes nothing', (tester) async {
@@ -284,7 +287,7 @@ void main() {
       findsOneWidget,
     );
     await closeDialog(tester);
-    expect(browser.storage.values, isEmpty);
+    expect(browser.projects.records, isEmpty);
     expect(current(tester).isExample, isTrue);
   });
 
@@ -312,10 +315,7 @@ void main() {
     expect(find.text(s.confirmDelete.replaceAll('{0}', 'A')), findsOneWidget);
     await tester.tap(find.widgetWithText(FilledButton, s.deleteProject));
     await tester.pumpAndSettle();
-    expect(
-      browser.storage.values.keys,
-      isNot(contains('gubasic.ide.project.a')),
-    );
+    expect(browser.projects.records.keys, isNot(contains('a')));
 
     await tester.tap(find.text('B').last);
     await tester.pumpAndSettle();
@@ -342,7 +342,7 @@ void main() {
     expect(find.text('Quiz'), findsNothing, reason: 'not in the menu');
     current(tester).setFile('Form1.gbas', "' after\n");
     await tester.pump(const Duration(seconds: 3));
-    expect(browser.storage.values, isNot(contains('gubasic.ide.project.quiz')));
+    expect(browser.projects.records, isNot(contains('quiz')));
   });
 
   testWidgets('a long message keeps a readable width', (tester) async {
@@ -360,7 +360,7 @@ void main() {
     await start(tester);
     await keepHelloAs(tester, 'Quiz');
     await closeDialog(tester);
-    browser.storage.full = true;
+    browser.projects.full = true;
     current(tester).setFile('Form1.gbas', "' lost?\n");
     await tester.pump(const Duration(seconds: 3));
     expect(find.text(s.storageFailed), findsOneWidget, reason: 'status line');
@@ -370,22 +370,34 @@ void main() {
     expect(current(tester).isDirty, isTrue);
   });
 
-  testWidgets('pictures cannot be added on the web yet, and say why', (
-    tester,
-  ) async {
+  testWidgets('a picture added on the web is kept with the project and '
+      'comes back when it is opened', (tester) async {
     await start(tester);
+    await keepHelloAs(tester, 'Fruit');
+    await closeDialog(tester);
     await menu(tester, s.picturesMenu);
+    picks.add((name: '사과.png', bytes: onePixelPng));
     await tester.tap(find.byKey(addPictureKey));
     await tester.pumpAndSettle();
-    expect(find.text(s.picturesNotOnWeb), findsOneWidget);
     await tester.tap(find.text('OK').last);
     await tester.pumpAndSettle();
-    expect(current(tester).pictures, isEmpty);
+    await tester.pump(const Duration(seconds: 3));
+    expect(browser.projects.pictures['fruit'], {'사과.png': onePixelPng});
+    expect(current(tester).isDirty, isFalse);
+
+    // Another project, then Fruit again from Open.
+    await tester.tap(find.text('Fruit').last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('hello').last);
+    await tester.pumpAndSettle();
+    await menu(tester, s.open);
+    await tester.tap(find.text('Fruit').last);
+    await tester.pumpAndSettle();
+    expect(current(tester).pictures, {'사과.png': onePixelPng});
+    expect(current(tester).isDirty, isFalse);
   });
 
-  testWidgets('a .zip with pictures is not taken on the web yet', (
-    tester,
-  ) async {
+  testWidgets('a .zip with pictures is kept with them', (tester) async {
     await start(tester);
     zips = [
       zipProject(
@@ -398,10 +410,37 @@ void main() {
       ),
     ];
     await menu(tester, s.uploadZip);
-    expect(find.text(s.picturesNotOnWeb), findsOneWidget);
     await closeDialog(tester);
-    expect(current(tester).location, isA<ExampleLocation>());
-    expect(browser.storage.keys.where((k) => k.contains('project.')), isEmpty);
+    expect(current(tester).location, isA<BrowserLocation>());
+    expect(current(tester).pictures, {'a.png': onePixelPng});
+    // The project is named by its .gbproj file.
+    expect(browser.projects.pictures['hello'], {'a.png': onePixelPng});
+  });
+
+  testWidgets('the browser asks before leaving while a project is being '
+      'written', (tester) async {
+    await start(tester);
+    await keepHelloAs(tester, 'Quiz');
+    await closeDialog(tester);
+    await tester.tap(find.widgetWithText(FilledButton, s.downloadZip));
+    await tester.pumpAndSettle();
+    expect(browser.wouldAskToLeave, isFalse);
+
+    final hold = Completer<void>();
+    browser.projects.hold = hold.future;
+    current(tester).setFile('Form1.gbas', "' more\n");
+    browser.hide();
+    await tester.pump();
+    expect(browser.wouldAskToLeave, isTrue);
+    // A change while it is written stays unsaved, to be kept next.
+    current(tester).setFile('Form1.gbas', "' and more\n");
+    hold.complete();
+    await tester.pump();
+    expect(current(tester).isDirty, isTrue);
+    expect(browser.projects.records['quiz'], contains("' more"));
+    await tester.pump(const Duration(seconds: 3));
+    expect(current(tester).isDirty, isFalse);
+    expect(browser.projects.records['quiz'], contains("' and more"));
   });
 
   testWidgets('Korean words', (tester) async {

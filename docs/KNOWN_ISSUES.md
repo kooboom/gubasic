@@ -26,15 +26,9 @@ Problems we know about and have **deliberately** left unfixed for now. Each entr
 
 ## Projects kept in the web IDE's browser can be lost
 
-- **What:** on the web, projects are kept in the browser's `localStorage` (D33). Clearing the browser's data removes them, shared PCs may do that at every logout, and Safari removes them after seven days without a visit. Two tabs with the same project keep whichever saved last.
+- **What:** on the web, projects are kept in the browser, in IndexedDB (D33, D53). Clearing the browser's data removes them, shared PCs may do that at every logout, and Safari removes them after seven days without a visit. Two tabs with the same project keep whichever saved last.
 - **Why deferred:** a web page cannot keep files on disk by itself. The IDE makes the `.zip` download one click away, asks for it while there are changes that were not downloaded, and says so when a project is first saved.
 - **Revisit:** if students lose work in practice; then consider saving into a folder where browsers allow it (the File System Access API, Chrome and Edge only).
-
-## The web IDE does not take pictures yet
-
-- **What:** the desktop IDE adds pictures to projects (D52), but the web IDE does not: Add Picture… says so, and a `.zip` with pictures is not taken. Image controls can be placed there, without a picture.
-- **Why deferred:** the web IDE keeps projects in `localStorage` (D33), which holds about 5 MB per site, shared with the playground (`kooboom.github.io`; their keys are apart). A few photos would fill it, and a project that could not be kept would lose work. Moving the storage is a change of its own.
-- **Revisit:** next: move projects in the browser to IndexedDB, with a converter for what is kept already, and take pictures on the web then.
 
 ## The run window is inside the IDE's window
 

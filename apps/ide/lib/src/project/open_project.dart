@@ -113,6 +113,14 @@ class OpenProject extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Records that [files] and [pictures], as they were when a save that
+  /// took a while started, were saved: changes made since stay unsaved.
+  void markSavedAs(Map<String, String> files, Map<String, Uint8List> pictures) {
+    _saved = Map.of(files);
+    _savedPictures = Map.of(pictures);
+    notifyListeners();
+  }
+
   /// Records that the files were saved, into [location] when they were
   /// saved as a copy, under the names of [files].
   void markSaved({ProjectLocation? location, Map<String, String>? files}) {

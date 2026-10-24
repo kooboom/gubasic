@@ -50,14 +50,16 @@ class ProjectController extends ChangeNotifier {
     this.folders,
     this.pickers,
     this.browser,
+    this._kept,
     this.pickZip,
     this.autosaveDelay = const Duration(seconds: 2),
     this._settings,
     String open = 'hello',
   }) : _current = OpenProject(ExampleLocation(open), examples[open]!) {
     if (browser case final browser?) {
-      _kept = BrowserProjects(browser.storage);
-      browser.guardUnload(() => changedSinceDownload);
+      // Also while a project is being written: closing the page then
+      // could stop the write (D53).
+      browser.guardUnload(() => changedSinceDownload || (_kept?.busy ?? false));
       browser.onHidden(keepNow);
     }
   }
@@ -71,7 +73,8 @@ class ProjectController extends ChangeNotifier {
   final ProjectFolders? folders;
   final ProjectPickers? pickers;
 
-  /// The web browser, or null on the desktop.
+  /// The web browser, or null on the desktop; with it, the projects kept
+  /// there (D53), opened before the IDE starts.
   final Browser? browser;
 
   /// Asks for a `.zip` file: its bytes, or null when the user cancels.
@@ -83,7 +86,7 @@ class ProjectController extends ChangeNotifier {
   OpenProject _current;
   OpenProject? _folderProject;
   OpenProject? _browserProject;
-  BrowserProjects? _kept;
+  final BrowserProjects? _kept;
   Timer? _autosave;
 
   /// The open project.
@@ -172,8 +175,8 @@ class ProjectController extends ChangeNotifier {
         _snack(context, strings.nothingToSave);
         return true;
       }
-      final kept = _keep(context);
-      if (kept) _snack(context, strings.keptInBrowser);
+      final kept = await _keep(context);
+      if (kept && context.mounted) _snack(context, strings.keptInBrowser);
       return kept;
     }
     if (location is! FolderLocation) return saveAs(context);
@@ -288,7 +291,8 @@ class ProjectController extends ChangeNotifier {
   /// or the user saved them or chose to lose them.
   Future<bool> mayLeave(BuildContext context) async {
     context = _lasting(context);
-    keepNow();
+    await keepNow();
+    if (!context.mounted) return false;
     if (!_current.isDirty) return true;
     final answer = await showDialog<_Unsaved>(
       context: context,
@@ -360,28 +364,32 @@ class ProjectController extends ChangeNotifier {
 
   /// Keeps the open project in the browser now, if it is one there with
   /// changes (when the page is hidden, and before another opens).
-  void keepNow() {
+  Future<void> keepNow() async {
     _autosave?.cancel();
     _autosave = null;
     if (_current.location is BrowserLocation && _current.isDirty) {
-      _keep(null);
+      await _keep(null);
     }
   }
 
   /// Keeps the open project in the browser. Gives whether it was kept;
-  /// tells why not when there is a [context].
-  bool _keep(BuildContext? context) {
+  /// tells why not when there is a [context]. What is written is the
+  /// project as the call found it; changes made while it is written stay
+  /// unsaved, to be kept next.
+  Future<bool> _keep(BuildContext? context) async {
     final project = _current;
     final location = project.location as BrowserLocation;
+    final files = project.files, pictures = project.pictures;
     try {
-      _kept!.save(location.name, project.files);
-      project.markSaved();
+      await _kept!.save(location.name, files, pictures: pictures);
+      project.markSavedAs(files, pictures);
+      notifyListeners();
       return true;
     } on StorageFailed {
       _storageFailed = true;
       notifyListeners();
       if (context != null && context.mounted) {
-        _tell(context, strings.storageFailed);
+        await _tell(context, strings.storageFailed);
       }
       return false;
     }
@@ -397,13 +405,14 @@ class ProjectController extends ChangeNotifier {
     final name = await _askBrowserName(context, project.project.name);
     if (name == null || !context.mounted) return false;
     final files = renameProject(project.files, name);
+    final pictures = project.pictures;
     try {
-      _kept!.save(name, files);
+      await _kept!.save(name, files, pictures: pictures);
     } on StorageFailed {
-      await _tell(context, strings.storageFailed);
+      if (context.mounted) await _tell(context, strings.storageFailed);
       return false;
     }
-    final copy = OpenProject(BrowserLocation(name), files);
+    final copy = OpenProject(BrowserLocation(name), files, pictures: pictures);
     _browserProject = copy;
     _show(copy);
     if (!context.mounted) return true;
@@ -435,15 +444,15 @@ class ProjectController extends ChangeNotifier {
   /// Tells, once in this browser, that projects kept here can be lost.
   Future<void> _noticeOnce(BuildContext context) async {
     if (_kept!.noticeShown) return;
-    _kept!.markNoticeShown();
+    _kept.markNoticeShown();
     await _tell(context, strings.browserNotice);
   }
 
   /// Deletes project [name] from the browser. If it is open, the first
   /// example opens instead, so that keeping it later does not bring the
   /// deleted project back.
-  void _forget(String name) {
-    _kept!.delete(name);
+  Future<void> _forget(String name) async {
+    await _kept!.delete(name);
     final open = _browserProject;
     if (open == null ||
         (open.location as BrowserLocation).name.toLowerCase() !=
@@ -473,7 +482,18 @@ class ProjectController extends ChangeNotifier {
     if (name == null) return;
     final stored = _kept!.read(name);
     if (stored == null) return;
-    final project = OpenProject(BrowserLocation(stored.name), stored.files);
+    final Map<String, Uint8List> pictures;
+    try {
+      pictures = await _kept.pictures(name);
+    } on StorageFailed {
+      if (context.mounted) await _tell(context, strings.storageFailed);
+      return;
+    }
+    final project = OpenProject(
+      BrowserLocation(stored.name),
+      stored.files,
+      pictures: pictures,
+    );
     _browserProject = project;
     _show(project);
   }
@@ -492,11 +512,13 @@ class ProjectController extends ChangeNotifier {
       zipProject(name, project.files, pictures: project.pictures),
     );
     if (project.location is BrowserLocation) {
-      try {
-        _kept!.markDownloaded(name);
-      } on StorageFailed {
-        // The download happened; only the note of it is missing.
-      }
+      _kept!
+          .markDownloaded(name)
+          .then(
+            (_) => notifyListeners(),
+            // The download happened; only the note of it is missing.
+            onError: (Object _) {},
+          );
     }
     notifyListeners();
   }
@@ -513,12 +535,6 @@ class ProjectController extends ChangeNotifier {
       unzipped = unzipProject(bytes);
     } on ZipProblem catch (p) {
       await _tell(context, _describeZip(p));
-      return;
-    }
-    // Until the web IDE keeps projects where pictures fit (KNOWN_ISSUES).
-    if (unzipped.pictures.isNotEmpty || unzipped.missing.isNotEmpty) {
-      if (!context.mounted) return;
-      await _tell(context, strings.picturesNotOnWeb);
       return;
     }
     var name = unzipped.name;
@@ -541,15 +557,26 @@ class ProjectController extends ChangeNotifier {
       files = renameProject(files, name);
     }
     try {
-      _kept!.save(name, files, fromFile: true);
+      await _kept.save(
+        name,
+        files,
+        pictures: unzipped.pictures,
+        fromFile: true,
+      );
     } on StorageFailed {
       if (!context.mounted) return;
       await _tell(context, strings.storageFailed);
       return;
     }
-    final project = OpenProject(BrowserLocation(name), files);
+    final project = OpenProject(
+      BrowserLocation(name),
+      files,
+      pictures: unzipped.pictures,
+    );
     _browserProject = project;
     _show(project);
+    if (!context.mounted) return;
+    await _tellMissing(context, unzipped.missing);
     if (!context.mounted) return;
     if (unzipped.ignored.isNotEmpty) {
       await _tell(
@@ -587,18 +614,16 @@ class ProjectController extends ChangeNotifier {
     }
   }
 
-  /// Whether pictures can be added to projects here: on the desktop, until
-  /// the web IDE keeps projects where pictures fit (KNOWN_ISSUES).
-  bool get canAddPictures => canUseFolders && pickers!.openPicture != null;
+  /// Whether pictures can be added to projects here: where projects are
+  /// kept, on disk or in the browser, and a picture can be chosen.
+  bool get canAddPictures =>
+      (folders != null || _kept != null) && pickers?.openPicture != null;
 
   /// Asks for a picture file and adds it to the open project, or replaces
   /// the picture of that name after asking (D51). Gives the picture's name
   /// in the project, or null when none was added.
   Future<String?> addPicture(BuildContext context) async {
-    if (!canAddPictures) {
-      await _tell(context, strings.picturesNotOnWeb);
-      return null;
-    }
+    if (!canAddPictures) return null;
     final picked = await _whilePicking(
       () => pickers!.openPicture!(strings.addButton),
     );
@@ -861,7 +886,11 @@ class _KeptDialogState extends State<_KeptDialog> {
       s.deleteProject,
     );
     if (!go) return;
-    widget.controller._forget(p.name);
+    try {
+      await widget.controller._forget(p.name);
+    } on StorageFailed {
+      if (mounted) await widget.controller._tell(context, s.storageFailed);
+    }
     if (mounted) setState(() {});
   }
 

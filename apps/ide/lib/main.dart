@@ -17,14 +17,24 @@ import 'src/theme.dart';
 /// The GuBASIC IDE. It opens the example projects and, on the desktop,
 /// projects on disk (D32), and runs them in a run window (docs/ROADMAP.md,
 /// stage 1).
-void main() {
+Future<void> main() async {
   final language = PlatformDispatcher.instance.locale.languageCode;
+  // On the web, the projects kept in the browser are opened first, and
+  // moved out of localStorage if they are still there (D53).
+  final browser = platformBrowser();
+  final kept = browser == null
+      ? null
+      : await BrowserProjects.open(
+          await browser.openProjects(),
+          browser.storage,
+        );
   runApp(
     IdeApp(
       projects: exampleProjects,
       strings: IdeStrings.forLanguage(language),
       folders: platformFolders(),
-      browser: platformBrowser(),
+      browser: browser,
+      kept: kept,
       pickZip: () async => (await openFile(
         acceptedTypeGroups: const [
           XTypeGroup(label: 'zip', extensions: ['zip']),
@@ -84,6 +94,7 @@ class IdeApp extends StatefulWidget {
     this.folders,
     this.pickers,
     this.browser,
+    this.kept,
     this.pickZip,
     this.settings,
   });
@@ -105,6 +116,9 @@ class IdeApp extends StatefulWidget {
   final Browser? browser;
   final Future<List<int>?> Function()? pickZip;
 
+  /// The projects kept in the browser, opened before the IDE starts.
+  final BrowserProjects? kept;
+
   /// Where the programs' settings are kept; shared_preferences when null.
   final GbSettingsStore? settings;
 
@@ -120,6 +134,7 @@ class _IdeAppState extends State<IdeApp> {
     folders: widget.folders,
     pickers: widget.pickers,
     browser: widget.browser,
+    kept: widget.kept,
     pickZip: widget.pickZip,
     settings: widget.settings,
     open: widget.open,

@@ -111,7 +111,6 @@ class IdeStrings {
     required this.pictureInUse,
     required this.replacePicture,
     required this.replaceButton,
-    required this.picturesNotOnWeb,
     required this.missingPictures,
     required this.pictureProjectFileErrors,
     required this.pictureNameTooLong,
@@ -330,7 +329,6 @@ class IdeStrings {
   /// `{0}` the picture.
   final String replacePicture;
   final String replaceButton;
-  final String picturesNotOnWeb;
 
   /// `{0}` the pictures.
   final String missingPictures;
@@ -482,7 +480,6 @@ class IdeStrings {
     pictureInUse: '{0} is shown by {1}. Choose another picture there, or clear Picture, then remove it.',
     replacePicture: 'The project already has a picture named {0}. Replace it with the new one? Every control showing it then shows the new picture.',
     replaceButton: 'Replace',
-    picturesNotOnWeb: 'The web IDE cannot keep pictures yet: the browser storage it uses is too small. Use the desktop IDE for projects with pictures.',
     missingPictures: 'The project\'s pictures folder does not have these pictures: {0}. Put them there, or remove them in File → Pictures.',
     pictureProjectFileErrors: 'The .gbproj file has errors, so pictures cannot be added to it. Fix the file in a text editor, then open the project again.',
     pictureNameTooLong: 'The name "{0}" is too long for a picture: at most 100 characters. Rename the file, then add it again.',
@@ -625,7 +622,6 @@ class IdeStrings {
     replacePicture:
         '프로젝트에 {0} 그림이 이미 있습니다. 새 그림으로 바꿀까요? 이 그림을 보이는 컨트롤은 모두 새 그림을 보입니다.',
     replaceButton: '바꾸기',
-    picturesNotOnWeb: '웹 IDE에는 아직 그림을 보관할 수 없습니다. 웹 IDE가 쓰는 브라우저 저장 공간이 너무 작기 때문입니다. 그림이 있는 프로젝트는 데스크톱 IDE에서 엽니다.',
     missingPictures:
         '프로젝트의 pictures 폴더에 다음 그림이 없습니다: {0}. 그림 파일을 넣거나, 파일 → 그림에서 뺍니다.',
     pictureProjectFileErrors:
