@@ -80,6 +80,15 @@ class _IdeShellState extends State<IdeShell> {
   /// has the focus.
   final _focus = FocusNode(debugLabel: 'ide');
 
+  @override
+  void initState() {
+    super.initState();
+    // Text brought back from a page that closed too soon (D54).
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) widget.controller.showRestored(context);
+    });
+  }
+
   /// Counts the times a file was chosen, so that the code editor takes
   /// the focus each time, also one that stayed built during a run.
   var _codeFocusCount = 0;

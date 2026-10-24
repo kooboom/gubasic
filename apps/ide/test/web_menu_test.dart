@@ -443,6 +443,92 @@ void main() {
     expect(browser.projects.records['quiz'], contains("' and more"));
   });
 
+  testWidgets('a page closed before its write finished brings the change '
+      'back next time, and says so', (tester) async {
+    await start(tester);
+    await keepHelloAs(tester, 'Quiz');
+    await closeDialog(tester);
+    // The write that starts as the page hides never finishes: the page
+    // is gone first.
+    browser.projects.hold = Completer<void>().future;
+    current(tester).setFile('Form1.gbas', "' typed just before closing\n");
+    browser.hide();
+    await tester.pump();
+    expect(browser.projects.records['quiz'], isNot(contains('just before')));
+    expect(
+      browser.storage.values['gubasic.ide.unsaved.quiz'],
+      contains('just before'),
+    );
+
+    // The next visit: a new page on the same browser storage.
+    browser.projects.hold = null;
+    final again = FakeBrowser()
+      ..storage.values.addAll(browser.storage.values)
+      ..projects.records.addAll(browser.projects.records);
+    browser = again;
+    await tester.pumpWidget(const SizedBox());
+    await start(tester);
+    await tester.pumpAndSettle();
+    expect(
+      find.text(s.restoredUnsaved.replaceAll('{0}', 'Quiz')),
+      findsOneWidget,
+    );
+    await closeDialog(tester);
+    expect(current(tester).location, isA<BrowserLocation>());
+    expect(
+      current(tester).files['Form1.gbas'],
+      "' typed just before closing\n",
+    );
+    expect(current(tester).isDirty, isFalse);
+    expect(browser.projects.records['quiz'], contains('just before'));
+    expect(browser.storage.values, isNot(contains('gubasic.ide.unsaved.quiz')));
+  });
+
+  testWidgets('a change kept in time leaves nothing to bring back', (
+    tester,
+  ) async {
+    await start(tester);
+    await keepHelloAs(tester, 'Quiz');
+    await closeDialog(tester);
+    current(tester).setFile('Form1.gbas', "' kept\n");
+    browser.hide();
+    await tester.pump();
+    expect(browser.projects.records['quiz'], contains("' kept"));
+    expect(browser.storage.values, isNot(contains('gubasic.ide.unsaved.quiz')));
+  });
+
+  testWidgets('a picture added on the web is kept at once', (tester) async {
+    await start(tester);
+    await keepHelloAs(tester, 'Fruit');
+    await closeDialog(tester);
+    await menu(tester, s.picturesMenu);
+    picks.add((name: 'a.png', bytes: onePixelPng));
+    await tester.tap(find.byKey(addPictureKey));
+    await tester.pump();
+    await tester.pump();
+    expect(browser.projects.pictures['fruit'], {'a.png': onePixelPng});
+    await tester.pumpAndSettle();
+  });
+
+  testWidgets('a restored project names pictures that were not kept', (
+    tester,
+  ) async {
+    final kept = await BrowserProjects.open(browser.projects, browser.storage);
+    await kept.save('Fruit', hello);
+    kept.writeUnsaved('Fruit', {
+      ...hello,
+      'Hello.gbproj': helloWithPictures(['a.png']),
+    });
+    await start(tester);
+    await tester.pumpAndSettle();
+    await closeDialog(tester);
+    expect(
+      find.text(s.missingPicturesKept.replaceAll('{0}', 'a.png')),
+      findsOneWidget,
+    );
+    await closeDialog(tester);
+  });
+
   testWidgets('Korean words', (tester) async {
     await start(tester, strings: IdeStrings.ko);
     expect(find.text('.zip으로 내려받기'), findsOneWidget);

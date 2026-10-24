@@ -120,6 +120,8 @@ class IdeStrings {
     required this.pictureTooLarge,
     required this.pictureTooWide,
     required this.picturesFull,
+    required this.restoredUnsaved,
+    required this.missingPicturesKept,
   });
 
   /// The words on MsgBox and InputBox.
@@ -347,6 +349,12 @@ class IdeStrings {
   final String pictureTooWide;
   final String picturesFull;
 
+  /// `{0}` the projects (D54).
+  final String restoredUnsaved;
+
+  /// `{0}` the pictures.
+  final String missingPicturesKept;
+
   /// [diagnostic] in [file], in this language.
   String problem(String file, Diagnostic diagnostic) => errorAt
       .replaceAll('{0}', file)
@@ -489,6 +497,8 @@ class IdeStrings {
     pictureTooLarge: '"{0}" takes {1} MB; a picture can take at most 2 MB. Make it smaller (fewer pixels, or JPEG for a photo), then add it.',
     pictureTooWide: '"{0}" is {1} × {2} pixels; a picture can be at most 4096 pixels wide and high. Make it smaller, then add it.',
     picturesFull: 'With "{0}", the project\'s pictures would take more than 10 MB. Remove pictures it does not use, or make them smaller.',
+    restoredUnsaved: 'Brought back changes that were not saved: {0}. The page closed before they were kept in this browser; they are kept now.',
+    missingPicturesKept: 'These pictures were not kept with the project: {0}. Add them again in File → Pictures, or remove them there.',
   );
 
   static const ko = IdeStrings(
@@ -635,6 +645,10 @@ class IdeStrings {
     pictureTooWide: '"{0}" 그림의 크기는 {1} × {2}픽셀입니다. 그림의 가로와 세로는 4096픽셀까지입니다. 크기를 줄인 뒤 추가합니다.',
     picturesFull:
         '"{0}" 파일을 넣으면 프로젝트의 그림이 모두 10MB를 넘습니다. 쓰지 않는 그림을 빼거나 그림 크기를 줄입니다.',
+    restoredUnsaved:
+        '저장되지 않았던 변경을 되살렸습니다: {0}. 이 브라우저에 보관하기 전에 페이지가 닫혔던 변경이며, 지금은 보관되었습니다.',
+    missingPicturesKept:
+        '다음 그림은 프로젝트와 함께 보관되지 않았습니다: {0}. 파일 → 그림에서 다시 추가하거나 뺍니다.',
   );
 
   /// Korean when the system language is Korean, else English.

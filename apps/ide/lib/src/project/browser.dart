@@ -9,6 +9,10 @@ const browserKeyPrefix = 'gubasic.ide.';
 const _projectKeyPrefix = '${browserKeyPrefix}project.';
 const _noticeKey = '${browserKeyPrefix}noticeShown';
 
+/// A project's text written to `localStorage` as the page hides, in case
+/// its write to IndexedDB does not finish (D54).
+const _unsavedKeyPrefix = '${browserKeyPrefix}unsaved.';
+
 /// The layout of a project kept in the browser; a newer one is left
 /// alone. Version 2 lists the project's pictures, which are kept apart
 /// (D53); version 1 is what `localStorage` held (D33).
@@ -69,7 +73,8 @@ abstract interface class Browser {
   /// so; its words are the browser's own.
   void guardUnload(bool Function() unsaved);
 
-  /// Runs [action] when the page is hidden: another tab, or closing.
+  /// Runs [action] when the page is hidden (another tab) or goes away
+  /// (closing, or leaving it).
   void onHidden(void Function() action);
 
   /// Goes to [url], relative to the page, in the same tab; the browser
@@ -131,8 +136,90 @@ class BrowserProjects {
       } on StorageFailed {
         // Nothing to list; saving says what is wrong.
       }
+      await kept._bringBackUnsaved();
     }
     return kept;
+  }
+
+  /// The projects whose unsaved text was brought back when they were
+  /// opened (D54), by name.
+  final restored = <String>[];
+
+  /// Brings back the text written as the page hid ([writeUnsaved]) where
+  /// it is newer than the project's record and differs from it, and
+  /// removes it. One that cannot be written stays, for next time.
+  Future<void> _bringBackUnsaved() async {
+    for (final key in storage.keys.toList()) {
+      if (!key.startsWith(_unsavedKeyPrefix)) continue;
+      final project = _projects[key.substring(_unsavedKeyPrefix.length)];
+      final unsaved = _decodeUnsaved(storage.read(key));
+      // One that cannot be read, or from a newer GuBASIC, is left alone.
+      if (unsaved == null) continue;
+      if (project != null &&
+          !unsaved.writtenAt.isBefore(project.savedAt) &&
+          !_sameFiles(project.files, unsaved.files)) {
+        try {
+          await _queue(
+            () => _write(
+              StoredProject(
+                name: project.name,
+                files: unsaved.files,
+                pictures: project.pictures,
+                savedAt: _now(),
+                downloadedAt: project.downloadedAt,
+                changedSinceDownload: true,
+              ),
+              null,
+            ),
+          );
+          restored.add(project.name);
+        } on StorageFailed {
+          continue;
+        }
+      }
+      storage.remove(key);
+    }
+  }
+
+  /// Writes [files] of project [name] to `localStorage` at once, as the
+  /// page hides: a write to IndexedDB may not finish before it closes,
+  /// and the next start brings them back (D54). Gives whether it could.
+  bool writeUnsaved(String name, Map<String, String> files) {
+    try {
+      storage.write(
+        '$_unsavedKeyPrefix${_key(name)}',
+        jsonEncode({
+          'formatVersion': 1,
+          'files': files,
+          'writtenAt': _now().toUtc().toIso8601String(),
+        }),
+      );
+      return true;
+    } on StorageFailed {
+      return false;
+    }
+  }
+
+  /// Forgets what [writeUnsaved] wrote for [name]: it is kept now.
+  void clearUnsaved(String name) =>
+      storage.remove('$_unsavedKeyPrefix${_key(name)}');
+
+  static ({Map<String, String> files, DateTime writtenAt})? _decodeUnsaved(
+    String? text,
+  ) {
+    if (text == null) return null;
+    try {
+      final json = jsonDecode(text) as Map<String, Object?>;
+      if (json['formatVersion'] != 1) return null;
+      return (
+        files: (json['files']! as Map<String, Object?>).map(
+          (k, v) => MapEntry(k, v! as String),
+        ),
+        writtenAt: DateTime.parse(json['writtenAt']! as String).toLocal(),
+      );
+    } catch (_) {
+      return null;
+    }
   }
 
   static Future<void> _moveFromLocalStorage(

@@ -55,6 +55,14 @@ class _WebBrowser implements Browser {
         if (web.document.visibilityState == 'hidden') action();
       }.toJS,
     );
+    // Also as the page goes away; a page closed while it is shown may
+    // not be hidden first (D54).
+    web.window.addEventListener(
+      'pagehide',
+      (web.Event _) {
+        action();
+      }.toJS,
+    );
   }
 }
 

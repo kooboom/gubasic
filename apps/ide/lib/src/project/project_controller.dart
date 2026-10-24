@@ -60,7 +60,7 @@ class ProjectController extends ChangeNotifier {
       // Also while a project is being written: closing the page then
       // could stop the write (D53).
       browser.guardUnload(() => changedSinceDownload || (_kept?.busy ?? false));
-      browser.onHidden(keepNow);
+      browser.onHidden(_pageHidden);
     }
   }
 
@@ -362,6 +362,17 @@ class ProjectController extends ChangeNotifier {
     if (_current.isDirty) _autosave = Timer(autosaveDelay, keepNow);
   }
 
+  /// The page is hidden, maybe closing: the open project's text, if it
+  /// has changes, goes to localStorage at once, in case the write that
+  /// starts now does not finish before the page closes (D54).
+  void _pageHidden() {
+    if (_current.location case BrowserLocation(:final name)
+        when _current.isDirty) {
+      _kept!.writeUnsaved(name, _current.files);
+    }
+    keepNow();
+  }
+
   /// Keeps the open project in the browser now, if it is one there with
   /// changes (when the page is hidden, and before another opens).
   Future<void> keepNow() async {
@@ -383,6 +394,7 @@ class ProjectController extends ChangeNotifier {
     try {
       await _kept!.save(location.name, files, pictures: pictures);
       project.markSavedAs(files, pictures);
+      if (!project.isDirty) _kept.clearUnsaved(location.name);
       notifyListeners();
       return true;
     } on StorageFailed {
@@ -646,6 +658,9 @@ class ProjectController extends ChangeNotifier {
       return null;
     }
     project.setPicture(name, picked.bytes);
+    // In the browser a picture is kept at once, not a moment later: the
+    // text kept as the page hides does not carry pictures (D54).
+    if (project.location is BrowserLocation) await keepNow();
     return existing ?? name;
   }
 
@@ -672,7 +687,61 @@ class ProjectController extends ChangeNotifier {
       return false;
     }
     project.removePicture(name);
+    if (project.location is BrowserLocation) await keepNow();
     return true;
+  }
+
+  /// Once, when the IDE has started: if text that was not kept when the
+  /// page closed was brought back (D54), opens that project and says so,
+  /// naming any pictures it lists that were not kept.
+  Future<void> showRestored(BuildContext context) async {
+    final kept = _kept;
+    if (kept == null || kept.restored.isEmpty) return;
+    final names = List.of(kept.restored);
+    kept.restored.clear();
+    context = _lasting(context);
+    final stored = kept.read(names.first);
+    if (stored != null) {
+      try {
+        final pictures = Map.of(await kept.pictures(stored.name));
+        // The text decides which pictures the project has: one it no
+        // longer lists was being taken out as the page closed.
+        final listed = _listedPictures(stored.files);
+        pictures.removeWhere((name, _) => !listed.contains(name));
+        final project = OpenProject(
+          BrowserLocation(stored.name),
+          stored.files,
+          pictures: pictures,
+        );
+        _browserProject = project;
+        _show(project);
+      } on StorageFailed {
+        // Listed in the message; opened from File → Open.
+      }
+    }
+    if (!context.mounted) return;
+    await _tell(
+      context,
+      strings.restoredUnsaved.replaceAll('{0}', names.join(', ')),
+    );
+    final missing = [
+      for (final p in _listedPictures(_current.files))
+        if (!_current.pictures.containsKey(p)) p,
+    ];
+    if (missing.isNotEmpty && context.mounted) {
+      await _tell(
+        context,
+        strings.missingPicturesKept.replaceAll('{0}', missing.join(', ')),
+      );
+    }
+  }
+
+  /// The pictures the `.gbproj` file of [files] lists.
+  static List<String> _listedPictures(Map<String, String> files) {
+    final projectFile = files.entries
+        .where((e) => e.key.toLowerCase().endsWith('.gbproj'))
+        .firstOrNull;
+    return readProjectFile(projectFile?.value ?? '').project.pictures;
   }
 
   String _describePicture(PictureRefused p) {

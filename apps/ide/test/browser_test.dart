@@ -199,6 +199,73 @@ void main() {
     });
   });
 
+  group('text written as the page hides (D54)', () {
+    test('is brought back when newer than the record, then removed', () async {
+      await kept.save('Quiz', hello, pictures: {'a.png': onePixelPng});
+      now = now.add(const Duration(seconds: 5));
+      final edited = {...hello, 'Form1.gbas': "' not kept yet\n"};
+      expect(kept.writeUnsaved('Quiz', edited), isTrue);
+      expect(storage.values.keys, ['gubasic.ide.unsaved.quiz']);
+
+      now = now.add(const Duration(minutes: 1));
+      kept = await open();
+      expect(kept.restored, ['Quiz']);
+      expect(kept.read('Quiz')!.files, edited);
+      expect(kept.read('Quiz')!.pictures, ['a.png']);
+      expect(store.pictures['quiz'], {'a.png': onePixelPng});
+      expect(storage.values, isEmpty);
+      expect((await open()).restored, isEmpty, reason: 'only once');
+    });
+
+    test('is removed without a word when the record is newer, or the '
+        'same, or the project is gone', () async {
+      await kept.save('A', hello);
+      kept.writeUnsaved('A', {...hello, 'Form1.gbas': "' old\n"});
+      now = now.add(const Duration(seconds: 1));
+      await kept.save('A', {...hello, 'Form1.gbas': "' newer\n"});
+      kept.writeUnsaved('B', hello);
+      await kept.save('C', hello);
+      kept.writeUnsaved('C', hello);
+      kept = await open();
+      expect(kept.restored, isEmpty);
+      expect(kept.read('A')!.files['Form1.gbas'], "' newer\n");
+      expect(storage.values, isEmpty);
+    });
+
+    test('stays when it cannot be written, for next time', () async {
+      await kept.save('A', hello);
+      final edited = {...hello, 'Form1.gbas': "' x\n"};
+      kept.writeUnsaved('A', edited);
+      store.full = true;
+      kept = await open();
+      expect(kept.restored, isEmpty);
+      expect(storage.values.keys, ['gubasic.ide.unsaved.a']);
+      store.full = false;
+      kept = await open();
+      expect(kept.restored, ['A']);
+      expect(kept.read('A')!.files, edited);
+    });
+
+    test('one that cannot be read is left alone', () async {
+      await kept.save('A', hello);
+      storage.values['gubasic.ide.unsaved.a'] = '{not json';
+      kept = await open();
+      expect(kept.restored, isEmpty);
+      expect(storage.values, contains('gubasic.ide.unsaved.a'));
+    });
+
+    test('a full localStorage says it could not', () {
+      storage.full = true;
+      expect(kept.writeUnsaved('A', hello), isFalse);
+    });
+
+    test('clearUnsaved forgets it', () {
+      kept.writeUnsaved('A', hello);
+      kept.clearUnsaved('a');
+      expect(storage.values, isEmpty);
+    });
+  });
+
   test('the notice is remembered in localStorage', () {
     expect(kept.noticeShown, isFalse);
     kept.markNoticeShown();

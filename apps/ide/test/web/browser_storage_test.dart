@@ -100,6 +100,33 @@ void main() {
     },
   );
 
+  test(
+    'text written as the page hid is brought back from localStorage',
+    () async {
+      final kept = await open();
+      await kept.save('Quiz', hello);
+      final edited = {...hello, 'Form1.gbas': "' typed just before closing\n"};
+      expect(kept.writeUnsaved('Quiz', edited), isTrue);
+      expect(
+        web.window.localStorage.getItem('gubasic.ide.unsaved.quiz'),
+        isNotNull,
+      );
+
+      final again = await open();
+      expect(again.restored, ['Quiz']);
+      expect(again.read('Quiz')!.files, edited);
+      expect(
+        web.window.localStorage.getItem('gubasic.ide.unsaved.quiz'),
+        isNull,
+      );
+      expect(
+        (await open()).read('Quiz')!.files,
+        edited,
+        reason: 'in IndexedDB',
+      );
+    },
+  );
+
   test('a full localStorage is StorageFailed, not a crash', () {
     final big = 'x' * (6 * 1024 * 1024);
     expect(

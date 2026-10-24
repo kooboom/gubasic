@@ -30,6 +30,17 @@ Problems we know about and have **deliberately** left unfixed for now. Each entr
 - **Why deferred:** a web page cannot keep files on disk by itself. The IDE makes the `.zip` download one click away, asks for it while there are changes that were not downloaded, and says so when a project is first saved.
 - **Revisit:** if students lose work in practice; then consider saving into a folder where browsers allow it (the File System Access API, Chrome and Edge only).
 
+## Changes made as the web IDE's page closes can still be lost
+
+- **What:** a change is kept in IndexedDB a moment after it is made; as the page hides or goes away, its text is also written to `localStorage` and brought back at the next start (D54). It can still be lost when:
+  - the page ends without `visibilitychange` or `pagehide`: the browser or the system crashes, the power goes, or a phone ends a tab without either event. What changed since the last finished write (about two seconds of work, or more while writes fail) is lost.
+  - `localStorage` is full or turned off: the backup is not written, and nothing says so, since the page is closing.
+  - a picture was being added or removed as the page closed: the picture is kept at once (D54), but if that write does not finish, the restored text names a picture that was not kept; the IDE says which.
+  - the same project is open in two tabs: the backup of the tab hidden last wins, as with saving (above).
+- **Checked:** in Chromium, a tab closed while its write was held, and in WebKit a page reloaded while its write could not commit: both brought the change back (Playwright, the release build). **Not checked:** closing a tab in WebKit or Safari: Playwright's WebKit sends neither `pagehide` nor `visibilitychange` when it closes a page, even a plain one, so its result would say nothing. Also seen: Playwright's WebKit (1.56) crashed the page now and then on a reload or a navigation, on `main` as well; whether Safari does is not known.
+- **Why deferred:** a page cannot delay its closing, and nothing a page can write is both larger than `localStorage` and synchronous.
+- **Revisit:** with a real Safari at hand: close a tab right after a change and check that it comes back; and if students report losing work.
+
 ## The run window is inside the IDE's window
 
 - **What:** a running program's form is shown in the middle of the IDE's window, not in a window of its own. Moving it or running two programs side by side is not possible.
