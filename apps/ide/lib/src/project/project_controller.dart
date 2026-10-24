@@ -46,6 +46,7 @@ enum _Unsaved { save, discard, cancel }
 class ProjectController extends ChangeNotifier {
   ProjectController({
     required this.examples,
+    this.examplePictures = const {},
     required this.strings,
     this.folders,
     this.pickers,
@@ -55,7 +56,7 @@ class ProjectController extends ChangeNotifier {
     this.autosaveDelay = const Duration(seconds: 2),
     this._settings,
     String open = 'hello',
-  }) : _current = OpenProject(ExampleLocation(open), examples[open]!) {
+  }) : _current = _example(examples, examplePictures, open) {
     if (browser case final browser?) {
       // Also while a project is being written: closing the page then
       // could stop the write (D53).
@@ -66,6 +67,20 @@ class ProjectController extends ChangeNotifier {
 
   /// The built-in projects: name → file name → text.
   final Map<String, Map<String, String>> examples;
+
+  /// The pictures of the built-in projects that have some: name →
+  /// picture name → bytes.
+  final Map<String, Map<String, Uint8List>> examplePictures;
+
+  static OpenProject _example(
+    Map<String, Map<String, String>> examples,
+    Map<String, Map<String, Uint8List>> pictures,
+    String name,
+  ) => OpenProject(
+    ExampleLocation(name),
+    examples[name]!,
+    pictures: pictures[name] ?? const {},
+  );
   final IdeStrings strings;
 
   /// The disk, or null where projects cannot be opened or saved (the web,
@@ -136,7 +151,7 @@ class ProjectController extends ChangeNotifier {
       _show(_browserProject!);
     } else {
       final name = key.substring('example:'.length);
-      _show(OpenProject(ExampleLocation(name), examples[name]!));
+      _show(_example(examples, examplePictures, name));
     }
   }
 
@@ -477,7 +492,7 @@ class ProjectController extends ChangeNotifier {
       _autosave = null;
       _current.removeListener(_changed);
       final first = examples.keys.first;
-      _current = OpenProject(ExampleLocation(first), examples[first]!);
+      _current = _example(examples, examplePictures, first);
     }
     notifyListeners();
   }

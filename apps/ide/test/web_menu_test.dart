@@ -11,6 +11,7 @@ import 'package:gubasic_ide/src/project/browser.dart';
 import 'package:gubasic_ide/src/project/open_project.dart';
 import 'package:gubasic_ide/src/project/pictures_dialog.dart';
 import 'package:gubasic_ide/src/project/project_controller.dart';
+import 'package:gubasic_ide/src/project/project_pictures.dart';
 import 'package:gubasic_ide/src/project/project_zip.dart';
 import 'package:gubasic_ide/src/strings.dart';
 
@@ -37,6 +38,7 @@ void main() {
     await tester.pumpWidget(
       IdeApp(
         projects: exampleProjects,
+        examplePictures: decodeExamplePictures(examplePictures),
         strings: strings,
         browser: browser,
         kept: await BrowserProjects.open(browser.projects, browser.storage),
@@ -395,6 +397,25 @@ void main() {
     await tester.pumpAndSettle();
     expect(current(tester).pictures, {'사과.png': onePixelPng});
     expect(current(tester).isDirty, isFalse);
+  });
+
+  testWidgets('the quiz example is kept with its pictures, and downloaded '
+      'with them', (tester) async {
+    await start(tester);
+    await tester.tap(find.text('hello').last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('quiz').last);
+    await tester.pumpAndSettle();
+    final pictures = current(tester).pictures;
+    await keepHelloAs(tester, 'My Quiz');
+    await closeDialog(tester);
+    expect(browser.projects.pictures['my quiz'], pictures);
+
+    await tester.tap(find.widgetWithText(FilledButton, s.downloadZip));
+    await tester.pumpAndSettle();
+    final back = unzipProject(browser.downloads.single.$2);
+    expect(back.pictures, pictures);
+    expect(back.missing, isEmpty);
   });
 
   testWidgets('a .zip with pictures is kept with them', (tester) async {

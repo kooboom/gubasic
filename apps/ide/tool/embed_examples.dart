@@ -1,9 +1,17 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:gubasic_lang/gubasic_lang.dart';
+
+/// The most the pictures of all the examples may have together.
+const maxPictureBytes = 16 * 1024;
+
 /// Copies every project in ../../examples/ into
 /// lib/src/project/examples.g.dart, so that the IDE can open them on every
-/// platform, the web included, where files cannot be read.
+/// platform, the web included, where files cannot be read. The pictures
+/// a project's `.gbproj` lists (D51) go in as Base64, in its order; they
+/// must stay small, as they are part of what the web IDE loads before it
+/// starts (D55).
 ///
 ///     dart run tool/embed_examples.dart          # write the file
 ///     dart run tool/embed_examples.dart --check  # fail if out of date
@@ -29,6 +37,42 @@ void main(List<String> args) {
     out.writeln('  },');
   }
   out.writeln('};');
+
+  out
+    ..writeln()
+    ..writeln('/// The pictures of each example project that has some, by')
+    ..writeln('/// folder name: picture name → the bytes in Base64.')
+    ..writeln('const examplePictures = <String, Map<String, String>>{');
+  var pictureBytes = 0;
+  for (final dir in projects) {
+    final projectFile = dir.listSync().whereType<File>().firstWhere(
+      (f) => f.path.endsWith('.gbproj'),
+    );
+    final read = readProjectFile(projectFile.readAsStringSync());
+    if (read.hasErrors) {
+      stderr.writeln('${projectFile.path} has errors');
+      exit(1);
+    }
+    final pictures = read.project.pictures;
+    if (pictures.isEmpty) continue;
+    out.writeln('  ${jsonEncode(_name(dir.uri))}: {');
+    for (final name in pictures) {
+      final bytes = File('${dir.path}/pictures/$name').readAsBytesSync();
+      pictureBytes += bytes.length;
+      out.writeln(
+        '    ${jsonEncode(name)}: ${jsonEncode(base64Encode(bytes))},',
+      );
+    }
+    out.writeln('  },');
+  }
+  out.writeln('};');
+  if (pictureBytes > maxPictureBytes) {
+    stderr.writeln(
+      'The examples\' pictures have $pictureBytes bytes, more than '
+      '$maxPictureBytes: make them smaller (D55).',
+    );
+    exit(1);
+  }
 
   final text = _formatted(out.toString().replaceAll(r'$', r'\$'));
   final target = File('lib/src/project/examples.g.dart');

@@ -11,6 +11,7 @@ import 'package:gubasic_ide/src/project/examples.g.dart';
 import 'package:gubasic_ide/src/project/open_project.dart';
 import 'package:gubasic_ide/src/project/pictures_dialog.dart';
 import 'package:gubasic_ide/src/project/project_controller.dart';
+import 'package:gubasic_ide/src/project/project_pictures.dart';
 import 'package:gubasic_ide/src/strings.dart';
 import 'package:gubasic_lang/gubasic_lang.dart';
 import 'package:gubasic_runtime/gubasic_runtime.dart';
@@ -42,6 +43,7 @@ void main() {
     await tester.pumpWidget(
       IdeApp(
         projects: exampleProjects,
+        examplePictures: decodeExamplePictures(examplePictures),
         strings: strings,
         folders: fs,
         pickers: ProjectPickers(
@@ -219,6 +221,31 @@ void main() {
     await menu(tester, s.save);
     expect(fs.deleted, ['/home/Fruit/pictures/a.png']);
     expect(fs.bytes.keys, ['/home/Fruit/pictures/b.png']);
+  });
+
+  testWidgets('the quiz example has its pictures, and Save As writes them', (
+    tester,
+  ) async {
+    await start(tester);
+    await tester.tap(find.text('hello').last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('quiz').last);
+    await tester.pumpAndSettle();
+    final pictures = current(tester).pictures;
+    expect(pictures.keys, ['triangle.png', 'pentagon.png']);
+    expect(current(tester).isDirty, isFalse);
+    saves.add('/home/Quiz');
+    await menu(tester, s.saveAs);
+    await tester.tap(find.text(s.saveCopyButton));
+    await tester.pumpAndSettle();
+    expect(fs.bytes, {
+      '/home/Quiz/pictures/triangle.png': pictures['triangle.png'],
+      '/home/Quiz/pictures/pentagon.png': pictures['pentagon.png'],
+    });
+    expect(
+      readProjectFile(fs.files['/home/Quiz/Quiz.gbproj']!).project.pictures,
+      ['triangle.png', 'pentagon.png'],
+    );
   });
 
   testWidgets('a picture of the same name asks before replacing it', (

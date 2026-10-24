@@ -8,7 +8,8 @@ import 'package:test/test.dart';
 
 /// examples/quiz, the quiz that stage 1 ends with (docs/ROADMAP.md), is
 /// played through by the parity programs quiz_example and quiz_best (with
-/// a best score saved before), which must stay copies of it.
+/// a best score saved before), which must stay copies of it, pictures
+/// included.
 void main() {
   test('quiz_example and quiz_best are copies of examples/quiz', () {
     for (final (example, parity) in [
@@ -21,6 +22,28 @@ void main() {
         File('../../test/parity/$parity').readAsStringSync(),
         File('../../examples/quiz/$example').readAsStringSync(),
         reason: 'copy examples/quiz/$example to test/parity/$parity',
+      );
+    }
+  });
+
+  test('quiz_example and quiz_best have the pictures of examples/quiz', () {
+    final project = readProjectFile(
+      File('../../examples/quiz/Quiz.gbproj').readAsStringSync(),
+    );
+    expect(project.diagnostics, isEmpty);
+    expect(project.project.pictures, ['triangle.png', 'pentagon.png']);
+    for (final name in project.project.pictures) {
+      expect(
+        File('../../examples/quiz/pictures/$name').existsSync(),
+        isTrue,
+        reason: 'examples/quiz/pictures/$name',
+      );
+    }
+    for (final parity in ['quiz_example', 'quiz_best']) {
+      expect(
+        File('../../test/parity/$parity.pictures').readAsLinesSync(),
+        project.project.pictures,
+        reason: 'list them in test/parity/$parity.pictures',
       );
     }
   });

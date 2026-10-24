@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:archive/archive.dart';
@@ -172,6 +173,21 @@ void main() {
       expect(p.isDirty, isFalse);
       expect(p.savedPictures, {'a.png': other});
     });
+  });
+
+  test("the examples' pictures are their files, and would be taken", () {
+    final pictures = decodeExamplePictures(examplePictures);
+    expect(pictures.keys, ['quiz']);
+    for (final MapEntry(key: project, value: named) in pictures.entries) {
+      final files = exampleProjects[project]!;
+      for (final MapEntry(key: name, value: bytes) in named.entries) {
+        expect(
+          bytes,
+          File('../../examples/$project/pictures/$name').readAsBytesSync(),
+        );
+        expect(checkPicture(name, bytes, files, const {}), isNull);
+      }
+    }
   });
 
   test('pictureUsers names the controls that show a picture', () {

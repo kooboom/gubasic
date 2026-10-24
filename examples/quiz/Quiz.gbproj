@@ -1,5 +1,8 @@
-formatVersion: 1
+formatVersion: 2
 name: Quiz
 startup: Form1
 forms:
   - Form1
+pictures:
+  - triangle.png
+  - pentagon.png

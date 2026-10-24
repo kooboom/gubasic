@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:gubasic_lang/gubasic_lang.dart';
@@ -161,6 +162,17 @@ List<String> pictureUsers(Map<String, String> files, String name) {
   if (names.length != 1) return null;
   return (names.single, readProjectFile(files[names.single]!));
 }
+
+/// The examples' pictures, kept as Base64 (examples.g.dart), as bytes.
+Map<String, Map<String, Uint8List>> decodeExamplePictures(
+  Map<String, Map<String, String>> pictures,
+) => {
+  for (final MapEntry(key: project, value: named) in pictures.entries)
+    project: {
+      for (final MapEntry(:key, :value) in named.entries)
+        key: base64Decode(value),
+    },
+};
 
 /// Whether [a] and [b] have the same pictures, byte for byte.
 bool samePictures(Map<String, Uint8List> a, Map<String, Uint8List> b) =>

@@ -1,3 +1,4 @@
+import 'dart:typed_data';
 import 'dart:ui';
 
 import 'package:file_selector/file_selector.dart';
@@ -11,6 +12,7 @@ import 'src/project/folders.dart';
 import 'src/project/platform_browser.dart';
 import 'src/project/platform_folders.dart';
 import 'src/project/project_controller.dart';
+import 'src/project/project_pictures.dart';
 import 'src/strings.dart';
 import 'src/theme.dart';
 
@@ -31,6 +33,7 @@ Future<void> main() async {
   runApp(
     IdeApp(
       projects: exampleProjects,
+      examplePictures: decodeExamplePictures(examplePictures),
       strings: IdeStrings.forLanguage(language),
       folders: platformFolders(),
       browser: browser,
@@ -89,6 +92,7 @@ class IdeApp extends StatefulWidget {
   const IdeApp({
     super.key,
     required this.projects,
+    this.examplePictures = const {},
     required this.strings,
     this.open = 'hello',
     this.folders,
@@ -101,6 +105,9 @@ class IdeApp extends StatefulWidget {
 
   /// The built-in projects: name → files.
   final Map<String, Map<String, String>> projects;
+
+  /// Their pictures: name → picture name → bytes.
+  final Map<String, Map<String, Uint8List>> examplePictures;
   final IdeStrings strings;
 
   /// The project opened first.
@@ -130,6 +137,7 @@ class _IdeAppState extends State<IdeApp> {
   final _navigator = GlobalKey<NavigatorState>();
   late final _controller = ProjectController(
     examples: widget.projects,
+    examplePictures: widget.examplePictures,
     strings: widget.strings,
     folders: widget.folders,
     pickers: widget.pickers,

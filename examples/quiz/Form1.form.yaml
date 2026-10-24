@@ -21,7 +21,14 @@ controls:
     properties:
       Left: 16
       Top: 72
-      Width: 368
+      Width: 232
+      Height: 116
+  - name: imgQuestion
+    type: Image
+    properties:
+      Left: 264
+      Top: 72
+      Width: 120
       Height: 116
   - name: chkShowAnswer
     type: CheckBox

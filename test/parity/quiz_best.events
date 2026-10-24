@@ -1,6 +1,6 @@
 ' examples/quiz played as in quiz_example, after an earlier run saved a
-' best score of 4 (quiz_best.settings): 3 points do not beat it, so
-' nothing is saved.
+' best score of 4 (quiz_best.settings), but wrong in the picture
+' questions: 3 points do not beat it, so nothing is saved.
 btnCheck.Click              ' nothing chosen yet
 OK
 lstChoices.Select 1         ' 서울: right
@@ -16,7 +16,13 @@ OK
 lstChoices.Select 1         ' 한글: right
 btnCheck.Click
 OK
-lstChoices.Select 1         ' 56: right, the last question
+lstChoices.Select 1         ' 56: right
+btnCheck.Click
+OK
+lstChoices.Select 0         ' 사각형: wrong, the answer shown
+btnCheck.Click
+OK
+lstChoices.Select 0         ' 4개: wrong, the last question
 btnCheck.Click
 OK
 OK                          ' the score; it starts again

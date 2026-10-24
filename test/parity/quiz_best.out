@@ -1,5 +1,6 @@
-Set lblNumber.Caption: 문제 1 / 5
+Set lblNumber.Caption: 문제 1 / 7
 Set lblQuestion.Caption: 대한민국의 수도는 어디일까요?
+Set imgQuestion.Picture: 
 Set lstChoices.Items: []
 Set lstChoices.Items: [부산]
 Set lstChoices.Items: [부산, 서울]
@@ -14,8 +15,9 @@ Set btnCheck.Caption: 확인: 서울
 > btnCheck.Click
 MsgBox: 정답입니다!
 > OK
-Set lblNumber.Caption: 문제 2 / 5
+Set lblNumber.Caption: 문제 2 / 7
 Set lblQuestion.Caption: 윤년이 아닌 해는 며칠일까요?
+Set imgQuestion.Picture: 
 Set lstChoices.Items: []
 Set lstChoices.ListIndex: -1
 Set btnCheck.Caption: 정답 확인
@@ -29,8 +31,9 @@ Set btnCheck.Caption: 확인: 360일
 > btnCheck.Click
 MsgBox: 틀렸습니다.
 > OK
-Set lblNumber.Caption: 문제 3 / 5
+Set lblNumber.Caption: 문제 3 / 7
 Set lblQuestion.Caption: 1기압에서 물이 끓는 온도는?
+Set imgQuestion.Picture: 
 Set lstChoices.Items: []
 Set lstChoices.ListIndex: -1
 Set btnCheck.Caption: 정답 확인
@@ -45,8 +48,9 @@ Set btnCheck.Caption: 확인: 120도
 > btnCheck.Click
 MsgBox: 틀렸습니다. 정답: 100도
 > OK
-Set lblNumber.Caption: 문제 4 / 5
+Set lblNumber.Caption: 문제 4 / 7
 Set lblQuestion.Caption: 세종대왕이 만든 글자는?
+Set imgQuestion.Picture: 
 Set lstChoices.Items: []
 Set lstChoices.ListIndex: -1
 Set btnCheck.Caption: 정답 확인
@@ -60,8 +64,9 @@ Set btnCheck.Caption: 확인: 한글
 > btnCheck.Click
 MsgBox: 정답입니다!
 > OK
-Set lblNumber.Caption: 문제 5 / 5
+Set lblNumber.Caption: 문제 5 / 7
 Set lblQuestion.Caption: 7 × 8은 얼마일까요?
+Set imgQuestion.Picture: 
 Set lstChoices.Items: []
 Set lstChoices.ListIndex: -1
 Set btnCheck.Caption: 정답 확인
@@ -75,10 +80,43 @@ Set btnCheck.Caption: 확인: 56
 > btnCheck.Click
 MsgBox: 정답입니다!
 > OK
-MsgBox: 5문제 가운데 3문제를 맞혔습니다. 처음부터 다시 합니다.
+Set lblNumber.Caption: 문제 6 / 7
+Set lblQuestion.Caption: 이 도형의 이름은?
+Set imgQuestion.Picture: triangle.png
+Set lstChoices.Items: []
+Set lstChoices.ListIndex: -1
+Set btnCheck.Caption: 정답 확인
+Set lstChoices.Items: [사각형]
+Set lstChoices.Items: [사각형, 원]
+Set lstChoices.Items: [사각형, 원, 삼각형]
+Set lstChoices.Items: [사각형, 원, 삼각형, 오각형]
+Set lblScore.Caption: 점수: 3 · 최고 점수: 4
+> lstChoices.Select 0
+Set btnCheck.Caption: 확인: 사각형
+> btnCheck.Click
+MsgBox: 틀렸습니다. 정답: 삼각형
 > OK
-Set lblNumber.Caption: 문제 1 / 5
+Set lblNumber.Caption: 문제 7 / 7
+Set lblQuestion.Caption: 이 도형의 꼭짓점은 몇 개일까요?
+Set imgQuestion.Picture: pentagon.png
+Set lstChoices.Items: []
+Set lstChoices.ListIndex: -1
+Set btnCheck.Caption: 정답 확인
+Set lstChoices.Items: [4개]
+Set lstChoices.Items: [4개, 5개]
+Set lstChoices.Items: [4개, 5개, 6개]
+Set lstChoices.Items: [4개, 5개, 6개, 8개]
+Set lblScore.Caption: 점수: 3 · 최고 점수: 4
+> lstChoices.Select 0
+Set btnCheck.Caption: 확인: 4개
+> btnCheck.Click
+MsgBox: 틀렸습니다. 정답: 5개
+> OK
+MsgBox: 7문제 가운데 3문제를 맞혔습니다. 처음부터 다시 합니다.
+> OK
+Set lblNumber.Caption: 문제 1 / 7
 Set lblQuestion.Caption: 대한민국의 수도는 어디일까요?
+Set imgQuestion.Picture: 
 Set lstChoices.Items: []
 Set lstChoices.ListIndex: -1
 Set btnCheck.Caption: 정답 확인

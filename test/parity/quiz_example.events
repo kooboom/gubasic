@@ -15,7 +15,13 @@ OK
 lstChoices.Select 1         ' 한글: right
 btnCheck.Click
 OK
-lstChoices.Select 1         ' 56: right, the last question
+lstChoices.Select 1         ' 56: right
+btnCheck.Click
+OK
+lstChoices.Select 2         ' 삼각형 (a picture): right
+btnCheck.Click
+OK
+lstChoices.Select 1         ' 5개 (a picture): right, the last question
 btnCheck.Click
 OK
 OK                          ' the score; it starts again
