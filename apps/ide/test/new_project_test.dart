@@ -148,7 +148,8 @@ void main() {
     expect(find.text(s.unsaved.replaceAll('{0}', 'Hello')), findsOneWidget);
   });
 
-  testWidgets('on the web: kept in the browser at once, with the notice; a '
+  testWidgets('on the web: kept in the browser at once, the notice in the '
+      'dialog; a '
       'name kept already is asked again', (tester) async {
     tester.view.physicalSize = const Size(1400, 900);
     tester.view.devicePixelRatio = 1;
@@ -178,12 +179,12 @@ void main() {
     await tester.tap(find.text('OK'));
     await tester.pumpAndSettle();
 
+    // The notice is in the dialog itself, the first time (D67).
+    expect(find.text(s.browserNotice), findsOneWidget);
     await tester.enterText(find.byKey(newProjectNameKey), 'Fresh');
     await tester.pump();
     await create(tester);
-    expect(find.text(s.browserNotice), findsOneWidget);
-    await tester.tap(find.text('OK'));
-    await tester.pumpAndSettle();
+    expect(find.byType(AlertDialog), findsNothing);
     expect(current(tester).location, isA<BrowserLocation>());
     expect(current(tester).project.name, 'Fresh');
     expect(browser.projects.records, contains('fresh'));

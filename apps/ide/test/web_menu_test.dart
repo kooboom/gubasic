@@ -68,11 +68,10 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  /// Saves the hello example as [name] in the browser; closes the notice.
+  /// Saves the open example as [name] in the browser: one dialog, the
+  /// name and what to know (D67).
   Future<void> keepHelloAs(WidgetTester tester, String name) async {
     await menu(tester, s.save);
-    await tester.tap(find.text(s.saveCopyButton));
-    await tester.pumpAndSettle();
     await tester.enterText(find.byType(TextField).last, name);
     await tester.pump();
     await tester.tap(find.widgetWithText(FilledButton, s.saveButton));
@@ -109,9 +108,16 @@ void main() {
   testWidgets('Save on an example keeps a copy in the browser, with a '
       'notice the first time only', (tester) async {
     await start(tester);
-    await keepHelloAs(tester, 'Quiz');
+    // One dialog: the example is copied, and the browser can lose it.
+    await menu(tester, s.save);
+    expect(find.text(s.exampleIsReadOnly), findsOneWidget);
     expect(find.text(s.browserNotice), findsOneWidget);
-    await closeDialog(tester);
+    expect(find.text(s.saveCopyButton), findsNothing, reason: 'no step before');
+    await tester.enterText(find.byType(TextField).last, 'Quiz');
+    await tester.pump();
+    await tester.tap(find.widgetWithText(FilledButton, s.saveButton));
+    await tester.pumpAndSettle();
+    expect(find.byType(AlertDialog), findsNothing, reason: 'nothing after');
 
     final location = current(tester).location;
     expect(location, isA<BrowserLocation>());
@@ -129,14 +135,30 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('hello').last);
     await tester.pumpAndSettle();
-    await keepHelloAs(tester, 'Quiz2');
-    expect(find.text(s.browserNotice), findsNothing);
+    await menu(tester, s.save);
+    expect(find.text(s.browserNotice), findsNothing, reason: 'once');
+    await tester.enterText(find.byType(TextField).last, 'Quiz2');
+    await tester.pump();
+    await tester.tap(find.widgetWithText(FilledButton, s.saveButton));
+    await tester.pumpAndSettle();
+    expect(current(tester).project.name, 'Quiz2');
+  });
+
+  testWidgets('Save on a project kept already says that it is (D67)', (
+    tester,
+  ) async {
+    await start(tester);
+    await keepHelloAs(tester, 'Quiz');
+    await tester.pump(const Duration(seconds: 9)); // the snack bar goes
+    await tester.pumpAndSettle();
+    await menu(tester, s.save);
+    expect(find.text(s.alreadyKept), findsOneWidget);
+    expect(find.byType(AlertDialog), findsNothing);
   });
 
   testWidgets('a name kept already is asked again', (tester) async {
     await start(tester);
     await keepHelloAs(tester, 'Quiz');
-    await closeDialog(tester);
     await tester.tap(find.text('Quiz').last);
     await tester.pumpAndSettle();
     await tester.tap(find.text('hello').last);
@@ -155,7 +177,6 @@ void main() {
   ) async {
     await start(tester);
     await keepHelloAs(tester, 'Quiz');
-    await closeDialog(tester);
 
     current(tester).setFile('Form1.gbas', "' one\n");
     await tester.pump();
@@ -180,7 +201,6 @@ void main() {
   ) async {
     await start(tester);
     await keepHelloAs(tester, 'Quiz');
-    await closeDialog(tester);
 
     await tester.tap(find.text('Form1.form.yaml'));
     await tester.pumpAndSettle();
@@ -200,7 +220,6 @@ void main() {
     await start(tester);
     expect(browser.wouldAskToLeave, isFalse, reason: 'an unchanged example');
     await keepHelloAs(tester, 'Quiz');
-    await closeDialog(tester);
     expect(browser.wouldAskToLeave, isTrue);
 
     await tester.tap(find.widgetWithText(FilledButton, s.downloadZip));
@@ -262,7 +281,6 @@ void main() {
   testWidgets('Upload of a name kept already asks for another', (tester) async {
     await start(tester);
     await keepHelloAs(tester, 'Hello');
-    await closeDialog(tester);
     zips = [zipProject('Hello', hello)];
     await menu(tester, s.uploadZip);
     expect(
@@ -303,7 +321,6 @@ void main() {
     await tester.pumpAndSettle();
 
     await keepHelloAs(tester, 'A');
-    await closeDialog(tester);
     await tester.tap(find.text('A').last);
     await tester.pumpAndSettle();
     await tester.tap(find.text('hello').last);
@@ -330,7 +347,6 @@ void main() {
   ) async {
     await start(tester);
     await keepHelloAs(tester, 'Quiz');
-    await closeDialog(tester);
     await menu(tester, s.open);
     await tester.tap(find.byTooltip(s.deleteProject));
     await tester.pumpAndSettle();
@@ -349,7 +365,7 @@ void main() {
 
   testWidgets('a long message keeps a readable width', (tester) async {
     await start(tester);
-    await keepHelloAs(tester, 'Quiz');
+    await menu(tester, s.save);
     expect(
       tester.getSize(find.text(s.browserNotice)).width,
       lessThanOrEqualTo(440),
@@ -361,7 +377,6 @@ void main() {
   ) async {
     await start(tester);
     await keepHelloAs(tester, 'Quiz');
-    await closeDialog(tester);
     browser.projects.full = true;
     current(tester).setFile('Form1.gbas', "' lost?\n");
     await tester.pump(const Duration(seconds: 3));
@@ -376,7 +391,6 @@ void main() {
       'comes back when it is opened', (tester) async {
     await start(tester);
     await keepHelloAs(tester, 'Fruit');
-    await closeDialog(tester);
     await menu(tester, s.picturesMenu);
     picks.add((name: '사과.png', bytes: onePixelPng));
     await tester.tap(find.byKey(addPictureKey));
@@ -408,7 +422,6 @@ void main() {
     await tester.pumpAndSettle();
     final pictures = current(tester).pictures;
     await keepHelloAs(tester, 'My Quiz');
-    await closeDialog(tester);
     expect(browser.projects.pictures['my quiz'], pictures);
 
     await tester.tap(find.widgetWithText(FilledButton, s.downloadZip));
@@ -468,7 +481,6 @@ void main() {
       'written', (tester) async {
     await start(tester);
     await keepHelloAs(tester, 'Quiz');
-    await closeDialog(tester);
     await tester.tap(find.widgetWithText(FilledButton, s.downloadZip));
     await tester.pumpAndSettle();
     expect(browser.wouldAskToLeave, isFalse);
@@ -494,7 +506,6 @@ void main() {
       'back next time, and says so', (tester) async {
     await start(tester);
     await keepHelloAs(tester, 'Quiz');
-    await closeDialog(tester);
     // The write that starts as the page hides never finishes: the page
     // is gone first.
     browser.projects.hold = Completer<void>().future;
@@ -536,7 +547,6 @@ void main() {
   ) async {
     await start(tester);
     await keepHelloAs(tester, 'Quiz');
-    await closeDialog(tester);
     current(tester).setFile('Form1.gbas', "' kept\n");
     browser.hide();
     await tester.pump();
@@ -547,7 +557,6 @@ void main() {
   testWidgets('a picture added on the web is kept at once', (tester) async {
     await start(tester);
     await keepHelloAs(tester, 'Fruit');
-    await closeDialog(tester);
     await menu(tester, s.picturesMenu);
     picks.add((name: 'a.png', bytes: onePixelPng));
     await tester.tap(find.byKey(addPictureKey));

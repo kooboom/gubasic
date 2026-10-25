@@ -198,7 +198,8 @@ class ProjectController extends ChangeNotifier {
     final location = project.location;
     if (location is BrowserLocation) {
       if (!project.isDirty) {
-        _snack(context, strings.nothingToSave);
+        // Kept as it is already (D67).
+        _snack(context, strings.alreadyKept);
         return true;
       }
       final kept = await _keep(context);
@@ -264,7 +265,12 @@ class ProjectController extends ChangeNotifier {
       if (!context.mounted) return;
       final chosen = await showDialog<NewProject>(
         context: context,
-        builder: (context) => NewProjectDialog(strings: strings),
+        builder: (context) => NewProjectDialog(
+          strings: strings,
+          notice: folders == null && !_kept!.noticeShown
+              ? strings.browserNotice
+              : null,
+        ),
       );
       if (chosen == null || !context.mounted) return;
       asked = chosen;
@@ -286,7 +292,8 @@ class ProjectController extends ChangeNotifier {
         final project = OpenProject(BrowserLocation(asked.name), files);
         _browserProject = project;
         _show(project);
-        if (context.mounted) await _noticeOnce(context);
+        // Said in the dialog already (D67).
+        _kept.markNoticeShown();
         return;
       }
       break;
@@ -336,6 +343,8 @@ class ProjectController extends ChangeNotifier {
   Future<bool> saveAs(BuildContext context) async {
     context = _lasting(context);
     final project = _current;
+    // On the web one dialog says it all (D67).
+    if (folders == null) return _saveAsInBrowser(context);
     if (project.isExample) {
       final go = await _confirm(
         context,
@@ -345,7 +354,6 @@ class ProjectController extends ChangeNotifier {
       if (!go) return false;
     }
     if (!context.mounted) return false;
-    if (folders == null) return _saveAsInBrowser(context);
     final fs = folders!;
     while (true) {
       if (!context.mounted) return false;
@@ -605,14 +613,21 @@ class ProjectController extends ChangeNotifier {
   var _storageFailed = false;
 
   /// Saves the open project as a new project kept in the browser.
+  /// Save As on the web (D67): one dialog asks for the name and says
+  /// what needs saying (an example is copied; the first time, that a
+  /// project kept in the browser can be lost).
   Future<bool> _saveAsInBrowser(BuildContext context) async {
     final project = _current;
-    final name = await _askBrowserName(context, project.project.name);
+    final notice = !_kept!.noticeShown;
+    final name = await _askBrowserName(context, project.project.name, [
+      if (project.isExample) strings.exampleIsReadOnly,
+      if (notice) strings.browserNotice,
+    ]);
     if (name == null || !context.mounted) return false;
     final files = renameProject(project.files, name);
     final pictures = project.pictures;
     try {
-      await _kept!.save(name, files, pictures: pictures);
+      await _kept.save(name, files, pictures: pictures);
     } on StorageFailed {
       if (context.mounted) await _tell(context, strings.storageFailed);
       return false;
@@ -620,21 +635,26 @@ class ProjectController extends ChangeNotifier {
     final copy = OpenProject(BrowserLocation(name), files, pictures: pictures);
     _browserProject = copy;
     _show(copy);
-    if (!context.mounted) return true;
-    _snack(context, strings.keptInBrowser);
-    await _noticeOnce(context);
+    if (notice) _kept.markNoticeShown();
+    if (context.mounted) _snack(context, strings.keptInBrowser);
     return true;
   }
 
   /// Asks for the name of a new project in the browser, until it is a
-  /// usable name that is not kept yet; null when the user cancels.
-  Future<String?> _askBrowserName(BuildContext context, String initial) async {
+  /// usable name that is not kept yet; null when the user cancels. The
+  /// dialog shows [notes] above the name.
+  Future<String?> _askBrowserName(
+    BuildContext context,
+    String initial, [
+    List<String> notes = const [],
+  ]) async {
     var name = initial;
     while (true) {
       if (!context.mounted) return null;
       final chosen = await showDialog<String>(
         context: context,
-        builder: (context) => _NameDialog(strings: strings, initial: name),
+        builder: (context) =>
+            _NameDialog(strings: strings, initial: name, notes: notes),
       );
       if (chosen == null || !context.mounted) return null;
       name = chosen;
@@ -1208,10 +1228,17 @@ class ProjectController extends ChangeNotifier {
 
 /// Asks for a project's name; the OK button waits for a usable one.
 class _NameDialog extends StatefulWidget {
-  const _NameDialog({required this.strings, required this.initial});
+  const _NameDialog({
+    required this.strings,
+    required this.initial,
+    this.notes = const [],
+  });
 
   final IdeStrings strings;
   final String initial;
+
+  /// What to say above the name (D67).
+  final List<String> notes;
 
   @override
   State<_NameDialog> createState() => _NameDialogState();
@@ -1238,17 +1265,27 @@ class _NameDialogState extends State<_NameDialog> {
     return AlertDialog(
       title: Text(s.saveAsTitle),
       content: SizedBox(
-        width: 400,
-        child: TextField(
-          controller: _field,
-          autofocus: true,
-          decoration: InputDecoration(
-            labelText: s.projectName,
-            errorText: _usable ? null : s.badProjectName,
-            errorMaxLines: 3,
-          ),
-          onChanged: (_) => setState(() {}),
-          onSubmitted: (_) => _ok(),
+        width: 440,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            for (final note in widget.notes) ...[
+              Text(note),
+              const SizedBox(height: 12),
+            ],
+            TextField(
+              controller: _field,
+              autofocus: true,
+              decoration: InputDecoration(
+                labelText: s.projectName,
+                errorText: _usable ? null : s.badProjectName,
+                errorMaxLines: 3,
+              ),
+              onChanged: (_) => setState(() {}),
+              onSubmitted: (_) => _ok(),
+            ),
+          ],
         ),
       ),
       actions: [

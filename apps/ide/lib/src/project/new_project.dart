@@ -38,9 +38,13 @@ Map<String, String> newProjectFiles(
 /// File → New Project (D63): the project's name, its form's Caption
 /// (the name, until it is changed) and its size, Desktop first.
 class NewProjectDialog extends StatefulWidget {
-  const NewProjectDialog({super.key, required this.strings});
+  const NewProjectDialog({super.key, required this.strings, this.notice});
 
   final IdeStrings strings;
+
+  /// What to say first: on the web, the first time, that a project kept
+  /// in the browser can be lost (D67).
+  final String? notice;
 
   @override
   State<NewProjectDialog> createState() => _NewProjectDialogState();
@@ -92,6 +96,10 @@ class _NewProjectDialogState extends State<NewProjectDialog> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            if (widget.notice case final notice?) ...[
+              Text(notice),
+              const SizedBox(height: 12),
+            ],
             TextField(
               key: newProjectNameKey,
               controller: _name,

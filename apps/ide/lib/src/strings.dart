@@ -37,6 +37,7 @@ class IdeStrings {
     required this.openButton,
     required this.saveCopyButton,
     required this.nothingToSave,
+    required this.alreadyKept,
     required this.lastProjectGone,
     required this.newProject,
     required this.newProjectTitle,
@@ -215,6 +216,10 @@ class IdeStrings {
   final String openButton;
   final String saveCopyButton;
   final String nothingToSave;
+
+  /// Save on a project kept in the browser with nothing left to keep
+  /// (D67).
+  final String alreadyKept;
 
   /// The project open last (D62) is not there any more: {0} its name or
   /// path.
@@ -478,6 +483,7 @@ class IdeStrings {
     openButton: 'Open',
     saveCopyButton: 'Save a Copy',
     nothingToSave: 'There are no changes to save.',
+    alreadyKept: 'Already kept in this browser; changes are kept by themselves as you work.',
     lastProjectGone: 'The project open last, {0}, is not there any more, so an example is open.',
     newProject: 'New Project…',
     newProjectTitle: 'New Project',
@@ -651,6 +657,7 @@ class IdeStrings {
     openButton: '열기',
     saveCopyButton: '복사본 저장',
     nothingToSave: '바뀐 내용이 없어서 저장할 것이 없습니다.',
+    alreadyKept: '이미 이 브라우저에 보관되어 있습니다. 바꾼 내용은 작업하는 동안 저절로 보관됩니다.',
     lastProjectGone: '마지막에 연 {0} 프로젝트를 찾을 수 없어서 예제를 열었습니다.',
     newProject: '새 프로젝트…',
     newProjectTitle: '새 프로젝트',
