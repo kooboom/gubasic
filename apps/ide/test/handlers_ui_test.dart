@@ -15,12 +15,21 @@ void main() {
   const formFile = 'Form1.form.yaml';
   const codeFile = 'Form1.gbas';
 
-  Future<void> open(WidgetTester tester, {IdeStrings strings = s}) async {
+  Future<void> open(
+    WidgetTester tester, {
+    IdeStrings strings = s,
+    String? code,
+  }) async {
     tester.view.physicalSize = const Size(1400, 900);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
     await tester.pumpWidget(
-      IdeApp(projects: {'hello': hello}, strings: strings),
+      IdeApp(
+        projects: {
+          'hello': {...hello, codeFile: ?code ?? hello[codeFile]},
+        },
+        strings: strings,
+      ),
     );
     await tester.pumpAndSettle();
   }
@@ -76,6 +85,39 @@ void main() {
     expect(find.byType(CodeEditor), findsOneWidget);
     expect(lineBefore(tester), 'Sub btnHello_Click()');
     expect(code(tester), hello[codeFile], reason: 'nothing added');
+  });
+
+  testWidgets('a handler far down the code is scrolled into view (D70)', (
+    tester,
+  ) async {
+    final long = [
+      'Sub Helper()',
+      for (var i = 0; i < 280; i++) "    Debug.Print(\"$i\")",
+      'End Sub',
+      '',
+      'Sub btnHello_Click()',
+      '    Debug.Print("hello")',
+      'End Sub',
+    ].join('\n');
+    await open(tester, code: long);
+    await doubleClick(tester, const Offset(30, 70));
+    expect(caretLine(tester), '    Debug.Print("hello")');
+    // The caret's line, where the field draws it, inside the editor's view.
+    final field = tester.getRect(find.byKey(codeFieldKey));
+    final lines = '\n'.allMatches(long).length + 1;
+    final pitch = field.height / lines;
+    final line = '\n'
+        .allMatches(long.substring(0, editor(tester).selection.baseOffset))
+        .length;
+    final top = field.top + line * pitch;
+    final view = tester.getRect(
+      find.descendant(
+        of: find.byType(CodeEditor),
+        matching: find.byType(Scrollbar),
+      ),
+    );
+    expect(top, greaterThanOrEqualTo(view.top));
+    expect(top + pitch, lessThanOrEqualTo(view.bottom));
   });
 
   testWidgets('the empty form goes to Form_Load', (tester) async {

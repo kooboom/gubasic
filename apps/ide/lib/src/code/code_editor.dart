@@ -26,6 +26,9 @@ const codeEventsKey = ValueKey('code.events');
 /// The mark behind the line where the last run stopped with an error.
 const codeErrorLineKey = ValueKey('code.errorLine');
 
+/// The mark that lights up the line an error in the output led to.
+const codeFlashLineKey = ValueKey('code.flashLine');
+
 /// The size of the code, and the height of a line, so that the line
 /// numbers stay level with the lines whatever font a character takes.
 const codeFontSize = 13.0;
@@ -94,12 +97,20 @@ class CodeEditor extends StatefulWidget {
   State<CodeEditor> createState() => _CodeEditorState();
 }
 
-class _CodeEditorState extends State<CodeEditor> {
+class _CodeEditorState extends State<CodeEditor>
+    with SingleTickerProviderStateMixin {
   late final _controller = CodeController(text: _fileText);
   final _focus = FocusNode(debugLabel: 'code');
   var _undo = UndoHistoryController();
   final _vertical = ScrollController();
   final _horizontal = ScrollController();
+
+  /// The line an error in the output led to (D70), lit for a moment.
+  int? _flashLine;
+  late final _flash = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 1200),
+  );
 
   /// The text last written to the file from here, or read from it. Set
   /// as the editor opens: read later, it would already be a change made
@@ -248,11 +259,49 @@ class _CodeEditorState extends State<CodeEditor> {
         _controller.selection = TextSelection.collapsed(
           offset: caretAtLine(_controller.text, line),
         );
+        _reveal();
+        setState(() => _flashLine = line);
+        _flash.forward(from: 0);
       } else {
         _goTo(goTo.name, goTo.signature);
+        _reveal();
       }
     });
     WidgetsBinding.instance.scheduleFrame();
+  }
+
+  /// Scrolls the caret's line into view (D70): a caret set from code does
+  /// not move the view by itself. A line out of view comes to the middle,
+  /// and the code shows from its left edge. Again after the next frame:
+  /// a field that has just taken the focus scrolls to where its caret
+  /// was drawn last, the top of the code.
+  void _reveal() {
+    _revealNow();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _revealNow();
+    });
+    WidgetsBinding.instance.scheduleFrame();
+  }
+
+  void _revealNow() {
+    if (!_vertical.hasClients) return;
+    final text = _controller.text;
+    final offset = min(max(0, _controller.selection.baseOffset), text.length);
+    final line = '\n'.allMatches(text.substring(0, offset)).length;
+    final height = _pitch;
+    // The scroll view's padding is above the first line.
+    final top = 8 + line * height;
+    final position = _vertical.position;
+    final view = position.viewportDimension;
+    final inView =
+        top >= position.pixels && top + height <= position.pixels + view;
+    // A jump also stops the field's own scrolling to its old caret.
+    _vertical.jumpTo(
+      inView
+          ? position.pixels
+          : (top + height / 2 - view / 2).clamp(0, position.maxScrollExtent),
+    );
+    if (_horizontal.hasClients) _horizontal.jumpTo(0);
   }
 
   /// Goes to the procedure [name] (the top of the code when empty); adds
@@ -436,6 +485,7 @@ class _CodeEditorState extends State<CodeEditor> {
     _undo.dispose();
     _vertical.dispose();
     _horizontal.dispose();
+    _flash.dispose();
     super.dispose();
   }
 
@@ -717,15 +767,31 @@ class _CodeEditorState extends State<CodeEditor> {
 
   /// Where the word being completed starts, from the top left of the
   /// text: lines and columns, the font being monospaced.
+  /// How far apart the lines of code are drawn: about the font's size
+  /// times [codeLineHeight], but on the web each line is a whole number of
+  /// pixels (20, not 19.5), which 280 lines on made seven lines of
+  /// difference. Measured on the field as it was laid out last.
+  double _pitch = codeFontSize * codeLineHeight;
+  final _fieldBox = GlobalKey();
+
+  /// After a frame: the field's height over its lines, and the marks
+  /// drawn again if it differs.
+  void _measurePitch() {
+    final box = _fieldBox.currentContext?.findRenderObject();
+    if (!mounted || box is! RenderBox || !box.hasSize) return;
+    final lines = '\n'.allMatches(_controller.text).length + 1;
+    final pitch = box.size.height / lines;
+    if (pitch > 0 && (pitch - _pitch).abs() > 0.01) {
+      setState(() => _pitch = pitch);
+    }
+  }
+
   Offset _wordOffset(int start, TextStyle style) {
     final text = _controller.text;
     final lineStart = _lineStart(text, start);
     final line = '\n'.allMatches(text.substring(0, lineStart)).length;
     final column = _columns(text.substring(lineStart, start));
-    return Offset(
-      column * _columnWidth(style),
-      line * codeFontSize * codeLineHeight,
-    );
+    return Offset(column * _columnWidth(style), line * _pitch);
   }
 
   Widget _completionOverlay(BuildContext context, TextStyle style) =>
@@ -968,6 +1034,8 @@ class _CodeEditorState extends State<CodeEditor> {
   ) {
     final text = _controller.text;
     final lines = '\n'.allMatches(text).length + 1;
+    final pitch = _pitch;
+    WidgetsBinding.instance.addPostFrameCallback((_) => _measurePitch());
     // Long lines scroll sideways rather than wrap, so that a line number
     // stands for one line. The font is monospaced: the widest line is the
     // one with the most columns, a wide character (Hangul) taking two.
@@ -989,9 +1057,30 @@ class _CodeEditorState extends State<CodeEditor> {
                   key: codeErrorLineKey,
                   left: 0,
                   right: 0,
-                  top: (line - 1) * codeFontSize * codeLineHeight,
-                  height: codeFontSize * codeLineHeight,
+                  top: (line - 1) * pitch,
+                  height: pitch,
                   child: ColoredBox(color: scheme.errorContainer),
+                ),
+              if (_flashLine case final line? when line <= lines)
+                Positioned(
+                  key: codeFlashLineKey,
+                  left: 0,
+                  right: 0,
+                  top: (line - 1) * pitch,
+                  height: pitch,
+                  child: IgnorePointer(
+                    child: AnimatedBuilder(
+                      animation: _flash,
+                      builder: (context, _) => ColoredBox(
+                        // Lit at once, then fading out.
+                        color: scheme.primary.withValues(
+                          alpha:
+                              0.35 *
+                              (1 - Curves.easeIn.transform(_flash.value)),
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -1023,7 +1112,10 @@ class _CodeEditorState extends State<CodeEditor> {
                               child: Stack(
                                 children: [
                                   _caretTarget(style),
-                                  _field(style, strut),
+                                  KeyedSubtree(
+                                    key: _fieldBox,
+                                    child: _field(style, strut),
+                                  ),
                                 ],
                               ),
                             ),
@@ -1055,10 +1147,7 @@ class _CodeEditorState extends State<CodeEditor> {
         child: CompositedTransformTarget(
           key: _caretKey,
           link: _caretLink,
-          child: const SizedBox(
-            width: 1,
-            height: codeFontSize * codeLineHeight,
-          ),
+          child: SizedBox(width: 1, height: _pitch),
         ),
       );
     },
