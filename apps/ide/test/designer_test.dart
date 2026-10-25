@@ -163,7 +163,8 @@ void main() {
     await tester.tap(tool);
     await tester.pumpAndSettle();
     expect(
-      find.text('CheckBox1 (CheckBox) · Left 104, Top 48 · 120×32'),
+      // Below btnHello, which is in the middle (D68).
+      find.text('CheckBox1 (CheckBox) · Left 104, Top 88 · 120×32'),
       findsOneWidget,
     );
     final onDesigner = find.descendant(

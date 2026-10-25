@@ -104,16 +104,39 @@ void main() {
       ));
     });
 
-    test('a double-click places in the middle, then a step further', () {
+    test('a double-click places in the middle, then below what is there, '
+        'then at the top of the next column (D68)', () {
+      var form = empty; // 480 x 360
+      final placed = <ControlBox>[];
+      for (var i = 0; i < 6; i++) {
+        final box = centredBox(form, button, grid: true);
+        placed.add(box);
+        form = withControl(form, button, 'Button${i + 1}', box);
+      }
+      expect(placed.map((b) => (b.left, b.top)), [
+        (192, 168),
+        (192, 208),
+        (192, 248),
+        (192, 288),
+        (192, 328),
+        (296, 8),
+      ]);
+    });
+
+    test('a form with no room left places in the middle, a step further '
+        'each time, as before', () {
       final first = centredBox(hello, button, grid: true);
-      expect(first, (left: 112, top: 48, width: 96, height: 32));
-      final form = withControl(hello, button, 'Button1', first);
-      expect(centredBox(form, button, grid: true), (
-        left: 120,
-        top: 56,
-        width: 96,
-        height: 32,
-      ));
+      // Below btnHello, which is in the middle.
+      expect(first, (left: 112, top: 88, width: 96, height: 32));
+      var form = withControl(hello, button, 'Button1', first);
+      form = withControl(
+        form,
+        button,
+        'Button2',
+        centredBox(form, button, grid: true),
+      );
+      final label = centredBox(form, builtinComponents['label']!, grid: true);
+      expect(label, (left: 104, top: 48, width: 120, height: 24));
     });
   });
 

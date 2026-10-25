@@ -491,6 +491,7 @@ End Sub
 - **다른 처리기는 차례를 기다립니다.** 실행 중인 처리기가 끝나거나 `DoEvents`에서 기다리는 동안 시작됩니다. 그 사이에 들어온 이벤트는 들어온 순서대로 실행됩니다.
 - **처리기 중간에 다른 처리기가 실행될 수 있는 곳은 `DoEvents`뿐입니다.** 긴 반복 중에도 화면은 갱신되고 중지 버튼도 동작하지만, 반복이 `DoEvents`를 부르거나 끝날 때까지 다른 처리기는 실행되지 않습니다.
 - **`MsgBox`와 `InputBox`는 모달입니다.** 떠 있는 동안에는 폼의 컨트롤을 쓸 수 없고, 다른 것은 실행되지 않으며, 폼을 닫을 수도 없습니다. 그 사이의 이벤트는 쌓이지 않고 버려집니다. Visual Basic .NET의 `MsgBox`도 기본으로 그렇습니다. `Buttons`를 생략하면 0, 곧 `ApplicationModal`이며, "the user must respond to the message box before continuing work in the current application"이라고 설명되어 있습니다([Interaction.MsgBox](https://learn.microsoft.com/en-us/dotnet/api/microsoft.visualbasic.interaction.msgbox)).
+- **제목이 없는 대화상자는 제목 표시줄에 프로젝트 이름을 보입니다.** Visual Basic도 제목을 생략하면 응용 프로그램 이름을 제목 표시줄에 놓습니다([Microsoft](https://learn.microsoft.com/en-us/office/vba/language/reference/user-interface-help/msgbox-function), [Microsoft](https://learn.microsoft.com/en-us/office/vba/language/reference/user-interface-help/inputbox-function)). 프로그램이 준 제목은 그대로 `""`입니다(DESIGN.ko.md D68).
 - **폼 변수는 모두가 함께 씁니다.** `DoEvents`에서 기다리던 처리기는 다시 이어질 때 그동안 다른 처리기가 넣은 값을 봅니다. 지역 변수는 처리기마다 따로입니다.
 - **`Static`은 프로시저에 속합니다.** 어느 처리기에서 부르든 한 프로시저의 호출은 모두 그 프로시저의 `Static` 변수 하나를 씁니다. 두 처리기가 각자 같은 이름의 `Static`을 선언하면 서로 다른 변수입니다.
 - **`End`는 프로그램 전체를 끝냅니다.** `DoEvents`에서 기다리던 처리기는 이어지지 않고, 열린 대화상자는 닫힙니다. 아무도 잡지 않은 오류도 마찬가지입니다(9절).

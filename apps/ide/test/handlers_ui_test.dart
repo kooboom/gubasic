@@ -89,8 +89,9 @@ void main() {
   ) async {
     await open(tester);
     await placeFromToolbox(tester, 'Button');
-    // Button1 lands in the middle: Left 112, Top 48.
-    await doubleClick(tester, const Offset(150, 60));
+    // Button1 lands below btnHello, which is in the middle: Left 112,
+    // Top 88 (D68).
+    await doubleClick(tester, const Offset(150, 100));
     expect(
       code(tester),
       '${hello[codeFile]}\nSub Button1_Click()\n    \nEnd Sub\n',
@@ -108,8 +109,8 @@ void main() {
   testWidgets('a TextBox gets Changed', (tester) async {
     await open(tester);
     await placeFromToolbox(tester, 'TextBox');
-    // TextBox1: Left 80, Top 48, 160 x 32.
-    await doubleClick(tester, const Offset(150, 60));
+    // TextBox1: Left 80, Top 88, 160 x 32.
+    await doubleClick(tester, const Offset(150, 100));
     expect(lineBefore(tester), 'Sub TextBox1_Changed()');
   });
 
@@ -122,7 +123,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text(formFile));
     await tester.pumpAndSettle();
-    await doubleClick(tester, const Offset(150, 60));
+    await doubleClick(tester, const Offset(150, 100));
     expect(
       find.text(s.noHandlerWhileRunning.replaceAll('{0}', 'Button1_Click')),
       findsOneWidget,
@@ -177,7 +178,7 @@ void main() {
   testWidgets('the handler made can be undone in one step', (tester) async {
     await open(tester);
     await placeFromToolbox(tester, 'Button');
-    await doubleClick(tester, const Offset(150, 60));
+    await doubleClick(tester, const Offset(150, 100));
     expect(code(tester), contains('Sub Button1_Click()'));
     await tester.pump(const Duration(seconds: 1));
     await tester.sendKeyDownEvent(LogicalKeyboardKey.control);

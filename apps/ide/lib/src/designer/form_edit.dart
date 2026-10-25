@@ -112,6 +112,39 @@ ControlBox centredBox(FormFile form, ComponentSpec type, {required bool grid}) {
   final d = defaultSizeOf(type);
   var left = snap(max(0, (size.width - d.width) / 2), grid: grid);
   var top = snap(max(0, (size.height - d.height) / 2), grid: grid);
+  // Where a control is already, the next goes below it, then at the top
+  // of the next column, so that captions never sit over each other (D68).
+  bool taken(int l, int t) => form.controls.any((c) {
+    final b = boxOf(c);
+    return l < b.left + b.width &&
+        b.left < l + d.width &&
+        t < b.top + b.height &&
+        b.top < t + d.height;
+  });
+  final step = snap(d.height + gridStep, grid: grid);
+  final across = snap(d.width + gridStep, grid: grid);
+  final firstTop = snap(gridStep, grid: grid);
+  var l = left, t = top;
+  while (taken(l, t)) {
+    t += step;
+    if (t + d.height > size.height) {
+      t = firstTop;
+      l += across;
+      // The form is full: on the middle after all, as before.
+      if (l + d.width > size.width) return _cascade(form, left, top, d);
+    }
+  }
+  return (left: l, top: t, width: d.width, height: d.height);
+}
+
+/// A box [d] large at [left], [top], moved a grid step down and right
+/// while a control has that very place.
+ControlBox _cascade(
+  FormFile form,
+  int left,
+  int top,
+  ({int width, int height}) d,
+) {
   bool taken(int l, int t) => form.controls.any((c) {
     final b = boxOf(c);
     return b.left == l && b.top == t;
@@ -479,14 +512,21 @@ FormFile withProperty(
 }
 
 /// [form] with the control named [name] renamed to [newName]. Its
-/// properties, `Caption` included, stay as they are.
+/// properties stay as they are, but a `Caption` that still is the old
+/// name, as a new control gets it, takes the new one (D68): a Label1
+/// renamed lblQuestion no longer says Label1 next to the next Label1.
 FormFile withName(FormFile form, String name, String newName) => _copy(form, [
   for (final c in form.controls)
     if (c.name.toLowerCase() == name.toLowerCase())
       ControlDecl(
         name: newName,
         component: c.component,
-        properties: c.properties,
+        properties: {
+          ...c.properties,
+          if (c.component.properties.containsKey('caption') &&
+              c.valueOf('Caption') == c.name)
+            'Caption': newName,
+        },
         line: c.line,
       )
     else

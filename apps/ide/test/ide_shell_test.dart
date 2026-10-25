@@ -3,7 +3,10 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gubasic_ide/main.dart';
 import 'package:gubasic_ide/src/designer/form_designer.dart';
+import 'package:gubasic_ide/src/ide_shell.dart';
 import 'package:gubasic_ide/src/project/examples.g.dart';
+import 'package:gubasic_ide/src/project/pictures_dialog.dart';
+import 'package:gubasic_ide/src/project/project_pictures.dart';
 import 'package:gubasic_ide/src/run/run_window.dart';
 import 'package:gubasic_ide/src/strings.dart';
 
@@ -51,6 +54,59 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byType(RunWindow), findsNothing);
     expect(find.text(IdeStrings.en.closed), findsOneWidget);
+  });
+
+  testWidgets('MsgBox and InputBox without a title show the project\'s name '
+      '(D68)', (tester) async {
+    await open(tester, hello);
+    await tester.sendKeyEvent(LogicalKeyboardKey.f5);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Say hello'));
+    await tester.pumpAndSettle();
+    Finder title(String text) => find.descendant(
+      of: find.byType(AlertDialog),
+      matching: find.text(text),
+    );
+    expect(title('Hello'), findsOneWidget, reason: 'the InputBox');
+    await tester.enterText(find.byType(TextField), 'Kim');
+    await tester.tap(find.text('OK'));
+    await tester.pumpAndSettle();
+    expect(find.text('Hello, Kim! (1)'), findsOneWidget);
+    expect(title('Hello'), findsOneWidget, reason: 'the MsgBox');
+  });
+
+  testWidgets('the open file is in the accent colour; the pictures are a '
+      'group that opens File → Pictures (D68)', (tester) async {
+    tester.view.physicalSize = const Size(1200, 800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(
+      IdeApp(
+        projects: exampleProjects,
+        examplePictures: decodeExamplePictures(examplePictures),
+        strings: IdeStrings.en,
+        open: 'quiz',
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Form1.gbas'));
+    await tester.pumpAndSettle();
+    final tile = tester.widget<ListTile>(
+      find.ancestor(
+        of: find.text('Form1.gbas'),
+        matching: find.byType(ListTile),
+      ),
+    );
+    final scheme = Theme.of(tester.element(find.byType(IdeShell))).colorScheme;
+    expect(tile.selected, isTrue);
+    expect(tile.selectedColor, scheme.primary);
+
+    expect(find.byKey(const ValueKey('files.pictures')), findsOneWidget);
+    expect(find.text('triangle.png'), findsOneWidget);
+    expect(find.text('pentagon.png'), findsOneWidget);
+    await tester.tap(find.text('triangle.png'));
+    await tester.pumpAndSettle();
+    expect(find.byType(PicturesDialog), findsOneWidget);
   });
 
   testWidgets('typing in the TextBox runs Changed', (tester) async {

@@ -112,6 +112,7 @@ class IdeStrings {
     required this.sendToBack,
     required this.delete,
     required this.picturesMenu,
+    required this.picturesGroup,
     required this.picturesTitle,
     required this.noPictures,
     required this.addPicture,
@@ -363,6 +364,9 @@ class IdeStrings {
 
   // The project's pictures (D51).
   final String picturesMenu;
+
+  /// The group of the project's pictures in the file list (D68).
+  final String picturesGroup;
   final String picturesTitle;
   final String noPictures;
   final String addPicture;
@@ -576,6 +580,7 @@ class IdeStrings {
     sendToBack: 'Send to Back',
     delete: 'Delete',
     picturesMenu: 'Pictures…',
+    picturesGroup: 'Pictures',
     picturesTitle: 'Pictures',
     noPictures: 'This project has no pictures yet. Add PNG, JPEG or GIF pictures for its Image controls to show.',
     addPicture: 'Add Picture…',
@@ -751,6 +756,7 @@ class IdeStrings {
     sendToBack: '맨 뒤로',
     delete: '삭제',
     picturesMenu: '그림…',
+    picturesGroup: '그림',
     picturesTitle: '그림',
     noPictures: '이 프로젝트에는 아직 그림이 없습니다. Image 컨트롤에 보일 PNG, JPEG, GIF 그림을 추가합니다.',
     addPicture: '그림 추가…',

@@ -424,6 +424,9 @@ class _IdeShellState extends State<IdeShell> {
         ListTile(
           dense: true,
           title: Text(f),
+          // The open file in the accent colour, not a grey (D68).
+          selectedColor: Theme.of(context).colorScheme.primary,
+          selectedTileColor: Theme.of(context).colorScheme.primaryContainer,
           selected: f == _file && !(_running && _showRun),
           onTap: () {
             setState(() {
@@ -437,6 +440,24 @@ class _IdeShellState extends State<IdeShell> {
             _focus.requestFocus();
           },
         ),
+      // The project's pictures, a group of their own (D68): a click opens
+      // File → Pictures.
+      if (widget.controller.current.pictures.isNotEmpty) ...[
+        ListTile(
+          key: const ValueKey('files.pictures'),
+          dense: true,
+          leading: const Icon(Icons.image_outlined, size: 18),
+          title: Text(widget.strings.picturesGroup),
+          onTap: _running ? null : _pictures,
+        ),
+        for (final name in widget.controller.current.pictures.keys)
+          ListTile(
+            dense: true,
+            contentPadding: const EdgeInsets.only(left: 36, right: 10),
+            title: Text(name),
+            onTap: _running ? null : _pictures,
+          ),
+      ],
     ],
   );
 

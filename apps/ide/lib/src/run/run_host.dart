@@ -70,11 +70,15 @@ class RunHost implements FormHost {
 
   @override
   Future<void> msgBox(String prompt, String title) =>
-      dialogs.msgBox(_context, prompt, title);
+      dialogs.msgBox(_context, prompt, _title(title));
 
   @override
   Future<String> inputBox(String prompt, String title, String defaultValue) =>
-      dialogs.inputBox(_context, prompt, title, defaultValue);
+      dialogs.inputBox(_context, prompt, _title(title), defaultValue);
+
+  /// A dialog's title: the one given, or the project's name, as Visual
+  /// Basic puts the application's name there (D68).
+  String _title(String title) => title.isEmpty ? project : title;
 
   /// Lets frames be drawn and the Stop button work.
   @override

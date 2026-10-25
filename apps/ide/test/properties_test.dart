@@ -324,16 +324,33 @@ void main() {
       await tester.testTextInput.receiveAction(TextInputAction.done);
       await tester.pumpAndSettle();
       expect(formText(tester), contains('  - name: lblTitle\n'));
-      expect(formText(tester), contains('      Caption: Label1\n'));
+      // The Caption still was the name: it takes the new one (D68).
+      expect(formText(tester), contains('      Caption: lblTitle\n'));
       expect(
         tester
             .widget<DropdownButton<String>>(find.byKey(propertiesTargetKey))
             .value,
         'lblTitle',
       );
-      // The form has the focus: one undo step back.
+      // The form has the focus: one undo step back, for both.
       await ctrl(tester, LogicalKeyboardKey.keyZ);
       expect(formText(tester), contains('  - name: Label1\n'));
+      expect(formText(tester), contains('      Caption: Label1\n'));
+    });
+
+    testWidgets('a Caption the student changed stays as it is (D68)', (
+      tester,
+    ) async {
+      await open(tester);
+      await addLabel(tester);
+      await tester.enterText(field('Caption'), '문제');
+      await tester.testTextInput.receiveAction(TextInputAction.done);
+      await tester.pumpAndSettle();
+      await tester.enterText(field('(Name)'), 'lblQuestion');
+      await tester.testTextInput.receiveAction(TextInputAction.done);
+      await tester.pumpAndSettle();
+      expect(formText(tester), contains('  - name: lblQuestion\n'));
+      expect(formText(tester), contains('      Caption: 문제\n'));
     });
 
     testWidgets('a name the code uses changes in the code too', (tester) async {
