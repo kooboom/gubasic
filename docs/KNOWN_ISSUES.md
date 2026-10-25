@@ -81,6 +81,12 @@ Problems we know about and have **deliberately** left unfixed for now. Each entr
 - **Why deferred:** the IDE uses one font list on every platform (D30), and the web's support is not documented; it was not tried.
 - **Revisit:** if Flutter documents WOFF2 for the web, or if the first visit is still too slow on the school network.
 
+## A picture made smaller is a PNG, not a JPEG
+
+- **What:** Make Smaller and Add (D56) writes a PNG. A phone photo of 1024 × 768 then takes 1.3–1.8 MB (macOS, Chrome, WebKit), close to the 2 MB a picture may take; a photo with much fine detail is made smaller again, to 768 pixels or less. As a JPEG it would take a few hundred KB. Windows was not tried; it decodes and encodes with the same Flutter calls.
+- **Why deferred:** Flutter encodes PNG only ([Flutter](https://api.flutter.dev/flutter/dart-ui/ImageByteFormat.html)); a JPEG encoder is a package, or code of the IDE's own, and the user asked for no heavy dependency.
+- **Revisit:** when students' photos often end up smaller than 1024 pixels, or projects reach the 10 MB limit with photos; and on the school PC with the Windows IDE.
+
 ## A ListBox's items are added only in code
 
 - **What:** the designer cannot enter a ListBox's items, as Visual Basic 6's List property in the Properties window does; a program adds them with `AddItem`, usually in `Form_Load` (D46).

@@ -1,4 +1,5 @@
 import 'dart:typed_data';
+import 'dart:ui' as ui;
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -72,6 +73,31 @@ void main() {
     await tester.tap(find.byKey(addPictureKey));
     await tester.pumpAndSettle();
   }
+
+  /// Waits, with the engine's real time, until [until] is found: reading
+  /// a picture's frames, or making it smaller, is not done in the test's
+  /// fake time.
+  Future<void> waitFor(WidgetTester tester, Finder until) async {
+    await tester.runAsync(() async {
+      for (var i = 0; i < 500 && until.evaluate().isEmpty; i++) {
+        await Future<void>.delayed(const Duration(milliseconds: 10));
+        await tester.pump();
+      }
+    });
+    await tester.pumpAndSettle();
+    expect(until, findsWidgets);
+  }
+
+  /// A real PNG of [width] x [height] grey pixels.
+  Future<Uint8List> greyPng(WidgetTester tester, int width, int height) async =>
+      (await tester.runAsync(() async {
+        final recorder = ui.PictureRecorder();
+        Canvas(recorder).drawColor(const Color(0xFF808080), BlendMode.src);
+        final picture = recorder.endRecording();
+        final image = await picture.toImage(width, height);
+        final data = await image.toByteData(format: ui.ImageByteFormat.png);
+        return data!.buffer.asUint8List();
+      }))!;
 
   Future<void> closeDialog(
     WidgetTester tester, {
@@ -282,9 +308,11 @@ void main() {
       findsOneWidget,
     );
     await closeDialog(tester, strings: ko);
-    await addInDialog(tester, (name: 'wide.png', bytes: pngHeader(5000, 10)));
+    picks.add((name: 'wide.png', bytes: await greyPng(tester, 5000, 10)));
+    await tester.tap(find.byKey(addPictureKey));
+    await waitFor(tester, find.text(ko.reduceButton));
     expect(
-      find.text(
+      find.textContaining(
         ko.pictureTooWide
             .replaceAll('{0}', 'wide.png')
             .replaceAll('{1}', '5000')
@@ -292,8 +320,99 @@ void main() {
       ),
       findsOneWidget,
     );
-    await closeDialog(tester, strings: ko);
+    expect(
+      find.textContaining(
+        ko.reduceOffer.replaceAll('{0}', '1024').replaceAll('{1}', 'wide.png'),
+      ),
+      findsOneWidget,
+    );
+    await tester.tap(find.text(ko.runtime.cancel));
+    await tester.pumpAndSettle();
     expect(current(tester).pictures, isEmpty);
+  });
+
+  testWidgets('a picture too wide is added smaller, as a PNG, only when '
+      'the button is pressed', (tester) async {
+    await start(tester);
+    final wide = await greyPng(tester, 5000, 10);
+    await menu(tester, s.picturesMenu);
+    picks.add((name: '파노라마.jpg', bytes: wide));
+    await tester.tap(find.byKey(addPictureKey));
+    await waitFor(tester, find.text(s.reduceButton));
+    expect(find.textContaining(s.reduceFirstFrameOnly), findsNothing);
+    await tester.tap(find.text(s.runtime.cancel));
+    await tester.pumpAndSettle();
+    expect(current(tester).pictures, isEmpty, reason: 'not without asking');
+
+    picks.add((name: '파노라마.jpg', bytes: wide));
+    await tester.tap(find.byKey(addPictureKey));
+    await waitFor(tester, find.text(s.reduceButton));
+    await tester.tap(find.text(s.reduceButton));
+    await tester.pump();
+    expect(find.text(s.reducing), findsOneWidget);
+    await waitFor(tester, find.byKey(pictureRowKey('파노라마.png')));
+    expect(find.text(s.reducing), findsNothing);
+    final added = current(tester).pictures['파노라마.png']!;
+    expect(pictureFormat(added), PictureFormat.png);
+    expect(pictureSize(added), (1024, 2));
+    expect(
+      find.text(
+        s.pictureReduced
+            .replaceAll('{0}', '파노라마.png')
+            .replaceAll('{1}', '1024')
+            .replaceAll('{2}', '2')
+            .replaceAll('{3}', '0.0'),
+      ),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('an animated GIF too much for the project says only its first '
+      'frame stays; one that cannot be read is not offered it', (tester) async {
+    await start(tester);
+    await menu(tester, s.picturesMenu);
+    // Pictures that fill the project but 100 bytes (their bytes are not
+    // read but by size).
+    for (var i = 0; i < 4; i++) {
+      await addInDialog(tester, (
+        name: 'full$i.png',
+        bytes: pngHeader(10, 10, length: maxPictureBytes),
+      ));
+    }
+    await addInDialog(tester, (
+      name: 'last.png',
+      bytes: pngHeader(10, 10, length: maxPictureBytes - 100),
+    ));
+    picks.add((name: 'moving.gif', bytes: animatedGif));
+    await tester.tap(find.byKey(addPictureKey));
+    await waitFor(tester, find.text(s.reduceButton));
+    expect(find.textContaining(s.reduceFirstFrameOnly), findsOneWidget);
+    expect(
+      find.textContaining(s.picturesFull.replaceAll('{0}', 'moving.gif')),
+      findsOneWidget,
+    );
+    await tester.tap(find.text(s.runtime.cancel));
+    await tester.pumpAndSettle();
+
+    final heic = Uint8List.fromList([0, 0, 0, 24, ...'ftypheic'.codeUnits]);
+    await addInDialog(tester, (name: 'IMG_0001.jpg', bytes: heic));
+    expect(find.text(s.reduceButton), findsNothing);
+    await closeDialog(tester);
+
+    // Looks like a PNG by its first bytes, but cannot be drawn.
+    picks.add((name: 'broken.png', bytes: pngHeader(5000, 10)));
+    await tester.tap(find.byKey(addPictureKey));
+    await waitFor(
+      tester,
+      find.text(
+        s.pictureTooWide
+            .replaceAll('{0}', 'broken.png')
+            .replaceAll('{1}', '5000')
+            .replaceAll('{2}', '10'),
+      ),
+    );
+    expect(find.text(s.reduceButton), findsNothing);
+    await closeDialog(tester);
   });
 
   testWidgets('a project opened from disk brings its pictures; missing '

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -9,6 +10,7 @@ import '../strings.dart';
 import 'browser.dart';
 import 'folders.dart';
 import 'open_project.dart';
+import 'picture_reduce.dart';
 import 'project_pictures.dart';
 import 'project_zip.dart';
 
@@ -656,12 +658,32 @@ class ProjectController extends ChangeNotifier {
     );
     if (picked == null || !context.mounted) return null;
     // A Mac gives Hangul in file names with each syllable split (D51).
-    final name = composeHangul(picked.name);
+    var name = composeHangul(picked.name);
+    var bytes = picked.bytes;
     final project = _current;
-    if (checkPicture(name, picked.bytes, project.files, project.pictures)
+    if (checkPicture(name, bytes, project.files, project.pictures)
         case final refused?) {
-      await _tell(context, _describePicture(refused));
-      return null;
+      final room = _reducibleRoom(refused, name, bytes, project);
+      if (room == null) {
+        await _tell(context, _describePicture(refused));
+        return null;
+      }
+      final reduced = await _offerReduced(context, refused, name, bytes, room);
+      if (reduced == null || !context.mounted) return null;
+      (name, bytes) = (reduced.name, reduced.bytes);
+      if (checkPicture(name, bytes, project.files, project.pictures)
+          case final refused?) {
+        await _tell(context, _describePicture(refused));
+        return null;
+      }
+      _snack(
+        context,
+        strings.pictureReduced
+            .replaceAll('{0}', name)
+            .replaceAll('{1}', '${reduced.width}')
+            .replaceAll('{2}', '${reduced.height}')
+            .replaceAll('{3}', _megabytes(bytes.length)),
+      );
     }
     final existing = pictureNamed(project.pictures.keys, name);
     if (existing != null &&
@@ -672,11 +694,101 @@ class ProjectController extends ChangeNotifier {
         )) {
       return null;
     }
-    project.setPicture(name, picked.bytes);
+    project.setPicture(name, bytes);
     // In the browser a picture is kept at once, not a moment later: the
     // text kept as the page hides does not carry pictures (D54).
     if (project.location is BrowserLocation) await keepNow();
     return existing ?? name;
+  }
+
+  /// The most a smaller copy of picture [name] may take, when [refused]
+  /// is a refusal that making it smaller can answer (D56): it is too
+  /// large, too wide or too much for the project, and is a picture the
+  /// IDE can read. Null otherwise.
+  static int? _reducibleRoom(
+    PictureRefused refused,
+    String name,
+    Uint8List bytes,
+    OpenProject project,
+  ) {
+    if (refused is! PictureTooLarge &&
+        refused is! PictureTooWide &&
+        refused is! ProjectPicturesFull) {
+      return null;
+    }
+    final replaced = pictureNamed(
+      project.pictures.keys,
+      reducedPictureName(name),
+    );
+    var room = maxProjectPictureBytes;
+    for (final MapEntry(:key, :value) in project.pictures.entries) {
+      if (key != replaced) room -= value.length;
+    }
+    room = min(room, maxPictureBytes);
+    return room > 0 ? room : null;
+  }
+
+  /// Says why picture [name] is not taken, with a button that adds a
+  /// smaller copy of it instead when it can be read, and makes that copy
+  /// when the button is pressed. Null when it is not pressed, or no copy
+  /// small enough can be made (then says so).
+  Future<ReducedPicture?> _offerReduced(
+    BuildContext context,
+    PictureRefused refused,
+    String name,
+    Uint8List bytes,
+    int room,
+  ) async {
+    final bool animated;
+    try {
+      animated = await isAnimatedPicture(bytes);
+    } on Object {
+      // Not a picture the IDE can read, so not one it can make smaller.
+      if (context.mounted) await _tell(context, _describePicture(refused));
+      return null;
+    }
+    if (!context.mounted) return null;
+    final offer = [
+      _describePicture(refused),
+      strings.reduceOffer
+          .replaceAll('{0}', '$reducedPictureSide')
+          .replaceAll('{1}', reducedPictureName(name)),
+      if (animated) strings.reduceFirstFrameOnly,
+    ].join('\n\n');
+    if (!await _confirm(context, offer, strings.reduceButton) ||
+        !context.mounted) {
+      return null;
+    }
+    // Reading a phone photo takes a moment: a dialog says it is working.
+    final navigator = Navigator.of(context);
+    unawaited(
+      showDialog<void>(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => AlertDialog(
+          content: Row(
+            children: [
+              const SizedBox.square(
+                dimension: 24,
+                child: CircularProgressIndicator(strokeWidth: 3),
+              ),
+              const SizedBox(width: 16),
+              Expanded(child: Text(strings.reducing)),
+            ],
+          ),
+        ),
+      ),
+    );
+    final ReducedPicture? reduced;
+    try {
+      reduced = await reducePicture(name, bytes, maxBytes: room);
+    } finally {
+      navigator.pop();
+    }
+    if (reduced == null && context.mounted) {
+      await _tell(context, strings.reduceFailed.replaceAll('{0}', name));
+    }
+    return reduced;
   }
 
   /// Takes picture [name] out of the open project after asking, unless a
@@ -759,8 +871,11 @@ class ProjectController extends ChangeNotifier {
     return readProjectFile(projectFile?.value ?? '').project.pictures;
   }
 
+  static String _megabytes(int bytes) =>
+      (bytes / (1024 * 1024)).toStringAsFixed(1);
+
   String _describePicture(PictureRefused p) {
-    String mb(int bytes) => (bytes / (1024 * 1024)).toStringAsFixed(1);
+    final mb = _megabytes;
     return switch (p) {
       ProjectFileHasErrors() => strings.pictureProjectFileErrors,
       BadPictureName(:final name, :final problem) => switch (problem) {

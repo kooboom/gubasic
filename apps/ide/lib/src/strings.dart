@@ -119,6 +119,12 @@ class IdeStrings {
     required this.pictureIsHeic,
     required this.pictureTooLarge,
     required this.pictureTooWide,
+    required this.reduceButton,
+    required this.reduceOffer,
+    required this.reduceFirstFrameOnly,
+    required this.reducing,
+    required this.pictureReduced,
+    required this.reduceFailed,
     required this.picturesFull,
     required this.restoredUnsaved,
     required this.missingPicturesKept,
@@ -347,6 +353,17 @@ class IdeStrings {
 
   /// `{1}` its width, `{2}` its height, in pixels.
   final String pictureTooWide;
+
+  /// Making a picture smaller (D56): the button that does it, what it
+  /// will do ({0} the longest side, {1} the copy's name), the note for an
+  /// animated GIF, the words while it works, what was added ({0} name,
+  /// {1} × {2} pixels, {3} MB) and why it could not be done.
+  final String reduceButton;
+  final String reduceOffer;
+  final String reduceFirstFrameOnly;
+  final String reducing;
+  final String pictureReduced;
+  final String reduceFailed;
   final String picturesFull;
 
   /// `{0}` the projects (D54).
@@ -496,6 +513,13 @@ class IdeStrings {
     pictureIsHeic: '"{0}" is an HEIC photo, which a project does not take because not every platform shows it. Save it as JPEG or PNG, then add it.',
     pictureTooLarge: '"{0}" takes {1} MB; a picture can take at most 2 MB. Make it smaller (fewer pixels, or JPEG for a photo), then add it.',
     pictureTooWide: '"{0}" is {1} × {2} pixels; a picture can be at most 4096 pixels wide and high. Make it smaller, then add it.',
+    reduceButton: 'Make Smaller and Add',
+    reduceOffer: 'Make Smaller and Add makes a copy as a PNG, at most {0} pixels on its longest side (smaller if needed), and adds it as "{1}". The file you chose is not changed.',
+    reduceFirstFrameOnly:
+        'This GIF moves; the copy keeps its first frame only.',
+    reducing: 'Making the picture smaller…',
+    pictureReduced: 'Added "{0}", made smaller: {1} × {2} pixels, {3} MB.',
+    reduceFailed: '"{0}" cannot be made small enough to add. Use a smaller picture, or remove pictures the project does not use.',
     picturesFull: 'With "{0}", the project\'s pictures would take more than 10 MB. Remove pictures it does not use, or make them smaller.',
     restoredUnsaved: 'Brought back changes that were not saved: {0}. The page closed before they were kept in this browser; they are kept now.',
     missingPicturesKept: 'These pictures were not kept with the project: {0}. Add them again in File → Pictures, or remove them there.',
@@ -643,6 +667,13 @@ class IdeStrings {
     pictureIsHeic: '"{0}" 파일은 HEIC 사진입니다. 모든 플랫폼에서 보이지는 않아서 프로젝트에 넣을 수 없습니다. JPEG나 PNG로 저장한 뒤 추가합니다.',
     pictureTooLarge: '"{0}" 파일의 크기는 {1}MB입니다. 그림 하나는 2MB까지 넣을 수 있습니다. 픽셀 수를 줄이거나 사진은 JPEG로 저장해 크기를 줄인 뒤 추가합니다.',
     pictureTooWide: '"{0}" 그림의 크기는 {1} × {2}픽셀입니다. 그림의 가로와 세로는 4096픽셀까지입니다. 크기를 줄인 뒤 추가합니다.',
+    reduceButton: '줄여서 넣기',
+    reduceOffer: '[줄여서 넣기]를 누르면 긴 변이 {0}픽셀 이하인 PNG 사본을 만들어(필요하면 더 작게) "{1}" 이름으로 추가합니다. 고른 파일은 바뀌지 않습니다.',
+    reduceFirstFrameOnly: '움직이는 GIF입니다. 사본에는 첫 장면만 남습니다.',
+    reducing: '그림을 줄이는 중입니다…',
+    pictureReduced: '"{0}" 그림을 {1} × {2}픽셀, {3} MB로 줄여서 추가했습니다.',
+    reduceFailed:
+        '"{0}" 그림은 추가할 수 있을 만큼 줄일 수 없습니다. 더 작은 그림을 쓰거나, 프로젝트에서 쓰지 않는 그림을 지웁니다.',
     picturesFull:
         '"{0}" 파일을 넣으면 프로젝트의 그림이 모두 10MB를 넘습니다. 쓰지 않는 그림을 빼거나 그림 크기를 줄입니다.',
     restoredUnsaved:
