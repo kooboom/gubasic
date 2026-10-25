@@ -4,6 +4,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:gubasic_runtime/gubasic_runtime.dart';
 
+import '../fit_view.dart';
 import '../form_window.dart';
 import 'run_session.dart';
 
@@ -16,9 +17,13 @@ const runWindowCloseKey = ValueKey('runWindow.close');
 /// (D28) but not the IDE around it, whose Stop button keeps working.
 /// Starts [session] once it is shown.
 class RunWindow extends StatefulWidget {
-  const RunWindow({super.key, required this.session});
+  const RunWindow({super.key, required this.session, this.fit});
 
   final RunSession session;
+
+  /// Whether a form larger than the area is shrunk to fit (D66), kept
+  /// from run to run. Null: never, and no switch.
+  final ValueNotifier<bool>? fit;
 
   @override
   State<RunWindow> createState() => _RunWindowState();
@@ -37,17 +42,69 @@ class _RunWindowState extends State<RunWindow> {
   @override
   Widget build(BuildContext context) => Navigator(
     key: _navigator,
-    onGenerateRoute: (_) => PageRouteBuilder<void>(
-      pageBuilder: (_, _, _) => SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
-        child: Align(
-          alignment: Alignment.topCenter,
-          child: _Window(session: widget.session),
-        ),
-      ),
-    ),
+    onGenerateRoute: (_) =>
+        PageRouteBuilder<void>(pageBuilder: (_, _, _) => _page()),
   );
+
+  /// The window, shrunk to fit when [RunWindow.fit] is on and it is too
+  /// large, and the switch for it.
+  Widget _page() {
+    final fit = widget.fit;
+    final form = widget.session.host.model.form;
+    const padding = 24.0;
+    return ListenableBuilder(
+      listenable: Listenable.merge([form, ?fit]),
+      builder: (context, _) => LayoutBuilder(
+        builder: (context, constraints) {
+          final natural = Size(
+            form.integer('Width') + _cornerReach,
+            formTitleHeight + form.integer('Height') + _cornerReach,
+          );
+          final scale = fit?.value ?? false
+              ? fitScale(natural, inside(constraints, padding))
+              : 1.0;
+          return Stack(
+            children: [
+              Positioned.fill(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(padding),
+                  child: Align(
+                    alignment: Alignment.topCenter,
+                    child: fitted(
+                      _Window(session: widget.session, scale: scale),
+                      natural,
+                      scale,
+                    ),
+                  ),
+                ),
+              ),
+              if (fit != null)
+                Positioned(
+                  top: 4,
+                  right: 4,
+                  child: IconButton(
+                    key: runWindowFitKey,
+                    tooltip: widget.session.strings.fitTip,
+                    isSelected: fit.value,
+                    icon: const Icon(Icons.fit_screen),
+                    onPressed: () => fit.value = !fit.value,
+                  ),
+                ),
+              if (scale < 1)
+                Positioned(right: 8, bottom: 8, child: FitPercent(scale)),
+            ],
+          );
+        },
+      ),
+    );
+  }
 }
+
+/// The key of the run window's switch that shrinks a large form to fit.
+const runWindowFitKey = ValueKey('runWindow.fit');
+
+/// The run window's corner, outside its window's.
+const _cornerReach = 14.0;
 
 /// The key of the run window's corner, which resizes the form (D59).
 const runWindowResizeKey = ValueKey('runWindow.resize');
@@ -56,9 +113,13 @@ const runWindowResizeKey = ValueKey('runWindow.resize');
 const minRunFormSize = (width: 120, height: 24);
 
 class _Window extends StatefulWidget {
-  const _Window({required this.session});
+  const _Window({required this.session, this.scale = 1});
 
   final RunSession session;
+
+  /// The scale the window is shown at (D66): the corner follows the
+  /// pointer as the user sees it.
+  final double scale;
 
   @override
   State<_Window> createState() => _WindowState();
@@ -96,7 +157,7 @@ class _WindowState extends State<_Window> {
   void _drag(DragUpdateDetails d) {
     final start = _start;
     if (start == null) return;
-    final dragged = d.globalPosition - _from;
+    final dragged = (d.globalPosition - _from) / widget.scale;
     // The controls follow as the corner moves; Form_Resize runs once it
     // is let go (D58).
     _model.resize(
@@ -120,7 +181,7 @@ class _WindowState extends State<_Window> {
   Widget build(BuildContext context) {
     final session = widget.session;
     final form = _model.form;
-    const reach = 14.0;
+    const reach = _cornerReach;
     return ListenableBuilder(
       listenable: Listenable.merge([session, form]),
       builder: (context, _) => Stack(

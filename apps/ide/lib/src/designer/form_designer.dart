@@ -8,6 +8,7 @@ import 'package:flutter/services.dart';
 import 'package:gubasic_lang/gubasic_lang.dart';
 import 'package:gubasic_runtime/gubasic_runtime.dart';
 
+import '../fit_view.dart';
 import '../form_window.dart';
 import '../project/open_project.dart';
 import '../project/project_pictures.dart';
@@ -39,6 +40,7 @@ class FormDesigner extends StatefulWidget {
     required this.file,
     required this.history,
     required this.grid,
+    this.fit,
     required this.locked,
     required this.strings,
     this.onOpenHandler,
@@ -53,6 +55,10 @@ class FormDesigner extends StatefulWidget {
 
   /// Whether the grid is on; shared by all forms.
   final ValueNotifier<bool> grid;
+
+  /// Whether a form larger than the designer is shrunk to fit (D66);
+  /// shared by all forms. Null: never.
+  final ValueNotifier<bool>? fit;
   final bool locked;
   final IdeStrings strings;
 
@@ -165,6 +171,10 @@ class _FormDesignerState extends State<FormDesigner> {
 
   bool get _grid => widget.grid.value;
 
+  /// The scale the form is shown at: below 1 when it is shrunk to fit
+  /// (D66). Set as the canvas is laid out.
+  var _scale = 1.0;
+
   @override
   void initState() {
     super.initState();
@@ -172,10 +182,24 @@ class _FormDesignerState extends State<FormDesigner> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) _focus.requestFocus();
     });
+    widget.fit?.addListener(_fitChanged);
   }
 
   @override
+  void didUpdateWidget(FormDesigner old) {
+    super.didUpdateWidget(old);
+    if (old.fit != widget.fit) {
+      old.fit?.removeListener(_fitChanged);
+      widget.fit?.addListener(_fitChanged);
+    }
+  }
+
+  /// The canvas is laid out again for the new scale (D66).
+  void _fitChanged() => setState(() {});
+
+  @override
   void dispose() {
+    widget.fit?.removeListener(_fitChanged);
     _focus.dispose();
     _propertiesNode.dispose();
     if (kIsWeb) BrowserContextMenu.enableContextMenu();
@@ -521,7 +545,8 @@ class _FormDesignerState extends State<FormDesigner> {
   void _formMove(PointerMoveEvent e) {
     final change = _formChange;
     if (change == null) return;
-    final d = e.position - change.from;
+    // The handle follows the pointer as the user sees the form.
+    final d = (e.position - change.from) / _scale;
     final size = resizedForm(
       change.start,
       change.handle.x == 0 ? 0 : d.dx,
@@ -855,7 +880,7 @@ class _FormDesignerState extends State<FormDesigner> {
       ),
     );
     return ListenableBuilder(
-      listenable: widget.grid,
+      listenable: Listenable.merge([widget.grid, ?widget.fit]),
       builder: (context, _) => Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -952,6 +977,23 @@ class _FormDesignerState extends State<FormDesigner> {
                       },
                     ),
                   ),
+                  if (widget.fit case final fit?) ...[
+                    const SizedBox(width: 8),
+                    Tooltip(
+                      message: s.fitTip,
+                      child: FilterChip(
+                        key: designerMenuKey('toolbar.fit'),
+                        avatar: const Icon(Icons.fit_screen, size: 18),
+                        label: Text(s.fit),
+                        selected: fit.value,
+                        showCheckmark: false,
+                        onSelected: (on) {
+                          fit.value = on;
+                          _focus.requestFocus();
+                        },
+                      ),
+                    ),
+                  ],
                   const SizedBox(width: 8),
                   _sizeMenu(context, editable),
                   IconButton(
@@ -1213,19 +1255,38 @@ class _FormDesignerState extends State<FormDesigner> {
         formHandle((x: 1, y: 1), SystemMouseCursors.resizeUpLeftDownRight),
       ],
     );
+    // The window with its handles, as it is laid out unshrunk.
+    final natural = Size(width + reach, formTitleHeight + height + reach);
     return LayoutBuilder(
-      builder: (context, constraints) => SingleChildScrollView(
-        child: SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: ConstrainedBox(
-            constraints: BoxConstraints(minWidth: constraints.maxWidth),
-            child: Padding(
-              padding: const EdgeInsets.all(24),
-              child: Align(alignment: Alignment.topCenter, child: framed),
+      builder: (context, constraints) {
+        const padding = 24.0;
+        _scale = widget.fit?.value ?? false
+            ? fitScale(natural, inside(constraints, padding))
+            : 1.0;
+        return Stack(
+          children: [
+            Positioned.fill(
+              child: SingleChildScrollView(
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(minWidth: constraints.maxWidth),
+                    child: Padding(
+                      padding: const EdgeInsets.all(padding),
+                      child: Align(
+                        alignment: Alignment.topCenter,
+                        child: fitted(framed, natural, _scale),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
             ),
-          ),
-        ),
-      ),
+            if (_scale < 1)
+              Positioned(right: 8, bottom: 8, child: FitPercent(_scale)),
+          ],
+        );
+      },
     );
   }
 

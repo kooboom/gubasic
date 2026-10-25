@@ -161,6 +161,11 @@ class _IdeAppState extends State<IdeApp> {
   /// Whether the designer's grid is on.
   final _grid = ValueNotifier(true);
 
+  /// Whether the designer and the run window shrink a large form to fit
+  /// (D66): on at first, so that a phone form shows whole.
+  final _fitDesigner = ValueNotifier(true);
+  final _fitRun = ValueNotifier(true);
+
   /// Asks about unsaved changes when the app is about to quit.
   late final AppLifecycleListener _lifecycle;
 
@@ -175,6 +180,8 @@ class _IdeAppState extends State<IdeApp> {
     _lifecycle.dispose();
     _controller.dispose();
     _grid.dispose();
+    _fitDesigner.dispose();
+    _fitRun.dispose();
     super.dispose();
   }
 
@@ -213,6 +220,8 @@ class _IdeAppState extends State<IdeApp> {
         controller: _controller,
         strings: widget.strings,
         grid: _grid,
+        fitDesigner: _fitDesigner,
+        fitRun: _fitRun,
       ),
     ),
   );

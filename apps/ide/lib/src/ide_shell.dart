@@ -39,6 +39,8 @@ class IdeShell extends StatefulWidget {
     required this.controller,
     required this.strings,
     required this.grid,
+    this.fitDesigner,
+    this.fitRun,
   });
 
   /// The open project, [ProjectController.current], and the commands
@@ -48,6 +50,11 @@ class IdeShell extends StatefulWidget {
 
   /// Whether the designer's grid is on, kept from project to project.
   final ValueNotifier<bool> grid;
+
+  /// Whether the designer and the run window shrink a large form to fit
+  /// (D66), each kept from project to project.
+  final ValueNotifier<bool>? fitDesigner;
+  final ValueNotifier<bool>? fitRun;
 
   @override
   State<IdeShell> createState() => _IdeShellState();
@@ -487,6 +494,7 @@ class _IdeShellState extends State<IdeShell> {
             file: file,
             history: _histories.putIfAbsent(file, FormHistory.new),
             grid: widget.grid,
+            fit: widget.fitDesigner,
             locked: _running,
             strings: widget.strings,
             onOpenHandler: (control) => _openHandler(file, control),
@@ -521,7 +529,11 @@ class _IdeShellState extends State<IdeShell> {
         if (running)
           ColoredBox(
             color: Theme.of(context).colorScheme.scrim.withValues(alpha: 0.2),
-            child: RunWindow(key: ObjectKey(session), session: session),
+            child: RunWindow(
+              key: ObjectKey(session),
+              session: session,
+              fit: widget.fitRun,
+            ),
           ),
       ],
     );

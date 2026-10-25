@@ -119,6 +119,8 @@ class IdeStrings {
     required this.noPicture,
     required this.noAnchor,
     required this.formSize,
+    required this.fit,
+    required this.fitTip,
     required this.phonePreset,
     required this.tabletPreset,
     required this.desktopPreset,
@@ -374,6 +376,11 @@ class IdeStrings {
   /// The form size presets (D60): the menu's button, the three presets,
   /// and the button that swaps the form's width and height.
   final String formSize;
+
+  /// Shrinking a large form to fit (D66): the designer's switch, and what
+  /// it does.
+  final String fit;
+  final String fitTip;
   final String phonePreset;
   final String tabletPreset;
   final String desktopPreset;
@@ -571,6 +578,8 @@ class IdeStrings {
     noPicture: '(None)',
     noAnchor: '(None: stays near the middle)',
     formSize: 'Size',
+    fit: 'Fit',
+    fitTip: 'Shrink a form larger than the space so that all of it shows; the form itself does not change',
     phonePreset: 'Phone',
     tabletPreset: 'Tablet',
     desktopPreset: 'Desktop',
@@ -743,6 +752,8 @@ class IdeStrings {
     noPicture: '(없음)',
     noAnchor: '(없음: 가운데 가까이 머묾)',
     formSize: '크기',
+    fit: '화면에 맞춤',
+    fitTip: '폼이 자리보다 크면 줄여서 다 보이게 합니다. 폼 자체는 바뀌지 않습니다',
     phonePreset: '폰',
     tabletPreset: '태블릿',
     desktopPreset: '데스크톱',
