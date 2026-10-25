@@ -5,7 +5,18 @@
 
 [English](README.md)
 
-> **상태:** 개발 초기입니다. 브라우저의 [**놀이터**](https://kooboom.github.io/gubasic)에서 GuBASIC 프로그램이 **실행됩니다**: 변수, 반복, 프로시저, `Try`, `Debug.Print`, `MsgBox`, `InputBox`. [**IDE**](https://kooboom.github.io/gubasic/ide/)([apps/ide](apps/ide), macOS·Windows·웹)에서는 폼 디자이너로 폼과 컨트롤(`Button`, `Label`, `TextBox`)을 그리고, 코드를 고치고, 실행 화면에서 실행합니다.
+> **상태: 1단계 완료**(v0.1.0, 개발판). 폼을 그리고, 컨트롤을 더블클릭하고, BASIC을 쓰고, F5를 누르는 일이 모두 IDE 안에서 되며, Flutter를 설치하지 않아도 됩니다. 내 앱을 플랫폼마다 빌드하는 것(트랜스파일러)은 [2단계](docs/ROADMAP.ko.md)입니다.
+>
+> - **웹 IDE:** https://kooboom.github.io/gubasic/ide/ (macOS·Windows 앱도 있음: [apps/ide](apps/ide))
+> - **놀이터:** https://kooboom.github.io/gubasic (개발용으로 언어만 따로 실행)
+>
+> **지금 할 수 있는 것**
+> - `Button`, `Label`, `TextBox`, `CheckBox`, `ListBox`, `Image`로 폼을 그리고, 속성 창에서 속성을 정하고, `Anchor`와 폰·태블릿·데스크톱 크기를 씁니다.
+> - 컨트롤을 더블클릭해 이벤트 처리기를 씁니다. 코드 편집기가 코드에 색을 입히고, 이름을 완성하고, 블록을 닫아 줍니다.
+> - F5를 눌러 IDE 안에서 앱을 실행합니다. 오류는 한국어나 영어로 설명하고, 누르면 그 줄로 갑니다.
+> - 프로젝트를 브라우저에 보관하거나 macOS·Windows에서 폴더로 저장하고, `.zip`으로 내려받습니다. 예제 hello, quiz, typing에서 시작할 수 있습니다.
+>
+> **알려진 한계:** 아직 내 앱을 빌드할 수 없고(2단계), 프로젝트에는 폼이 하나뿐이며, macOS·Windows 앱은 서명하지 않은 개발판이고, Windows 앱은 CI 빌드와 위젯 테스트로만 확인했습니다. 전체 목록: [docs/KNOWN_ISSUES.ko.md](docs/KNOWN_ISSUES.ko.md).
 
 ---
 

@@ -5,7 +5,18 @@ Draw your interface, double-click a control, write a few lines of BASIC — and 
 
 [한국어](README.ko.md)
 
-> **Status:** early development. GuBASIC programs **run** in the [**playground**](https://kooboom.github.io/gubasic) in your browser: variables, loops, procedures, `Try`, `Debug.Print`, `MsgBox` and `InputBox`. The [**IDE**](https://kooboom.github.io/gubasic/ide/) ([apps/ide](apps/ide), on macOS, Windows and the web) draws forms with their controls (`Button`, `Label`, `TextBox`) in its form designer, edits their code, and runs them in its run window.
+> **Status: stage 1 complete** (v0.1.0, a development build). Draw a form, double-click a control, write BASIC and press F5, all inside the IDE, with no Flutter installed. Building your own apps for each platform (the transpiler) is [stage 2](docs/ROADMAP.md).
+>
+> - **Web IDE:** https://kooboom.github.io/gubasic/ide/ (also as an app for macOS and Windows: [apps/ide](apps/ide))
+> - **Playground:** https://kooboom.github.io/gubasic (the language on its own, for development)
+>
+> **What you can do now**
+> - Draw forms with `Button`, `Label`, `TextBox`, `CheckBox`, `ListBox` and `Image`, set their properties in the Properties window, and use `Anchor` and the phone, tablet and desktop sizes.
+> - Double-click a control to write its event handler. The code editor colours the code, completes names and closes blocks.
+> - Press F5 to run the app in the IDE. Errors are explained in English or Korean, and a click goes to the line.
+> - Keep projects in the browser, or as folders on macOS and Windows, and download them as `.zip`. Start from the examples: hello, quiz and typing.
+>
+> **Known limits:** your apps cannot be built yet (stage 2); a project has one form; the macOS and Windows apps are unsigned development builds, and the Windows app has been checked only by CI builds and widget tests. The full list: [docs/KNOWN_ISSUES.md](docs/KNOWN_ISSUES.md).
 
 ---
 

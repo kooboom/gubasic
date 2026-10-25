@@ -12,7 +12,7 @@ Each stage ends with something that runs. Small, finished stages beat a big unfi
 - [x] Language draft ([LANGUAGE.md](LANGUAGE.md))
 - [x] Repository setup: license, CI that runs `dart test`
 
-## Stage 1 — Draw, double-click, run (current)
+## Stage 1 — Draw, double-click, run (done, v0.1.0)
 
 The core Visual Basic experience, entirely inside the IDE.
 
@@ -38,7 +38,7 @@ The core Visual Basic experience, entirely inside the IDE.
 
 **Done when:** a beginner can build a small quiz app and run it without installing Flutter.
 
-## Stage 2 — Build real apps
+## Stage 2 — Build real apps (next)
 
 - [ ] Transpiler: GuBASIC → Dart → Flutter project
 - [ ] Build for macOS, Windows, Android, Web
