@@ -26,7 +26,7 @@ void main() {
     final c = builtinComponents['listbox']!;
     expect(c.defaultEvent, 'Changed');
     expect(c.designProperties.map((p) => p.name),
-        ['Left', 'Top', 'Width', 'Height']);
+        ['Left', 'Top', 'Width', 'Height', 'Anchor']);
     expect(c.properties['listindex']!.changeEvent, 'Changed');
     expect(c.properties['listindex']!.designTime, isFalse);
     expect(c.properties['listcount']!.readOnly, isTrue);

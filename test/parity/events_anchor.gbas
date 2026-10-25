@@ -1,0 +1,21 @@
+' Anchor (D57): where each control goes when the form changes size.
+Sub Show(c As Object)
+    Debug.Print(c.Left & "," & c.Top & " " & c.Width & "x" & c.Height)
+End Sub
+
+Sub btnShow_Click()
+    Debug.Print("Form " & Me.Width & "x" & Me.Height & " / " & btnOk.Anchor & " / [" & lblMiddle.Anchor & "]")
+    Show(btnOk)
+    Show(txtNote)
+    Show(lstAll)
+    Show(lblMiddle)
+    Show(chkLeft)
+End Sub
+
+Sub btnMove_Click()
+    ' Placed by the program: kept from here on, at this size.
+    lblMiddle.Left = 100
+    chkLeft.Anchor = "RIGHT top"
+    ' The program makes the form larger: the controls follow too.
+    Me.Width = 360
+End Sub

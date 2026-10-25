@@ -147,6 +147,7 @@ Handles ReDim Preserve Optional Of ByVal
 | A035 | 타입에 없는 멤버. 철자가 비슷한 멤버가 있음(`lstCity.ListIndx`: "혹시 ListIndex인가요") |
 | A036 | 타입에 없는 멤버. 다른 버전의 BASIC에서 쓰는 이름이고, GuBASIC에서는 이름이 다름(`btnOK.Text`: `Caption`을 씀. DESIGN.ko.md D50) |
 | A037 | **경고.** 그림 속성에 프로젝트에 없는 그림 이름을 글자로 넣음(`imgShape.Picture = "tri.png"`). 실행하면 거기서 멈춤(R013)(11.1절) |
+| A038 | **경고.** `Anchor`에 가장자리가 아닌 단어가 있는 글자를 넣음(`btnOk.Anchor = "Rihgt"`). 실행하면 거기서 멈춤(R014)(11.1절) |
 
 **폼·프로젝트 파일**
 
@@ -170,6 +171,7 @@ Handles ReDim Preserve Optional Of ByVal
 | F014 | 그림 이름으로 쓸 수 없는 이름의 프로젝트 그림(11.3절) |
 | F015 | 대소문자만 다른 두 프로젝트 그림(11.3절) |
 | F016 | 폼 파일의 그림 속성이 프로젝트에 없는 그림을 가리킴(11.1절) |
+| F017 | 폼 파일의 `Anchor`에 가장자리가 아닌 단어가 있음(11.1절) |
 
 **실행 중**
 
@@ -190,6 +192,7 @@ Handles ReDim Preserve Optional Of ByVal
 | R011 | `SaveSetting`으로 프로그램의 설정이 65536자를 넘게 됨(10절) |
 | R012 | `SaveSetting`이 설정을 저장하지 못함. 예: 브라우저 저장 공간이 가득 참(10절) |
 | R013 | 그림 속성에 프로젝트에 없는 그림 이름을 넣음(11.1절) |
+| R014 | `Anchor`에 가장자리가 아닌 단어가 있는 글자를 넣음(11.1절) |
 
 ## 2. 타입
 
@@ -608,12 +611,13 @@ End Sub
 | `ListBox` | `ListIndex` (`Integer`, 코드에서만 정함), `ListCount` (`Integer`)와 `Text` (`String`)는 읽기만 함, `Left`, `Top`, `Width`, `Height` (`Integer`). 메서드: `AddItem(item)`, `RemoveItem(index)`, `Clear()`, `List(index)` | `Changed` |
 
 - 컨트롤은 모두 컴포넌트이며, 기본값과 함께 `components/이름/component.yaml`에 정의되어 있습니다(DESIGN.ko.md 5절). 위 표의 이벤트는 기본 이벤트, 곧 디자이너에서 더블클릭하면 만들어지는 이벤트를 먼저 적었습니다.
-- `Left`, `Top`, `Width`, `Height`는 논리 픽셀(화면 밀도가 달라도 같은 크기) 단위이며, 폼 안쪽의 왼쪽 위 모서리부터 잽니다. 폼의 `Width`와 `Height`는 창의 제목 표시줄과 테두리를 뺀 안쪽 크기입니다. 나중 단계에서는 이 속성들의 뜻을 바꾸지 않고 속성(`Anchor` 등)을 더합니다(D12).
+- `Left`, `Top`, `Width`, `Height`는 논리 픽셀(화면 밀도가 달라도 같은 크기) 단위이며, 폼 안쪽의 왼쪽 위 모서리부터 잽니다. 폼의 `Width`와 `Height`는 창의 제목 표시줄과 테두리를 뺀 안쪽 크기입니다. `Anchor`(아래)는 폼 크기가 바뀔 때 컨트롤을 옮길 뿐, 이 속성들의 뜻을 바꾸지 않습니다(D12).
 - `Integer` 속성은 32비트입니다: −2147483648부터 2147483647까지이며 모든 플랫폼에서 같습니다. `Width`와 `Height`는 음수가 될 수 없습니다. 범위를 벗어난 값은 프로그램이 넣을 때 실행 중 오류(R010), 폼 파일에서는 F012입니다.
 - **`TextBox.Changed`**는 `Text`가 바뀐 뒤에 실행됩니다. 사용자가 입력했든 프로그램이 `Text`를 바꿨든 같습니다. 프로그램이 `Text`를 바꾸면 처리기는 그 대입의 일부로 바로 실행되므로, 다음 줄에서 이미 처리기가 한 일을 볼 수 있습니다. 같은 글자를 다시 넣으면 실행되지 않습니다. 처리기가 자기 TextBox의 `Text`를 바꿔도 그 변화로 처리기가 다시 시작되지는 않습니다(8.1절).
 - **입력기(IME)로 입력할 때.** `Text`에는 입력기가 **확정한** 글자만 들어 있고, `Changed`는 입력기가 글자를 확정할 때마다 실행됩니다. 화면에 보이는 글자가 아직 확정되지 않았을 수 있습니다. 한글은 받침이 다음 글자로 넘어갈 수 있기 때문입니다(도깨비불). 갈가를 입력하면 갈, 갉, 갈가 순서로 보이는데, 갈은 ㅏ를 칠 때 비로소 확정되고 ㄱ은 다음 글자로 넘어갑니다. 그래서 처리기가 음절 중간에 글자를 바꾸는 일이 없습니다. 음절 중간에 글자를 바꾸면 Windows의 Flutter에서 입력이 깨지는 문제가 알려져 있습니다([flutter/flutter#121376](https://github.com/flutter/flutter/issues/121376)). 대가: 글자 수 세기처럼 키를 누를 때마다 따라가는 코드는 입력 중인 음절을 입력기가 확정한 뒤에야 봅니다. 어느 글자가 아직 조합 중인지 플랫폼이 알려 주지 않는 곳(macOS 앱, D37)에서는 runtime이 글자가 바뀌는 모양으로 알아내며, 결과는 같습니다.
 - **`CheckBox.Changed`**는 `Checked`가 바뀐 뒤에 실행됩니다. 사용자가 상자나 `Caption`을 클릭했을 때, 그리고 프로그램이 `Checked`를 바꿨을 때입니다. `TextBox.Changed`와 같이, 프로그램이 바꾸면 처리기가 바로 실행되고, 같은 값을 다시 넣으면 실행되지 않으며, 처리기가 자기 `Checked`를 바꿔도 그 변화로 다시 시작되지 않습니다. CheckBox의 `Changed`가 실행 중일 때 그 CheckBox를 클릭하면 무시되고 상자도 그대로이므로, 상자는 처리기가 다루는 상태를 보여 줍니다(8.1절). CheckBox의 상태는 두 가지이며, Visual Basic 6의 세 번째 상태(회색)는 넣지 않았습니다(DESIGN.md D44).
 - **Image**는 프로젝트의 그림 하나를 보입니다(11.3절). `imgShape.Picture = "triangle.png"`로 보이고, `""`로 지웁니다. 이름은 코드의 이름처럼 대소문자를 가리지 않고(`"Triangle.PNG"`는 `triangle.png`), 읽으면 프로젝트에 적힌 철자로 나옵니다. 프로젝트에 없는 그림 이름은 프로그램을 멈춥니다(R013). 코드에 글자로 쓴 이름은 분석기가 먼저 경고하고(A037), 폼 파일에서는 F016입니다. `Stretch = False`(기본값)이면 그림 전체를 비율을 지켜 컨트롤 안에 맞추고, `True`이면 컨트롤을 가득 채워 그림이 눌려 보일 수 있습니다. Visual Basic 6의 Image는 `Stretch`가 False일 때 그림 크기에 맞춰 컨트롤 크기가 바뀌지만([Microsoft](https://learn.microsoft.com/en-us/previous-versions/visualstudio/visual-basic-6/aa242027(v=vs.60))), GuBASIC은 그린 크기를 그대로 둡니다. Image는 Label처럼 다른 컨트롤 아래에 그려지고(DESIGN.ko.md D41), 그림이 있든 없든 영역 전체에서 클릭을 받습니다.
+- **`Anchor`**는 모든 컨트롤에 있으며, 폼 크기가 바뀔 때 컨트롤이 거리를 지킬 폼의 가장자리를 적습니다. 폼 크기는 사용자가 창 크기를 바꾸거나, 프로그램이 폼의 `Width`나 `Height`를 바꿀 때 바뀝니다(DESIGN.ko.md D57). 값은 글자입니다: `"Left Top"`(기본값, 그린 자리에 그대로 있음), `"Right Bottom"`(오른쪽 아래 모서리에 붙어 있음), `"Left Right"`(폼 너비를 따라 늘어남), `""`(가장자리 없음, 가운데 가까이 머묾). 단어의 순서와 대소문자는 상관없고 띄어쓰기나 쉼표로 나누며, 읽으면 `Left Top Right Bottom` 순서로 나옵니다. 마주 보는 두 가장자리에 붙인 컨트롤은 늘어나되 0보다 작아지지 않고, 어느 쪽에도 붙이지 않은 컨트롤은 폼이 커진 만큼의 절반을 움직입니다(내림). Visual Basic .NET의 규칙과 같습니다([Microsoft](https://learn.microsoft.com/en-us/dotnet/api/system.windows.forms.anchorstyles)). Visual Basic 6에서는 프로그램이 `Form_Resize`에서 컨트롤을 직접 옮깁니다([Microsoft](https://learn.microsoft.com/en-us/previous-versions/visualstudio/visual-basic-6/aa445540(v=vs.60))). `Left`, `Top`, `Width`, `Height`를 읽으면 지금 자리가 나옵니다. 프로그램이 자리를 정하거나 `Anchor`를 바꾼 컨트롤은 그 자리에 있다가 거기서부터 `Anchor`를 따릅니다. 다른 단어가 있는 글자는 프로그램을 멈춥니다(R014). 코드에 글자로 쓰면 분석기가 먼저 경고하고(A038), 폼 파일에서는 F017입니다.
 - **ListBox의 항목**은 코드에서 넣으며 번호는 0부터입니다. `AddItem(item)`은 끝에 하나를 넣고, `RemoveItem(index)`는 하나를 지우고, `Clear()`는 모두 지우며, `List(index)`는 한 항목의 글자를 돌려줍니다. `ListCount`는 항목 수, `ListIndex`는 고른 항목의 번호(고른 것이 없으면 −1), `Text`는 고른 항목의 글자(고른 것이 없으면 `""`)입니다. `ListCount`와 `Text`는 읽기만 할 수 있습니다(A034). `ListIndex`는 폼 파일이 아니라 코드에서만 정합니다(F013). 없는 항목 번호는 실행 중 오류(R003)이고, `ListIndex = -1`은 아무것도 고르지 않습니다. 디자이너에서 항목을 넣는 기능은 아직 없습니다(DESIGN.md D46).
 - **`ListBox.Changed`**는 `ListIndex`가 바뀔 때마다 실행됩니다. 사용자가 다른 항목을 고를 때, 프로그램이 `ListIndex`를 바꿀 때(`TextBox.Changed`처럼 그 대입의 일부로 바로), 그리고 `RemoveItem`이나 `Clear`가 고른 항목을 옮기거나 지울 때(그 호출의 일부로)입니다. 고른 항목보다 위의 항목을 지우면 고른 번호가 하나 당겨져 같은 항목이 계속 골라져 있고, 고른 항목을 지우거나 `Clear`하면 아무것도 고르지 않은 상태가 됩니다. 고른 항목을 다시 고르거나 같은 `ListIndex`를 넣으면 실행되지 않습니다. ListBox의 `Changed`가 실행 중일 때 그 ListBox에서 고르면 무시되고 아무것도 바뀌지 않습니다(8.1절).
 - **글자를 조합하는 중에 클릭할 때.** 클릭이 프로그램에 전달되기 전에, 어느 TextBox에서든 아직 조합 중인 글자를 확정합니다. 순서는 항상 같습니다: 글자 확정, `TextBox.Changed` 실행, 그다음 `Click` 실행(CheckBox나 ListBox를 클릭했다면 그 컨트롤의 `Changed` 실행). 그래서 사용자가 한글을 스페이스 없이 치고 바로 버튼을 누르면, `Click` 처리기의 `txtName.Text`는 이미 한글입니다.

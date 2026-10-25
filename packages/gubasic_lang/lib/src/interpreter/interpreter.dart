@@ -14,6 +14,7 @@ import '../ast/ast.dart';
 import '../ast/line_map.dart';
 import '../diagnostics/diagnostic.dart';
 import '../diagnostics/messages_en.dart';
+import '../forms/anchor.dart';
 import '../forms/component.dart';
 import '../forms/pictures.dart';
 import '../lexer/keyword.dart';
@@ -884,6 +885,9 @@ class Interpreter {
       _fail(DiagnosticCode.memberNotFound, e, [e.name.name, c.component.name]);
     }
     var v = _propertyValue(spec, value, e);
+    if (spec.anchor && v is String) {
+      v = normalAnchor(v) ?? _fail(DiagnosticCode.badAnchorValue, e, [v]);
+    }
     if (spec.picture && v is String && v.isNotEmpty) {
       // Any case names the picture; the property keeps the project's
       // spelling (D51).

@@ -86,7 +86,7 @@ class RunHost implements FormHost {
 
   @override
   void setProperty(String? control, String property, Object value) =>
-      model.control(control)!.set(property, value);
+      model.setProperty(control, property, value);
 
   @override
   Future<String?> loadSettings() => settings.load(project);

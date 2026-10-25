@@ -51,23 +51,27 @@ void main() {
     expect(
         describe('Button'),
         'Caption As String = , Left As Integer = 0, Top As Integer = 0, '
-        'Width As Integer = 96, Height As Integer = 32 | x_Click() | '
+        'Width As Integer = 96, Height As Integer = 32, Anchor As String = Left Top | '
+        'x_Click() | '
         'default Click');
     expect(
         describe('Label'),
         'Caption As String = , Left As Integer = 0, Top As Integer = 0, '
-        'Width As Integer = 120, Height As Integer = 24 | x_Click() | '
+        'Width As Integer = 120, Height As Integer = 24, Anchor As String = Left Top | '
+        'x_Click() | '
         'default Click');
     expect(
         describe('TextBox'),
         'Text As String = , Left As Integer = 0, Top As Integer = 0, '
-        'Width As Integer = 160, Height As Integer = 32 | x_Changed() | '
+        'Width As Integer = 160, Height As Integer = 32, Anchor As String = Left Top | '
+        'x_Changed() | '
         'default Changed');
     expect(
         describe('CheckBox'),
         'Caption As String = , Checked As Boolean = false, '
         'Left As Integer = 0, Top As Integer = 0, '
-        'Width As Integer = 120, Height As Integer = 32 | x_Changed() | '
+        'Width As Integer = 120, Height As Integer = 32, Anchor As String = Left Top | '
+        'x_Changed() | '
         'default Changed');
     expect(builtinComponents['checkbox']!.properties['checked']!.changeEvent,
         'Changed');

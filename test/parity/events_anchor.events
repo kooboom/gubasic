@@ -1,0 +1,15 @@
+' Anchor (D57): the form made larger, smaller by an odd amount, back as
+' drawn (every control exactly where it was), changed by the program,
+' and smaller than drawn (stretched controls go down to 0).
+btnShow.Click
+Form.Resize 400 260
+btnShow.Click
+Form.Resize 301 199
+btnShow.Click
+Form.Resize 300 200
+btnShow.Click
+btnMove.Click
+btnShow.Click
+Form.Resize 200 100
+btnShow.Click
+Close

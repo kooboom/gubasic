@@ -2,6 +2,7 @@ import 'package:yaml/yaml.dart';
 
 import '../analyzer/types.dart';
 import '../diagnostics/diagnostic.dart';
+import 'anchor.dart';
 import 'component.dart';
 import 'pictures.dart';
 import 'yaml_reader.dart';
@@ -202,6 +203,15 @@ void _properties(YamlReader r, YamlNode node, ComponentSpec component,
     if (!spec.accepts(v)) {
       r.report(value.span, DiagnosticCode.propertyOutOfRange,
           [spec.name, '${spec.min}', '${spec.max}']);
+      continue;
+    }
+    if (spec.anchor && v is String) {
+      final anchor = normalAnchor(v);
+      if (anchor == null) {
+        r.report(value.span, DiagnosticCode.badAnchor, [v]);
+        continue;
+      }
+      into[spec.name] = anchor;
       continue;
     }
     if (spec.picture && v is String && v.isNotEmpty) {

@@ -1,5 +1,7 @@
 import 'package:flutter/foundation.dart';
 
+import 'anchor.dart';
+
 /// The kinds of built-in controls (components/NAME/component.yaml).
 enum GbControlKind { form, button, label, textBox, checkBox, listBox, image }
 
@@ -29,6 +31,9 @@ class GbControlState extends ChangeNotifier {
   Object operator [](String property) =>
       _properties[property] ??
       (throw ArgumentError('${name ?? 'Form'} has no property $property'));
+
+  /// Whether the control has [property].
+  bool has(String property) => _properties.containsKey(property);
 
   String text(String property) => this[property] as String;
   int integer(String property) => this[property] as int;
@@ -70,7 +75,11 @@ class GbFormModel {
   }) : pictures = pictures ?? _noPictures,
        accepts = accepts ?? _acceptAll,
        form = GbControlState(null, GbControlKind.form, form),
-       controls = List.unmodifiable(controls);
+       controls = List.unmodifiable(controls) {
+    for (final c in this.controls) {
+      if (c.has('Anchor')) _bases[c] = _baseOf(c);
+    }
+  }
 
   final GbControlState form;
 
@@ -98,6 +107,66 @@ class GbFormModel {
   ]);
 
   final _committers = <VoidCallback>[];
+
+  /// For each control with an Anchor: where it was, and the form's size
+  /// then, as the form file or the program last placed it (D57).
+  final _bases = <GbControlState, (GbRect, int, int)>{};
+
+  static const _placing = {'Left', 'Top', 'Width', 'Height', 'Anchor'};
+
+  (GbRect, int, int) _baseOf(GbControlState c) => (
+    (
+      left: c.integer('Left'),
+      top: c.integer('Top'),
+      width: c.integer('Width'),
+      height: c.integer('Height'),
+    ),
+    form.integer('Width'),
+    form.integer('Height'),
+  );
+
+  /// Moves the controls as their Anchor says, for the form's size now.
+  void _place() {
+    for (final MapEntry(key: c, value: (base, width, height))
+        in _bases.entries) {
+      final r = gbAnchored(
+        base,
+        c.text('Anchor'),
+        baseWidth: width,
+        baseHeight: height,
+        width: form.integer('Width'),
+        height: form.integer('Height'),
+      );
+      c
+        ..set('Left', r.left)
+        ..set('Top', r.top)
+        ..set('Width', r.width)
+        ..set('Height', r.height);
+    }
+  }
+
+  /// Sets a property for the program (or a generated app). A control
+  /// placed or anchored this way stays where it is put, at the form's
+  /// size now, and follows its Anchor from there; a new `Width` or
+  /// `Height` of the form moves the controls as their Anchor says (D57).
+  void setProperty(String? name, String property, Object value) {
+    final c = control(name) ?? (throw ArgumentError('no control $name'));
+    c.set(property, value);
+    if (identical(c, form)) {
+      if (property == 'Width' || property == 'Height') _place();
+    } else if (_placing.contains(property) && _bases.containsKey(c)) {
+      _bases[c] = _baseOf(c);
+    }
+  }
+
+  /// The user makes the inside of the form [width] x [height] (the run
+  /// window's corner dragged): the controls move as their Anchor says.
+  void resize(int width, int height) {
+    form
+      ..set('Width', width)
+      ..set('Height', height);
+    _place();
+  }
 
   /// The control named [name] (any case), or null; null names the form.
   GbControlState? control(String? name) {

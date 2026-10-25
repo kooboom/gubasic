@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import '../analyzer/compile.dart';
+import '../forms/anchor.dart';
 import '../forms/form_file.dart';
 import '../interpreter/host.dart';
 import '../interpreter/interpreter.dart';
@@ -60,10 +61,20 @@ class CloseStep extends ScriptStep {
   const CloseStep(super.text);
 }
 
+/// `Form.Resize 600 400`: the user makes the inside of the form 600 x 400;
+/// the controls move as their Anchor says (D57).
+class ResizeStep extends ScriptStep {
+  const ResizeStep(super.text, this.width, this.height);
+
+  final int width;
+  final int height;
+}
+
 final _event = RegExp(r'^([A-Za-z][A-Za-z0-9_]*)\.([A-Za-z][A-Za-z0-9_]*)$');
 final _type = RegExp(r'^([A-Za-z][A-Za-z0-9_]*)\.Type\s+"((?:[^"]|"")*)"$');
 final _select = RegExp(r'^([A-Za-z][A-Za-z0-9_]*)\.Select\s+(\d+)$');
 final _answer = RegExp(r'^Answer\s+"((?:[^"]|"")*)"$');
+final _resize = RegExp(r'^Form\.Resize\s+(\d+)\s+(\d+)$', caseSensitive: false);
 
 /// Reads an event script. Each line is one step; `'` starts a comment.
 /// Throws a [FormatException] for a line it cannot read.
@@ -82,6 +93,8 @@ List<ScriptStep> parseEventScript(String text) {
       steps.add(CloseStep(line));
     } else if ((m = _answer.firstMatch(line)) != null) {
       steps.add(AnswerStep(line, m![1]!.replaceAll('""', '"')));
+    } else if ((m = _resize.firstMatch(line)) != null) {
+      steps.add(ResizeStep(line, int.parse(m![1]!), int.parse(m[2]!)));
     } else if ((m = _select.firstMatch(line)) != null) {
       steps.add(SelectStep(line, m![1]!, int.parse(m[2]!)));
     } else if ((m = _type.firstMatch(line)) != null) {
@@ -155,7 +168,56 @@ class ScriptedHost implements FormHost {
       for (final p in c.component.properties.values.where((p) => p.isStored)) {
         _properties[_key(c.name, p.name)] = c.valueOf(p.name);
       }
+      if (c.component.properties.values.any((p) => p.anchor)) _rebase(c.name);
     }
+  }
+
+  /// For each control with an Anchor: where it was, and the form's size
+  /// then, last set in the form file or by the program (D57).
+  final _bases = <String, (AnchorRect, int, int)>{};
+
+  static const _placing = {'left', 'top', 'width', 'height', 'anchor'};
+
+  int _int(String? control, String property) =>
+      _properties[_key(control, property)] as int;
+
+  void _rebase(String control) {
+    _bases[control.toLowerCase()] = (
+      (
+        left: _int(control, 'Left'),
+        top: _int(control, 'Top'),
+        width: _int(control, 'Width'),
+        height: _int(control, 'Height'),
+      ),
+      _int(null, 'Width'),
+      _int(null, 'Height'),
+    );
+  }
+
+  /// Moves the controls as their Anchor says, for the form's size now.
+  void _place() {
+    for (final MapEntry(key: control, value: (base, width, height))
+        in _bases.entries) {
+      final r = anchoredRect(
+        base,
+        _properties[_key(control, 'Anchor')] as String,
+        baseWidth: width,
+        baseHeight: height,
+        width: _int(null, 'Width'),
+        height: _int(null, 'Height'),
+      );
+      _properties[_key(control, 'Left')] = r.left;
+      _properties[_key(control, 'Top')] = r.top;
+      _properties[_key(control, 'Width')] = r.width;
+      _properties[_key(control, 'Height')] = r.height;
+    }
+  }
+
+  /// The user makes the inside of the form [width] x [height].
+  void resize(int width, int height) {
+    _properties[_key(null, 'Width')] = width;
+    _properties[_key(null, 'Height')] = height;
+    _place();
   }
 
   final _components = <String, String>{};
@@ -208,6 +270,14 @@ class ScriptedHost implements FormHost {
   void setProperty(String? control, String property, Object value) {
     _properties[_key(control, property)] = value;
     transcript.add(TranscriptLine.setProperty(control, property, value));
+    final lower = property.toLowerCase();
+    if (control == null && (lower == 'width' || lower == 'height')) {
+      _place();
+    } else if (control != null &&
+        _placing.contains(lower) &&
+        _bases.containsKey(control.toLowerCase())) {
+      _rebase(control);
+    }
   }
 
   @override
@@ -283,6 +353,9 @@ abstract interface class ScriptDriver {
   /// The user closes the form; false when an open dialog blocks it.
   Future<bool> close();
 
+  /// The user makes the inside of the form [width] x [height].
+  Future<void> resize(int width, int height);
+
   /// Closes the form if it is still open, and waits for the run to end.
   Future<RunResult> finish();
 }
@@ -353,6 +426,8 @@ Future<List<String>> driveEventScript(
         }
       case CloseStep():
         if (!await driver.close()) out.add('Blocked: ${step.text}');
+      case ResizeStep(:final width, :final height):
+        await driver.resize(width, height);
     }
   }
   await settle();
@@ -444,6 +519,10 @@ class _HostDriver implements ScriptDriver {
     interpreter.closeForm();
     return true;
   }
+
+  @override
+  Future<void> resize(int width, int height) async =>
+      host.resize(width, height);
 
   @override
   Future<RunResult> finish() {

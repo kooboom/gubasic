@@ -264,6 +264,13 @@ class _WidgetDriver implements ScriptDriver {
   Future<bool> close() => _tap(find.byKey(runWindowCloseKey));
 
   @override
+  Future<void> resize(int width, int height) async {
+    // As the run window does when its corner is dragged.
+    host.model.resize(width, height);
+    await tester.pump();
+  }
+
+  @override
   Future<RunResult> finish() async {
     if (session.result == null) session.closeForm();
     for (var i = 0; i < 1000 && session.result == null; i++) {

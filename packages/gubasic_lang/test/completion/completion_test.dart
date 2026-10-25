@@ -40,6 +40,7 @@ void main() {
       final items = _complete('Sub W()\n    lstCity.|\nEnd Sub\n')!.items;
       expect(items.map((c) => c.toString()), [
         'method AddItem (item As String)',
+        'property Anchor String',
         'method Clear ()',
         'property Height Integer',
         'property Left Integer',

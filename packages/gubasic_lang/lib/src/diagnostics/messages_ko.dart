@@ -137,6 +137,8 @@ const Map<DiagnosticCode, String> koreanMessages = {
       '{0} 타입에는 {1} 멤버가 없습니다. 비슷한 멤버로 {2} 멤버가 있으니 철자를 확인해 주세요.',
   DiagnosticCode.unknownPictureInCode:
       '"{0}" 그림은 이 프로젝트에 없어서, 실행하면 여기서 프로그램이 멈춥니다. 그림을 프로젝트에 넣거나 이름을 확인해 주세요.',
+  DiagnosticCode.badAnchorInCode:
+      '"{0}" 값은 Anchor 값이 아니어서, 실행하면 여기서 프로그램이 멈춥니다. 컨트롤이 거리를 지킬 폼의 가장자리를 "Right Bottom"처럼 Left, Top, Right, Bottom으로 적거나, 없으면 ""로 적어 주세요.',
   DiagnosticCode.memberHasOtherName:
       '{0} 타입에는 {1} 멤버가 없습니다. GuBASIC에서는 이름이 달라서 {2} 멤버를 씁니다.',
   DiagnosticCode.notAssignable: '{0} 부분에는 값을 넣을 수 없습니다. '
@@ -197,6 +199,8 @@ const Map<DiagnosticCode, String> koreanMessages = {
       'GuBASIC은 Windows, macOS처럼 둘을 같은 이름으로 보므로 한 프로젝트에 함께 둘 수 없습니다. 하나의 이름을 바꿔 주세요.',
   DiagnosticCode.unknownPicture:
       '프로젝트에 "{0}" 그림이 없습니다. 프로젝트의 그림에 넣거나 다른 그림을 골라 주세요.',
+  DiagnosticCode.badAnchor:
+      '"{0}" 값은 Anchor 값이 아닙니다. 폼의 가장자리를 "Right Bottom"처럼 Left, Top, Right, Bottom으로 적거나, 없으면 ""로 적어 주세요.',
   DiagnosticCode.notDesignProperty: '{0} 속성은 폼 파일에 쓸 수 없습니다. '
       '프로그램이 실행될 때 정하거나 계산하는 속성입니다. 이 줄을 지우고, '
       '필요하면 코드(예: Form_Load)에서 정해 주세요.',
@@ -221,6 +225,8 @@ const Map<DiagnosticCode, String> koreanMessages = {
       '저장하는 값을 줄이거나 짧게 해 주세요.',
   DiagnosticCode.pictureNotFound:
       '이 프로젝트에 "{0}" 그림이 없습니다. 그림을 프로젝트에 넣거나 이름을 확인해 주세요.',
+  DiagnosticCode.badAnchorValue:
+      '"{0}" 값은 Anchor 값이 아닙니다. 가장자리를 "Right Bottom"처럼 Left, Top, Right, Bottom으로 적거나, 없으면 ""로 적어 주세요.',
   DiagnosticCode.settingsNotSaved: '설정을 저장하지 못했습니다({0}). '
       '설정을 보관하는 곳에 자리가 없을 수 있습니다.',
   DiagnosticCode.unhandledException:

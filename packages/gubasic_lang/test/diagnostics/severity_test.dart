@@ -12,6 +12,8 @@ void main() {
       DiagnosticCode.unknownKey,
       // The line may never run, and the picture may be added later (D51).
       DiagnosticCode.unknownPictureInCode,
+      // The line may never run, as for a picture (D57).
+      DiagnosticCode.badAnchorInCode,
     };
     for (final code in DiagnosticCode.values) {
       expect(

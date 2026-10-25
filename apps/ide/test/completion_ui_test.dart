@@ -93,7 +93,7 @@ void main() {
     await caretAt(t, body);
     await typeText(t, 'lstChoices.');
     expect(list(), findsOneWidget);
-    expect(rows(t).take(4), ['AddItem', 'Clear', 'Height', 'Left']);
+    expect(rows(t).take(4), ['AddItem', 'Anchor', 'Clear', 'Height']);
     await typeText(t, 'li');
     expect(rows(t), ['List', 'ListCount', 'ListIndex']);
     await t.sendKeyEvent(LogicalKeyboardKey.arrowDown);

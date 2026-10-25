@@ -12,6 +12,8 @@ properties:
   - { name: Top, type: Integer, default: 0 }
   - { name: Width, type: Integer, min: 0, default: 120 }
   - { name: Height, type: Integer, min: 0, default: 32 }
+  # The edges of the form whose distance it keeps (D57).
+  - { name: Anchor, type: String, default: "Left Top", anchor: true }
 events:
   - Changed()
 methods: []

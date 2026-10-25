@@ -2,6 +2,7 @@ import 'package:yaml/yaml.dart';
 
 import '../analyzer/builtins.dart';
 import '../analyzer/types.dart';
+import 'anchor.dart';
 import 'components.g.dart';
 
 /// The range of an Integer property unless its component.yaml narrows it:
@@ -22,6 +23,7 @@ class PropertySpec {
     this.readOnly = false,
     this.internal = false,
     this.picture = false,
+    this.anchor = false,
   }) : designTime = designTime && !readOnly && !internal;
 
   final String name;
@@ -61,6 +63,12 @@ class PropertySpec {
   /// for none (Image's Picture, D51): the form file and the program may
   /// give it only those names (F016, A037, R013), in any case.
   final bool picture;
+
+  /// A String property naming the edges of the form a control keeps its
+  /// distance to (`Anchor`, D57): the form file and the program may give
+  /// it only edge names (F017, A038, R014), kept as [normalAnchor] gives
+  /// them.
+  final bool anchor;
 
   /// Whether a host keeps its value: all but the [readOnly] ones.
   bool get isStored => !readOnly;
@@ -188,12 +196,14 @@ ComponentSpec readComponentFile(String text) {
     final readOnly = p['readOnly'] ?? false;
     final designTime = p['designTime'] ?? true;
     final picture = p['picture'] ?? false;
+    final anchor = p['anchor'] ?? false;
     if (internal is! bool ||
         readOnly is! bool ||
         designTime is! bool ||
-        picture is! bool) {
-      throw FormatException('$name: internal, readOnly, designTime and '
-          'picture are true or false');
+        picture is! bool ||
+        anchor is! bool) {
+      throw FormatException('$name: internal, readOnly, designTime, '
+          'picture and anchor are true or false');
     }
     final type = typeName == 'list(of string)' && internal
         ? const ListType(GbType.string)
@@ -239,10 +249,17 @@ ComponentSpec readComponentFile(String text) {
         designTime: designTime,
         readOnly: readOnly,
         internal: internal,
-        picture: picture);
+        picture: picture,
+        anchor: anchor);
     if (picture && (type != GbType.string || spec.defaultValue != '')) {
       throw FormatException('$name: a picture property is a String, '
           'empty by default');
+    }
+    if (anchor &&
+        (type != GbType.string ||
+            normalAnchor(spec.defaultValue as String) != spec.defaultValue)) {
+      throw FormatException('$name: an anchor property is a String whose '
+          'default names edges as normalAnchor writes them');
     }
     if (!spec.accepts(spec.defaultValue)) {
       throw FormatException('$name: default is out of range');

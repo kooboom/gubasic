@@ -1,0 +1,52 @@
+> btnShow.Click
+Debug.Print: Form 300x200 / Right Bottom / []
+Debug.Print: 212,168 80x24
+Debug.Print: 8,40 284x24
+Debug.Print: 8,72 140x88
+Debug.Print: 160,80 60x20
+Debug.Print: 160,120 120x24
+> Form.Resize 400 260
+> btnShow.Click
+Debug.Print: Form 400x260 / Right Bottom / []
+Debug.Print: 312,228 80x24
+Debug.Print: 8,40 384x24
+Debug.Print: 8,72 240x148
+Debug.Print: 210,110 60x20
+Debug.Print: 160,120 120x24
+> Form.Resize 301 199
+> btnShow.Click
+Debug.Print: Form 301x199 / Right Bottom / []
+Debug.Print: 213,167 80x24
+Debug.Print: 8,40 285x24
+Debug.Print: 8,72 141x87
+Debug.Print: 160,79 60x20
+Debug.Print: 160,120 120x24
+> Form.Resize 300 200
+> btnShow.Click
+Debug.Print: Form 300x200 / Right Bottom / []
+Debug.Print: 212,168 80x24
+Debug.Print: 8,40 284x24
+Debug.Print: 8,72 140x88
+Debug.Print: 160,80 60x20
+Debug.Print: 160,120 120x24
+> btnMove.Click
+Set lblMiddle.Left: 100
+Set chkLeft.Anchor: Top Right
+Set Form.Width: 360
+> btnShow.Click
+Debug.Print: Form 360x200 / Right Bottom / []
+Debug.Print: 272,168 80x24
+Debug.Print: 8,40 344x24
+Debug.Print: 8,72 200x88
+Debug.Print: 130,80 60x20
+Debug.Print: 220,120 120x24
+> Form.Resize 200 100
+> btnShow.Click
+Debug.Print: Form 200x100 / Right Bottom / []
+Debug.Print: 112,68 80x24
+Debug.Print: 8,40 184x24
+Debug.Print: 8,72 40x0
+Debug.Print: 50,30 60x20
+Debug.Print: 60,120 120x24
+> Close
+Closed

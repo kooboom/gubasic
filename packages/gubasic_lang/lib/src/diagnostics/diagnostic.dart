@@ -261,6 +261,10 @@ enum DiagnosticCode {
   /// (R013). Args: the text.
   unknownPictureInCode('A037', DiagnosticSeverity.warning),
 
+  /// Text given to `Anchor` (`btnOk.Anchor = "Rihgt"`) with a word that is
+  /// not an edge: the program would stop there (R014). Args: the text.
+  badAnchorInCode('A038', DiagnosticSeverity.warning),
+
   // Form and project files (.form.yaml, .gbproj)
 
   /// The file is not in the expected layout (YAML syntax).
@@ -320,6 +324,10 @@ enum DiagnosticCode {
   /// Args: the name.
   unknownPicture('F016'),
 
+  /// `Anchor` in a form file with a word that is not an edge. Args: the
+  /// value.
+  badAnchor('F017'),
+
   // Run time (the interpreter)
 
   /// An Integer result outside the 64-bit range.
@@ -365,7 +373,10 @@ enum DiagnosticCode {
 
   /// A picture property set to a name the project has no picture of.
   /// Args: the name.
-  pictureNotFound('R013');
+  pictureNotFound('R013'),
+
+  /// `Anchor` set to text with a word that is not an edge. Args: the text.
+  badAnchorValue('R014');
 
   const DiagnosticCode(this.code, [this.severity = DiagnosticSeverity.error]);
 

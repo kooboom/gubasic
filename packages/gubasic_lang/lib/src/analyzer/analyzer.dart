@@ -1,6 +1,7 @@
 import '../ast/ast.dart';
 import '../ast/line_map.dart';
 import '../diagnostics/diagnostic.dart';
+import '../forms/anchor.dart';
 import '../forms/component.dart';
 import '../forms/form_file.dart';
 import '../forms/pictures.dart';
@@ -532,6 +533,7 @@ class _Analyzer {
         } else {
           targetType = t;
           _pictureName(target, s.value);
+          _anchorValue(target, s.value);
         }
       case InvokeExpr():
         final t = _invoke(target, valueNeeded: true);
@@ -562,6 +564,18 @@ class _Analyzer {
     if (property == null || !property.picture || value.value.isEmpty) return;
     if (!pictures.containsKey(pictureKey(value.value))) {
       _reportAt(value, DiagnosticCode.unknownPictureInCode, [value.value]);
+    }
+  }
+
+  /// Warns when text with a word that is not an edge is given to an
+  /// anchor property (A038): the program would stop there (R014).
+  void _anchorValue(MemberExpr target, Expr value) {
+    final type = _result.types[target.target];
+    if (value is! StringLiteral || type is! ControlType) return;
+    final property = type.component.properties[target.name.name.toLowerCase()];
+    if (property == null || !property.anchor) return;
+    if (normalAnchor(value.value) == null) {
+      _reportAt(value, DiagnosticCode.badAnchorInCode, [value.value]);
     }
   }
 
