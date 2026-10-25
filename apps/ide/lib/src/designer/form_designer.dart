@@ -327,6 +327,35 @@ class _FormDesignerState extends State<FormDesigner> {
     );
   }
 
+  /// The form's area, where a tool dragged from the toolbox is dropped.
+  final _dropArea = GlobalKey();
+
+  /// A tool dragged from the toolbox and dropped on the form: a control of
+  /// its default size there, its top left corner where the pointer was
+  /// (D69).
+  void _drop(DragTargetDetails<ComponentSpec> details) {
+    _focus.requestFocus();
+    final area = _dropArea.currentContext?.findRenderObject();
+    if (!_canEdit || area is! RenderBox) return;
+    // Through the area's transform: on a form shrunk to fit, the point on
+    // the form the user sees.
+    final p = area.globalToLocal(details.offset);
+    final at = Point(p.dx, p.dy);
+    final form = _form;
+    final type = details.data;
+    final name = newControlName(form, type);
+    setState(() => _tool = null);
+    _apply(
+      withControl(
+        form,
+        type,
+        name,
+        drawnBox(form, type, start: at, end: at, grid: _grid),
+      ),
+      select: name,
+    );
+  }
+
   // The mouse on the form.
 
   Point<double> _point(PointerEvent e) =>
@@ -1142,58 +1171,63 @@ class _FormDesignerState extends State<FormDesigner> {
           if (kIsWeb) BrowserContextMenu.enableContextMenu();
           setState(() => _cursor = MouseCursor.defer);
         },
-        child: Listener(
-          behavior: HitTestBehavior.opaque,
-          onPointerDown: _down,
-          onPointerMove: _move,
-          onPointerUp: _up,
-          onPointerCancel: _cancel,
-          child: GestureDetector(
+        child: DragTarget<ComponentSpec>(
+          onWillAcceptWithDetails: (_) => _canEdit,
+          onAcceptWithDetails: _drop,
+          builder: (context, _, _) => Listener(
+            key: _dropArea,
             behavior: HitTestBehavior.opaque,
-            onDoubleTap: _doubleClick,
-            child: Stack(
-              children: [
-                if (_grid)
-                  Positioned.fill(
-                    child: CustomPaint(
-                      painter: _GridPainter(scheme.outlineVariant),
+            onPointerDown: _down,
+            onPointerMove: _move,
+            onPointerUp: _up,
+            onPointerCancel: _cancel,
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onDoubleTap: _doubleClick,
+              child: Stack(
+                children: [
+                  if (_grid)
+                    Positioned.fill(
+                      child: CustomPaint(
+                        painter: _GridPainter(scheme.outlineVariant),
+                      ),
                     ),
-                  ),
-                // Drawn by the runtime, as in the run window, but it takes
-                // no clicks, typing or focus.
-                Positioned.fill(
-                  child: IgnorePointer(
-                    child: ExcludeFocus(
-                      child: GbFormView(
-                        key: ValueKey(_modelVersion),
-                        model: _model,
+                  // Drawn by the runtime, as in the run window, but it takes
+                  // no clicks, typing or focus.
+                  Positioned.fill(
+                    child: IgnorePointer(
+                      child: ExcludeFocus(
+                        child: GbFormView(
+                          key: ValueKey(_modelVersion),
+                          model: _model,
+                        ),
                       ),
                     ),
                   ),
-                ),
-                Positioned.fill(
-                  child: CustomPaint(
-                    painter: _MarksPainter(
-                      edges: [
-                        for (final c in form.controls)
-                          if (c.component.name == 'Label') boxNow(c),
-                      ],
-                      edgeColor: scheme.outline,
-                      selected: selected == null ? null : boxNow(selected),
-                      anchorLines: selected == null
-                          ? const []
-                          : anchorLines(
-                              boxNow(selected),
-                              selected.valueOf('Anchor') as String,
-                              size,
-                            ),
-                      drawing: _drawing,
-                      color: scheme.primary,
-                      handleFill: scheme.surface,
+                  Positioned.fill(
+                    child: CustomPaint(
+                      painter: _MarksPainter(
+                        edges: [
+                          for (final c in form.controls)
+                            if (c.component.name == 'Label') boxNow(c),
+                        ],
+                        edgeColor: scheme.outline,
+                        selected: selected == null ? null : boxNow(selected),
+                        anchorLines: selected == null
+                            ? const []
+                            : anchorLines(
+                                boxNow(selected),
+                                selected.valueOf('Anchor') as String,
+                                size,
+                              ),
+                        drawing: _drawing,
+                        color: scheme.primary,
+                        handleFill: scheme.surface,
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),

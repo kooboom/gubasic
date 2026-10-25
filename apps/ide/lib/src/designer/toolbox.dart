@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:gubasic_lang/gubasic_lang.dart';
 
@@ -6,7 +7,8 @@ import 'form_edit.dart';
 
 /// The designer's toolbox: the pointer, then a tool for each control
 /// type. Choosing a tool lets the user draw that control on the form; a
-/// double-click places one in the middle of the form at once.
+/// double-click places one in the middle of the form at once, and a tool
+/// dragged onto the form places one where it is dropped (D69).
 class Toolbox extends StatelessWidget {
   const Toolbox({
     super.key,
@@ -50,7 +52,7 @@ class Toolbox extends StatelessWidget {
           tip: strings.pointerTip,
           selected: tool == null,
           enabled: true,
-          onTapDown: () => onChoose(null),
+          onPress: () => onChoose(null),
         ),
         for (final type in toolboxComponents)
           _item(
@@ -61,8 +63,9 @@ class Toolbox extends StatelessWidget {
             tip: strings.placeTip.replaceAll('{0}', type.name),
             selected: tool == type,
             enabled: enabled,
-            onTapDown: () => onChoose(type),
+            onPress: () => onChoose(type),
             onDoubleTap: () => onPlace(type),
+            type: type,
           ),
       ],
     ),
@@ -76,42 +79,90 @@ class Toolbox extends StatelessWidget {
     required String tip,
     required bool selected,
     required bool enabled,
-    required VoidCallback onTapDown,
+    required VoidCallback onPress,
     VoidCallback? onDoubleTap,
+    ComponentSpec? type,
   }) {
     final scheme = Theme.of(context).colorScheme;
     final color = enabled
         ? (selected ? scheme.onSecondaryContainer : scheme.onSurface)
         : scheme.onSurface.withValues(alpha: 0.38);
+    final item = Container(
+      height: 26,
+      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 1),
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      decoration: BoxDecoration(
+        color: selected && enabled ? scheme.secondaryContainer : null,
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, size: 18, color: color),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              label,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(color: color),
+            ),
+          ),
+        ],
+      ),
+    );
     return Tooltip(
       message: tip,
       waitDuration: const Duration(milliseconds: 600),
-      child: GestureDetector(
+      // The tool is chosen as the button goes down: a tap would wait to
+      // see whether a double-click follows, and a drag on the form begun
+      // in that time drew nothing.
+      child: Listener(
         key: key,
         behavior: HitTestBehavior.opaque,
-        // The tool is chosen as the button goes down, without waiting to
-        // see whether a double-click follows.
-        onTapDown: enabled ? (_) => onTapDown() : null,
-        onDoubleTap: enabled ? onDoubleTap : null,
-        child: Container(
-          height: 26,
-          margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 1),
-          padding: const EdgeInsets.symmetric(horizontal: 8),
-          decoration: BoxDecoration(
-            color: selected && enabled ? scheme.secondaryContainer : null,
-            borderRadius: BorderRadius.circular(4),
-          ),
-          child: Row(
-            children: [
-              Icon(icon, size: 18, color: color),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  label,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(color: color),
+        onPointerDown: (e) {
+          if (enabled && e.buttons & kPrimaryButton != 0) onPress();
+        },
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onDoubleTap: enabled ? onDoubleTap : null,
+          child: type == null
+              ? item
+              : Draggable<ComponentSpec>(
+                  data: type,
+                  maxSimultaneousDrags: enabled ? 1 : 0,
+                  dragAnchorStrategy: pointerDragAnchorStrategy,
+                  feedback: _DragFeedback(icon: icon, label: label),
+                  child: item,
                 ),
-              ),
+        ),
+      ),
+    );
+  }
+}
+
+/// What follows the pointer while a tool is dragged onto the form: the
+/// tool, its top left corner where the control will go.
+class _DragFeedback extends StatelessWidget {
+  const _DragFeedback({required this.icon, required this.label});
+
+  final IconData icon;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return IgnorePointer(
+      child: Material(
+        color: scheme.secondaryContainer,
+        borderRadius: BorderRadius.circular(4),
+        elevation: 2,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, size: 18, color: scheme.onSecondaryContainer),
+              const SizedBox(width: 6),
+              Text(label, style: TextStyle(color: scheme.onSecondaryContainer)),
             ],
           ),
         ),

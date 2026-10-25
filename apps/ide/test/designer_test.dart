@@ -45,8 +45,7 @@ void main() {
 
   Future<void> chooseTool(WidgetTester tester, String type) async {
     await tester.tap(find.byKey(ValueKey('toolbox.$type')));
-    // Past the time a second click would make it a double-click.
-    await tester.pump(kDoubleTapTimeout);
+    await tester.pump();
   }
 
   /// Drags with the mouse on the form, from [from] to [to] inside it.
@@ -578,6 +577,8 @@ void main() {
     expect(await at(const Offset(250, 100)), SystemMouseCursors.basic);
     await chooseTool(tester, 'Label');
     expect(await at(const Offset(250, 101)), SystemMouseCursors.precise);
+    // Past the wait for a second click on the tool.
+    await tester.pump(kDoubleTapTimeout);
   });
 
   testWidgets('nothing moves while the program runs', (tester) async {
