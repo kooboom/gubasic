@@ -9,6 +9,7 @@ import 'src/ide_shell.dart';
 import 'src/project/examples.g.dart';
 import 'src/project/browser.dart';
 import 'src/project/folders.dart';
+import 'src/project/last_project.dart';
 import 'src/project/platform_browser.dart';
 import 'src/project/platform_folders.dart';
 import 'src/project/project_controller.dart';
@@ -38,6 +39,9 @@ Future<void> main() async {
       folders: platformFolders(),
       browser: browser,
       kept: kept,
+      lastProject: browser == null
+          ? PreferencesLastProject()
+          : StorageLastProject(browser.storage),
       pickZip: () async => (await openFile(
         acceptedTypeGroups: const [
           XTypeGroup(label: 'zip', extensions: ['zip']),
@@ -99,6 +103,7 @@ class IdeApp extends StatefulWidget {
     this.pickers,
     this.browser,
     this.kept,
+    this.lastProject,
     this.pickZip,
     this.settings,
   });
@@ -126,6 +131,10 @@ class IdeApp extends StatefulWidget {
   /// The projects kept in the browser, opened before the IDE starts.
   final BrowserProjects? kept;
 
+  /// Where the project open last is remembered (D62); null: start with
+  /// [open] every time.
+  final LastProject? lastProject;
+
   /// Where the programs' settings are kept; shared_preferences when null.
   final GbSettingsStore? settings;
 
@@ -143,6 +152,7 @@ class _IdeAppState extends State<IdeApp> {
     pickers: widget.pickers,
     browser: widget.browser,
     kept: widget.kept,
+    lastProject: widget.lastProject,
     pickZip: widget.pickZip,
     settings: widget.settings,
     open: widget.open,

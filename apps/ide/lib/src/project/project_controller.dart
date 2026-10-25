@@ -9,6 +9,7 @@ import 'package:gubasic_runtime/gubasic_runtime.dart';
 import '../strings.dart';
 import 'browser.dart';
 import 'folders.dart';
+import 'last_project.dart';
 import 'open_project.dart';
 import 'picture_reduce.dart';
 import 'project_pictures.dart';
@@ -57,6 +58,7 @@ class ProjectController extends ChangeNotifier {
     this.pickZip,
     this.autosaveDelay = const Duration(seconds: 2),
     this._settings,
+    this.lastProject,
     String open = 'hello',
   }) : _current = _example(examples, examplePictures, open) {
     if (browser case final browser?) {
@@ -96,6 +98,10 @@ class ProjectController extends ChangeNotifier {
 
   /// Asks for a `.zip` file: its bytes, or null when the user cancels.
   final Future<List<int>?> Function()? pickZip;
+
+  /// Where the project open last is remembered, to open it again when the
+  /// IDE starts (D62); null: always start with [open].
+  final LastProject? lastProject;
 
   /// How long after a change a project in the browser is kept.
   final Duration autosaveDelay;
@@ -371,6 +377,88 @@ class ProjectController extends ChangeNotifier {
     _current = project;
     if (project.location is BrowserLocation) project.addListener(_changed);
     notifyListeners();
+    unawaited(_remember(project));
+  }
+
+  /// Remembers [project] as the one open last (D62).
+  Future<void> _remember(OpenProject project) async {
+    final last = lastProject;
+    if (last == null) return;
+    final value = switch (project.location) {
+      ExampleLocation(:final name) => 'example:$name',
+      BrowserLocation(:final name) => 'browser:$name',
+      FolderLocation(:final path) => switch (project.files.keys
+          .where((f) => f.toLowerCase().endsWith('.gbproj'))
+          .firstOrNull) {
+        final file? when folders != null =>
+          'folder:${folders!.join(path, file)}',
+        _ => null,
+      },
+    };
+    if (value != null) await last.write(value);
+  }
+
+  var _openedLast = false;
+
+  /// Once, when the IDE has started: opens the project open last (D62),
+  /// unless the user has opened or changed one since. Says so when it is
+  /// no longer there, and an example stays open.
+  Future<void> openLast(BuildContext context) async {
+    if (_openedLast) return;
+    _openedLast = true;
+    final last = await lastProject?.read();
+    if (last == null ||
+        _current.location is! ExampleLocation ||
+        _current.isDirty ||
+        !context.mounted) {
+      return;
+    }
+    context = _lasting(context);
+    final colon = last.indexOf(':');
+    final kind = colon < 0 ? '' : last.substring(0, colon);
+    final value = last.substring(colon + 1);
+    void gone() {
+      if (context.mounted) {
+        _snack(context, strings.lastProjectGone.replaceAll('{0}', value));
+      }
+    }
+
+    switch (kind) {
+      case 'example':
+        if (examples.containsKey(value) && currentKey != last) {
+          _show(_example(examples, examplePictures, value));
+        }
+      case 'browser':
+        final stored = _kept?.read(value);
+        if (stored == null) return gone();
+        try {
+          final project = OpenProject(
+            BrowserLocation(stored.name),
+            stored.files,
+            pictures: await _kept!.pictures(stored.name),
+          );
+          _browserProject = project;
+          _show(project);
+        } on StorageFailed {
+          gone();
+        }
+      case 'folder':
+        final fs = folders;
+        if (fs == null) return;
+        try {
+          final read = await readProject(fs, value);
+          final project = OpenProject(
+            FolderLocation(fs.parent(value)),
+            read.files,
+            pictures: read.pictures,
+          );
+          _folderProject = project;
+          _show(project);
+          if (context.mounted) await _tellMissing(context, read.missing);
+        } on FolderProblem {
+          gone();
+        }
+    }
   }
 
   /// A change to a project kept in the browser: keep it a moment later.

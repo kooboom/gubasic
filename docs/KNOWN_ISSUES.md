@@ -18,12 +18,6 @@ Problems we know about and have **deliberately** left unfixed for now. Each entr
 - **Why deferred:** the playground is pure Dart without Flutter; imitating controls in HTML would create a second runtime (D24). The IDE's web build (E1e) runs forms in the browser instead.
 - **Revisit:** when the IDE's web build is published; then decide whether the playground still needs its Run tab.
 
-## The IDE does not reopen the last project
-
-- **What:** the desktop IDE always starts with the `hello` example. A project has to be opened again with File → Open… each time.
-- **Why deferred:** remembering projects (the last one, or a list of recent ones) is a feature of its own: where to keep the list, and what to do when a project was moved or deleted. Opening a project takes one dialog.
-- **Revisit:** with a list of recent projects, or when students find reopening a burden.
-
 ## Projects kept in the web IDE's browser can be lost
 
 - **What:** on the web, projects are kept in the browser, in IndexedDB (D33, D53). Clearing the browser's data removes them, shared PCs may do that at every logout, and Safari removes them after seven days without a visit. Two tabs with the same project keep whichever saved last.

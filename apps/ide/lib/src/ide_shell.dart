@@ -83,9 +83,12 @@ class _IdeShellState extends State<IdeShell> {
   @override
   void initState() {
     super.initState();
-    // Text brought back from a page that closed too soon (D54).
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) widget.controller.showRestored(context);
+    // The project open last (D62), then text brought back from a page
+    // that closed too soon (D54); each only once.
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final controller = widget.controller;
+      if (mounted) await controller.openLast(context);
+      if (mounted) await controller.showRestored(context);
     });
   }
 
