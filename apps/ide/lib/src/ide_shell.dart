@@ -350,6 +350,14 @@ class _IdeShellState extends State<IdeShell> {
     );
     return MenuAnchor(
       menuChildren: [
+        if (widget.controller.canCreateProjects)
+          MenuItemButton(
+            key: const ValueKey('menu.newProject'),
+            onPressed: _running
+                ? null
+                : () => widget.controller.newProject(context),
+            child: Text(s.newProject),
+          ),
         item(s.open, _open, LogicalKeyboardKey.keyO),
         item(s.save, _save, LogicalKeyboardKey.keyS),
         item(s.saveAs, _saveAs, LogicalKeyboardKey.keyS, shift: true),

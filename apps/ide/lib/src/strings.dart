@@ -38,6 +38,11 @@ class IdeStrings {
     required this.saveCopyButton,
     required this.nothingToSave,
     required this.lastProjectGone,
+    required this.newProject,
+    required this.newProjectTitle,
+    required this.formCaption,
+    required this.formSizeLabel,
+    required this.createButton,
     required this.edited,
     required this.saveAsTitle,
     required this.projectName,
@@ -206,6 +211,14 @@ class IdeStrings {
   /// The project open last (D62) is not there any more: {0} its name or
   /// path.
   final String lastProjectGone;
+
+  /// File → New Project (D63): the menu item, the dialog's title, its
+  /// fields for the form's Caption and size, and its button.
+  final String newProject;
+  final String newProjectTitle;
+  final String formCaption;
+  final String formSizeLabel;
+  final String createButton;
 
   /// After the project's name while it has unsaved changes.
   final String edited;
@@ -440,6 +453,11 @@ class IdeStrings {
     saveCopyButton: 'Save a Copy',
     nothingToSave: 'There are no changes to save.',
     lastProjectGone: 'The project open last, {0}, is not there any more, so an example is open.',
+    newProject: 'New Project…',
+    newProjectTitle: 'New Project',
+    formCaption: 'Form title (Caption)',
+    formSizeLabel: 'Form size',
+    createButton: 'Create',
     edited: 'Edited',
     saveAsTitle: 'Save As',
     projectName: 'Project name',
@@ -599,6 +617,11 @@ class IdeStrings {
     saveCopyButton: '복사본 저장',
     nothingToSave: '바뀐 내용이 없어서 저장할 것이 없습니다.',
     lastProjectGone: '마지막에 연 {0} 프로젝트를 찾을 수 없어서 예제를 열었습니다.',
+    newProject: '새 프로젝트…',
+    newProjectTitle: '새 프로젝트',
+    formCaption: '폼 제목(Caption)',
+    formSizeLabel: '폼 크기',
+    createButton: '만들기',
     edited: '편집됨',
     saveAsTitle: '다른 이름으로 저장',
     projectName: '프로젝트 이름',

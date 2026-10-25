@@ -7,9 +7,11 @@ import 'package:gubasic_lang/gubasic_lang.dart';
 import 'package:gubasic_runtime/gubasic_runtime.dart';
 
 import '../strings.dart';
+import '../designer/form_edit.dart' show FormSizePreset;
 import 'browser.dart';
 import 'folders.dart';
 import 'last_project.dart';
+import 'new_project.dart';
 import 'open_project.dart';
 import 'picture_reduce.dart';
 import 'project_pictures.dart';
@@ -241,6 +243,89 @@ class ProjectController extends ChangeNotifier {
     } on FolderProblem catch (p) {
       if (context.mounted) await _tell(context, _describe(p));
       return false;
+    }
+  }
+
+  /// Whether new projects can be made here: on disk with a save dialog,
+  /// or kept in the browser.
+  bool get canCreateProjects =>
+      (folders != null && pickers != null) || _kept != null;
+
+  /// File → New Project (D63): asks for a name, a Caption for its form
+  /// and a size, then makes the project with an empty form, on disk in a
+  /// folder the user chooses at once, or kept in the browser, and opens
+  /// it.
+  Future<void> newProject(BuildContext context) async {
+    context = _lasting(context);
+    if (!canCreateProjects || !await mayLeave(context)) return;
+    var asked = (name: '', caption: '', size: FormSizePreset.desktop);
+    while (true) {
+      if (!context.mounted) return;
+      final chosen = await showDialog<NewProject>(
+        context: context,
+        builder: (context) => NewProjectDialog(strings: strings),
+      );
+      if (chosen == null || !context.mounted) return;
+      asked = chosen;
+      if (folders == null) {
+        if (_kept!.contains(asked.name)) {
+          await _tell(
+            context,
+            strings.projectExistsInBrowser.replaceAll('{0}', asked.name),
+          );
+          continue;
+        }
+        final files = newProjectFiles(asked.name, asked.caption, asked.size);
+        try {
+          await _kept.save(asked.name, files);
+        } on StorageFailed {
+          if (context.mounted) await _tell(context, strings.storageFailed);
+          return;
+        }
+        final project = OpenProject(BrowserLocation(asked.name), files);
+        _browserProject = project;
+        _show(project);
+        if (context.mounted) await _noticeOnce(context);
+        return;
+      }
+      break;
+    }
+    final fs = folders!;
+    while (true) {
+      if (!context.mounted) return;
+      final path = await _whilePicking(
+        () => pickers!.saveLocation(asked.name, strings.createButton),
+      );
+      if (path == null || !context.mounted) return;
+      var name = fs.name(path);
+      if (name.toLowerCase().endsWith('.gbproj')) {
+        name = name.substring(0, name.length - '.gbproj'.length);
+      }
+      if (!isUsableProjectName(name)) {
+        await _tell(context, strings.badProjectName);
+        continue;
+      }
+      try {
+        final (folder, files) = await saveCopy(
+          fs,
+          fs.parent(path),
+          name,
+          newProjectFiles(name, asked.caption, asked.size),
+        );
+        final project = OpenProject(FolderLocation(folder), files);
+        _folderProject = project;
+        _show(project);
+        if (context.mounted) {
+          _snack(context, strings.saved.replaceAll('{0}', folder));
+        }
+        return;
+      } on FolderExists {
+        if (!context.mounted) return;
+        await _tell(context, strings.folderExists.replaceAll('{0}', name));
+      } on FolderProblem catch (p) {
+        if (context.mounted) await _tell(context, _describe(p));
+        return;
+      }
     }
   }
 
