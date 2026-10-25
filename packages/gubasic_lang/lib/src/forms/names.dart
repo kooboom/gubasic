@@ -32,6 +32,39 @@ List<int> linesUsingName(String source, String name) {
   return lines.toList()..sort();
 }
 
+/// What deleting control [name] leaves in [source] (D64): the lines that
+/// use the control itself (`btnOk.Caption = ""`, `Me.btnOk`), which would
+/// be errors without it, and the names of its handlers (`btnOk_Click`),
+/// which would stay but never run. A member after `.` other than `Me.` is
+/// someone else's (`lblMessage.btnOk`), and is not counted.
+({List<int> lines, List<String> handlers}) usesOfControl(
+  String source,
+  String name,
+) {
+  final lower = name.toLowerCase();
+  final tokens = lex(source).tokens;
+  final lines = <int>{};
+  final handlers = <String>[];
+  for (var i = 0; i < tokens.length; i++) {
+    final t = tokens[i];
+    if (t.kind != TokenKind.identifier) continue;
+    final text = t.text.toLowerCase();
+    if (text == lower) {
+      if (i > 0 &&
+          tokens[i - 1].kind == TokenKind.dot &&
+          (i < 2 || tokens[i - 2].keyword != Keyword.kwMe)) {
+        continue;
+      }
+      lines.add(t.line);
+    } else if (text.startsWith('${lower}_') &&
+        i > 0 &&
+        tokens[i - 1].keyword == Keyword.kwSub) {
+      handlers.add(t.text);
+    }
+  }
+  return (lines: lines.toList()..sort(), handlers: handlers);
+}
+
 /// [source] with the control [name] renamed to [newName] (D39): every
 /// identifier that is [name], in any case, or starts with it and `_` (the
 /// control's handlers, `btnHello_Click`), gets [newName] in place of that

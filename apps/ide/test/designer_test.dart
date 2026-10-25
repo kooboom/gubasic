@@ -116,6 +116,9 @@ void main() {
 
     await tester.sendKeyEvent(LogicalKeyboardKey.delete);
     await tester.pumpAndSettle();
+    // Its handler stays in the code: asked first (D64).
+    await tester.tap(find.widgetWithText(FilledButton, s.deleteControl));
+    await tester.pumpAndSettle();
     expect(formText(tester), isNot(contains('btnHello')));
 
     await drag(tester, const Offset(250, 80), const Offset(250, 80));
@@ -452,6 +455,67 @@ void main() {
     expect(status(tester), 'Form1 (Form) · 64×144', reason: 'only across');
     await ctrl(tester, LogicalKeyboardKey.keyZ);
     await ctrl(tester, LogicalKeyboardKey.keyZ);
+    expect(formText(tester), hello[formFile]);
+  });
+
+  testWidgets('deleting a control the code uses asks first, naming the '
+      'lines; undo brings it back (D64)', (tester) async {
+    await open(tester);
+    // lblMessage: the dotted box at the top of hello's form.
+    await drag(tester, const Offset(100, 20), const Offset(100, 20));
+    expect(find.textContaining('lblMessage (Label)'), findsOneWidget);
+    await tester.sendKeyEvent(LogicalKeyboardKey.delete);
+    await tester.pumpAndSettle();
+    final asked = s.deleteUsedControl
+        .replaceAll('{0}', 'lblMessage')
+        .replaceAll('{1}', 'Form1.gbas')
+        .replaceAll('{2}', '4');
+    expect(find.textContaining(asked), findsOneWidget);
+    expect(
+      find.textContaining(s.deleteUndo.replaceAll('{0}', 'Ctrl+Z')),
+      findsOneWidget,
+    );
+    await tester.tap(find.text(s.runtime.cancel));
+    await tester.pumpAndSettle();
+    expect(formText(tester), contains('lblMessage'));
+
+    await tester.sendKeyEvent(LogicalKeyboardKey.delete);
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(FilledButton, s.deleteControl));
+    await tester.pumpAndSettle();
+    expect(formText(tester), isNot(contains('lblMessage')));
+    await ctrl(tester, LogicalKeyboardKey.keyZ);
+    expect(formText(tester), hello[formFile]);
+  });
+
+  testWidgets('a control with only a handler says the handler stays; one '
+      'the code does not use goes at once', (tester) async {
+    await open(tester);
+    await drag(tester, const Offset(30, 70), const Offset(30, 70));
+    await tester.sendKeyEvent(LogicalKeyboardKey.delete);
+    await tester.pumpAndSettle();
+    expect(
+      find.textContaining(
+        s.deleteHandlersStay.replaceAll('{0}', 'btnHello_Click'),
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(
+        of: find.byType(AlertDialog),
+        matching: find.textContaining('btnHello is used'),
+      ),
+      findsNothing,
+      reason: 'only its handler is in the code',
+    );
+    await tester.tap(find.text(s.runtime.cancel));
+    await tester.pumpAndSettle();
+
+    await chooseTool(tester, 'Button');
+    await drag(tester, const Offset(200, 20), const Offset(260, 50));
+    await tester.sendKeyEvent(LogicalKeyboardKey.delete);
+    await tester.pumpAndSettle();
+    expect(find.byType(AlertDialog), findsNothing);
     expect(formText(tester), hello[formFile]);
   });
 

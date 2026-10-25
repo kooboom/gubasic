@@ -104,4 +104,22 @@ End Sub
       );
     });
   });
+
+  test('usesOfControl: the lines that use the control, and its handlers', () {
+    const code = 'Sub btnOk_Click()\n'
+        '    btnOk.Caption = "OK"\n'
+        "    ' btnOk in a comment\n"
+        '    lblNote.btnOk = 1\n'
+        '    Me.btnOk.Left = 3\n'
+        '    Dim btnOkay As Integer\n'
+        'End Sub\n'
+        'Sub BTNOK_Changed()\n'
+        'End Sub\n';
+    final uses = usesOfControl(code, 'btnOk');
+    expect(uses.lines, [2, 5]);
+    expect(uses.handlers, ['btnOk_Click', 'BTNOK_Changed']);
+    final none = usesOfControl(code, 'lblOther');
+    expect(none.lines, isEmpty);
+    expect(none.handlers, isEmpty);
+  });
 }

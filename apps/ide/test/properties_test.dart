@@ -239,6 +239,9 @@ void main() {
     await click(tester, const Offset(30, 70));
     await tester.sendKeyEvent(LogicalKeyboardKey.delete);
     await tester.pumpAndSettle();
+    // Its handler stays in the code: asked first (D64).
+    await tester.tap(find.widgetWithText(FilledButton, s.deleteControl));
+    await tester.pumpAndSettle();
     expect(formText(tester), isNot(contains('btnHello')));
   });
 
@@ -255,8 +258,10 @@ void main() {
     await tester.pumpAndSettle();
     expect(formText(tester), hello[formFile]);
     expect(fieldText(tester, 'Caption'), 'Say hello');
-    // The form has the focus: Delete deletes.
+    // The form has the focus: Delete deletes (asking first, D64).
     await tester.sendKeyEvent(LogicalKeyboardKey.delete);
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(FilledButton, s.deleteControl));
     await tester.pumpAndSettle();
     expect(formText(tester), isNot(contains('btnHello')));
   });

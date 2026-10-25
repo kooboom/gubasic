@@ -216,9 +216,45 @@ class _FormDesignerState extends State<FormDesigner> {
     }
   }
 
-  void _delete() {
+  /// Deletes the selected control. When the code uses it or has its
+  /// handlers, asks first, naming the lines (D64).
+  Future<void> _delete() async {
     final name = _selectedControl?.name;
     if (!_canEdit || name == null) return;
+    final uses = usesOfControl(widget.project.files[_codeFile] ?? '', name);
+    if (uses.lines.isNotEmpty || uses.handlers.isNotEmpty) {
+      final s = widget.strings;
+      final message = [
+        if (uses.lines.isNotEmpty)
+          s.deleteUsedControl
+              .replaceAll('{0}', name)
+              .replaceAll('{1}', _codeFile)
+              .replaceAll('{2}', uses.lines.join(', ')),
+        if (uses.handlers.isNotEmpty)
+          s.deleteHandlersStay.replaceAll('{0}', uses.handlers.join(', ')),
+        s.deleteUndo.replaceAll('{0}', _isApple ? '⌘Z' : 'Ctrl+Z'),
+      ].join('\n\n');
+      final go = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          content: SizedBox(width: 420, child: Text(message)),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: Text(s.runtime.cancel),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: Text(s.deleteControl),
+            ),
+          ],
+        ),
+      );
+      if (go != true || !mounted) return;
+      _focus.requestFocus();
+      // The form may have changed while the dialog was open.
+      if (_form.control(name) == null) return;
+    }
     _apply(withoutControl(_form, name));
   }
 
