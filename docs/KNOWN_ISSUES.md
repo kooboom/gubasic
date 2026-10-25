@@ -135,3 +135,9 @@ Problems we know about and have **deliberately** left unfixed for now. Each entr
 - **What:** block completion (DESIGN D50) closes no block when Enter commits Hangul being composed. It tells that Enter by the composing state before the line break and, where the commit and the break come as two changes, by no key having gone down between them. The recordings in `packages/gubasic_runtime/test/ime_logs` have no Enter, so the tests replay the recordings up to their last composing moment and then send Enter as a browser does (the key, the commit, the break) and as the macOS app does (the break alone); that order is not recorded from a real input method.
 - **Why deferred:** a new recording needs the author's keyboard on each machine (CLAUDE.md), and in the macOS app the editor's guess (D37) keeps the last syllable as being composed until something else comes, so the composing state alone covers it there.
 - **Revisit:** at the next recording with `ime_probe`: add a scenario that ends a syllable with Enter, on macOS (Chrome and the app) and Windows (Chrome and the app).
+
+## The desktop IDE has no list of recent projects
+
+- **What:** on the web, when the IDE starts with an example and projects are kept in the browser, a bar says so and opens their list (DESIGN D74). The desktop IDE opens the project open last (D62) but keeps no list of the others; File → Open is the way to them.
+- **Why deferred:** the web already knows its projects; the desktop would need a list of folders kept with the settings, and a way to drop the ones that are gone.
+- **Revisit:** when students use the desktop IDE for more than one project at a time, or with File → Recent in the menu.

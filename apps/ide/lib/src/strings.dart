@@ -39,6 +39,10 @@ class IdeStrings {
     required this.nothingToSave,
     required this.alreadyKept,
     required this.lastProjectGone,
+    required this.keptOne,
+    required this.keptMany,
+    required this.keptOpen,
+    required this.keptDismiss,
     required this.newProject,
     required this.newProjectTitle,
     required this.formCaption,
@@ -229,6 +233,14 @@ class IdeStrings {
   /// The project open last (D62) is not there any more: {0} its name or
   /// path.
   final String lastProjectGone;
+
+  /// At the start, when an example opens and projects are kept in the
+  /// browser (D74): one, or {0} of them; a button to choose one, and one
+  /// to close the bar.
+  final String keptOne;
+  final String keptMany;
+  final String keptOpen;
+  final String keptDismiss;
 
   /// File → New Project (D63): the menu item, the dialog's title, its
   /// fields for the form's Caption and size, and its button.
@@ -500,6 +512,10 @@ class IdeStrings {
     nothingToSave: 'There are no changes to save.',
     alreadyKept: 'Already kept in this browser; changes are kept by themselves as you work.',
     lastProjectGone: 'The project open last, {0}, is not there any more, so an example is open.',
+    keptOne: 'A project of yours is kept in this browser.',
+    keptMany: '{0} projects of yours are kept in this browser.',
+    keptOpen: 'Open one',
+    keptDismiss: 'Close',
     newProject: 'New Project…',
     newProjectTitle: 'New Project',
     formCaption: 'Form title (Caption)',
@@ -679,6 +695,10 @@ class IdeStrings {
     nothingToSave: '바뀐 내용이 없어서 저장할 것이 없습니다.',
     alreadyKept: '이미 이 브라우저에 보관되어 있습니다. 바꾼 내용은 작업하는 동안 저절로 보관됩니다.',
     lastProjectGone: '마지막에 연 {0} 프로젝트를 찾을 수 없어서 예제를 열었습니다.',
+    keptOne: '이 브라우저에 보관된 프로젝트가 1개 있습니다.',
+    keptMany: '이 브라우저에 보관된 프로젝트가 {0}개 있습니다.',
+    keptOpen: '열기',
+    keptDismiss: '닫기',
     newProject: '새 프로젝트…',
     newProjectTitle: '새 프로젝트',
     formCaption: '폼 제목(Caption)',

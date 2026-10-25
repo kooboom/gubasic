@@ -45,6 +45,9 @@ class ProjectPickers {
 /// What to do with unsaved changes.
 enum _Unsaved { save, discard, cancel }
 
+/// The bar at the start that says projects are kept in the browser (D74).
+const keptBarKey = ValueKey('ide.keptBar');
+
 /// Opens and saves projects: the built-in examples, projects on disk
 /// (D32) and, on the web, projects kept in the browser (D33). The
 /// commands ask the user through dialogs shown in the given context.
@@ -466,6 +469,7 @@ class ProjectController extends ChangeNotifier {
       Navigator.of(context, rootNavigator: true).context;
 
   void _show(OpenProject project) {
+    _closeKeptBar();
     keepNow();
     _current.removeListener(_changed);
     _current = project;
@@ -501,13 +505,15 @@ class ProjectController extends ChangeNotifier {
     if (_openedLast) return;
     _openedLast = true;
     final last = await lastProject?.read();
-    if (last == null ||
-        _current.location is! ExampleLocation ||
+    if (_current.location is! ExampleLocation ||
         _current.isDirty ||
         !context.mounted) {
       return;
     }
     context = _lasting(context);
+    // An example opens: the student's own projects may be kept (D74).
+    if (last == null || last.startsWith('example:')) _offerKept(context);
+    if (last == null) return;
     final colon = last.indexOf(':');
     final kind = colon < 0 ? '' : last.substring(0, colon);
     final value = last.substring(colon + 1);
@@ -693,6 +699,55 @@ class ProjectController extends ChangeNotifier {
       _current = _example(examples, examplePictures, first);
     }
     notifyListeners();
+  }
+
+  /// The bar that says projects are kept in this browser, while it shows.
+  ScaffoldMessengerState? _keptBar;
+
+  /// At the start, when an example opens (D74): a bar above the IDE saying
+  /// how many projects are kept in this browser, with a button that shows
+  /// them. It closes when a project opens, or when it is closed.
+  void _offerKept(BuildContext context) {
+    final count = _kept?.list().length ?? 0;
+    final messenger = ScaffoldMessenger.maybeOf(context);
+    if (count == 0 || messenger == null) return;
+    _keptBar = messenger;
+    messenger.showMaterialBanner(
+      MaterialBanner(
+        key: keptBarKey,
+        leading: const Icon(Icons.folder_open),
+        content: Text(
+          count == 1
+              ? strings.keptOne
+              : strings.keptMany.replaceAll('{0}', '$count'),
+        ),
+        // One row, the buttons after the words: a banner with two
+        // actions puts them on a row of their own.
+        actions: [
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextButton(
+                onPressed: () {
+                  _closeKeptBar();
+                  openKept(context);
+                },
+                child: Text(strings.keptOpen),
+              ),
+              TextButton(
+                onPressed: _closeKeptBar,
+                child: Text(strings.keptDismiss),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _closeKeptBar() {
+    _keptBar?.hideCurrentMaterialBanner();
+    _keptBar = null;
   }
 
   /// Shows the projects kept in this browser, to open or delete one.
