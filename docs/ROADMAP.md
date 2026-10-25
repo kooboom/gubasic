@@ -22,7 +22,7 @@ The core Visual Basic experience, entirely inside the IDE.
 - [x] Built-in components: `CheckBox`, `ListBox` (example: [quiz](../examples/quiz))
 - [x] Built-in component: `Image` (D51–D55; example: [quiz](../examples/quiz))
 - [x] Absolute layout (`Left`, `Top`, `Width`, `Height`)
-- [ ] `Anchor`; form size presets (Phone / Tablet / Desktop)
+- [x] `Anchor`, `Form_Resize`; form size presets (Phone / Tablet / Desktop) (D57–D60)
 - [x] Project files in plain text (`.gbproj`, `.form.yaml`, `.gbas`)
 - [x] Lexer and **error-tolerant** parser
 - [x] Analyzer: names, scopes and types, with plain-language diagnostics (English / Korean)

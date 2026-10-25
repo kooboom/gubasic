@@ -108,6 +108,11 @@ class IdeStrings {
     required this.removePicture,
     required this.noPicture,
     required this.noAnchor,
+    required this.formSize,
+    required this.phonePreset,
+    required this.tabletPreset,
+    required this.desktopPreset,
+    required this.turnForm,
     required this.anchorTips,
     required this.confirmRemovePicture,
     required this.pictureInUse,
@@ -333,6 +338,14 @@ class IdeStrings {
   /// The Anchor field (D59): what it shows for no edge, and what each
   /// arm of its cross does, by edge (`Left`, `Top`, `Right`, `Bottom`).
   final String noAnchor;
+
+  /// The form size presets (D60): the menu's button, the three presets,
+  /// and the button that swaps the form's width and height.
+  final String formSize;
+  final String phonePreset;
+  final String tabletPreset;
+  final String desktopPreset;
+  final String turnForm;
   final Map<String, String> anchorTips;
 
   /// `{0}` the picture.
@@ -509,6 +522,11 @@ class IdeStrings {
     removePicture: 'Remove',
     noPicture: '(None)',
     noAnchor: '(None: stays near the middle)',
+    formSize: 'Size',
+    phonePreset: 'Phone',
+    tabletPreset: 'Tablet',
+    desktopPreset: 'Desktop',
+    turnForm: 'Swap width and height (turn the form)',
     anchorTips: {
       'Left': 'Left: keep the distance to the form\'s left edge',
       'Top': 'Top: keep the distance to the form\'s top edge',
@@ -664,6 +682,11 @@ class IdeStrings {
     removePicture: '빼기',
     noPicture: '(없음)',
     noAnchor: '(없음: 가운데 가까이 머묾)',
+    formSize: '크기',
+    phonePreset: '폰',
+    tabletPreset: '태블릿',
+    desktopPreset: '데스크톱',
+    turnForm: '가로·세로 바꾸기(폼 돌리기)',
     anchorTips: {
       'Left': 'Left: 폼의 왼쪽 가장자리와의 거리를 지킵니다',
       'Top': 'Top: 폼의 위쪽 가장자리와의 거리를 지킵니다',

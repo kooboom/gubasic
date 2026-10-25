@@ -493,6 +493,29 @@ FormFile withName(FormFile form, String name, String newName) => _copy(form, [
       c,
 ]);
 
+/// The form sizes the designer offers (D60), upright for a phone and a
+/// tablet: the inside of the form, as `Width` and `Height`.
+const formSizePresets = [
+  (name: FormSizePreset.phone, width: 360, height: 800),
+  (name: FormSizePreset.tablet, width: 768, height: 1024),
+  (name: FormSizePreset.desktop, width: 800, height: 600),
+];
+
+enum FormSizePreset { phone, tablet, desktop }
+
+/// The preset [size] is, upright or turned, or null.
+({FormSizePreset name, bool turned})? presetOf(({int width, int height}) size) {
+  for (final p in formSizePresets) {
+    if (p.width == size.width && p.height == size.height) {
+      return (name: p.name, turned: false);
+    }
+    if (p.width == size.height && p.height == size.width) {
+      return (name: p.name, turned: true);
+    }
+  }
+  return null;
+}
+
 /// What the designer moves controls from when the form changes size
 /// (D59): each control's box and the form's size before the first of a
 /// run of size changes, so that changing it back puts every control back

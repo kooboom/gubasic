@@ -881,49 +881,78 @@ class _FormDesignerState extends State<FormDesigner> {
       height: 40,
       child: Row(
         children: [
-          const SizedBox(width: 4),
-          IconButton(
-            tooltip: '${s.undo} (${apple ? '⌘Z' : 'Ctrl+Z'})',
-            icon: const Icon(Icons.undo),
-            onPressed: editable && widget.history.canUndo ? _undo : null,
-          ),
-          IconButton(
-            tooltip: '${s.redo} (${apple ? '⇧⌘Z' : 'Ctrl+Y'})',
-            icon: const Icon(Icons.redo),
-            onPressed: editable && widget.history.canRedo ? _redo : null,
-          ),
-          const SizedBox(width: 8),
-          Tooltip(
-            message: s.gridTip,
-            child: FilterChip(
-              avatar: const Icon(Icons.grid_4x4, size: 18),
-              label: Text(s.grid),
-              selected: _grid,
-              showCheckmark: false,
-              onSelected: (on) {
-                widget.grid.value = on;
-                _focus.requestFocus();
-              },
+          // Scrolls when the designer is too narrow for all of it.
+          Expanded(
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: [
+                  const SizedBox(width: 4),
+                  IconButton(
+                    tooltip: '${s.undo} (${apple ? '⌘Z' : 'Ctrl+Z'})',
+                    icon: const Icon(Icons.undo),
+                    onPressed: editable && widget.history.canUndo
+                        ? _undo
+                        : null,
+                  ),
+                  IconButton(
+                    tooltip: '${s.redo} (${apple ? '⇧⌘Z' : 'Ctrl+Y'})',
+                    icon: const Icon(Icons.redo),
+                    onPressed: editable && widget.history.canRedo
+                        ? _redo
+                        : null,
+                  ),
+                  const SizedBox(width: 8),
+                  Tooltip(
+                    message: s.gridTip,
+                    child: FilterChip(
+                      avatar: const Icon(Icons.grid_4x4, size: 18),
+                      label: Text(s.grid),
+                      selected: _grid,
+                      showCheckmark: false,
+                      onSelected: (on) {
+                        widget.grid.value = on;
+                        _focus.requestFocus();
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  _sizeMenu(context, editable),
+                  IconButton(
+                    key: designerMenuKey('toolbar.turn'),
+                    tooltip: s.turnForm,
+                    icon: const Icon(Icons.screen_rotation_alt),
+                    onPressed: editable
+                        ? () {
+                            final size = formSizeOf(_form);
+                            _resizeForm((
+                              width: size.height,
+                              height: size.width,
+                            ));
+                          }
+                        : null,
+                  ),
+                  const SizedBox(width: 8),
+                  IconButton(
+                    key: designerMenuKey('toolbar.front'),
+                    tooltip: '${s.bringToFront} (${apple ? '⌘J' : 'Ctrl+J'})',
+                    icon: const Icon(Icons.flip_to_front),
+                    onPressed: editable && _selectedControl != null
+                        ? () => _order(front: true)
+                        : null,
+                  ),
+                  IconButton(
+                    key: designerMenuKey('toolbar.back'),
+                    tooltip: '${s.sendToBack} (${apple ? '⌘K' : 'Ctrl+K'})',
+                    icon: const Icon(Icons.flip_to_back),
+                    onPressed: editable && _selectedControl != null
+                        ? () => _order(front: false)
+                        : null,
+                  ),
+                ],
+              ),
             ),
           ),
-          const SizedBox(width: 8),
-          IconButton(
-            key: designerMenuKey('toolbar.front'),
-            tooltip: '${s.bringToFront} (${apple ? '⌘J' : 'Ctrl+J'})',
-            icon: const Icon(Icons.flip_to_front),
-            onPressed: editable && _selectedControl != null
-                ? () => _order(front: true)
-                : null,
-          ),
-          IconButton(
-            key: designerMenuKey('toolbar.back'),
-            tooltip: '${s.sendToBack} (${apple ? '⌘K' : 'Ctrl+K'})',
-            icon: const Icon(Icons.flip_to_back),
-            onPressed: editable && _selectedControl != null
-                ? () => _order(front: false)
-                : null,
-          ),
-          const Spacer(),
           TextButton.icon(
             onPressed: () => setState(() {
               _showText = !_showText;
@@ -934,6 +963,49 @@ class _FormDesignerState extends State<FormDesigner> {
           ),
           const SizedBox(width: 8),
         ],
+      ),
+    );
+  }
+
+  /// The form size presets (D60): phone, tablet and desktop, each shown
+  /// with its size; choosing one makes the form that size, upright, the
+  /// controls moving as their Anchor says. The button names the preset
+  /// the form is at, if any, upright or turned, and the form's size.
+  Widget _sizeMenu(BuildContext context, bool editable) {
+    final s = widget.strings;
+    String name(FormSizePreset p) => switch (p) {
+      FormSizePreset.phone => s.phonePreset,
+      FormSizePreset.tablet => s.tabletPreset,
+      FormSizePreset.desktop => s.desktopPreset,
+    };
+    final size = formSizeOf(_form);
+    final now = presetOf(size);
+    return MenuAnchor(
+      menuChildren: [
+        for (final p in formSizePresets)
+          MenuItemButton(
+            key: designerMenuKey('preset.${p.name.name}'),
+            trailingIcon: Text('${p.width}×${p.height}'),
+            onPressed: () {
+              _resizeForm((width: p.width, height: p.height));
+              _focus.requestFocus();
+            },
+            child: Text(name(p.name)),
+          ),
+      ],
+      builder: (context, menu, _) => Tooltip(
+        message: s.formSize,
+        child: TextButton.icon(
+          key: designerMenuKey('toolbar.size'),
+          onPressed: editable
+              ? () => menu.isOpen ? menu.close() : menu.open()
+              : null,
+          icon: const Icon(Icons.devices),
+          label: Text(
+            '${now == null ? '' : '${name(now.name)} · '}'
+            '${size.width}×${size.height}',
+          ),
+        ),
       ),
     );
   }

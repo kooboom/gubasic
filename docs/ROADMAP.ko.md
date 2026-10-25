@@ -22,7 +22,7 @@ IDE 안에서 완결되는 비주얼 베이직의 핵심 경험입니다.
 - [x] 기본 컴포넌트: `CheckBox`, `ListBox` (예제: [quiz](../examples/quiz))
 - [x] 기본 컴포넌트: `Image` (D51–D55, 예제: [quiz](../examples/quiz))
 - [x] 절대 배치 (`Left`, `Top`, `Width`, `Height`)
-- [ ] `Anchor`; 폼 크기 프리셋 (폰 / 태블릿 / 데스크톱)
+- [x] `Anchor`, `Form_Resize`, 폼 크기 프리셋 (폰 / 태블릿 / 데스크톱) (D57–D60)
 - [x] 일반 텍스트 프로젝트 파일 (`.gbproj`, `.form.yaml`, `.gbas`)
 - [x] 렉서와 **오류에 강한** 파서
 - [x] 분석기: 이름, 범위, 타입 검사와 쉬운 말 진단 (영어 / 한국어)
