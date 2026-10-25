@@ -144,6 +144,42 @@ void main() {
     });
   }
 
+  testWidgets('a nested If gets its End If, though one closes the outer If '
+      '(D61)', (t) async {
+    expect(
+      await enterAt(
+        t,
+        'Sub Form_Load()\n    If a Then\n        If b Then|\n    End If\nEnd Sub\n',
+      ),
+      'Sub Form_Load()\n    If a Then\n        If b Then\n            |\n'
+      '        End If\n    End If\nEnd Sub\n',
+    );
+  });
+
+  testWidgets('Else moves to its If, and the line after it goes inside; the '
+      'line after End If starts where the If did', (t) async {
+    expect(
+      await enterAt(
+        t,
+        'Sub Form_Load()\n    If a Then\n        x = 1\n        Else|\n'
+        '    End If\nEnd Sub\n',
+      ),
+      'Sub Form_Load()\n    If a Then\n        x = 1\n    Else\n        |\n'
+      '    End If\nEnd Sub\n',
+    );
+    expect(file(t), contains('\n    Else\n'));
+  });
+
+  testWidgets('the line after End If is not at 0', (t) async {
+    expect(
+      await enterAt(
+        t,
+        'Sub Form_Load()\n    If a Then\n        x = 1\n        End If|\nEnd Sub\n',
+      ),
+      'Sub Form_Load()\n    If a Then\n        x = 1\n    End If\n    |\nEnd Sub\n',
+    );
+  });
+
   group('Enter that commits Hangul being composed', () {
     const code = "Sub Form_Load()\n    If x Then ' 확인\nEnd Sub\n";
     final end = code.indexOf('\nEnd Sub');

@@ -15,7 +15,8 @@ ParseResult parse(String source) {
   final lexResult = lex(source);
   final parser = _Parser(source, lexResult.tokens);
   final unit = parser.compilationUnit();
-  return ParseResult(source, lexResult, unit, parser.diagnostics);
+  return ParseResult(source, lexResult, unit, parser.diagnostics,
+      blockLines: parser.blockLines);
 }
 
 /// A block that is still open while its body is parsed.
@@ -166,6 +167,25 @@ class _Parser {
   int _lastEnd = 0;
 
   final _frames = <_Frame>[];
+
+  /// Which lines open, go on with and close each block (for the editor).
+  final blockLines = BlockLines();
+
+  int _lineOf(Token t) => _lines.locate(t.offset).$1;
+
+  /// [frame] opens a block on its opener's line.
+  void _opened(_Frame frame) {
+    if (_singleLineDepth > 0) return;
+    blockLines.openers
+        .putIfAbsent(_lineOf(frame.openerToken), () => frame.kind.closer);
+  }
+
+  /// The line starting at the current token goes on with [frame]'s block
+  /// (Else, ElseIf, Case, Catch, Finally).
+  void _goesOn(_Frame frame) {
+    if (_singleLineDepth > 0) return;
+    blockLines.middles[_lineOf(_tok)] = _lineOf(frame.openerToken);
+  }
 
   /// The current line holds a lexer error token: the lexer has already
   /// reported the problem, so the parser stays quiet about this line.
@@ -354,6 +374,7 @@ class _Parser {
   /// new procedure, or end of file). Unmatched closers are reported and
   /// skipped.
   Block _block(String kind, _Frame frame) {
+    _opened(frame);
     _frames.add(frame);
     final statements = <Stmt>[];
     while (true) {
@@ -389,8 +410,12 @@ class _Parser {
         [frame.kind.opener, '$line', frame.kind.closer]);
   }
 
-  /// Consumes the closer [c] (one or two tokens) at the start of a line.
-  void _consumeCloser(_Closer c) {
+  /// Consumes the closer [c] (one or two tokens) at the start of a line,
+  /// which closes [frame]'s block.
+  void _consumeCloser(_Closer c, _Frame frame) {
+    if (_singleLineDepth == 0) {
+      blockLines.closers[_lineOf(_tok)] = _lineOf(frame.openerToken);
+    }
     _beginLine();
     for (var i = 0; i < c.width; i++) {
       _advance();
@@ -516,7 +541,7 @@ class _Parser {
     final closer = _closerAt();
     if (closer == _Closer.endSub || closer == _Closer.endFunction) {
       final closerToken = _tok;
-      _consumeCloser(closer!);
+      _consumeCloser(closer!, frame);
       final expected = isFunction ? _Closer.endFunction : _Closer.endSub;
       if (closer != expected) {
         _error(DiagnosticCode.expectedKeyword, closerToken.offset, _lastEnd,
@@ -847,6 +872,7 @@ class _Parser {
       branches.add(IfBranch(branchCondition, body, branchStart, _lastEnd));
       final closer = _closerAt();
       if (closer == _Closer.elseIf) {
+        _goesOn(frame);
         _beginLine();
         branchStart = _advance().offset;
         branchCondition = _expression();
@@ -855,13 +881,14 @@ class _Parser {
         continue;
       }
       if (closer == _Closer.else_) {
+        _goesOn(frame);
         _beginLine();
         _advance();
         _endOfStatement();
         elseBlock = _block('Else', frame);
       }
       if (_closerAt() == _Closer.endIf) {
-        _consumeCloser(_Closer.endIf);
+        _consumeCloser(_Closer.endIf, frame);
         _endOfStatement();
       } else {
         _unclosed(frame);
@@ -923,6 +950,7 @@ class _Parser {
     _endOfStatement();
 
     final frame = _Frame(_BlockKind.select, selectToken);
+    _opened(frame);
     _frames.add(frame);
     final cases = <CaseBlock>[];
     var closed = false;
@@ -937,7 +965,7 @@ class _Parser {
         continue;
       }
       if (closer == _Closer.endSelect) {
-        _consumeCloser(closer!);
+        _consumeCloser(closer!, frame);
         _endOfStatement();
         closed = true;
         break;
@@ -964,6 +992,7 @@ class _Parser {
   }
 
   CaseBlock _caseBlock(_Frame frame) {
+    _goesOn(frame);
     _beginLine();
     final caseToken = _advance();
     final clauses = <CaseClause>[];
@@ -1066,7 +1095,7 @@ class _Parser {
       _unclosed(frame);
       return null;
     }
-    _consumeCloser(_Closer.next);
+    _consumeCloser(_Closer.next, frame);
     Identifier? name;
     if (_is(TokenKind.identifier)) {
       final t = _advance();
@@ -1098,7 +1127,7 @@ class _Parser {
     LoopCondition? post;
     final closer = _closerAt();
     if (closer == _Closer.loop) {
-      _consumeCloser(closer!);
+      _consumeCloser(closer!, frame);
       final conditionToken = _tok;
       post = _loopCondition();
       if (pre != null && post != null) {
@@ -1130,7 +1159,7 @@ class _Parser {
     if (closer == _Closer.wend ||
         closer == _Closer.endWhile ||
         closer == _Closer.loop) {
-      _consumeCloser(closer!);
+      _consumeCloser(closer!, frame);
       _endOfStatement();
     } else {
       _unclosed(frame);
@@ -1163,6 +1192,7 @@ class _Parser {
         continue;
       }
       if (closer == _Closer.catch_) {
+        _goesOn(frame);
         _beginLine();
         final catchToken = _advance();
         Identifier? name;
@@ -1178,6 +1208,7 @@ class _Parser {
         continue;
       }
       if (closer == _Closer.finally_) {
+        _goesOn(frame);
         _beginLine();
         _advance();
         _endOfStatement();
@@ -1185,7 +1216,7 @@ class _Parser {
         continue;
       }
       if (closer == _Closer.endTry) {
-        _consumeCloser(closer!);
+        _consumeCloser(closer!, frame);
         _endOfStatement();
       } else {
         _unclosed(frame);

@@ -799,68 +799,64 @@ class _CodeEditorState extends State<CodeEditor> {
         now.selection.baseOffset == s.start + 1;
   }
 
-  /// After Enter: the new line starts with the indentation of the line
-  /// the break was made in. With [closeBlock], a block that line opens
-  /// and nothing closes gets its closing line, and the caret goes inside.
+  /// After Enter: the new line starts where [afterEnter] says (D61): one
+  /// step inside after a line that opens or goes on with a block, at the
+  /// opener's after a closing line; a line that goes on with or closes a
+  /// block (`Else`, `End If`) moves to its opener's indentation; and with
+  /// [closeBlock], a block left unpaired gets its closing line, the caret
+  /// inside. A line split in the middle only keeps its indentation.
   void _indentNewLine(TextEditingValue before, {required bool closeBlock}) {
     final text = _controller.text;
     final at = _controller.selection.baseOffset;
     final lineStart = _lineStart(before.text, before.selection.start);
-    final indent = RegExp(r'^[ \t]*')
-        .firstMatch(before.text.substring(lineStart, before.selection.start))!
-        .group(0)!;
-    final closer = closeBlock ? _closerFor(before, lineStart, text) : null;
-    if (closer != null) {
-      final inside = '$indent${' ' * indentWidth}';
-      _changing = true;
-      _controller.value = TextEditingValue(
-        text: text.replaceRange(at, at, '$inside\n$indent$closer'),
-        selection: TextSelection.collapsed(offset: at + inside.length),
-      );
-      _changing = false;
-      _last = _controller.value;
-    } else if (indent.isNotEmpty) {
-      _changing = true;
-      _controller.value = TextEditingValue(
-        text: text.replaceRange(at, at, indent),
-        selection: TextSelection.collapsed(offset: at + indent.length),
-      );
-      _changing = false;
-      _last = _controller.value;
+    var restEnd = text.indexOf('\n', at);
+    if (restEnd < 0) restEnd = text.length;
+    if (text.substring(at, restEnd).trim().isNotEmpty) {
+      final indent = RegExp(r'^[ \t]*')
+          .firstMatch(before.text.substring(lineStart, before.selection.start))!
+          .group(0)!;
+      if (indent.isNotEmpty) {
+        _replace(text.replaceRange(at, at, indent), at + indent.length);
+      }
+      _write();
+      return;
+    }
+    final line = '\n'.allMatches(text.substring(0, lineStart)).length + 1;
+    final r = afterEnter(
+      text.replaceRange(at, restEnd, ''),
+      line,
+      indentWidth: indentWidth,
+      closeBlock: closeBlock,
+    );
+    var ended = text.substring(lineStart, at - 1);
+    if (r.indentLine case final indent?) {
+      ended = '${' ' * indent}${ended.trimLeft()}';
+    }
+    final own = ended.length - ended.trimLeft().length;
+    final inside = ' ' * r.newIndent;
+    final closing = r.closer == null ? '' : '\n${' ' * own}${r.closer}';
+    final changed =
+        '${text.substring(0, lineStart)}$ended\n$inside$closing'
+        '${text.substring(restEnd)}';
+    if (changed != text) {
+      _replace(changed, lineStart + ended.length + 1 + inside.length);
     }
     _write();
   }
 
-  bool get _composing => _tracker.composing;
-
-  static final _opener = RegExp(
-    r'^[ \t]*(?:(?:public|private)[ \t]+)?(?:if|for|do|select|sub|function|try)\b',
-    caseSensitive: false,
-  );
-
-  /// The closing line (`End If`) for the block that the line at
-  /// [lineStart] of [before] opens, when Enter was pressed at its end and
-  /// the parser finds the block not closed in [now] (P006).
-  static String? _closerFor(
-    TextEditingValue before,
-    int lineStart,
-    String now,
-  ) {
-    final text = before.text;
-    var lineEnd = text.indexOf('\n', before.selection.end);
-    if (lineEnd < 0) lineEnd = text.length;
-    if (text.substring(before.selection.end, lineEnd).trim().isNotEmpty) {
-      return null; // The line was split, not ended.
-    }
-    if (!_opener.hasMatch(text.substring(lineStart, lineEnd))) return null;
-    final line = '\n'.allMatches(text.substring(0, lineStart)).length + 1;
-    for (final d in parse(now).parserDiagnostics) {
-      if (d.code == DiagnosticCode.unclosedBlock && d.line == line) {
-        return d.args[2];
-      }
-    }
-    return null;
+  /// Puts [text] in the editor with the caret at [caret], as the editor's
+  /// own change.
+  void _replace(String text, int caret) {
+    _changing = true;
+    _controller.value = TextEditingValue(
+      text: text,
+      selection: TextSelection.collapsed(offset: caret),
+    );
+    _changing = false;
+    _last = _controller.value;
   }
+
+  bool get _composing => _tracker.composing;
 
   /// The first and the last line of the selection, as offsets: the start
   /// of the first and the end of the last.

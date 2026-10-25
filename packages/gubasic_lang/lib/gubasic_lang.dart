@@ -22,6 +22,7 @@ export 'src/analyzer/analyzer.dart';
 export 'src/analyzer/compile.dart';
 export 'src/analyzer/symbols.dart';
 export 'src/completion/completion.dart';
+export 'src/editing/after_enter.dart';
 export 'src/forms/anchor.dart';
 export 'src/forms/component.dart';
 export 'src/forms/form_file.dart';
