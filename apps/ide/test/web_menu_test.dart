@@ -438,6 +438,32 @@ void main() {
     expect(browser.projects.pictures['hello'], {'a.png': onePixelPng});
   });
 
+  testWidgets('a .zip with a damaged picture says so once it is open (D65)', (
+    tester,
+  ) async {
+    await start(tester);
+    final damaged = Uint8List.fromList(onePixelPng)
+      ..[onePixelPng.length - 20] ^= 0xFF;
+    zips = [
+      zipProject(
+        'Fruit',
+        {
+          ...hello,
+          'Hello.gbproj': helloWithPictures(['a.png']),
+        },
+        pictures: {'a.png': damaged},
+      ),
+    ];
+    await menu(tester, s.uploadZip);
+    expect(
+      find.text(s.picturesUnreadable.replaceAll('{0}', 'a.png')),
+      findsOneWidget,
+    );
+    await closeDialog(tester);
+    await closeDialog(tester); // the notice about the browser
+    expect(current(tester).pictures.keys, ['a.png']);
+  });
+
   testWidgets('the browser asks before leaving while a project is being '
       'written', (tester) async {
     await start(tester);

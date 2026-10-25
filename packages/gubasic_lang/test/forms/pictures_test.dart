@@ -1,3 +1,5 @@
+import 'dart:io';
+import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:gubasic_lang/gubasic_lang.dart';
@@ -205,5 +207,39 @@ void main() {
       expect(() => readComponentFile(yaml(bad)), throwsFormatException,
           reason: bad);
     }
+  });
+
+  group('pictureLooksWhole (D65)', () {
+    final png =
+        File('../../examples/quiz/pictures/triangle.png').readAsBytesSync();
+    // A 40 x 20 JPEG and an 8 x 8 GIF of two frames, as cameras and
+    // tools write them.
+    final jpeg = base64Decode(
+        '/9j/4AAQSkZJRgABAQAAAQABAAD/4QAiRXhpZgAATU0AKgAAAAgAAQESAAMAAAABAAYAAAAAAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAUACgDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwDgKKKK+eP2EKKKKACiiigAooooAKKKKACiiigD/9k=');
+    final gif = base64Decode(
+        'R0lGODlhCAAIAIEAAP8AAAAAAAAAAAAAACH/C05FVFNDQVBFMi4wAwEAAAAh+QQACgAAACwAAAAACAAIAAAIDwABCBxIsKDBgwgTKkwYEAAh+QQBCgABACwAAAAACAAIAIEA/wAAAAAAAAAAAAAIDwABCBxIsKDBgwgTKkwYEAA7');
+
+    test('whole pictures pass', () {
+      expect(pictureLooksWhole(png), isTrue);
+      expect(pictureLooksWhole(jpeg), isTrue);
+      expect(pictureLooksWhole(gif), isTrue);
+    });
+
+    test('pictures cut short fail', () {
+      for (final whole in [png, jpeg, gif]) {
+        for (final keep in [whole.length - 1, whole.length ~/ 2, 30, 12]) {
+          expect(
+              pictureLooksWhole(Uint8List.sublistView(whole, 0, keep)), isFalse,
+              reason: '${pictureFormat(whole)} cut to $keep bytes');
+        }
+      }
+    });
+
+    test('a damaged PNG fails by its CRC; a header alone fails', () {
+      final damaged = Uint8List.fromList(png)..[png.length ~/ 2] ^= 0xFF;
+      expect(pictureLooksWhole(damaged), isFalse);
+      expect(pictureLooksWhole(_png(100, 100)), isFalse);
+      expect(pictureLooksWhole(_jpeg(100, 100)), isFalse);
+    });
   });
 }

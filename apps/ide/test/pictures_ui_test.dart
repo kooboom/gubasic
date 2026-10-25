@@ -371,17 +371,14 @@ void main() {
       'frame stays; one that cannot be read is not offered it', (tester) async {
     await start(tester);
     await menu(tester, s.picturesMenu);
-    // Pictures that fill the project but 100 bytes (their bytes are not
-    // read but by size).
+    // Pictures that fill the project but 100 bytes.
+    final full = paddedPng(maxPictureBytes);
     for (var i = 0; i < 4; i++) {
-      await addInDialog(tester, (
-        name: 'full$i.png',
-        bytes: pngHeader(10, 10, length: maxPictureBytes),
-      ));
+      await addInDialog(tester, (name: 'full$i.png', bytes: full));
     }
     await addInDialog(tester, (
       name: 'last.png',
-      bytes: pngHeader(10, 10, length: maxPictureBytes - 100),
+      bytes: paddedPng(maxPictureBytes - 100),
     ));
     picks.add((name: 'moving.gif', bytes: animatedGif));
     await tester.tap(find.byKey(addPictureKey));
@@ -399,17 +396,12 @@ void main() {
     expect(find.text(s.reduceButton), findsNothing);
     await closeDialog(tester);
 
-    // Looks like a PNG by its first bytes, but cannot be drawn.
-    picks.add((name: 'broken.png', bytes: pngHeader(5000, 10)));
-    await tester.tap(find.byKey(addPictureKey));
-    await waitFor(
-      tester,
-      find.text(
-        s.pictureTooWide
-            .replaceAll('{0}', 'broken.png')
-            .replaceAll('{1}', '5000')
-            .replaceAll('{2}', '10'),
-      ),
+    // Looks like a too wide PNG by its first bytes, but is not whole: that
+    // is said first, and no smaller copy is offered (D65).
+    await addInDialog(tester, (name: 'broken.png', bytes: pngHeader(5000, 10)));
+    expect(
+      find.text(s.pictureUnreadable.replaceAll('{0}', 'broken.png')),
+      findsOneWidget,
     );
     expect(find.text(s.reduceButton), findsNothing);
     await closeDialog(tester);
@@ -435,6 +427,52 @@ void main() {
     await closeDialog(tester);
     expect(current(tester).pictures, {'a.png': onePixelPng});
     expect(current(tester).isDirty, isFalse);
+  });
+
+  testWidgets('a picture cut short is refused, saying why, in Korean too '
+      '(D65)', (tester) async {
+    const ko = IdeStrings.ko;
+    await start(tester, strings: ko);
+    await tester.tap(find.text(ko.fileMenu));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(ko.picturesMenu).last);
+    await tester.pumpAndSettle();
+    final cut = Uint8List.sublistView(turnedJpeg, 0, turnedJpeg.length - 40);
+    await addInDialog(tester, (name: '사진.jpg', bytes: cut));
+    expect(
+      find.text(ko.pictureUnreadable.replaceAll('{0}', '사진.jpg')),
+      findsOneWidget,
+    );
+    await closeDialog(tester, strings: ko);
+    expect(current(tester).pictures, isEmpty);
+  });
+
+  testWidgets('a project opened with a damaged picture names it, after the '
+      'missing ones', (tester) async {
+    final hello = exampleProjects['hello']!;
+    fs.add('/home/Fruit', {
+      for (final MapEntry(:key, :value) in hello.entries)
+        if (key != 'Hello.gbproj') key: value,
+      'Fruit.gbproj': helloWithPictures(['a.png', 'b.png', 'c.png']),
+    });
+    fs.folders.add('/home/Fruit/pictures');
+    fs.bytes['/home/Fruit/pictures/a.png'] = onePixelPng;
+    fs.bytes['/home/Fruit/pictures/c.png'] = Uint8List.fromList(onePixelPng)
+      ..[onePixelPng.length - 20] ^= 0xFF;
+    await start(tester);
+    opens.add('/home/Fruit/Fruit.gbproj');
+    await menu(tester, s.open);
+    expect(
+      find.text(s.missingPictures.replaceAll('{0}', 'b.png')),
+      findsOneWidget,
+    );
+    await closeDialog(tester);
+    expect(
+      find.text(s.picturesUnreadable.replaceAll('{0}', 'c.png')),
+      findsOneWidget,
+    );
+    await closeDialog(tester);
+    expect(current(tester).pictures.keys, ['a.png', 'c.png']);
   });
 
   testWidgets('the Picture list is boxed like the text fields', (tester) async {

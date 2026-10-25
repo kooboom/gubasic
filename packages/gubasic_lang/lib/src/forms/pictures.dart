@@ -166,3 +166,115 @@ PictureFormat pictureFormat(Uint8List bytes) {
       return null;
   }
 }
+
+/// Whether [bytes], a PNG, JPEG or GIF by its signature, is whole as far
+/// as its structure tells (D65): every PNG chunk is there with its CRC
+/// right, up to `IEND`; a JPEG's segments lead to its image data and an
+/// end marker follows; a GIF's blocks lead to its trailer. A file cut
+/// short or damaged fails; this is not a full decode, so a picture can
+/// pass and still not draw (then a broken picture shows).
+bool pictureLooksWhole(Uint8List bytes) {
+  try {
+    return switch (pictureFormat(bytes)) {
+      PictureFormat.png => _pngWhole(bytes),
+      PictureFormat.jpeg => _jpegWhole(bytes),
+      PictureFormat.gif => _gifWhole(bytes),
+      PictureFormat.heic || PictureFormat.unknown => false,
+    };
+  } on RangeError {
+    return false;
+  }
+}
+
+bool _pngWhole(Uint8List bytes) {
+  final data = ByteData.sublistView(bytes);
+  var i = 8;
+  while (true) {
+    final length = data.getUint32(i);
+    final end = i + 8 + length;
+    if (end + 4 > bytes.length) return false;
+    final type = String.fromCharCodes(bytes, i + 4, i + 8);
+    if (_crc32(bytes, i + 4, end) != data.getUint32(end)) return false;
+    if (type == 'IEND') return true;
+    i = end + 4;
+  }
+}
+
+final _crcTable = List<int>.generate(256, (n) {
+  var c = n;
+  for (var k = 0; k < 8; k++) {
+    c = c & 1 == 1 ? 0xEDB88320 ^ (c >> 1) : c >> 1;
+  }
+  return c;
+});
+
+int _crc32(Uint8List bytes, int from, int to) {
+  var crc = 0xFFFFFFFF;
+  for (var i = from; i < to; i++) {
+    crc = _crcTable[(crc ^ bytes[i]) & 0xFF] ^ (crc >> 8);
+  }
+  return crc ^ 0xFFFFFFFF;
+}
+
+bool _jpegWhole(Uint8List bytes) {
+  final data = ByteData.sublistView(bytes);
+  var i = 2;
+  while (true) {
+    if (bytes[i] != 0xFF) return false;
+    final marker = bytes[i + 1];
+    if (marker == 0xFF) {
+      i++;
+      continue;
+    }
+    if (marker == 0xD9) return false; // an end before any image data
+    if (marker == 0x01 || (marker >= 0xD0 && marker <= 0xD7)) {
+      i += 2;
+      continue;
+    }
+    final length = data.getUint16(i + 2);
+    if (length < 2) return false;
+    final next = i + 2 + length;
+    if (next > bytes.length) return false;
+    if (marker == 0xDA) {
+      // Image data, then the end marker; a little padding after it is
+      // tolerated, as some cameras write.
+      for (var j = bytes.length - 2;
+          j >= next && j >= bytes.length - 1024;
+          j--) {
+        if (bytes[j] == 0xFF && bytes[j + 1] == 0xD9) return true;
+      }
+      return false;
+    }
+    i = next;
+  }
+}
+
+bool _gifWhole(Uint8List bytes) {
+  var i = 13;
+  final flags = bytes[10];
+  if (flags & 0x80 != 0) i += 3 * (1 << ((flags & 7) + 1));
+  int subBlocks(int at) {
+    var j = at;
+    while (bytes[j] != 0) {
+      j += bytes[j] + 1;
+    }
+    return j + 1;
+  }
+
+  while (true) {
+    switch (bytes[i]) {
+      case 0x3B:
+        return true;
+      case 0x21:
+        i = subBlocks(i + 2);
+      case 0x2C:
+        final local = bytes[i + 9];
+        i += 10;
+        if (local & 0x80 != 0) i += 3 * (1 << ((local & 7) + 1));
+        i = subBlocks(i + 1); // after the LZW minimum code size
+      default:
+        return false;
+    }
+    if (i >= bytes.length) return false;
+  }
+}

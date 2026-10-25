@@ -19,6 +19,36 @@ final Uint8List animatedGif = base64Decode(
   'R0lGODlhCAAIAIEAAP8AAAAAAAAAAAAAACH/C05FVFNDQVBFMi4wAwEAAAAh+QQACgAAACwAAAAACAAIAAAIDwABCBxIsKDBgwgTKkwYEAAh+QQBCgABACwAAAAACAAIAIEA/wAAAAAAAAAAAAAIDwABCBxIsKDBgwgTKkwYEAA7',
 );
 
+/// [onePixelPng] made [length] bytes long with a private chunk before its
+/// end, so that it is whole (its CRCs right) and takes that many bytes.
+Uint8List paddedPng(int length) {
+  final end = onePixelPng.length - 12; // IEND: 4 length, 4 type, 4 CRC
+  final padding = length - onePixelPng.length - 12;
+  final chunk = BytesBuilder()
+    ..add((ByteData(4)..setUint32(0, padding)).buffer.asUint8List())
+    ..add('gbPd'.codeUnits)
+    ..add(Uint8List(padding));
+  final body = chunk.takeBytes();
+  final crc = ByteData(4)..setUint32(0, _crc32(body, 4));
+  return (BytesBuilder()
+        ..add(onePixelPng.sublist(0, end))
+        ..add(body)
+        ..add(crc.buffer.asUint8List())
+        ..add(onePixelPng.sublist(end)))
+      .takeBytes();
+}
+
+int _crc32(List<int> bytes, int from) {
+  var crc = 0xFFFFFFFF;
+  for (var i = from; i < bytes.length; i++) {
+    crc ^= bytes[i];
+    for (var k = 0; k < 8; k++) {
+      crc = crc & 1 == 1 ? (crc >> 1) ^ 0xEDB88320 : crc >> 1;
+    }
+  }
+  return crc ^ 0xFFFFFFFF;
+}
+
 /// The start of a PNG of [width] x [height] pixels, padded to [length]
 /// bytes: enough for the checks that read the header.
 Uint8List pngHeader(int width, int height, {int length = 64}) {

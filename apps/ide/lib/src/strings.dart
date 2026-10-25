@@ -136,6 +136,8 @@ class IdeStrings {
     required this.pictureIsHeic,
     required this.pictureTooLarge,
     required this.pictureTooWide,
+    required this.pictureUnreadable,
+    required this.picturesUnreadable,
     required this.reduceButton,
     required this.reduceOffer,
     required this.reduceFirstFrameOnly,
@@ -404,6 +406,11 @@ class IdeStrings {
   /// `{1}` its width, `{2}` its height, in pixels.
   final String pictureTooWide;
 
+  /// A picture that is not whole (D65): one being added ({0} its name),
+  /// and those of a project just opened ({0} their names).
+  final String pictureUnreadable;
+  final String picturesUnreadable;
+
   /// Making a picture smaller (D56): the button that does it, what it
   /// will do ({0} the longest side, {1} the copy's name), the note for an
   /// animated GIF, the words while it works, what was added ({0} name,
@@ -586,6 +593,8 @@ class IdeStrings {
     pictureIsHeic: '"{0}" is an HEIC photo, which a project does not take because not every platform shows it. Save it as JPEG or PNG, then add it.',
     pictureTooLarge: '"{0}" takes {1} MB; a picture can take at most 2 MB. Make it smaller (fewer pixels, or JPEG for a photo), then add it.',
     pictureTooWide: '"{0}" is {1} × {2} pixels; a picture can be at most 4096 pixels wide and high. Make it smaller, then add it.',
+    pictureUnreadable: '"{0}" cannot be read: the file may be damaged or cut short. Open it in another program, save it again, then add it.',
+    picturesUnreadable: 'These pictures cannot be read; their files may be damaged: {0}. They show as a broken picture. Replace them in File → Pictures.',
     reduceButton: 'Make Smaller and Add',
     reduceOffer: 'Make Smaller and Add makes a copy as a PNG, at most {0} pixels on its longest side (smaller if needed), and adds it as "{1}". The file you chose is not changed.',
     reduceFirstFrameOnly:
@@ -762,6 +771,8 @@ class IdeStrings {
     pictureIsHeic: '"{0}" 파일은 HEIC 사진입니다. 모든 플랫폼에서 보이지는 않아서 프로젝트에 넣을 수 없습니다. JPEG나 PNG로 저장한 뒤 추가합니다.',
     pictureTooLarge: '"{0}" 파일의 크기는 {1}MB입니다. 그림 하나는 2MB까지 넣을 수 있습니다. 픽셀 수를 줄이거나 사진은 JPEG로 저장해 크기를 줄인 뒤 추가합니다.',
     pictureTooWide: '"{0}" 그림의 크기는 {1} × {2}픽셀입니다. 그림의 가로와 세로는 4096픽셀까지입니다. 크기를 줄인 뒤 추가합니다.',
+    pictureUnreadable: '"{0}" 그림은 읽을 수 없습니다. 파일이 깨졌거나 끝이 잘렸을 수 있습니다. 다른 프로그램에서 열어 다시 저장한 뒤 추가합니다.',
+    picturesUnreadable: '다음 그림은 읽을 수 없습니다. 파일이 깨졌을 수 있습니다: {0}. 깨진 그림으로 보이며, 파일 → 그림에서 바꿀 수 있습니다.',
     reduceButton: '줄여서 넣기',
     reduceOffer: '[줄여서 넣기]를 누르면 긴 변이 {0}픽셀 이하인 PNG 사본을 만들어(필요하면 더 작게) "{1}" 이름으로 추가합니다. 고른 파일은 바뀌지 않습니다.',
     reduceFirstFrameOnly: '움직이는 GIF입니다. 사본에는 첫 장면만 남습니다.',

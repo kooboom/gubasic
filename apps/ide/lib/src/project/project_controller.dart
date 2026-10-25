@@ -184,6 +184,7 @@ class ProjectController extends ChangeNotifier {
       _folderProject = project;
       _show(project);
       if (context.mounted) await _tellMissing(context, read.missing);
+      if (context.mounted) await _tellUnreadable(context);
     } on FolderProblem catch (p) {
       if (context.mounted) await _tell(context, _describe(p));
     }
@@ -524,6 +525,7 @@ class ProjectController extends ChangeNotifier {
           );
           _browserProject = project;
           _show(project);
+          if (context.mounted) await _tellUnreadable(context);
         } on StorageFailed {
           gone();
         }
@@ -540,6 +542,7 @@ class ProjectController extends ChangeNotifier {
           _folderProject = project;
           _show(project);
           if (context.mounted) await _tellMissing(context, read.missing);
+          if (context.mounted) await _tellUnreadable(context);
         } on FolderProblem {
           gone();
         }
@@ -698,6 +701,7 @@ class ProjectController extends ChangeNotifier {
     );
     _browserProject = project;
     _show(project);
+    if (context.mounted) await _tellUnreadable(context);
   }
 
   /// Gives the open project as `NAME.zip`, the folder `NAME/` with its
@@ -779,6 +783,7 @@ class ProjectController extends ChangeNotifier {
     _show(project);
     if (!context.mounted) return;
     await _tellMissing(context, unzipped.missing);
+    if (context.mounted) await _tellUnreadable(context);
     if (!context.mounted) return;
     if (unzipped.ignored.isNotEmpty) {
       await _tell(
@@ -788,6 +793,20 @@ class ProjectController extends ChangeNotifier {
       if (!context.mounted) return;
     }
     await _noticeOnce(context);
+  }
+
+  /// Tells which pictures of the open project are not whole (D65): they
+  /// show as a broken picture until they are replaced.
+  Future<void> _tellUnreadable(BuildContext context) async {
+    final broken = [
+      for (final MapEntry(key: name, value: bytes) in _current.pictures.entries)
+        if (!pictureLooksWhole(bytes)) name,
+    ];
+    if (broken.isEmpty || !context.mounted) return;
+    await _tell(
+      context,
+      strings.picturesUnreadable.replaceAll('{0}', broken.join(', ')),
+    );
   }
 
   /// Tells which of the project's files and pictures [missing] lists
@@ -834,8 +853,16 @@ class ProjectController extends ChangeNotifier {
     var name = composeHangul(picked.name);
     var bytes = picked.bytes;
     final project = _current;
-    if (checkPicture(name, bytes, project.files, project.pictures)
-        case final refused?) {
+    final refusal = checkPicture(name, bytes, project.files, project.pictures);
+    // A file that is not whole says so before its size does (D65).
+    if (refusal is! BadPictureName &&
+        refusal is! NotAPicture &&
+        refusal is! ProjectFileHasErrors &&
+        !pictureLooksWhole(bytes)) {
+      await _tell(context, strings.pictureUnreadable.replaceAll('{0}', name));
+      return null;
+    }
+    if (refusal case final refused?) {
       final room = _reducibleRoom(refused, name, bytes, project);
       if (room == null) {
         await _tell(context, _describePicture(refused));
