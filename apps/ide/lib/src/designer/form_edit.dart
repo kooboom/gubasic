@@ -492,3 +492,79 @@ FormFile withName(FormFile form, String name, String newName) => _copy(form, [
     else
       c,
 ]);
+
+/// What the designer moves controls from when the form changes size
+/// (D59): each control's box and the form's size before the first of a
+/// run of size changes, so that changing it back puts every control back
+/// exactly.
+typedef AnchorBase = ({
+  Map<String, ControlBox> boxes,
+  ({int width, int height}) size,
+});
+
+/// [form]'s controls and size as they are, to move controls from.
+AnchorBase anchorBaseOf(FormFile form) => (
+  boxes: {for (final c in form.controls) c.name.toLowerCase(): boxOf(c)},
+  size: formSizeOf(form),
+);
+
+/// Where each control of [form], by name in lower case, goes when the
+/// form becomes [size]: moved from [base] as its Anchor says (D57), never
+/// to the grid. A control [base] does not have stays where it is.
+Map<String, ControlBox> anchoredBoxes(
+  FormFile form,
+  ({int width, int height}) size,
+  AnchorBase base,
+) => {
+  for (final c in form.controls)
+    c.name.toLowerCase(): switch (base.boxes[c.name.toLowerCase()]) {
+      final from? => anchoredRect(
+        from,
+        c.valueOf('Anchor') as String,
+        baseWidth: base.size.width,
+        baseHeight: base.size.height,
+        width: size.width,
+        height: size.height,
+      ),
+      null => boxOf(c),
+    },
+};
+
+/// [form] with its inside [size] and each control moved as its Anchor
+/// says, from [base].
+FormFile withAnchoredSize(
+  FormFile form,
+  ({int width, int height}) size,
+  AnchorBase base,
+) {
+  final boxes = anchoredBoxes(form, size, base);
+  var sized = withFormSize(form, size);
+  for (final c in form.controls) {
+    sized = withBox(sized, c.name, boxes[c.name.toLowerCase()]!);
+  }
+  return sized;
+}
+
+/// The lines that show [box]'s Anchor on a form of [size]: from the middle
+/// of each edge it is anchored to, straight out to that edge of the form.
+List<(Point<double>, Point<double>)> anchorLines(
+  ControlBox box,
+  String anchor,
+  ({int width, int height}) size,
+) {
+  final words = anchor.split(' ');
+  final midX = box.left + box.width / 2;
+  final midY = box.top + box.height / 2;
+  final right = (box.left + box.width).toDouble();
+  final bottom = (box.top + box.height).toDouble();
+  return [
+    if (words.contains('Left'))
+      (Point(0.0, midY), Point(box.left.toDouble(), midY)),
+    if (words.contains('Top'))
+      (Point(midX, 0.0), Point(midX, box.top.toDouble())),
+    if (words.contains('Right'))
+      (Point(right, midY), Point(size.width.toDouble(), midY)),
+    if (words.contains('Bottom'))
+      (Point(midX, bottom), Point(midX, size.height.toDouble())),
+  ];
+}

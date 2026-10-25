@@ -107,6 +107,8 @@ class IdeStrings {
     required this.addButton,
     required this.removePicture,
     required this.noPicture,
+    required this.noAnchor,
+    required this.anchorTips,
     required this.confirmRemovePicture,
     required this.pictureInUse,
     required this.replacePicture,
@@ -328,6 +330,11 @@ class IdeStrings {
   /// The first choice of a picture property: no picture.
   final String noPicture;
 
+  /// The Anchor field (D59): what it shows for no edge, and what each
+  /// arm of its cross does, by edge (`Left`, `Top`, `Right`, `Bottom`).
+  final String noAnchor;
+  final Map<String, String> anchorTips;
+
   /// `{0}` the picture.
   final String confirmRemovePicture;
 
@@ -501,6 +508,13 @@ class IdeStrings {
     addButton: 'Add',
     removePicture: 'Remove',
     noPicture: '(None)',
+    noAnchor: '(None: stays near the middle)',
+    anchorTips: {
+      'Left': 'Left: keep the distance to the form\'s left edge',
+      'Top': 'Top: keep the distance to the form\'s top edge',
+      'Right': 'Right: keep the distance to the form\'s right edge',
+      'Bottom': 'Bottom: keep the distance to the form\'s bottom edge',
+    },
     confirmRemovePicture: 'Take the picture {0} out of the project? Its file in the pictures folder is deleted when the project is saved.',
     pictureInUse: '{0} is shown by {1}. Choose another picture there, or clear Picture, then remove it.',
     replacePicture: 'The project already has a picture named {0}. Replace it with the new one? Every control showing it then shows the new picture.',
@@ -649,6 +663,13 @@ class IdeStrings {
     addButton: '추가',
     removePicture: '빼기',
     noPicture: '(없음)',
+    noAnchor: '(없음: 가운데 가까이 머묾)',
+    anchorTips: {
+      'Left': 'Left: 폼의 왼쪽 가장자리와의 거리를 지킵니다',
+      'Top': 'Top: 폼의 위쪽 가장자리와의 거리를 지킵니다',
+      'Right': 'Right: 폼의 오른쪽 가장자리와의 거리를 지킵니다',
+      'Bottom': 'Bottom: 폼의 아래쪽 가장자리와의 거리를 지킵니다',
+    },
     confirmRemovePicture:
         '프로젝트에서 {0} 그림을 뺄까요? 프로젝트를 저장할 때 pictures 폴더의 그림 파일도 지웁니다.',
     pictureInUse:

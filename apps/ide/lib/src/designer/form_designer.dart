@@ -94,6 +94,31 @@ class _FormDesignerState extends State<FormDesigner> {
   /// The form's size during that drag.
   ({int width, int height})? _liveForm;
 
+  /// What the controls move from when the form changes size, and the form
+  /// file's text it was last used for: kept while the text stays as the
+  /// last size change left it, so that changing the size back puts every
+  /// control back exactly (D59).
+  AnchorBase? _anchorBase;
+  String? _anchorText;
+
+  /// The base for a size change now: the last one, or the form as it is
+  /// when something else changed it since.
+  AnchorBase get _resizeBase {
+    if (_anchorBase == null || _anchorText != _text) {
+      _anchorBase = anchorBaseOf(_form);
+      _anchorText = _text;
+    }
+    return _anchorBase!;
+  }
+
+  /// Makes the form [size], moving the controls as their Anchor says
+  /// (D57); one step of undo.
+  void _resizeForm(({int width, int height}) size) {
+    if (size == formSizeOf(_form)) return;
+    _apply(withAnchoredSize(_form, size, _resizeBase), select: _selected);
+    _anchorText = _text;
+  }
+
   /// The mouse cursor over the form, from what is under the mouse.
   MouseCursor _cursor = MouseCursor.defer;
 
@@ -471,6 +496,15 @@ class _FormDesignerState extends State<FormDesigner> {
     _model.form
       ..set('Width', size.width)
       ..set('Height', size.height);
+    final boxes = anchoredBoxes(_form, size, _resizeBase);
+    for (final c in _model.controls) {
+      final b = boxes[c.name!.toLowerCase()]!;
+      c
+        ..set('Left', b.left)
+        ..set('Top', b.top)
+        ..set('Width', b.width)
+        ..set('Height', b.height);
+    }
     setState(() => _liveForm = size);
   }
 
@@ -480,7 +514,7 @@ class _FormDesignerState extends State<FormDesigner> {
     if (change == null) return;
     _endChange();
     if (live != null && live != change.start) {
-      _apply(withFormSize(_form, live), select: _selected);
+      _resizeForm(live);
     } else {
       setState(() {});
     }
@@ -934,8 +968,14 @@ class _FormDesignerState extends State<FormDesigner> {
     final height = size.height.toDouble();
     final scheme = Theme.of(context).colorScheme;
     final selected = _selectedControl;
-    ControlBox boxNow(ControlDecl c) =>
-        _live != null && c.name == _change?.name ? _live! : boxOf(c);
+    // While the form's size is dragged, the controls are where their
+    // Anchor puts them.
+    final live = _liveForm == null
+        ? null
+        : anchoredBoxes(form, _liveForm!, _resizeBase);
+    ControlBox boxNow(ControlDecl c) => _live != null && c.name == _change?.name
+        ? _live!
+        : live?[c.name.toLowerCase()] ?? boxOf(c);
     final area = SizedBox(
       key: designerFormKey,
       width: width,
@@ -990,6 +1030,13 @@ class _FormDesignerState extends State<FormDesigner> {
                       ],
                       edgeColor: scheme.outline,
                       selected: selected == null ? null : boxNow(selected),
+                      anchorLines: selected == null
+                          ? const []
+                          : anchorLines(
+                              boxNow(selected),
+                              selected.valueOf('Anchor') as String,
+                              size,
+                            ),
                       drawing: _drawing,
                       color: scheme.primary,
                       handleFill: scheme.surface,
@@ -1172,6 +1219,7 @@ class _MarksPainter extends CustomPainter {
     required this.edges,
     required this.edgeColor,
     required this.selected,
+    required this.anchorLines,
     required this.drawing,
     required this.color,
     required this.handleFill,
@@ -1180,6 +1228,10 @@ class _MarksPainter extends CustomPainter {
   final List<ControlBox> edges;
   final Color edgeColor;
   final ControlBox? selected;
+
+  /// The selected control's Anchor: a dashed line from each edge it is
+  /// anchored to out to the form's edge (D59).
+  final List<(Point<double>, Point<double>)> anchorLines;
   final ControlBox? drawing;
   final Color color;
   final Color handleFill;
@@ -1225,6 +1277,26 @@ class _MarksPainter extends CustomPainter {
         ..drawRect(r, Paint()..color = color.withValues(alpha: 0.12))
         ..drawRect(r.deflate(0.5), line);
     }
+    final dashes = Paint()
+      ..color = color
+      ..strokeWidth = 1;
+    for (final (from, to) in anchorLines) {
+      // 4 pixels on, 3 off, at the middle of a pixel.
+      final length = from.distanceTo(to);
+      final points = <Offset>[];
+      for (var d = 0.0; d < length; d += 7) {
+        for (var i = d; i < min(d + 4, length); i++) {
+          final t = i / length;
+          points.add(
+            Offset(
+              (from.x + (to.x - from.x) * t).floorToDouble() + 0.5,
+              (from.y + (to.y - from.y) * t).floorToDouble() + 0.5,
+            ),
+          );
+        }
+      }
+      canvas.drawPoints(PointMode.points, points, dashes);
+    }
     if (selected case final b?) {
       final r = _rect(b);
       canvas.drawRect(r.deflate(0.5), line);
@@ -1250,6 +1322,7 @@ class _MarksPainter extends CustomPainter {
       !listEquals(old.edges, edges) ||
       old.edgeColor != edgeColor ||
       old.selected != selected ||
+      !listEquals(old.anchorLines, anchorLines) ||
       old.drawing != drawing ||
       old.color != color ||
       old.handleFill != handleFill;

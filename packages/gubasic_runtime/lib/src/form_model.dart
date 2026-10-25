@@ -161,9 +161,10 @@ class GbFormModel {
 
   /// The user makes the inside of the form [width] x [height] (the run
   /// window's corner dragged): the controls move as their Anchor says,
-  /// then [onEvent] gets the form's `Resize` (D58). Nothing happens when
-  /// it already is that size.
-  void resize(int width, int height) {
+  /// then [onEvent] gets the form's `Resize` (D58), unless [raise] is
+  /// false: while the corner is still being dragged, the window raises it
+  /// once it is let go. Nothing happens when it already is that size.
+  void resize(int width, int height, {bool raise = true}) {
     if (form.integer('Width') == width && form.integer('Height') == height) {
       return;
     }
@@ -171,7 +172,7 @@ class GbFormModel {
       ..set('Width', width)
       ..set('Height', height);
     _place();
-    onEvent(null, 'Resize');
+    if (raise) onEvent(null, 'Resize');
   }
 
   /// The control named [name] (any case), or null; null names the form.

@@ -14,6 +14,10 @@ const propertiesTargetKey = ValueKey('properties.target');
 ValueKey<String> propertyFieldKey(String property) =>
     ValueKey('properties.$property');
 
+/// The key of the arm of the Anchor field's cross for [edge] (`Left`).
+ValueKey<String> anchorArmKey(String edge) =>
+    ValueKey('properties.anchor.$edge');
+
 /// The Properties window (D35): a list to choose the form or a control,
 /// then its name and properties, in its component.yaml's order. Values
 /// apply as they are typed; values that are not valid are not applied
@@ -518,9 +522,59 @@ class _PropertyFieldState extends State<PropertyField> {
     );
   }
 
+  /// An Anchor property (D59): a box like the text fields' showing the
+  /// edges, which opens a cross whose arms turn each edge on and off.
+  Widget _anchorBox(BuildContext context) {
+    final theme = Theme.of(context);
+    final value = '${widget.value}';
+    return MenuAnchor(
+      menuChildren: [
+        AnchorEditor(
+          value: value,
+          tips: widget.strings.anchorTips,
+          onChanged: (anchor) {
+            widget.onChange(anchor, Object());
+            widget.onDone();
+          },
+        ),
+      ],
+      builder: (context, menu, _) => GestureDetector(
+        key: propertyFieldKey(widget.spec.name),
+        behavior: HitTestBehavior.opaque,
+        onTap: widget.editable
+            ? () => menu.isOpen ? menu.close() : menu.open()
+            : null,
+        child: InputDecorator(
+          decoration: const InputDecoration(
+            isDense: true,
+            border: OutlineInputBorder(),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  value.isEmpty ? widget.strings.noAnchor : value,
+                  style: theme.textTheme.bodyMedium,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              Icon(
+                Icons.arrow_drop_down,
+                size: 16,
+                color: widget.editable ? null : theme.disabledColor,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (widget.spec.picture) return _pictureList(context);
+    if (widget.spec.anchor) return _anchorBox(context);
     if (widget.spec.type == GbType.boolean) {
       return Align(
         alignment: Alignment.centerLeft,
@@ -691,6 +745,131 @@ class _NameFieldState extends State<NameField> {
         onChanged: (name) => setState(() => _error = _problem(name)),
         onEditingComplete: _apply,
         onTapOutside: (_) {},
+      ),
+    );
+  }
+}
+
+/// The Anchor field's cross (D59), as Visual Basic .NET's designer shows
+/// it: a box for the control in a frame for the form, and an arm from the
+/// box to each edge of the frame. A filled arm is an edge the control
+/// keeps its distance to; clicking an arm turns it on or off.
+class AnchorEditor extends StatelessWidget {
+  const AnchorEditor({
+    super.key,
+    required this.value,
+    required this.tips,
+    required this.onChanged,
+  });
+
+  /// The Anchor, as `normalAnchor` keeps it.
+  final String value;
+
+  /// What each arm does, by edge.
+  final Map<String, String> tips;
+  final ValueChanged<String> onChanged;
+
+  static const _size = 112.0;
+  static const _box = 36.0;
+  static const _reach = 14.0;
+
+  void _toggle(String edge) {
+    final words = value.split(' ').where((w) => w.isNotEmpty).toSet();
+    if (!words.remove(edge)) words.add(edge);
+    onChanged(normalAnchor(words.join(' '))!);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final on = value.split(' ').toSet();
+    const middle = (_size - _box) / 2;
+    const arm = (_size - _box) / 2;
+    Widget armAt(String edge, Rect area, {required bool across}) {
+      final chosen = on.contains(edge);
+      return Positioned.fromRect(
+        rect: area,
+        child: Tooltip(
+          message: tips[edge] ?? edge,
+          child: InkWell(
+            key: anchorArmKey(edge),
+            onTap: () => _toggle(edge),
+            child: Center(
+              child: Container(
+                width: across ? null : (chosen ? 6 : 2),
+                height: across ? (chosen ? 6 : 2) : null,
+                color: chosen ? scheme.primary : scheme.outline,
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    return Padding(
+      padding: const EdgeInsets.all(8),
+      child: SizedBox.square(
+        dimension: _size,
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  border: Border.all(color: scheme.outlineVariant),
+                ),
+              ),
+            ),
+            Positioned.fromRect(
+              rect: const Rect.fromLTWH(middle, middle, _box, _box),
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  color: scheme.surfaceContainerHigh,
+                  border: Border.all(color: scheme.outline),
+                ),
+              ),
+            ),
+            armAt(
+              'Left',
+              const Rect.fromLTWH(
+                0,
+                middle + _box / 2 - _reach / 2,
+                arm,
+                _reach,
+              ),
+              across: true,
+            ),
+            armAt(
+              'Right',
+              const Rect.fromLTWH(
+                middle + _box,
+                middle + _box / 2 - _reach / 2,
+                arm,
+                _reach,
+              ),
+              across: true,
+            ),
+            armAt(
+              'Top',
+              const Rect.fromLTWH(
+                middle + _box / 2 - _reach / 2,
+                0,
+                _reach,
+                arm,
+              ),
+              across: false,
+            ),
+            armAt(
+              'Bottom',
+              const Rect.fromLTWH(
+                middle + _box / 2 - _reach / 2,
+                middle + _box,
+                _reach,
+                arm,
+              ),
+              across: false,
+            ),
+          ],
+        ),
       ),
     );
   }

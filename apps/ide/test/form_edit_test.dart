@@ -444,6 +444,42 @@ void main() {
     expect(snap(13, grid: true), 16);
     expect(snap(13.4, grid: false), 13);
   });
+
+  test('the lines that show an Anchor go from the middle of each anchored '
+      'edge out to the form\'s edge', () {
+    const size = (width: 100, height: 80);
+    expect(anchorLines(_box, '', size), isEmpty);
+    expect(anchorLines(_box, 'Left Top Right Bottom', size), [
+      (const Point(0.0, 32.0), const Point(16.0, 32.0)),
+      (const Point(36.0, 0.0), const Point(36.0, 24.0)),
+      (const Point(56.0, 32.0), const Point(100.0, 32.0)),
+      (const Point(36.0, 40.0), const Point(36.0, 80.0)),
+    ]);
+  });
+
+  test('a form resized from a base moves its controls from that base, and '
+      'back to its size puts them back', () {
+    final form = readFormFile(
+      'formatVersion: 1\nproperties: { Width: 300, Height: 200 }\n'
+      'controls:\n'
+      '  - { name: a, type: Button, properties: { Left: 13, Top: 7, '
+      'Anchor: Right Bottom } }\n'
+      '  - { name: b, type: Label, properties: { Left: 101, Top: 51, '
+      'Anchor: "" } }\n',
+      name: 'Form1',
+    ).form;
+    final base = anchorBaseOf(form);
+    final larger = withAnchoredSize(form, (width: 333, height: 211), base);
+    expect(boxOf(larger.control('a')!).left, 46);
+    expect(boxOf(larger.control('b')!), (
+      left: 117,
+      top: 56,
+      width: 120,
+      height: 24,
+    ));
+    final back = withAnchoredSize(larger, (width: 300, height: 200), base);
+    expect(writeFormFile(back), writeFormFile(form));
+  });
 }
 
 const ControlBox _box = (left: 16, top: 24, width: 40, height: 16);

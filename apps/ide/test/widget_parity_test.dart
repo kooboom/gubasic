@@ -265,14 +265,18 @@ class _WidgetDriver implements ScriptDriver {
 
   @override
   Future<EventOutcome?> resize(int width, int height) async {
-    if (host.dialogs.hasOpenDialog) return EventOutcome.blocked;
+    if (!session.formShown) return EventOutcome.blocked;
     final form = host.model.form;
-    if (form.integer('Width') == width && form.integer('Height') == height) {
-      return null;
-    }
+    final dx = width - form.integer('Width');
+    final dy = height - form.integer('Height');
+    if (dx == 0 && dy == 0) return null;
+    // The run window's corner, dragged as the user would; an open
+    // dialog covers it.
+    final corner = find.byKey(runWindowResizeKey);
+    await tester.ensureVisible(corner);
+    if (corner.hitTestable().evaluate().isEmpty) return EventOutcome.blocked;
     host.lastOutcome = null;
-    // As the run window does when its corner is dragged.
-    host.model.resize(width, height);
+    await tester.drag(corner, Offset(dx.toDouble(), dy.toDouble()));
     await tester.pump();
     return host.lastOutcome ?? EventOutcome.noHandler;
   }

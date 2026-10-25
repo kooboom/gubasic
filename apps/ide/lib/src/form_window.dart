@@ -59,12 +59,17 @@ class FormWindowFrame extends StatelessWidget {
     required this.width,
     this.trailing,
     this.child,
+    this.onTitleDoubleTap,
   });
 
   final String caption;
   final double width;
   final Widget? trailing;
   final Widget? child;
+
+  /// A double-click on the title bar: the run window puts the form back
+  /// at the size it was drawn.
+  final VoidCallback? onTitleDoubleTap;
 
   @override
   Widget build(BuildContext context) {
@@ -87,10 +92,22 @@ class FormWindowFrame extends StatelessWidget {
               child: Row(
                 children: [
                   Expanded(
-                    child: Text(
-                      caption,
-                      overflow: TextOverflow.ellipsis,
-                      style: theme.textTheme.titleSmall,
+                    // Only the caption takes a double-click: over the
+                    // close button it would hold back its click.
+                    child: GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onDoubleTap: onTitleDoubleTap,
+                      child: SizedBox(
+                        height: formTitleHeight,
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            caption,
+                            overflow: TextOverflow.ellipsis,
+                            style: theme.textTheme.titleSmall,
+                          ),
+                        ),
+                      ),
                     ),
                   ),
                   ?trailing,

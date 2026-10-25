@@ -43,7 +43,7 @@ Problems we know about and have **deliberately** left unfixed for now. Each entr
 
 ## The run window is inside the IDE's window
 
-- **What:** a running program's form is shown in the middle of the IDE's window, not in a window of its own. Moving it or running two programs side by side is not possible.
+- **What:** a running program's form is shown in the middle of the IDE's window, not in a window of its own. Its corner resizes it (D59), but moving it or running two programs side by side is not possible.
 - **Why deferred:** one window works the same on the desktop and on the web; separate windows need platform code for each desktop system.
 - **Revisit:** with the form designer, when the IDE's windows are laid out.
 
