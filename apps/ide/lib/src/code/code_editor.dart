@@ -49,6 +49,21 @@ SingleActivator get completionShortcut =>
     ? const SingleActivator(LogicalKeyboardKey.space, alt: true)
     : const SingleActivator(LogicalKeyboardKey.space, control: true);
 
+/// The keys that make a new line below the caret's, wherever the caret is
+/// on it (D73): ⌘Enter on a Mac, Ctrl+Enter elsewhere.
+List<SingleActivator> get lineBelowShortcuts {
+  final apple =
+      defaultTargetPlatform == TargetPlatform.macOS ||
+      defaultTargetPlatform == TargetPlatform.iOS;
+  return [
+    for (final key in [
+      LogicalKeyboardKey.enter,
+      LogicalKeyboardKey.numpadEnter,
+    ])
+      SingleActivator(key, meta: apple, control: !apple),
+  ];
+}
+
 /// The code editor (D36): the code file [file] of [project], coloured as
 /// the lexer reads it, with line numbers. Only the characters the input
 /// method has committed reach the file (LANGUAGE.md §11.1), so a syllable
@@ -937,6 +952,28 @@ class _CodeEditorState extends State<CodeEditor>
     return (start, end < 0 ? text.length : end);
   }
 
+  /// ⌘Enter / Ctrl+Enter (D73): a new line below the caret's, as an Enter
+  /// at the end of the line makes it: indented, and a block closed as
+  /// Enter closes it. On a block's last line (End If), the way out of the
+  /// block.
+  void _lineBelow() {
+    if (widget.locked) return;
+    _commitComposing();
+    _closeCompletion();
+    final s = _controller.selection;
+    if (!s.isValid) return;
+    final text = _controller.text;
+    final next = text.indexOf('\n', s.end);
+    final end = next < 0 ? text.length : next;
+    // First the caret to the line's end, then the line break, so that the
+    // break is seen as an Enter there.
+    _controller.selection = TextSelection.collapsed(offset: end);
+    _controller.value = TextEditingValue(
+      text: text.replaceRange(end, end, '\n'),
+      selection: TextSelection.collapsed(offset: end + 1),
+    );
+  }
+
   /// Home and End (D71): End to the end of the caret's line; Home to the
   /// first character after its indentation, or to its start when the caret
   /// is there already, as VS Code does. With Shift, the selection goes
@@ -1157,6 +1194,8 @@ class _CodeEditorState extends State<CodeEditor>
                               shift: true,
                             ): _untab,
                             completionShortcut: _completeNow,
+                            for (final keys in lineBelowShortcuts)
+                              keys: _lineBelow,
                             // Home and End go along the line, on macOS as
                             // well (D71).
                             const SingleActivator(
