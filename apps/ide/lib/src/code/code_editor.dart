@@ -937,6 +937,63 @@ class _CodeEditorState extends State<CodeEditor>
     return (start, end < 0 ? text.length : end);
   }
 
+  /// Home and End (D71): End to the end of the caret's line; Home to the
+  /// first character after its indentation, or to its start when the caret
+  /// is there already, as VS Code does. With Shift, the selection goes
+  /// with the caret.
+  void _toLineEdge({required bool end, required bool extend}) {
+    _commitComposing();
+    _closeCompletion();
+    final s = _controller.selection;
+    if (!s.isValid) return;
+    final text = _controller.text;
+    final caret = s.extentOffset;
+    final start = _lineStart(text, caret);
+    final next = text.indexOf('\n', caret);
+    final lineEnd = next < 0 ? text.length : next;
+    var to = lineEnd;
+    if (!end) {
+      var first = start;
+      while (first < lineEnd && (text[first] == ' ' || text[first] == '\t')) {
+        first++;
+      }
+      // A line of spaces only has no first character: its start.
+      if (first == lineEnd) first = start;
+      to = caret == first ? start : first;
+    }
+    final selection = extend
+        ? s.copyWith(extentOffset: to)
+        : TextSelection.collapsed(offset: to);
+    // Through the field, as a key it knows would: it then scrolls the caret
+    // into view along a long line.
+    final field = _editableText();
+    if (field == null) {
+      _controller.selection = selection;
+    } else {
+      field.userUpdateTextEditingValue(
+        _controller.value.copyWith(selection: selection),
+        SelectionChangedCause.keyboard,
+      );
+    }
+  }
+
+  /// The field's [EditableTextState], found below [_fieldBox].
+  EditableTextState? _editableText() {
+    EditableTextState? found;
+    void visit(Element e) {
+      if (found != null) return;
+      if (e is StatefulElement && e.state is EditableTextState) {
+        found = e.state as EditableTextState;
+      } else {
+        e.visitChildElements(visit);
+      }
+    }
+
+    final context = _fieldBox.currentContext;
+    if (context is Element) visit(context);
+    return found;
+  }
+
   void _tab() {
     if (widget.locked || _composing) return;
     final s = _controller.selection;
@@ -1100,6 +1157,24 @@ class _CodeEditorState extends State<CodeEditor>
                               shift: true,
                             ): _untab,
                             completionShortcut: _completeNow,
+                            // Home and End go along the line, on macOS as
+                            // well (D71).
+                            const SingleActivator(
+                              LogicalKeyboardKey.home,
+                            ): () =>
+                                _toLineEdge(end: false, extend: false),
+                            const SingleActivator(
+                              LogicalKeyboardKey.home,
+                              shift: true,
+                            ): () =>
+                                _toLineEdge(end: false, extend: true),
+                            const SingleActivator(LogicalKeyboardKey.end): () =>
+                                _toLineEdge(end: true, extend: false),
+                            const SingleActivator(
+                              LogicalKeyboardKey.end,
+                              shift: true,
+                            ): () =>
+                                _toLineEdge(end: true, extend: true),
                           },
                           child: Focus(
                             canRequestFocus: false,
