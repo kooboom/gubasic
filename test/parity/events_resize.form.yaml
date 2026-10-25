@@ -1,0 +1,7 @@
+formatVersion: 1
+properties: { Width: 300, Height: 200 }
+controls:
+  - { name: btnWider, type: Button, properties: { Left: 8, Top: 8, Width: 80, Height: 24 } }
+  - { name: btnAsk, type: Button, properties: { Left: 96, Top: 8, Width: 80, Height: 24 } }
+  - { name: lblCorner, type: Label, properties: { Left: 200, Top: 170, Width: 92, Height: 22 } }
+  - { name: btnOk, type: Button, properties: { Left: 212, Top: 136, Width: 80, Height: 24, Anchor: Right Bottom } }

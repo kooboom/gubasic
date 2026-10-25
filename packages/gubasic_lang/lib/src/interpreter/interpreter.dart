@@ -236,6 +236,9 @@ class Interpreter {
     final load = _handlers[_eventKey(null, 'Load')];
     if (load != null && _ended == null) await _runHandler(load);
     if (_ended == null) _formHost.showForm();
+    // Once when the form is first shown, as in Visual Basic 6 (D58).
+    final resize = _handlers[_eventKey(null, 'Resize')];
+    if (resize != null && _ended == null) await _runHandler(resize);
     return done.future;
   }
 

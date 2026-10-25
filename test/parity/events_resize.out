@@ -1,0 +1,27 @@
+Debug.Print: Load 300x200
+Debug.Print: Resize 300x200, btnOk at 212,136
+Set lblCorner.Left: 200
+Set lblCorner.Top: 170
+> Form.Resize 360 240
+Debug.Print: Resize 360x240, btnOk at 272,176
+Set lblCorner.Left: 260
+Set lblCorner.Top: 210
+> Form.Resize 360 240
+> btnWider.Click
+Set Form.Width: 400
+Debug.Print: Resize 400x240, btnOk at 312,176
+Set lblCorner.Left: 300
+Set lblCorner.Top: 210
+Debug.Print: after Width: 300
+> Form.Resize 150 200
+Debug.Print: Resize 150x200, btnOk at 62,136
+Set lblCorner.Left: 50
+Set lblCorner.Top: 170
+Set Form.Width: 200
+> btnAsk.Click
+MsgBox: A dialog is open
+> Form.Resize 400 300
+Blocked: Form.Resize 400 300
+> OK
+> Close
+Closed

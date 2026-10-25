@@ -62,7 +62,8 @@ class CloseStep extends ScriptStep {
 }
 
 /// `Form.Resize 600 400`: the user makes the inside of the form 600 x 400;
-/// the controls move as their Anchor says (D57).
+/// the controls move as their Anchor says (D57), then Form_Resize runs
+/// (D58). Nothing happens when it already is that size.
 class ResizeStep extends ScriptStep {
   const ResizeStep(super.text, this.width, this.height);
 
@@ -213,11 +214,16 @@ class ScriptedHost implements FormHost {
     }
   }
 
-  /// The user makes the inside of the form [width] x [height].
-  void resize(int width, int height) {
+  /// The user makes the inside of the form [width] x [height]. False
+  /// when it already was that size, so that nothing happens.
+  bool resize(int width, int height) {
+    if (_int(null, 'Width') == width && _int(null, 'Height') == height) {
+      return false;
+    }
     _properties[_key(null, 'Width')] = width;
     _properties[_key(null, 'Height')] = height;
     _place();
+    return true;
   }
 
   final _components = <String, String>{};
@@ -353,8 +359,10 @@ abstract interface class ScriptDriver {
   /// The user closes the form; false when an open dialog blocks it.
   Future<bool> close();
 
-  /// The user makes the inside of the form [width] x [height].
-  Future<void> resize(int width, int height);
+  /// The user makes the inside of the form [width] x [height]: the
+  /// controls move as their Anchor says, then Form_Resize runs. Null when
+  /// it already was that size, so that nothing happens.
+  Future<EventOutcome?> resize(int width, int height);
 
   /// Closes the form if it is still open, and waits for the run to end.
   Future<RunResult> finish();
@@ -427,7 +435,8 @@ Future<List<String>> driveEventScript(
       case CloseStep():
         if (!await driver.close()) out.add('Blocked: ${step.text}');
       case ResizeStep(:final width, :final height):
-        await driver.resize(width, height);
+        final outcome = await driver.resize(width, height);
+        if (outcome != null) _record(out, step.text, outcome);
     }
   }
   await settle();
@@ -521,8 +530,11 @@ class _HostDriver implements ScriptDriver {
   }
 
   @override
-  Future<void> resize(int width, int height) async =>
-      host.resize(width, height);
+  Future<EventOutcome?> resize(int width, int height) async {
+    if (host.hasOpenDialog) return EventOutcome.blocked;
+    if (!host.resize(width, height)) return null;
+    return interpreter.raiseEvent(null, 'Resize');
+  }
 
   @override
   Future<RunResult> finish() {

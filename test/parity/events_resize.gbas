@@ -1,0 +1,26 @@
+' Form_Resize (D58): after Load when the form is first shown, when the
+' user resizes the form, and when the program sets Width or Height.
+Sub Form_Load()
+    Debug.Print("Load " & Me.Width & "x" & Me.Height)
+End Sub
+
+Sub Form_Resize()
+    ' The anchored button has already moved; the label is moved here, the
+    ' Visual Basic 6 way.
+    Debug.Print("Resize " & Me.Width & "x" & Me.Height & ", btnOk at " & btnOk.Left & "," & btnOk.Top)
+    lblCorner.Left = Me.Width - lblCorner.Width - 8
+    lblCorner.Top = Me.Height - lblCorner.Height - 8
+    If Me.Width < 200 Then
+        ' Not started again by its own change.
+        Me.Width = 200
+    End If
+End Sub
+
+Sub btnWider_Click()
+    Me.Width = Me.Width + 40
+    Debug.Print("after Width: " & lblCorner.Left)
+End Sub
+
+Sub btnAsk_Click()
+    MsgBox("A dialog is open")
+End Sub

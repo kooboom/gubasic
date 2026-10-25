@@ -88,6 +88,20 @@ void main() {
     expect(rect(ok).left, 60);
   });
 
+  test('the user resizing raises the form\'s Resize, after the controls '
+      'moved; the same size again raises nothing', () {
+    final ok = control('btnOk', 'Right Bottom');
+    final events = <String>[];
+    final m = GbFormModel(
+      form: {'Caption': '', 'Width': 300, 'Height': 200},
+      controls: [ok],
+      onEvent: (c, e) => events.add('${c ?? 'Form'}.$e at ${ok['Left']}'),
+    );
+    m.resize(340, 200);
+    m.resize(340, 200);
+    expect(events, ['Form.Resize at 140']);
+  });
+
   testWidgets('the form view shows the controls where the model puts them', (
     tester,
   ) async {

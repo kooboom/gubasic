@@ -1,0 +1,12 @@
+' Form_Resize (D58): after Load; the user resizes; the same size again
+' does nothing; the program sets Width (Resize runs within the
+' assignment); Resize making the form wider is not started again; while
+' a MsgBox is open the form cannot be resized.
+Form.Resize 360 240
+Form.Resize 360 240
+btnWider.Click
+Form.Resize 150 200
+btnAsk.Click
+Form.Resize 400 300
+OK
+Close

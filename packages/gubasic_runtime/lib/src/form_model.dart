@@ -160,12 +160,18 @@ class GbFormModel {
   }
 
   /// The user makes the inside of the form [width] x [height] (the run
-  /// window's corner dragged): the controls move as their Anchor says.
+  /// window's corner dragged): the controls move as their Anchor says,
+  /// then [onEvent] gets the form's `Resize` (D58). Nothing happens when
+  /// it already is that size.
   void resize(int width, int height) {
+    if (form.integer('Width') == width && form.integer('Height') == height) {
+      return;
+    }
     form
       ..set('Width', width)
       ..set('Height', height);
     _place();
+    onEvent(null, 'Resize');
   }
 
   /// The control named [name] (any case), or null; null names the form.

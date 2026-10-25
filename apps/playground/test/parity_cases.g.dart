@@ -176,6 +176,16 @@ const parityCases = <(
     [],
   ),
   (
+    "events_resize",
+    "' Form_Resize (D58): after Load when the form is first shown, when the\n' user resizes the form, and when the program sets Width or Height.\nSub Form_Load()\n    Debug.Print(\"Load \" & Me.Width & \"x\" & Me.Height)\nEnd Sub\n\nSub Form_Resize()\n    ' The anchored button has already moved; the label is moved here, the\n    ' Visual Basic 6 way.\n    Debug.Print(\"Resize \" & Me.Width & \"x\" & Me.Height & \", btnOk at \" & btnOk.Left & \",\" & btnOk.Top)\n    lblCorner.Left = Me.Width - lblCorner.Width - 8\n    lblCorner.Top = Me.Height - lblCorner.Height - 8\n    If Me.Width < 200 Then\n        ' Not started again by its own change.\n        Me.Width = 200\n    End If\nEnd Sub\n\nSub btnWider_Click()\n    Me.Width = Me.Width + 40\n    Debug.Print(\"after Width: \" & lblCorner.Left)\nEnd Sub\n\nSub btnAsk_Click()\n    MsgBox(\"A dialog is open\")\nEnd Sub\n",
+    [],
+    "Debug.Print: Load 300x200\nDebug.Print: Resize 300x200, btnOk at 212,136\nSet lblCorner.Left: 200\nSet lblCorner.Top: 170\n> Form.Resize 360 240\nDebug.Print: Resize 360x240, btnOk at 272,176\nSet lblCorner.Left: 260\nSet lblCorner.Top: 210\n> Form.Resize 360 240\n> btnWider.Click\nSet Form.Width: 400\nDebug.Print: Resize 400x240, btnOk at 312,176\nSet lblCorner.Left: 300\nSet lblCorner.Top: 210\nDebug.Print: after Width: 300\n> Form.Resize 150 200\nDebug.Print: Resize 150x200, btnOk at 62,136\nSet lblCorner.Left: 50\nSet lblCorner.Top: 170\nSet Form.Width: 200\n> btnAsk.Click\nMsgBox: A dialog is open\n> Form.Resize 400 300\nBlocked: Form.Resize 400 300\n> OK\n> Close\nClosed\n",
+    "formatVersion: 1\nproperties: { Width: 300, Height: 200 }\ncontrols:\n  - { name: btnWider, type: Button, properties: { Left: 8, Top: 8, Width: 80, Height: 24 } }\n  - { name: btnAsk, type: Button, properties: { Left: 96, Top: 8, Width: 80, Height: 24 } }\n  - { name: lblCorner, type: Label, properties: { Left: 200, Top: 170, Width: 92, Height: 22 } }\n  - { name: btnOk, type: Button, properties: { Left: 212, Top: 136, Width: 80, Height: 24, Anchor: Right Bottom } }\n",
+    "' Form_Resize (D58): after Load; the user resizes; the same size again\n' does nothing; the program sets Width (Resize runs within the\n' assignment); Resize making the form wider is not started again; while\n' a MsgBox is open the form cannot be resized.\nForm.Resize 360 240\nForm.Resize 360 240\nbtnWider.Click\nForm.Resize 150 200\nbtnAsk.Click\nForm.Resize 400 300\nOK\nClose\n",
+    null,
+    [],
+  ),
+  (
     "events_shared",
     "' While A waits in DoEvents, B changes a form-level variable: A sees the\n' new value when it goes on. Each handler keeps its own locals (D28).\nDim count As Integer\nDim done As Boolean\n\nSub btnWait_Click()\n    Dim mine As String = \"A's local\"\n    count = 1\n    done = False\n    Debug.Print(\"A sees \" & count)\n    Do While Not done\n        DoEvents\n    Loop\n    Debug.Print(\"A sees \" & count & \" and \" & mine)\nEnd Sub\n\nSub btnChange_Click()\n    Dim mine As String = \"B's local\"\n    count = count + 41\n    done = True\n    Debug.Print(\"B set \" & count & \" with \" & mine & \" \" & Depth(3))\nEnd Sub\n\nFunction Depth(n As Integer) As Integer\n    If n = 0 Then Return 0\n    Return 1 + Depth(n - 1)\nEnd Function\n",
     [],
