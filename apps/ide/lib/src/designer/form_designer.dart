@@ -29,6 +29,11 @@ const designerFormKey = ValueKey('designer.form');
 /// It only shows the form while [locked] (a program runs), or when the
 /// form file has errors: writing it again would drop what could not be
 /// The keys of the designer's context menu items and order buttons.
+/// The bar above the designer about controls outside the form (D72), and
+/// its button that brings them inside.
+const designerOutsideKey = ValueKey('designer.outside');
+const designerFitInsideKey = ValueKey('designer.outside.fit');
+
 ValueKey<String> designerMenuKey(String item) =>
     ValueKey('designer.menu.$item');
 
@@ -923,6 +928,10 @@ class _FormDesignerState extends State<FormDesigner> {
               for (final d in _read.diagnostics)
                 if (d.isError) s.problem(widget.file, d),
             ]),
+          if (!_read.hasErrors && !_showText)
+            if (controlsOutside(form) case final outside
+                when outside.isNotEmpty)
+              _outsideBanner(context, outside, editable),
           Expanded(
             child: _showText
                 ? SingleChildScrollView(
@@ -1117,6 +1126,72 @@ class _FormDesignerState extends State<FormDesigner> {
     );
   }
 
+  /// The controls that reach outside the form (D72): how many, their
+  /// names (a click selects one, also one that cannot be seen), and a
+  /// button that brings them all inside in one step of undo.
+  Widget _outsideBanner(
+    BuildContext context,
+    List<ControlDecl> outside,
+    bool editable,
+  ) {
+    final s = widget.strings;
+    final scheme = Theme.of(context).colorScheme;
+    final text = TextStyle(color: scheme.onErrorContainer);
+    return Container(
+      key: designerOutsideKey,
+      color: scheme.errorContainer,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      child: Row(
+        children: [
+          Icon(Icons.warning_amber, size: 18, color: scheme.onErrorContainer),
+          const SizedBox(width: 8),
+          Text(
+            outside.length == 1
+                ? s.outsideOne
+                : s.outsideMany.replaceAll('{0}', '${outside.length}'),
+            style: text,
+          ),
+          Expanded(
+            child: Wrap(
+              crossAxisAlignment: WrapCrossAlignment.center,
+              children: [
+                for (final c in outside)
+                  TextButton(
+                    key: ValueKey('designer.outside.${c.name}'),
+                    onPressed: () {
+                      _focus.requestFocus();
+                      setState(() => _selected = c.name);
+                    },
+                    child: Text(
+                      c.name,
+                      style: text.copyWith(
+                        decoration: TextDecoration.underline,
+                        decorationColor: scheme.onErrorContainer,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          Tooltip(
+            message: s.fitInsideTip,
+            child: OutlinedButton(
+              key: designerFitInsideKey,
+              onPressed: editable ? _fitInside : null,
+              child: Text(s.fitInside),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _fitInside() {
+    _focus.requestFocus();
+    if (!_canEdit) return;
+    _apply(withControlsInside(_form), select: _selected);
+  }
+
   Widget _banner(BuildContext context, IconData icon, List<String> lines) {
     final scheme = Theme.of(context).colorScheme;
     return Container(
@@ -1212,6 +1287,11 @@ class _FormDesignerState extends State<FormDesigner> {
                             if (c.component.name == 'Label') boxNow(c),
                         ],
                         edgeColor: scheme.outline,
+                        outside: [
+                          for (final c in form.controls)
+                            if (isOutside(boxNow(c), size)) boxNow(c),
+                        ],
+                        outsideColor: scheme.error,
                         selected: selected == null ? null : boxNow(selected),
                         anchorLines: selected == null
                             ? const []
@@ -1421,6 +1501,8 @@ class _MarksPainter extends CustomPainter {
   _MarksPainter({
     required this.edges,
     required this.edgeColor,
+    required this.outside,
+    required this.outsideColor,
     required this.selected,
     required this.anchorLines,
     required this.drawing,
@@ -1430,6 +1512,11 @@ class _MarksPainter extends CustomPainter {
 
   final List<ControlBox> edges;
   final Color edgeColor;
+
+  /// The controls that reach outside the form (D72): a red edge on the
+  /// part of each that is inside.
+  final List<ControlBox> outside;
+  final Color outsideColor;
   final ControlBox? selected;
 
   /// The selected control's Anchor: a dashed line from each edge it is
@@ -1469,6 +1556,15 @@ class _MarksPainter extends CustomPainter {
       ..strokeWidth = 1;
     for (final b in edges) {
       _dotted(canvas, _rect(b), dots);
+    }
+    final red = Paint()
+      ..color = outsideColor
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2;
+    final form = Offset.zero & size;
+    for (final b in outside) {
+      final r = _rect(b).intersect(form);
+      if (r.width > 2 && r.height > 2) canvas.drawRect(r.deflate(1), red);
     }
     final line = Paint()
       ..color = color
@@ -1524,6 +1620,8 @@ class _MarksPainter extends CustomPainter {
   bool shouldRepaint(_MarksPainter old) =>
       !listEquals(old.edges, edges) ||
       old.edgeColor != edgeColor ||
+      !listEquals(old.outside, outside) ||
+      old.outsideColor != outsideColor ||
       old.selected != selected ||
       !listEquals(old.anchorLines, anchorLines) ||
       old.drawing != drawing ||

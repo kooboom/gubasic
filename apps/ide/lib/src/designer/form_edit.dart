@@ -470,6 +470,51 @@ FormFile withBox(FormFile form, String name, ControlBox box) => _copy(form, [
       c,
 ]);
 
+/// Whether [box] reaches outside a form of [size] (D72).
+bool isOutside(ControlBox box, ({int width, int height}) size) =>
+    box.left < 0 ||
+    box.top < 0 ||
+    box.left + box.width > size.width ||
+    box.top + box.height > size.height;
+
+/// The controls of [form] that reach outside it, in the form's order.
+List<ControlDecl> controlsOutside(FormFile form) {
+  final size = formSizeOf(form);
+  return [
+    for (final c in form.controls)
+      if (isOutside(boxOf(c), size)) c,
+  ];
+}
+
+/// [box] brought inside a form of [size], along each axis on its own: a
+/// control that fits is moved in as little as it takes, its size kept; one
+/// larger than the form keeps its start, if that is inside, and is made
+/// to end at the form's edge, or else fills the form that way.
+ControlBox fittedInside(ControlBox box, ({int width, int height}) size) {
+  (int, int) along(int start, int length, int room) {
+    if (length <= room) return (start.clamp(0, room - length), length);
+    if (start >= 0 && room - start >= minControlSize) {
+      return (start, room - start);
+    }
+    return (0, room);
+  }
+
+  final (left, width) = along(box.left, box.width, size.width);
+  final (top, height) = along(box.top, box.height, size.height);
+  return (left: left, top: top, width: width, height: height);
+}
+
+/// [form] with every control that reaches outside it brought inside
+/// (D72); the others, and every Anchor, as they are.
+FormFile withControlsInside(FormFile form) {
+  final size = formSizeOf(form);
+  var inside = form;
+  for (final c in controlsOutside(form)) {
+    inside = withBox(inside, c.name, fittedInside(boxOf(c), size));
+  }
+  return inside;
+}
+
 /// [form] with its inside [size].
 FormFile withFormSize(FormFile form, ({int width, int height}) size) =>
     FormFile(

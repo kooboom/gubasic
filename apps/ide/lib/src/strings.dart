@@ -85,6 +85,10 @@ class IdeStrings {
     required this.viewFormFile,
     required this.viewDesigner,
     required this.lockedWhileRunning,
+    required this.outsideOne,
+    required this.outsideMany,
+    required this.fitInside,
+    required this.fitInsideTip,
     required this.formHasErrors,
     required this.properties,
     required this.integerRange,
@@ -303,6 +307,13 @@ class IdeStrings {
   final String viewFormFile;
   final String viewDesigner;
   final String lockedWhileRunning;
+
+  /// Above the designer when controls reach outside the form (D72): one,
+  /// or {0} of them, then their names.
+  final String outsideOne;
+  final String outsideMany;
+  final String fitInside;
+  final String fitInsideTip;
   final String formHasErrors;
 
   // The Properties window (D35).
@@ -539,6 +550,10 @@ class IdeStrings {
     viewFormFile: 'View form file',
     viewDesigner: 'View designer',
     lockedWhileRunning: 'The form cannot be changed while the program runs. Stop it (Shift+F5) to change it.',
+    outsideOne: '1 control is outside the form:',
+    outsideMany: '{0} controls are outside the form:',
+    fitInside: 'Fit inside the form',
+    fitInsideTip: 'Makes each one narrower or shorter if it is larger than the form, then moves it inside. Its Anchor stays as it is.',
     formHasErrors: 'This form file has errors, so the designer only shows it: changing it would drop what could not be read. Fix the file in a text editor, then open the project again.',
     properties: 'Properties',
     integerRange: '{0} takes a whole number from {1} to {2}.',
@@ -716,6 +731,10 @@ class IdeStrings {
     viewFormFile: '폼 파일 보기',
     viewDesigner: '그리기 화면 보기',
     lockedWhileRunning: '프로그램이 실행되는 동안에는 폼을 고칠 수 없습니다. 고치려면 중지(Shift+F5)합니다.',
+    outsideOne: '폼 밖으로 나간 컨트롤 1개:',
+    outsideMany: '폼 밖으로 나간 컨트롤 {0}개:',
+    fitInside: '폼 안으로 맞추기',
+    fitInsideTip: '폼보다 큰 컨트롤은 폭이나 높이를 줄인 뒤, 폼 안으로 옮깁니다. Anchor는 그대로입니다.',
     formHasErrors: '이 폼 파일에는 오류가 있어서 그리기 화면에서 보기만 합니다. 고치면 읽지 못한 부분이 사라지기 때문입니다. 텍스트 편집기로 파일을 고친 뒤 프로젝트를 다시 엽니다.',
     properties: '속성',
     integerRange: '{0} 속성에는 정수만 쓸 수 있습니다. 범위: {1} ~ {2}',
