@@ -6,8 +6,12 @@ import 'package:gubasic_lang/gubasic_lang.dart';
 import 'package:gubasic_player/gubasic_player.dart';
 
 /// Where the desktop IDE downloads the web player's template (D84); the
-/// web IDE takes it from beside itself, `../player/template.zip`.
-const webTemplateUrl = 'https://kooboom.github.io/gubasic/player/template.zip';
+/// web IDE takes it from beside itself, `../player/template.zip`. A test
+/// build can name another one: `--dart-define GUBASIC_TEMPLATE_URL=…`.
+const webTemplateUrl = String.fromEnvironment(
+  'GUBASIC_TEMPLATE_URL',
+  defaultValue: 'https://kooboom.github.io/gubasic/player/template.zip',
+);
 
 /// The template, relative to the web IDE's page.
 const webTemplatePath = '../player/template.zip';
