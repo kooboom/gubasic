@@ -108,6 +108,23 @@ void main() {
       expect(host.yields, greaterThan(0));
     });
 
+    test(
+        'a long loop lets the screen update by time, about every 10 ms, '
+        'not every 1000 rounds', () async {
+      final host = FakeHost();
+      final clock = Stopwatch()..start();
+      await Interpreter(
+              compile('Sub Main()\nDim t As Integer = 0\n'
+                  'For i = 1 To 200000\nt = t + i\nNext\nEnd Sub'),
+              host)
+          .run();
+      final ms = clock.elapsedMilliseconds;
+      // Every 1000 rounds would be 200 pauses; by time, about one per
+      // 10 ms of work.
+      expect(host.yields, lessThan(200));
+      expect(host.yields, lessThanOrEqualTo(ms ~/ 10 + 1));
+    });
+
     test('DoEvents yields', () async {
       final host = FakeHost();
       await Interpreter(

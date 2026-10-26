@@ -8,7 +8,7 @@ Problems we know about and have **deliberately** left unfixed for now. Each entr
 
 ## Very long loops are slow
 
-- **What:** a loop of a million rounds (`total = total + i * 2 - 1`) takes about 3 seconds in the playground's optimized web build and about 0.8 seconds on the VM.
+- **What:** a loop of a million rounds (`total = total + i * 2 - 1`) takes about 3.3 seconds in the player in Chrome, 1.1 seconds in WebKit and 1.3 seconds in the macOS player, since the interpreter pauses by time (STAGE2_PLAN §7); before, 7.5, 7.1 and 1.4 seconds.
 - **Why deferred:** it is not a correctness problem, and programs of the size beginners write do not notice it.
 - **Revisit:** when someone finds the playground or the IDE noticeably slow in practice; step 2-2 measures it in the player and sets the criteria for the transpiler (STAGE2_PLAN §7, D79).
 

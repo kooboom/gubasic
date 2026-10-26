@@ -28,9 +28,16 @@ import 'values.dart';
 /// Chosen by measuring the VM and Chrome (see docs/LANGUAGE.md §9).
 const int maxCallDepth = 10000;
 
-/// After this many loop rounds and calls, the interpreter lets the screen
-/// update (Host.yieldNow). It does not change what the program computes.
-const int _stepsPerYield = 1000;
+/// How often, in loop rounds and calls, the interpreter looks at the
+/// clock to see whether it is time to let the screen update.
+const int _stepsPerCheck = 256;
+
+/// The interpreter lets the screen update (Host.yieldNow) once this long
+/// has passed since it last did, not after a number of rounds: on the web
+/// each pause lasts the browser's shortest timer, about 4.5 ms, so pausing
+/// every 1000 rounds spent more time waiting than computing
+/// (STAGE2_PLAN §7). It does not change what the program computes.
+const int _microsecondsPerYield = 10000;
 
 /// The longest the text of a program's settings can be, in characters
 /// (about 64 KB), so that a program cannot fill the browser's storage,
@@ -101,6 +108,9 @@ class Interpreter {
   _Frame _frame = _Frame(null);
   var _depth = 0;
   var _steps = 0;
+
+  /// Time since the screen last had a chance to update.
+  final _sinceYield = Stopwatch()..start();
   var _stopRequested = false;
 
   // Forms and events (D28).
@@ -314,6 +324,7 @@ class Interpreter {
     final depth = _depth;
     _passTurn();
     await host.yieldNow();
+    _sinceYield.reset();
     await _takeTurn();
     _frame = frame;
     _depth = depth;
@@ -353,11 +364,14 @@ class Interpreter {
 
   /// Counts a loop round or a call; true when it is time to yield. Kept
   /// synchronous so that loops do not create a Future every round.
-  bool _tick() => ++_steps % _stepsPerYield == 0;
+  bool _tick() =>
+      ++_steps % _stepsPerCheck == 0 &&
+      _sinceYield.elapsedMicroseconds >= _microsecondsPerYield;
 
   /// Lets the screen update; other handlers do not run (D28).
   Future<void> _yield() async {
     await host.yieldNow();
+    _sinceYield.reset();
     if (_ended != null) throw const _Abandoned();
     if (_stopRequested) throw const _Stop();
   }

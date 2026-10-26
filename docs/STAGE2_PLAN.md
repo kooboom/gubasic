@@ -147,7 +147,9 @@ What they say:
 - **The small game is far above 30 updates a second everywhere** (141 to 2324 in the player). The interpreter needs under 1 ms of a 30 ms tick, drawing a few ms; the rest of a round on the web is the wait in `DoEvents`, about 5 ms, which is the browser's shortest timer.
 - **The player is as fast as the IDE**, as it runs the same interpreter; where it is faster (text, the first steps), the IDE was redrawing its own Output pane and run window.
 - **The steps of typing and quiz take a frame or less** (7 to 17 ms): what a user does shows at the next frame. On macOS the player's steps wait for the display's next frame (16.7 ms at 60 Hz), the IDE's come sooner because the IDE was drawing frames anyway.
-- **The million-round loop is the one slow case, and mostly not the interpreter's fault on the web:** of its 7.5 s, 3.0 s is the interpreter and 4.5 s is spent in the 1000 pauses the interpreter makes so that the screen can update and Stop can work (one every 1000 rounds, `_stepsPerYield`), each lasting the browser's shortest timer, about 4.5 ms. Pausing by time instead (when 10 ms or so have passed) would bring it close to 3 s with no change in what programs compute.
+- **The million-round loop is the one slow case, and mostly not the interpreter's fault on the web:** of its 7.5 s, 3.0 s is the interpreter and 4.5 s is spent in the 1000 pauses the interpreter makes so that the screen can update and Stop can work (one every 1000 rounds, `_stepsPerYield`), each lasting the browser's shortest timer, about 4.5 ms. Pausing by time instead (when 10 ms or so have passed) was done right after step 2-2; see below.
+
+**After pausing by time** (the interpreter yields when about 10 ms have passed, LANGUAGE §9.1; measured the same way): the million-round loop takes **3.3 s in Chrome** (was 7.5 s), **1.1 s in WebKit** (7.1 s) and **1.33 s on macOS** (1.38 s), the player and the IDE alike; it now pauses 220, 82 and 130 times instead of 1000. The small game is unchanged (117, 179 and 1870 updates a second), since its `DoEvents` pauses every round as before; the parity tests are unchanged.
 
 **Sizes of the player** (release builds, the hello project built in): **web** 42 MB as a folder, of which 36 MB are CanvasKit's builds for different browsers; a browser loads about 11 MB (`main.dart.js` 2.8 MB, one CanvasKit 7 MB, Pretendard 1.6 MB); 15 MB as a `.zip`. **macOS** 43 MB (universal), 19 MB as a `.zip`. **Windows** 29.5 MB as a folder, with the Visual C++ runtime next to the program (CI prints it with every build; the IDE's folder is 36 MB). The IDE for comparison: 51 MB on macOS, `main.dart.js` 3.4 MB.
 
@@ -161,7 +163,7 @@ but only after the interpreter has been made faster as below, and still fails th
 
 **If the interpreter is the slow part,** these come before a transpiler, each only where the result is provably the same (rule 4 forbids fast paths that change behaviour, and the parity tests are the judge):
 
-- **Pausing by time:** the pause that lets the screen update comes when about 10 ms have passed, not every 1000 rounds; on the web it is the largest part of the loop's time (above).
+- **Pausing by time** (done): the pause that lets the screen update comes when about 10 ms have passed, not every 1000 rounds; on the web it was the largest part of the loop's time (above).
 - **Resolved names:** the analyzer already knows every variable; giving each a slot number instead of looking it up by name on every use.
 - **Synchronous runs of statements:** a run of statements with no call to a user procedure and no `DoEvents`, `MsgBox` or `InputBox` cannot wait; evaluating it without an `await` per statement keeps the order exactly (D25 already does this for expressions).
 - **Property changes in batches:** many `Left`/`Top` changes in one round become one redraw at the next frame instead of one notification each.

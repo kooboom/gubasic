@@ -536,7 +536,7 @@ End Try
 - A program with a form starts with its form: form-level variables get their initial values, `Form_Load` runs, and then the form is shown and waits for events (§8.1). `Sub Main` is then an ordinary procedure. The program ends when the form is closed, `End` runs, an error is not caught, or the Stop button is pressed.
 - A program with errors does not run; one with only warnings does (D23).
 - Calls may nest 10,000 deep; one more is R009. The limit is the same on every platform. It catches endless recursion within a fraction of a second; the interpreter itself was measured to stay safe beyond a million calls on the VM and in Chrome.
-- While a program runs, the interpreter lets the screen update every 1,000 loop rounds or calls, so that the Stop button works. This never changes what the program computes and never lets another handler run. `DoEvents` updates the screen on request and also lets other handlers run (§8.1).
+- While a program runs, the interpreter lets the screen update once about 10 ms have passed since it last did, looking at the clock every 256 loop rounds or calls, so that the Stop button works. This never changes what the program computes and never lets another handler run. `DoEvents` updates the screen on request and also lets other handlers run (§8.1).
 
 ## 10. Built-in functions (initial set)
 
