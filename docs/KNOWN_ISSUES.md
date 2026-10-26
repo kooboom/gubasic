@@ -141,3 +141,9 @@ Problems we know about and have **deliberately** left unfixed for now. Each entr
 - **What:** on the web, when the IDE starts with an example and projects are kept in the browser, a bar says so and opens their list (DESIGN D74). The desktop IDE opens the project open last (D62) but keeps no list of the others; File → Open is the way to them.
 - **Why deferred:** the web already knows its projects; the desktop would need a list of folders kept with the settings, and a way to drop the ones that are gone.
 - **Revisit:** when students use the desktop IDE for more than one project at a time, or with File → Recent in the menu.
+
+## The desktop IDE's web template follows main, not its release
+
+- **What:** File → Export as Web App on the desktop downloads the template that Pages publishes from main (D84), and keeps it for its GuBASIC version. An IDE of an older release takes the newest template, which may differ from the player of its own release; only the bundle layout is checked.
+- **Why deferred:** there is one release so far, and the bundle layout has not changed; a template for each release needs the release workflow to build and attach it.
+- **Revisit:** at the next release, or when the bundle layout changes: attach the template to each GitHub Release and download the one of the IDE's own version.

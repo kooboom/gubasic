@@ -1,8 +1,10 @@
 name: pages
 
 # Builds the playground and the web IDE and publishes them to GitHub Pages
-# whenever main changes: the playground at https://kooboom.github.io/gubasic/
-# and the IDE at https://kooboom.github.io/gubasic/ide/, one artifact.
+# whenever main changes: the playground at https://kooboom.github.io/gubasic/,
+# the IDE at https://kooboom.github.io/gubasic/ide/ and the web player's
+# template, which the IDE's File → Export as Web App takes (D84), at
+# https://kooboom.github.io/gubasic/player/template.zip; one artifact.
 on:
   push:
     branches: [main]
@@ -40,6 +42,14 @@ jobs:
           dart run tool/web_load_sizes.dart
           cp -R build/web ../playground/build/web/ide
         working-directory: apps/ide
+      - name: Build the web player's template
+        run: |
+          flutter pub get
+          flutter build web --release --no-web-resources-cdn
+          dart run tool/web_template.dart
+          mkdir -p ../playground/build/web/player
+          cp build/template.zip ../playground/build/web/player/
+        working-directory: apps/player
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v4
         with:

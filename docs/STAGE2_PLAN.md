@@ -197,7 +197,7 @@ If drawing is the slow part, the runtime's widgets are looked at instead (repain
 - **Windows:** an unsigned program from the internet can be warned about by SmartScreen and some antivirus programs; the release notes already say so.
 - **Versions:** an app exported by one IDE version and a player of another must not meet unnoticed: the bundle's format version and the player's version are checked, and the IDE downloads the template of its own version.
 - **Speed:** heavy loops are slower than in a native app; programs of the size beginners write do not notice it (KNOWN_ISSUES). If one does, that is decision 2's trigger.
-- **The web app needs a web host:** opening `index.html` straight from the disk may not work in browsers; step 2-4 checks, and the export says how to host it.
+- **The web app needs a web host:** opening `index.html` straight from the disk does not work: checked in step 2-4, Chromium and WebKit refuse the page's own files from a `file://` page. The export says how to host it, in its message and in `HOSTING.txt` (D84).
 - **The source is inside the app:** anyone can read it. The secret-key warning (DESIGN §11) matters more once apps travel.
 - **One run window, two apps:** the move in step 2-1 must not change the IDE; its tests are the guard.
 

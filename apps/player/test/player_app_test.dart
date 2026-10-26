@@ -20,11 +20,15 @@ void main() {
     WidgetTester tester,
     Map<String, String> files, {
     PlayerStrings strings = PlayerStrings.en,
+    bool asApp = false,
+    Size size = const Size(800, 600),
   }) async {
-    tester.view.physicalSize = const Size(800, 600);
+    tester.view.physicalSize = size;
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
-    await tester.pumpWidget(PlayerApp(files: files, strings: strings));
+    await tester.pumpWidget(
+      PlayerApp(files: files, strings: strings, asApp: asApp),
+    );
     await tester.pumpAndSettle();
   }
 
@@ -78,5 +82,27 @@ void main() {
       const BundleProblemApp(problem: NotABundle(), strings: PlayerStrings.en),
     );
     expect(find.textContaining('project.gbz) is damaged'), findsOneWidget);
+  });
+
+  testWidgets('as an exported web app shows it (D84): the form alone, no '
+      'frame, close button or fit switch; shrunk when the page is smaller', (
+    tester,
+  ) async {
+    await open(tester, hello(), asApp: true);
+    expect(find.byKey(appFormKey), findsOneWidget);
+    expect(find.byKey(runWindowCloseKey), findsNothing);
+    expect(find.byKey(runWindowFitKey), findsNothing);
+    expect(tester.getSize(find.byKey(appFormKey)), const Size(320, 120));
+    await tester.tap(find.text('Say hello'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField), 'Kim');
+    await tester.tap(find.text('OK'));
+    await tester.pumpAndSettle();
+    expect(find.text('Hello, Kim! (1)'), findsOneWidget);
+
+    await open(tester, hello(), asApp: true, size: const Size(160, 400));
+    final shown = tester.getRect(find.byKey(appFormKey));
+    expect(shown.width, lessThanOrEqualTo(160));
+    expect(shown.width / shown.height, closeTo(320 / 120, 0.01));
   });
 }

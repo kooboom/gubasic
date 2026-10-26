@@ -398,6 +398,16 @@ class _IdeShellState extends State<IdeShell> {
               : () => widget.controller.clearSettings(context),
           child: Text(s.clearSettings),
         ),
+        if (widget.controller.canExportWebApp) ...[
+          const Divider(),
+          MenuItemButton(
+            key: const ValueKey('menu.exportWebApp'),
+            onPressed: _running
+                ? null
+                : () => widget.controller.exportWebApp(context),
+            child: Text(s.exportWebApp),
+          ),
+        ],
         if (widget.controller.canUseBrowser) ...[
           const Divider(),
           item(s.downloadZip, _download, LogicalKeyboardKey.keyE, shift: true),

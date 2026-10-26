@@ -226,6 +226,10 @@ Future<void> writeChanged(
   }
 }
 
+/// Writes [bytes] to the file at [path], such as an exported app (D84).
+Future<void> writeFileBytes(ProjectFolders fs, String path, Uint8List bytes) =>
+    _io(path, writing: true, () => fs.writeBytes(path, bytes));
+
 bool _samePicture(Uint8List? a, Uint8List? b) =>
     a == null || b == null ? a == b : samePictures({'': a}, {'': b});
 

@@ -114,6 +114,13 @@ class OpenProject extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Records that [file] was saved with [text], alone: the other files'
+  /// changes stay unsaved.
+  void markFileSaved(String file, String text) {
+    _saved = {..._saved, file: text};
+    notifyListeners();
+  }
+
   /// Records that [files] and [pictures], as they were when a save that
   /// took a while started, were saved: changes made since stay unsaved.
   void markSavedAs(Map<String, String> files, Map<String, Uint8List> pictures) {

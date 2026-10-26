@@ -8,6 +8,17 @@ import 'package:gubasic_player/gubasic_player.dart';
 /// showed it (D30, KNOWN_ISSUES).
 const playerFontFamily = 'Pretendard';
 
+/// The player's look: the IDE's calm blue and greys (D49), not Material's
+/// default purple, and its font.
+final playerTheme = ThemeData(
+  colorScheme: ColorScheme.fromSeed(
+    seedColor: const Color(0xFF3B6EA5),
+    dynamicSchemeVariant: DynamicSchemeVariant.neutral,
+  ),
+  fontFamily: playerFontFamily,
+  visualDensity: VisualDensity.compact,
+);
+
 /// Whether this is a measuring build (`--dart-define=GUBASIC_BENCH=true`).
 const _measuring = bool.fromEnvironment('GUBASIC_BENCH');
 
@@ -20,7 +31,13 @@ class PlayerApp extends StatelessWidget {
     this.pictures = const {},
     this.settingsKey,
     required this.strings,
+    this.asApp = kIsWeb,
   });
+
+  /// Whether the form is shown alone, as an exported app shows it (D84):
+  /// on the web for now; the desktop's own windows come with steps 2-5 and
+  /// 2-6.
+  final bool asApp;
 
   /// What the program's settings are kept under: the app ID of an exported
   /// app (D83); the project's name when null.
@@ -37,15 +54,13 @@ class PlayerApp extends StatelessWidget {
   Widget build(BuildContext context) => MaterialApp(
     title: Project.read(files).name,
     debugShowCheckedModeBanner: false,
-    theme: ThemeData(
-      fontFamily: playerFontFamily,
-      visualDensity: VisualDensity.compact,
-    ),
+    theme: playerTheme,
     home: PlayerScreen(
       files: files,
       pictures: pictures,
       settingsKey: settingsKey,
       strings: strings,
+      asApp: asApp,
     ),
   );
 }
@@ -58,12 +73,14 @@ class PlayerScreen extends StatefulWidget {
     required this.pictures,
     this.settingsKey,
     required this.strings,
+    this.asApp = false,
   });
 
   final Map<String, String> files;
   final Map<String, Uint8List> pictures;
   final String? settingsKey;
   final PlayerStrings strings;
+  final bool asApp;
 
   @override
   State<PlayerScreen> createState() => _PlayerScreenState();
@@ -152,7 +169,9 @@ class _PlayerScreenState extends State<PlayerScreen> {
       return Scaffold(body: Center(child: Text(widget.strings.programEnded)));
     }
     return Scaffold(
-      body: RunWindow(session: session, fit: _fit),
+      body: widget.asApp
+          ? AppView(session: session)
+          : RunWindow(session: session, fit: _fit),
     );
   }
 }
@@ -175,7 +194,7 @@ class BundleProblemApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) => MaterialApp(
     debugShowCheckedModeBanner: false,
-    theme: ThemeData(fontFamily: playerFontFamily),
+    theme: playerTheme,
     home: Scaffold(
       body: Center(
         child: Padding(

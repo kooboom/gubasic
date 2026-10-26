@@ -51,6 +51,13 @@ class IdeStrings {
     required this.projectName,
     required this.downloadZip,
     required this.uploadZip,
+    required this.exportWebApp,
+    required this.webAppCannotRun,
+    required this.webAppPreparing,
+    required this.webAppTemplateUnavailable,
+    required this.webAppTemplateNotUsable,
+    required this.webAppSaved,
+    required this.webAppGuide,
     required this.openPlayground,
     required this.clearSettings,
     required this.clearSettingsQuestion,
@@ -258,6 +265,21 @@ class IdeStrings {
   final String projectName;
   final String downloadZip;
   final String uploadZip;
+
+  // File → Export as Web App (D84).
+  final String exportWebApp;
+  final String webAppCannotRun;
+  final String webAppPreparing;
+  final String webAppTemplateUnavailable;
+
+  /// {0}: the bundle layout the template reads.
+  final String webAppTemplateNotUsable;
+
+  /// {0}: the file the web app was saved as.
+  final String webAppSaved;
+
+  /// `HOSTING.txt` in the web app: how to put it on the web.
+  final String webAppGuide;
 
   /// The web IDE's link to the playground next to it (`../`).
   final String openPlayground;
@@ -524,6 +546,38 @@ class IdeStrings {
     projectName: 'Project name',
     downloadZip: 'Download .zip',
     uploadZip: 'Upload .zip…',
+    exportWebApp: 'Export as Web App…',
+    webAppCannotRun:
+        'The project has errors, so it cannot be exported. Fix the errors, '
+        'run it once to check, then export again.',
+    webAppPreparing: 'Making the web app…',
+    webAppTemplateUnavailable:
+        'Could not download the web player (kooboom.github.io). Check the '
+        'internet connection and try again.',
+    webAppTemplateNotUsable:
+        'The web player that was downloaded is for another version of '
+        'GuBASIC (bundle layout {0}). Update GuBASIC and export again.',
+    webAppSaved:
+        'Saved the web app as {0}. Unzip it and put the folder on any web '
+        'host, such as GitHub Pages or Netlify; HOSTING.txt in it says how. '
+        'Opening index.html straight from the disk does not work: a web app '
+        'needs a web server.',
+    webAppGuide:
+        'This folder is a GuBASIC web app.\n'
+        '\n'
+        'Put everything in it on a web host, as it is, in any folder:\n'
+        '- GitHub Pages: upload the files to a repository and turn on Pages.\n'
+        '- Netlify: drag the folder onto app.netlify.com/drop.\n'
+        '- Your own server: copy the files into any folder it serves.\n'
+        '\n'
+        'To try it on your computer, run a small web server in this folder,\n'
+        'for example "python3 -m http.server", and open\n'
+        'http://localhost:8000. Opening index.html by double-clicking it\n'
+        'does not work.\n'
+        '\n'
+        'project.gbz holds the program. Export the project again to update it.\n'
+        'What the program saves with SaveSetting stays in each visitor\'s\n'
+        'browser, kept apart by the app ID.\n',
     openPlayground: 'Open the Playground',
     clearSettings: 'Clear Saved Settings…',
     clearSettingsQuestion:
@@ -704,6 +758,32 @@ class IdeStrings {
     projectName: '프로젝트 이름',
     downloadZip: '.zip으로 내려받기',
     uploadZip: '.zip 올리기…',
+    exportWebApp: '웹 앱으로 내보내기…',
+    webAppCannotRun: '프로젝트에 오류가 있어서 내보낼 수 없습니다. 오류를 고치고 한 번 실행해 본 뒤 다시 내보냅니다.',
+    webAppPreparing: '웹 앱을 만드는 중…',
+    webAppTemplateUnavailable:
+        '웹 플레이어(kooboom.github.io)를 내려받지 못했습니다. 인터넷 연결을 확인하고 다시 시도합니다.',
+    webAppTemplateNotUsable:
+        '내려받은 웹 플레이어는 다른 버전의 GuBASIC용입니다(묶음 형식 {0}). GuBASIC을 업데이트하고 다시 내보냅니다.',
+    webAppSaved:
+        '웹 앱을 {0} 파일로 저장했습니다. 압축을 풀고 폴더를 GitHub Pages나 Netlify 같은 웹 호스팅에 올립니다. '
+        '방법은 폴더 안의 HOSTING.txt 파일에 있습니다. 웹 앱은 웹 서버가 있어야 해서, '
+        'index.html을 디스크에서 바로 열면 실행되지 않습니다.',
+    webAppGuide:
+        '이 폴더는 GuBASIC 웹 앱입니다.\n'
+        '\n'
+        '안의 파일을 모두 그대로 웹 호스팅의 아무 폴더에 올립니다.\n'
+        '- GitHub Pages: 저장소에 파일을 올리고 Pages를 켭니다.\n'
+        '- Netlify: app.netlify.com/drop에 폴더를 끌어다 놓습니다.\n'
+        '- 개인 서버: 서버가 제공하는 아무 폴더에 파일을 복사합니다.\n'
+        '\n'
+        '내 컴퓨터에서 시험하려면 이 폴더에서 작은 웹 서버를 띄우고\n'
+        '(예: "python3 -m http.server") http://localhost:8000을 엽니다.\n'
+        'index.html을 더블클릭해서 열면 실행되지 않습니다.\n'
+        '\n'
+        'project.gbz 파일에 프로그램이 들어 있습니다. 고친 뒤에는 다시 내보냅니다.\n'
+        '프로그램이 SaveSetting으로 저장한 값은 방문자마다 그 사람의 브라우저에,\n'
+        '앱 ID별로 따로 남습니다.\n',
     openPlayground: '놀이터 열기',
     clearSettings: '저장된 설정 지우기…',
     clearSettingsQuestion:

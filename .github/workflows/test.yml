@@ -136,6 +136,10 @@ jobs:
         run: |
           du -sh build/web build/web/canvaskit
           ls -l build/web/main.dart.js
+      - name: The web template (D84)
+        run: |
+          dart run tool/web_template.dart
+          ls -l build/template.zip
 
   ide:
     name: ide (format, analyze, test, web build)

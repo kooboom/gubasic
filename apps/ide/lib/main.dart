@@ -14,6 +14,7 @@ import 'src/project/platform_browser.dart';
 import 'src/project/platform_folders.dart';
 import 'src/project/project_controller.dart';
 import 'src/project/project_pictures.dart';
+import 'src/project/template_source.dart';
 import 'src/strings.dart';
 import 'src/theme.dart';
 
@@ -47,6 +48,7 @@ Future<void> main() async {
           XTypeGroup(label: 'zip', extensions: ['zip']),
         ],
       ))?.readAsBytes(),
+      fetchTemplate: fetchWebTemplate,
       pickers: ProjectPickers(
         openProjectFile: (confirm) async => (await openFile(
           acceptedTypeGroups: const [_gbproj],
@@ -57,6 +59,13 @@ Future<void> main() async {
         // of the same name; the IDE says so itself (D32).
         saveLocation: (name, confirm) async => (await getSaveLocation(
           acceptedTypeGroups: const [_gbproj],
+          suggestedName: name,
+          confirmButtonText: confirm,
+        ))?.path,
+        saveZipLocation: (name, confirm) async => (await getSaveLocation(
+          acceptedTypeGroups: const [
+            XTypeGroup(label: 'zip', extensions: ['zip']),
+          ],
           suggestedName: name,
           confirmButtonText: confirm,
         ))?.path,
@@ -105,6 +114,7 @@ class IdeApp extends StatefulWidget {
     this.kept,
     this.lastProject,
     this.pickZip,
+    this.fetchTemplate,
     this.settings,
     this.autoRun = false,
   });
@@ -128,6 +138,9 @@ class IdeApp extends StatefulWidget {
   /// are kept in the browser (D33); null on the desktop.
   final Browser? browser;
   final Future<List<int>?> Function()? pickZip;
+
+  /// Fetches the web player's template, to export web apps (D84).
+  final Future<Uint8List> Function()? fetchTemplate;
 
   /// The projects kept in the browser, opened before the IDE starts.
   final BrowserProjects? kept;
@@ -159,6 +172,7 @@ class _IdeAppState extends State<IdeApp> {
     kept: widget.kept,
     lastProject: widget.lastProject,
     pickZip: widget.pickZip,
+    fetchTemplate: widget.fetchTemplate,
     settings: widget.settings,
     open: widget.open,
   );

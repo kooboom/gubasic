@@ -4,6 +4,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:gubasic_lang/gubasic_lang.dart';
+import 'package:gubasic_player/gubasic_player.dart' show ProjectBundle;
 import 'package:gubasic_runtime/gubasic_runtime.dart';
 
 import '../strings.dart';
@@ -16,6 +17,7 @@ import 'open_project.dart';
 import 'picture_reduce.dart';
 import 'project_pictures.dart';
 import 'project_zip.dart';
+import 'web_export.dart';
 
 /// A picture file the user chose: its name and its bytes.
 typedef PickedPicture = ({String name, Uint8List bytes});
@@ -26,7 +28,13 @@ class ProjectPickers {
     required this.openProjectFile,
     required this.saveLocation,
     this.openPicture,
+    this.saveZipLocation,
   });
+
+  /// Asks where to save a `.zip` file, offering [suggestedName]: the path
+  /// the user chose, or null.
+  final Future<String?> Function(String suggestedName, String confirm)?
+  saveZipLocation;
 
   /// Asks for a picture file to add to the project (D51), or null when
   /// the user cancels. [confirm] is the word on the dialog's button.
@@ -61,6 +69,7 @@ class ProjectController extends ChangeNotifier {
     this.browser,
     this._kept,
     this.pickZip,
+    this.fetchTemplate,
     this.autosaveDelay = const Duration(seconds: 2),
     this._settings,
     this.lastProject,
@@ -103,6 +112,10 @@ class ProjectController extends ChangeNotifier {
 
   /// Asks for a `.zip` file: its bytes, or null when the user cancels.
   final Future<List<int>?> Function()? pickZip;
+
+  /// Fetches the web player's template (D84); throws a
+  /// [WebTemplateProblem]. Null where web apps cannot be exported.
+  final Future<Uint8List> Function()? fetchTemplate;
 
   /// Where the project open last is remembered, to open it again when the
   /// IDE starts (D62); null: always start with [open].
@@ -827,6 +840,106 @@ class ProjectController extends ChangeNotifier {
           );
     }
     notifyListeners();
+  }
+
+  /// Whether the File menu offers to export a web app (D84).
+  bool get canExportWebApp =>
+      fetchTemplate != null &&
+      (browser != null ||
+          (folders != null && pickers?.saveZipLocation != null));
+
+  /// File → Export as Web App (D84): gives the open project as a web app,
+  /// `NAME-web.zip`, made from the web player's template. A project
+  /// without an app ID (D83) gets one first, written into its `.gbproj`
+  /// file at once, and only there, so that the next export keeps it.
+  Future<void> exportWebApp(BuildContext context) async {
+    context = _lasting(context);
+    final project = _current;
+    if (!project.project.canRun) {
+      await _tell(context, strings.webAppCannotRun);
+      return;
+    }
+    final String id;
+    try {
+      id = await _appId(project);
+    } on FolderProblem catch (p) {
+      if (context.mounted) await _tell(context, _describe(p));
+      return;
+    }
+    final name = project.project.name;
+    final bundle = ProjectBundle(
+      id: id,
+      name: name,
+      files: project.files,
+      pictures: project.pictures,
+    );
+    if (!context.mounted) return;
+    _snack(context, strings.webAppPreparing);
+    final Uint8List zip;
+    try {
+      zip = webAppZip(await fetchTemplate!(), bundle, strings.webAppGuide);
+    } on WebTemplateProblem catch (p) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.maybeOf(context)?.hideCurrentSnackBar();
+      await _tell(context, switch (p) {
+        TemplateUnavailable() => strings.webAppTemplateUnavailable,
+        TemplateNotUsable(:final bundleFormat) =>
+          strings.webAppTemplateNotUsable.replaceAll(
+            '{0}',
+            '${bundleFormat ?? '?'}',
+          ),
+      });
+      return;
+    }
+    if (!context.mounted) return;
+    ScaffoldMessenger.maybeOf(context)?.hideCurrentSnackBar();
+    final fileName = '$name-web.zip';
+    String where = fileName;
+    if (browser case final browser?) {
+      browser.download(fileName, zip);
+    } else {
+      final path = await _whilePicking(
+        () => pickers!.saveZipLocation!(fileName, strings.saveButton),
+      );
+      if (path == null) return;
+      try {
+        await writeFileBytes(folders!, path, zip);
+      } on FolderProblem catch (p) {
+        if (context.mounted) await _tell(context, _describe(p));
+        return;
+      }
+      where = path;
+    }
+    if (context.mounted) {
+      await _tell(context, strings.webAppSaved.replaceAll('{0}', where));
+    }
+  }
+
+  /// The app ID of [project], made and kept the first time (D83): an
+  /// example's comes from its name; a project kept in the browser keeps
+  /// it with its other changes; a project on disk gets it written into its
+  /// `.gbproj` file alone.
+  Future<String> _appId(OpenProject project) async {
+    if (projectIdOf(project.files) case final id?) return id;
+    final location = project.location;
+    if (location is ExampleLocation) return exampleAppId(location.name);
+    final id = newProjectId();
+    final file = projectFileName(project.files)!;
+    if (location is FolderLocation) {
+      final saved = withProjectId(project.saved, id);
+      if (saved != null) {
+        await writeChanged(
+          folders!,
+          location.path,
+          {file: saved[file]!},
+          {file: project.saved[file] ?? ''},
+        );
+        project.markFileSaved(file, saved[file]!);
+      }
+    }
+    project.setFile(file, withProjectId(project.files, id)![file]!);
+    if (location is BrowserLocation) await keepNow();
+    return id;
   }
 
   /// Asks for a `.zip` file and keeps its project in the browser.

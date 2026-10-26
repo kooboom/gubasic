@@ -40,12 +40,12 @@ The core Visual Basic experience, entirely inside the IDE.
 
 ## Stage 2 — Build real apps (next)
 
-The plan, its steps and decisions: [STAGE2_PLAN.md](STAGE2_PLAN.md) (D79–D82).
+The plan, its steps and decisions: [STAGE2_PLAN.md](STAGE2_PLAN.md) (D79–D84).
 
 - [x] The run window in a package shared by the IDE and the player (2-1)
 - [x] **The player**: one project as an app of its own, built by CI for the web, macOS and Windows; sizes and speed measured (2-2)
 - [x] The project bundle, with a format version and room for several forms, and the app ID (2-3, D83)
-- [ ] File → Export as app: web `.zip` (2-4), Windows (2-5), macOS from the macOS IDE (2-6)
+- [ ] File → Export as app: web `.zip` (2-4, done, D84), Windows (2-5), macOS from the macOS IDE (2-6)
 - [ ] Parity programs run through the player too
 - [ ] Layout: `LayoutMode` (Vertical / Horizontal / Grid), `Dock`
 - [ ] `Handles` clause; run-time control creation
