@@ -172,6 +172,7 @@ Form files and project files (§11.2, §11.3) are checked the same way: a proble
 | F015 | Two pictures of the project whose names differ only in case (§11.3) |
 | F016 | A picture property in a form file naming a picture the project does not have (§11.1) |
 | F017 | `Anchor` in a form file with a word that is not an edge (§11.1) |
+| F018 | **Warning.** A project file's `id` that is not an app ID (§11.3); it is ignored |
 
 **Run time**
 
@@ -675,6 +676,7 @@ pictures:
 - `forms` lists the forms, each a pair of files as in §11.2. At least one is needed.
 - `startup` is the form the program starts with; without it, the first form in `forms`.
 - `pictures` lists the project's pictures, which are files in its `pictures/` folder: `pictures/triangle.png`. Only PNG, JPEG and GIF pictures are taken (`.png`, `.jpg`, `.jpeg`, `.gif`), and a name cannot have `/ \ : * ? " < > |` (F014). Names are compared without the case of English letters, and Hangul as syllables, the same on every platform: so a project cannot have two pictures whose names differ only in case (F015), as Windows and macOS could not keep both in one folder. A project with pictures is written as `formatVersion: 2`, which an older GuBASIC refuses to open rather than lose its pictures; one without is still version 1 (DESIGN.md D51).
+- `id` is the app ID (DESIGN.md D83): 8 to 32 lowercase letters and digits, made the first time the project is exported as an app and kept, so that the app exported again is the same app and keeps its settings. A copy of the project made with a new name gets a new one. One that is not an app ID is ignored (F018), and the next export makes a new one. Older GuBASICs ignore the key with F004 and drop it when they save the project.
 - [examples/hello](../examples/hello) is the README example as a project.
 
 ## 12. Open questions

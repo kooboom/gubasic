@@ -14,9 +14,11 @@ class RunHost implements FormHost {
     FormFile form, {
     GbStrings strings = GbStrings.en,
     this.project = '',
+    String? settingsKey,
     this._settings,
     GbPictureSource? pictures,
-  }) : dialogs = GbDialogs(strings: strings) {
+  }) : settingsKey = settingsKey ?? project,
+       dialogs = GbDialogs(strings: strings) {
     model = formModelOf(
       form,
       onEvent: _onEvent,
@@ -28,8 +30,13 @@ class RunHost implements FormHost {
   late final GbFormModel model;
   final GbDialogs dialogs;
 
-  /// The project's name: its settings are kept by it (D48).
+  /// The project's name, shown in a dialog with no title (D68).
   final String project;
+
+  /// What the program's settings are kept under (D48): the project's name
+  /// in the IDE, the app ID in an exported app, so that two apps on one
+  /// web site, or two apps of the same name, keep theirs apart (D83).
+  final String settingsKey;
 
   /// Where the program's settings are kept; shared_preferences unless
   /// given, made only when the program uses them.
@@ -99,10 +106,10 @@ class RunHost implements FormHost {
       model.setProperty(control, property, value);
 
   @override
-  Future<String?> loadSettings() => settings.load(project);
+  Future<String?> loadSettings() => settings.load(settingsKey);
 
   @override
-  Future<void> saveSettings(String text) => settings.save(project, text);
+  Future<void> saveSettings(String text) => settings.save(settingsKey, text);
 
   @override
   void showForm() => onShowForm?.call();

@@ -328,6 +328,11 @@ enum DiagnosticCode {
   /// value.
   badAnchor('F017'),
 
+  /// A project file's `id` that is not an app ID (lowercase letters and
+  /// digits, 8 to 32): it is ignored, and the next export makes a new one.
+  /// Args: the value.
+  badProjectId('F018', DiagnosticSeverity.warning),
+
   // Run time (the interpreter)
 
   /// An Integer result outside the 64-bit range.

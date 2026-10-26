@@ -53,4 +53,38 @@ void main() {
     expect(diagnose('formatVersion: 1\nforms: [Form1]\nicon: x.png\n'),
         ['F004@3']);
   });
+
+  group('the app ID (D83)', () {
+    test('is read and written back', () {
+      const text = 'formatVersion: 1\nid: k3x9q2m7a1b4c8d0\nname: Quiz\n'
+          'forms:\n  - Form1\n';
+      final r = readProjectFile(text);
+      expect(r.diagnostics, isEmpty);
+      expect(r.project.id, 'k3x9q2m7a1b4c8d0');
+      expect(writeProjectFile(r.project), text);
+    });
+
+    test('a project without one has none, and is written without one', () {
+      final r = readProjectFile('formatVersion: 1\nname: A\nforms:\n  - F\n');
+      expect(r.project.id, isNull);
+      expect(writeProjectFile(r.project), isNot(contains('id:')));
+    });
+
+    test('F018: one that is not an app ID is a warning, and ignored', () {
+      for (final bad in ['Short1', 'abc', 'has-hyphen1', 'UPPERCASE123']) {
+        final r = readProjectFile(
+            'formatVersion: 1\nid: $bad\nname: A\nforms:\n  - F\n');
+        expect(r.diagnostics.map((d) => '${d.code.code}@${d.line}'), ['F018@2'],
+            reason: bad);
+        expect(r.hasErrors, isFalse);
+        expect(r.project.id, isNull);
+      }
+    });
+
+    test('new ones are app IDs, and differ', () {
+      final ids = {for (var i = 0; i < 100; i++) newProjectId()};
+      expect(ids, hasLength(100));
+      expect(ids.every(isProjectId), isTrue);
+    });
+  });
 }

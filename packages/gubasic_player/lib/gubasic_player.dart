@@ -4,6 +4,7 @@
 /// the same in both.
 library;
 
+export 'src/bundle.dart';
 export 'src/fit_view.dart';
 export 'src/form_window.dart';
 export 'src/pictures.dart';

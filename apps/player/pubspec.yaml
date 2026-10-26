@@ -17,6 +17,7 @@ dependencies:
     path: ../../packages/gubasic_player
   gubasic_runtime:
     path: ../../packages/gubasic_runtime
+  web: ^1.1.1
 
 dev_dependencies:
   flutter_test:
@@ -25,8 +26,8 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
-  # The project the player runs, built in for now (STAGE2_PLAN step 2-2);
-  # the bundle of step 2-3 takes its place.
+  # The project the player runs when no project.gbz is given (D83): for
+  # `flutter run` while developing.
   assets:
     - project/
     - project/pictures/

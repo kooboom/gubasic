@@ -63,4 +63,20 @@ void main() {
     expect(find.text(PlayerStrings.en.cannotStart), findsOneWidget);
     expect(find.textContaining('Form1.gbas, line 2:'), findsWidgets);
   });
+
+  testWidgets('a bundle it cannot read says why, in the device\'s language', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      const BundleProblemApp(
+        problem: BundleTooNew('0.5.0'),
+        strings: PlayerStrings.ko,
+      ),
+    );
+    expect(find.textContaining('GuBASIC 0.5.0 버전으로'), findsOneWidget);
+    await tester.pumpWidget(
+      const BundleProblemApp(problem: NotABundle(), strings: PlayerStrings.en),
+    );
+    expect(find.textContaining('project.gbz) is damaged'), findsOneWidget);
+  });
 }

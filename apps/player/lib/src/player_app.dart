@@ -18,8 +18,13 @@ class PlayerApp extends StatelessWidget {
     super.key,
     required this.files,
     this.pictures = const {},
+    this.settingsKey,
     required this.strings,
   });
+
+  /// What the program's settings are kept under: the app ID of an exported
+  /// app (D83); the project's name when null.
+  final String? settingsKey;
 
   /// The project's files, file name → text.
   final Map<String, String> files;
@@ -36,7 +41,12 @@ class PlayerApp extends StatelessWidget {
       fontFamily: playerFontFamily,
       visualDensity: VisualDensity.compact,
     ),
-    home: PlayerScreen(files: files, pictures: pictures, strings: strings),
+    home: PlayerScreen(
+      files: files,
+      pictures: pictures,
+      settingsKey: settingsKey,
+      strings: strings,
+    ),
   );
 }
 
@@ -46,11 +56,13 @@ class PlayerScreen extends StatefulWidget {
     super.key,
     required this.files,
     required this.pictures,
+    this.settingsKey,
     required this.strings,
   });
 
   final Map<String, String> files;
   final Map<String, Uint8List> pictures;
+  final String? settingsKey;
   final PlayerStrings strings;
 
   @override
@@ -71,6 +83,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
         _project.startup!,
         strings: widget.strings,
         project: _project.name,
+        settingsKey: widget.settingsKey,
         pictures: pictureSource(widget.pictures),
       )..addListener(_changed);
     }
@@ -147,3 +160,35 @@ class _PlayerScreenState extends State<PlayerScreen> {
 /// The words for the device's language: Korean, or else English.
 PlayerStrings playerStringsFor(String languageCode) =>
     languageCode == 'ko' ? PlayerStrings.ko : PlayerStrings.en;
+
+/// What the player shows when its project bundle cannot be read (D83).
+class BundleProblemApp extends StatelessWidget {
+  const BundleProblemApp({
+    super.key,
+    required this.problem,
+    required this.strings,
+  });
+
+  final BundleProblem problem;
+  final PlayerStrings strings;
+
+  @override
+  Widget build(BuildContext context) => MaterialApp(
+    debugShowCheckedModeBanner: false,
+    theme: ThemeData(fontFamily: playerFontFamily),
+    home: Scaffold(
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Text(switch (problem) {
+            BundleTooNew(:final madeBy) => strings.bundleTooNew.replaceAll(
+              '{0}',
+              madeBy,
+            ),
+            NotABundle() => strings.notABundle,
+          }),
+        ),
+      ),
+    ),
+  );
+}

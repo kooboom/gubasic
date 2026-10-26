@@ -15,6 +15,7 @@ class RunSession extends ChangeNotifier {
     required this.strings,
     RunHost? host,
     String project = '',
+    String? settingsKey,
     GbSettingsStore? settings,
     GbPictureSource? pictures,
   }) : host =
@@ -23,6 +24,7 @@ class RunSession extends ChangeNotifier {
              startup.form,
              strings: strings.runtime,
              project: project,
+             settingsKey: settingsKey,
              settings: settings,
              pictures: pictures,
            ) {

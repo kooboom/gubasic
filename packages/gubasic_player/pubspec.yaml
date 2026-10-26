@@ -10,12 +10,14 @@ environment:
   sdk: ^3.13.5
 
 dependencies:
+  archive: ^4.5.2
   flutter:
     sdk: flutter
   gubasic_lang:
     path: ../gubasic_lang
   gubasic_runtime:
     path: ../gubasic_runtime
+  yaml: ^3.1.4
 
 dev_dependencies:
   flutter_test:

@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gubasic_ide/src/project/examples.g.dart';
 import 'package:gubasic_ide/src/project/folders.dart';
+import 'package:gubasic_lang/gubasic_lang.dart';
 
 import 'support/memory_folders.dart';
 
@@ -134,6 +135,26 @@ forms:
       );
       expect(fs.written, isEmpty);
     });
+  });
+
+  test('a copy is another app: an app ID is replaced by a new one, and a '
+      'project without one gets none (D83)', () {
+    final withId = {
+      ...hello,
+      'Hello.gbproj':
+          'formatVersion: 1\nid: k3x9q2m7a1b4c8d0\nname: Hello\n'
+          'forms:\n  - Form1\n',
+    };
+    final copy = readProjectFile(renameProject(withId, 'Copy')['Copy.gbproj']!)
+        .project;
+    expect(copy.name, 'Copy');
+    expect(copy.id, isNotNull);
+    expect(copy.id, isNot('k3x9q2m7a1b4c8d0'));
+    expect(isProjectId(copy.id!), isTrue);
+    expect(
+      readProjectFile(renameProject(hello, 'Copy')['Copy.gbproj']!).project.id,
+      isNull,
+    );
   });
 
   test('project names', () {

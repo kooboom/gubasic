@@ -374,4 +374,16 @@ void main() {
       );
     });
   });
+
+  test('changing the picture list keeps the app ID (D83)', () {
+    final files = withPictureList(
+      {
+        'A.gbproj':
+            'formatVersion: 1\nid: k3x9q2m7a1b4c8d0\nname: A\n'
+            'forms:\n  - Form1\n',
+      },
+      ['star.png'],
+    );
+    expect(readProjectFile(files['A.gbproj']!).project.id, 'k3x9q2m7a1b4c8d0');
+  });
 }

@@ -237,6 +237,9 @@ const Map<DiagnosticCode, String> englishMessages = {
       'Windows and macOS, so a project cannot have both; rename one.',
   DiagnosticCode.unknownPicture: 'The project has no picture "{0}". Add it '
       'to the project\'s pictures, or choose another.',
+  DiagnosticCode.badProjectId: '"{0}" is not an app ID, so it is ignored '
+      'and the next export of the app makes a new one. An app ID is 8 to 32 '
+      'lowercase letters and digits.',
   DiagnosticCode.badAnchor: '"{0}" is not an Anchor. Name edges of the form '
       'with Left, Top, Right and Bottom, as in "Right Bottom", or "" for '
       'none.',

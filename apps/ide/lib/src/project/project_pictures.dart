@@ -118,6 +118,7 @@ Map<String, String> withPictureList(
         forms: p.forms,
         startup: p.startup,
         pictures: pictures,
+        id: p.id,
       ),
     ),
   };

@@ -14,6 +14,8 @@ class PlayerStrings {
     required this.errorAt,
     required this.programEnded,
     required this.cannotStart,
+    required this.bundleTooNew,
+    required this.notABundle,
   });
 
   /// The words on MsgBox and InputBox.
@@ -38,6 +40,12 @@ class PlayerStrings {
   /// Above the errors of a project that cannot start.
   final String cannotStart;
 
+  /// The app's project was made by a newer GuBASIC, `{0}` (D83).
+  final String bundleTooNew;
+
+  /// The app's project file is damaged (D83).
+  final String notABundle;
+
   /// [diagnostic] in [file], in this language.
   String problem(String file, Diagnostic diagnostic) => errorAt
       .replaceAll('{0}', file)
@@ -52,6 +60,12 @@ class PlayerStrings {
     errorAt: '{0}, line {1}: {2}',
     programEnded: 'The program has ended.',
     cannotStart: 'The program cannot start because of these errors:',
+    bundleTooNew:
+        'This app\'s program was made with GuBASIC {0}, which is newer than '
+        'this app. Export the app again with that GuBASIC.',
+    notABundle:
+        'This app\'s program file (project.gbz) is damaged. Export the app '
+        'again.',
   );
 
   static const ko = PlayerStrings(
@@ -62,5 +76,7 @@ class PlayerStrings {
     errorAt: '{0} 파일 {1}번째 줄: {2}',
     programEnded: '프로그램이 끝났습니다.',
     cannotStart: '다음 오류 때문에 프로그램을 시작할 수 없습니다.',
+    bundleTooNew: '이 앱의 프로그램은 이 앱보다 새로운 GuBASIC {0} 버전으로 만들었습니다. 그 GuBASIC으로 앱을 다시 내보내 주세요.',
+    notABundle: '이 앱의 프로그램 파일(project.gbz)이 손상되었습니다. 앱을 다시 내보내 주세요.',
   );
 }

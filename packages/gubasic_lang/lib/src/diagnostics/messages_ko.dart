@@ -199,6 +199,8 @@ const Map<DiagnosticCode, String> koreanMessages = {
       'GuBASIC은 Windows, macOS처럼 둘을 같은 이름으로 보므로 한 프로젝트에 함께 둘 수 없습니다. 하나의 이름을 바꿔 주세요.',
   DiagnosticCode.unknownPicture:
       '프로젝트에 "{0}" 그림이 없습니다. 프로젝트의 그림에 넣거나 다른 그림을 골라 주세요.',
+  DiagnosticCode.badProjectId:
+      '"{0}" 값은 앱 ID가 아니어서 무시하고, 앱을 다음에 내보낼 때 새 ID를 만듭니다. 앱 ID는 영어 소문자와 숫자 8~32자입니다.',
   DiagnosticCode.badAnchor:
       '"{0}" 값은 Anchor 값이 아닙니다. 폼의 가장자리를 "Right Bottom"처럼 Left, Top, Right, Bottom으로 적거나, 없으면 ""로 적어 주세요.',
   DiagnosticCode.notDesignProperty: '{0} 속성은 폼 파일에 쓸 수 없습니다. '

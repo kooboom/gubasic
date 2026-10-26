@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:yaml/yaml.dart';
 
 import '../diagnostics/diagnostic.dart';
@@ -20,9 +22,16 @@ class ProjectFile {
     required this.forms,
     this.startup,
     this.pictures = const [],
+    this.id,
   });
 
   final String name;
+
+  /// The app ID (docs/DESIGN.md D83): made the first time the project is
+  /// exported as an app and kept, so that the app exported again is the
+  /// same app (its settings stay); a copy of the project gets a new one.
+  /// Null until the first export.
+  final String? id;
   final List<String> forms;
 
   /// The pictures' file names, as written, with Hangul as syllables.
@@ -59,19 +68,33 @@ ProjectFileResult readProjectFile(String text) {
   final pictures = <String>[];
   var name = '';
   String? startup;
+  String? id;
   ProjectFileResult result() => ProjectFileResult(
       ProjectFile(
-          name: name, forms: forms, startup: startup, pictures: pictures),
+          name: name,
+          forms: forms,
+          startup: startup,
+          pictures: pictures,
+          id: id),
       r.diagnostics);
 
   final doc = r.load(text);
   if (doc == null) return result();
-  final top =
-      r.entries(doc, {'formatversion', 'name', 'startup', 'forms', 'pictures'});
+  final top = r.entries(
+      doc, {'formatversion', 'id', 'name', 'startup', 'forms', 'pictures'});
   if (!r.checkVersion(doc, top, projectFileVersion)) return result();
 
   if (top['name'] != null) {
     name = r.text(top['name']!, 'name', 'name: Hello') ?? '';
+  }
+  if (top['id'] case final node?) {
+    final value =
+        node is YamlScalar && node.value != null ? '${node.value}' : '';
+    if (isProjectId(value)) {
+      id = value;
+    } else {
+      r.report(node.span, DiagnosticCode.badProjectId, [value]);
+    }
   }
 
   final seen = <String>{};
@@ -126,6 +149,17 @@ ProjectFileResult readProjectFile(String text) {
     }
   }
   return result();
+}
+
+/// Whether [value] is an app ID: 8 to 32 lowercase letters and digits.
+bool isProjectId(String value) => RegExp(r'^[a-z0-9]{8,32}$').hasMatch(value);
+
+/// A new app ID: 16 random lowercase letters and digits.
+String newProjectId([Random? random]) {
+  final r = random ?? Random.secure();
+  const digits = 'abcdefghijklmnopqrstuvwxyz0123456789';
+  return String.fromCharCodes(
+      List.generate(16, (_) => digits.codeUnitAt(r.nextInt(digits.length))));
 }
 
 int _lineOf(YamlList list, String form) =>

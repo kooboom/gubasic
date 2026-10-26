@@ -251,7 +251,8 @@ Future<(String, Map<String, String>)> saveCopy(
 }
 
 /// [files] as project [name]: the `.gbproj` file is renamed `NAME.gbproj`
-/// and, when it reads without errors, its `name:` becomes [name].
+/// and, when it reads without errors, its `name:` becomes [name]. A copy
+/// is another app, so an app ID it had is replaced by a new one (D83).
 Map<String, String> renameProject(Map<String, String> files, String name) {
   final copy = <String, String>{};
   for (final MapEntry(key: file, value: text) in files.entries) {
@@ -268,6 +269,7 @@ Map<String, String> renameProject(Map<String, String> files, String name) {
               forms: read.project.forms,
               startup: read.project.startup,
               pictures: read.project.pictures,
+              id: read.project.id == null ? null : newProjectId(),
             ),
           );
   }
