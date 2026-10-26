@@ -385,6 +385,56 @@ ControlBox resizedBox(
   return (left: left, top: top, width: right - left, height: bottom - top);
 }
 
+/// Whether a drag of [dx], [dy] on [start] (moving it, or with [handle]
+/// resizing it) would take it past an edge of a form of [size], where
+/// [movedBox] and [resizedBox] stop it (D77).
+bool dragPastEdge(
+  ControlBox start,
+  Handle? handle,
+  double dx,
+  double dy, {
+  required ({int width, int height}) size,
+  required bool grid,
+}) {
+  int at(num v) => snap(v, grid: grid);
+  if (handle == null) {
+    final left = at(start.left + dx);
+    final top = at(start.top + dy);
+    return left < 0 ||
+        top < 0 ||
+        left + start.width > size.width ||
+        top + start.height > size.height;
+  }
+  return (handle.x < 0 && at(start.left + dx) < 0) ||
+      (handle.x > 0 && at(start.left + start.width + dx) > size.width) ||
+      (handle.y < 0 && at(start.top + dy) < 0) ||
+      (handle.y > 0 && at(start.top + start.height + dy) > size.height);
+}
+
+/// Where to show that [box], wholly outside a form of [size], is there
+/// (D77): the point on the form's edge nearest the box's middle, and the
+/// way out from it towards the box; null when part of it is inside.
+({Point<double> at, Point<double> towards})? outsideMarker(
+  ControlBox box,
+  ({int width, int height}) size,
+) {
+  final inside =
+      box.left < size.width &&
+      box.top < size.height &&
+      box.left + box.width > 0 &&
+      box.top + box.height > 0;
+  if (inside) return null;
+  final mx = box.left + box.width / 2;
+  final my = box.top + box.height / 2;
+  final at = Point(
+    mx.clamp(0, size.width).toDouble(),
+    my.clamp(0, size.height).toDouble(),
+  );
+  final d = Point(mx - at.x, my - at.y);
+  final length = d.magnitude;
+  return (at: at, towards: Point(d.x / length, d.y / length));
+}
+
 /// [value] one step in [direction] (+1 or -1): to the next grid line when
 /// [grid] is on, else one pixel.
 int step(int value, int direction, {required bool grid}) {

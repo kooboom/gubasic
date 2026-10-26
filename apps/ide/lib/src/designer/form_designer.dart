@@ -34,6 +34,9 @@ const designerFormKey = ValueKey('designer.form');
 const designerOutsideKey = ValueKey('designer.outside');
 const designerFitInsideKey = ValueKey('designer.outside.fit');
 
+/// The status line's words while a drag is stopped at the form's edge.
+const designerEdgeHintKey = ValueKey('designer.edgeHint');
+
 /// The height of that bar, and of the strip above the form kept for it.
 const outsideBarHeight = 40.0;
 
@@ -480,6 +483,16 @@ class _FormDesignerState extends State<FormDesigner> {
         grid: _grid,
       ),
     };
+    // Said in the status line while the form's edge stops it (D77).
+    final pastEdge = dragPastEdge(
+      change.start,
+      change.handle,
+      d.dx,
+      d.dy,
+      size: size,
+      grid: _grid,
+    );
+    if (pastEdge != _pastEdge) setState(() => _pastEdge = pastEdge);
     if (box == _live) return;
     // The runtime's widget follows at once; the file changes at the end.
     _model.control(change.name)!
@@ -520,8 +533,12 @@ class _FormDesignerState extends State<FormDesigner> {
     _endChange();
   });
 
+  /// Whether the control being dragged is stopped at the form's edge.
+  var _pastEdge = false;
+
   /// Forgets a move or resize; the form is shown from its file again.
   void _endChange() {
+    _pastEdge = false;
     if (_live != null || _liveForm != null) _readText = null;
     _change = null;
     _live = null;
@@ -1451,14 +1468,19 @@ class _FormDesignerState extends State<FormDesigner> {
             _live ?? boxOf(selected),
           )
         : '${form.name} (Form) · ${size.width}×${size.height}';
+    final theme = Theme.of(context);
+    final edge = _pastEdge && _live != null;
     return Container(
       height: 24,
       alignment: Alignment.centerLeft,
       padding: const EdgeInsets.symmetric(horizontal: 12),
       child: Text(
-        text,
+        edge ? widget.strings.stoppedAtEdge : text,
+        key: edge ? designerEdgeHintKey : null,
         overflow: TextOverflow.ellipsis,
-        style: Theme.of(context).textTheme.labelSmall,
+        style: theme.textTheme.labelSmall?.copyWith(
+          color: edge ? theme.colorScheme.error : null,
+        ),
       ),
     );
   }
@@ -1591,9 +1613,27 @@ class _MarksPainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2;
     final form = Offset.zero & size;
+    final fill = Paint()..color = outsideColor;
+    final formSize = (width: size.width.round(), height: size.height.round());
     for (final b in outside) {
       final r = _rect(b).intersect(form);
-      if (r.width > 2 && r.height > 2) canvas.drawRect(r.deflate(1), red);
+      if (r.width > 2 && r.height > 2) {
+        canvas.drawRect(r.deflate(1), red);
+      } else if (outsideMarker(b, formSize) case (:final at, :final towards)) {
+        // Wholly outside: an arrow on the form's edge, pointing to it.
+        final tip = Offset(at.x, at.y);
+        final way = Offset(towards.x, towards.y);
+        final back = tip - way * 12;
+        final side = Offset(-way.dy, way.dx) * 7;
+        canvas.drawPath(
+          Path()
+            ..moveTo(tip.dx, tip.dy)
+            ..lineTo(back.dx + side.dx, back.dy + side.dy)
+            ..lineTo(back.dx - side.dx, back.dy - side.dy)
+            ..close(),
+          fill,
+        );
+      }
     }
     final line = Paint()
       ..color = color
