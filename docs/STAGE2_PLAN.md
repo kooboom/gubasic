@@ -2,17 +2,17 @@
 
 [한국어](STAGE2_PLAN.ko.md)
 
-**Status: a proposal for the author's review. Nothing here is decided until the author says so; nothing is built yet.**
+**Status: approved by the author on 2026-10-26, with the decisions in §6. Steps 2-0 to 2-2 come first; after 2-2 the author decides the next steps from its measurements (§7) and the bundle design (step 2-3).**
 
 This plan answers how a GuBASIC project becomes an app that runs on its own, without the IDE: for the web, macOS and Windows. It compares three ways to do it, says where the build happens when the user's computer has no Flutter, and splits the work into small steps that each end with something to look at.
 
-**It conflicts with documents that are in force**, and says so here rather than diverging quietly (CLAUDE.md). If the recommended way (C) is chosen, step 2-0 changes them first:
+**It changes documents that were in force**, and says so here rather than diverging quietly (CLAUDE.md). Step 2-0 changes them first:
 
 - DESIGN §2.2 and D3 present the transpiler as *the* way to release; §2.3 says "generated apps never carry the interpreter"; §12 says Flutter is downloaded on the first Build.
 - ROADMAP stage 2 lists the transpiler first and ends "when one project ships to four platforms" (Android included).
 - CLAUDE.md describes the transpiler as how native release builds are made, and hard rule 3 asks for parity "both modes".
 
-The hard rules themselves stay: one AST for every way of running (rule 2), parity tests for every feature (rule 3), the interpreter async (rule 4), and apps that draw only through `gubasic_runtime` (rule 6).
+The hard rules themselves stay: one AST for every way of running (rule 2), parity tests for every feature (rule 3), the interpreter async (rule 4), and apps that draw only through `gubasic_runtime` (rule 6). Keeping them is what leaves the way open for the transpiler later.
 
 ---
 
@@ -55,7 +55,7 @@ A **player** is a Flutter app built once, by GuBASIC's own CI, that contains the
 
 Stage 2 ships apps with the player (B). The transpiler (A) stays the design's long-term fast path and is planned again when there is a reason: a program too slow in the player, an extra component, or the escape hatch, which all need it.
 
-**Recommended: (C).** Only (B) works for the people GuBASIC is for: no Flutter, no Xcode, no Visual Studio, no command line, and it reuses what stage 1 built and tested. (A) is not thrown away: the AST stays shared (rule 2), and the parity programs written for the player are the ones the transpiler will have to pass.
+**Decided: (C).** Visual Basic 6 shipped apps the same way: every program used its run-time DLL, MSVBVM60.DLL, for forms, controls and run-time functions, and could be compiled to p-code, which the runtime translated statement by statement as it ran, or, in the Professional and Enterprise editions, to native code, which still needed the DLL ([Microsoft: Compiling your project to native code](https://learn.microsoft.com/en-us/previous-versions/visualstudio/visual-basic-6/aa240843(v=vs.60))). GuBASIC's player is that runtime with the interpreter in the place of p-code; the transpiler is the native-code option, later. Only (B) works for the people GuBASIC is for: no Flutter, no Xcode, no Visual Studio, no command line, and it reuses what stage 1 built and tested. (A) is not thrown away: the AST stays shared (rule 2), and the parity programs written for the player are the ones the transpiler will have to pass.
 
 ## 3. Where the build happens
 
@@ -68,7 +68,7 @@ The user's computer has no Flutter. The ways that remain:
 | GitHub Actions cloud build (A) | yes | yes | yes | needs a GitHub account, and GitHub's terms say "You must be age 13 or older" ([GitHub Terms of Service](https://docs.github.com/en/site-policy/github-terms/github-terms-of-service)); for a teacher, not a student |
 | Compiling Dart inside the browser (A) | not attempted | — | — | the compiler would have to run in the page; out of scope |
 
-**Recommended:** player templates. The IDE does not carry them (they would make the web IDE much heavier): it downloads the one it needs, for its own version, from GuBASIC's GitHub Release or its Pages site, the first time, and keeps it. A macOS app is exported only from the macOS IDE, which can sign it again; the Windows and web IDEs offer the web and Windows apps.
+**Decided:** player templates. The IDE does not carry them (they would make the web IDE much heavier): it downloads the one it needs, for its own version, from GuBASIC's GitHub Release or its Pages site, the first time, and keeps it. A macOS app is exported only from the macOS IDE, which can sign it again; the Windows and web IDEs offer the web and Windows apps.
 
 What the student sees: **File → Export as app…**, a choice of Web, Windows or macOS, a folder or a `.zip`, and a few lines on how to open it (for macOS, the steps of the v0.1.0 release notes).
 
@@ -76,7 +76,7 @@ What the student sees: **File → Export as app…**, a choice of Web, Windows o
 
 Several forms (`Form2.Show`, DESIGN §3.3) are a language and runtime feature: they change the interpreter, the run window, the designer, the project file and the parity tests, whether apps are exported or not. The export does not need them: it carries whatever the project has.
 
-**Recommended:** keep them in stage 2, as their own block right after the export (steps 2-7 and 2-8). Doing the export first gives students something to take home sooner, and each block stays reviewable on its own.
+**Decided:** keep them in stage 2, as their own block right after the export (steps 2-7 and 2-8). Doing the export first gives students something to take home sooner, and each block stays reviewable on its own.
 
 ## 5. Steps
 
@@ -86,44 +86,72 @@ Each step ends with something the author can look at. Every step keeps the stage
 |---|---|---|
 | **2-0** | The decisions below written down: DESIGN (new D-numbers; §2.2, §2.3, §12 changed), ROADMAP stage 2 reordered, CLAUDE.md's description of release builds | A docs-only PR |
 | **2-1** | Move the run window and `RunHost` out of `apps/ide` into a package both use (`packages/gubasic_player`, name to decide); the IDE behaves exactly as before | All IDE tests and the widget parity tests pass unchanged; F5 looks the same |
-| **2-2** | `apps/player`: a Flutter app that runs one project, full window, with no IDE around it; for now the project is built in. CI builds it for web, macOS and Windows, and reports its size | `flutter run` shows hello as an app of its own; the sizes of the three builds |
-| **2-3** | The project bundle: the project's files and pictures in one file with a format version (`formatVersion`, as rule 8 asks), read by the player at start; a newer format than the player knows is refused with a message | The player opens the quiz example from a bundle; a test opens every example |
+| **2-2** | `apps/player`: a Flutter app that runs one project, full window, with no IDE around it; for now the project is built in. CI builds it for web, macOS and Windows, and reports its size. The speed of the benchmarks of §7 is measured in the IDE and in the player, and the numbers that bring the transpiler back are written into §7 | `flutter run` shows hello as an app of its own; the sizes of the three builds; the measurements and the criteria |
+| **2-3** | The project bundle: the project's files and pictures in one file, with a format version from the first one (`formatVersion`, as rule 8 asks), designed from the start to hold several forms even before 2-7 lets a project have them; read by the player at start; a newer format than the player knows is refused with a message. The design is reported after 2-2, before it is built | The player opens the quiz example from a bundle; a test opens every example |
 | **2-4** | Export for the web: File → Export as app… → Web, from the desktop and the web IDE; the template downloaded and kept | A `.zip` that, unzipped and served by any web host (GitHub Pages, a school server), runs the app; checked in Chromium and WebKit |
 | **2-5** | Export for Windows | The exported folder runs on the school PC (the author checks; CI checks that the files are complete) |
 | **2-6** | Export for macOS, from the macOS IDE, signed again ad-hoc | The exported app opens on the Mac after Open Anyway; `codesign --verify` passes |
 | **2-7** | Several forms in the language and the run window: `Form2.Show`, `Hide`, `Unload`, a startup form or `Sub Main` (DESIGN §3.2, §3.3), with parity programs | A two-form example runs with F5 and as an exported app |
 | **2-8** | Several forms in the designer and the project files | Adding, renaming and deleting a form in the IDE |
+| **2-9** | A `Timer` control: `Interval`, `Enabled` and a `Tick` event, with an event-script step for parity tests | The small game of §7 written with a Timer instead of a `DoEvents` loop |
+| **2-10** | Key events: `KeyDown` and `KeyUp` on the form, with an event-script step | A shape moved with the arrow keys, with F5 and in an exported app |
 
 The other stage 2 items of the ROADMAP (`LayoutMode`, `Handles`, `OptionButton`, menus, `Database`, `Http`, `ByRef`) come after these, each planned on its own.
 
-## 6. Questions to decide
+**Timer and key events: in stage 2, after several forms (2-9, 2-10).** They are what turns a form into a small game or an animation, the thing children most want to make next, and both run in the interpreter and the player alike, so they need no transpiler. A Timer is a control like the others (`component.yaml`, rule 7); a tick is an event like a click, so it follows the execution model: it does not re-enter, and a tick that comes while a handler runs waits like any other event (DESIGN §3.1). Key events are for the web and the desktop, where there is a keyboard; on phones (stage 3) they simply do not come.
 
-| # | Question | Recommended |
+## 6. Decisions
+
+Decided by the author on 2026-10-26.
+
+| # | Question | Decision |
 |---|---|---|
-| 1 | Which way: (A), (B) or (C)? | **(C)**: the player for stage 2, the transpiler planned again later |
-| 2 | When does the transpiler come back? | When a real program is too slow in the player, or for extra components and the escape hatch; at the latest at the start of stage 3 |
-| 3 | Android in stage 2? (ROADMAP says "four platforms") | **No**: an Android app changed after it is built must be signed again, with Android's own tool (`apksigner`, part of the Android SDK Build Tools: [Android Developers](https://developer.android.com/tools/apksigner)) and a key; it comes with the phone Player in stage 3. Stage 2 is done when one project ships to the web, macOS and Windows |
+| 1 | Which way: (A), (B) or (C)? | **(C)**: the player for stage 2, the transpiler planned again later; the hard rules stay, so the way to it stays open |
+| 2 | When does the transpiler come back? | When a benchmark of §7 is slower in the player than the criteria written there after step 2-2, or for extra components and the escape hatch; at the latest at the start of stage 3 |
+| 3 | Android in stage 2? | **No**: an Android app changed after it is built must be signed again, with Android's own tool (`apksigner`, part of the Android SDK Build Tools: [Android Developers](https://developer.android.com/tools/apksigner)) and a key; it moves to stage 3, with the phone Player. **Stage 2 is done when one project ships to the web, macOS and Windows** |
 | 4 | Where do the player templates come from? | Not inside the IDE: downloaded once per version from the GitHub Release or Pages, and kept |
-| 5 | macOS export from Windows or the web? | **No** for now: only the macOS IDE can sign the app again |
+| 5 | macOS export from Windows or the web? | **No**: only the macOS IDE exports macOS apps, since only it can sign them again |
 | 6 | What does an exported app do on a run-time error? | What F5 does: the program ends. The app shows the error (code, message, line) in a dialog and closes when it is dismissed |
 | 7 | The app's name, window and icon | The project's name; the startup form's size; GuBASIC's icon. Choosing an icon comes later |
 | 8 | How is a web app shared? | A `.zip` to put on any web host, with short steps for GitHub Pages and a school server. A page on GuBASIC's own site that plays a project file comes with stage 3's Publish menu |
-| 9 | Several forms: in stage 2? | **Yes**, as their own block after the export (§4) |
+| 9 | Several forms: in stage 2? | **Yes**, as their own block after the export (§4); the bundle can hold them from the start (2-3) |
 | 10 | The package and app names | `packages/gubasic_player` and `apps/player`, the same player that becomes the phone Player in stage 3 |
 
-## 7. Risks
+## 7. Speed: what is measured in 2-2, and when the transpiler comes back
+
+The player runs the same interpreter as F5, so it should be as fast as the IDE; step 2-2 measures it rather than assume it, and turns the result into numbers.
+
+**Benchmarks**, each run in the IDE (F5) and in the player, on the web (Chrome and Safari) and in the macOS app:
+
+1. **Arithmetic loop:** a million rounds of `total = total + i * 2 - 1` (the program of KNOWN_ISSUES).
+2. **Text:** building and searching a long text with `&`, `Mid`, `InStr` and `Len` in a loop.
+3. **The examples:** `typing` and `quiz` driven by their event scripts: the time from each step to the screen showing its result.
+4. **A small game:** 20 Images on a form, each moved a little every round; every round checks each pair for a collision and changes a score Label. With no Timer yet (2-9), a loop with `DoEvents` does what a 30 ms Timer would, as fast as it can. Measured: **updates per second (the aim is 30 or more)**, milliseconds per update, and how much of it is the interpreter (from the loop's start to its `DoEvents`) and how much drawing (Flutter's frame timings: build and raster).
+
+**Criteria.** After 2-2 this section records the measurements and, from them, numbers of the form "if a benchmark takes more than … in the player, the transpiler is planned again". For the small game the line is already clear: **if it cannot reach 30 updates a second in the player on any of the three**, the cause is looked for first.
+
+**If the interpreter is the slow part,** these come before a transpiler, each only where the result is provably the same (rule 4 forbids fast paths that change behaviour, and the parity tests are the judge):
+
+- **Resolved names:** the analyzer already knows every variable; giving each a slot number instead of looking it up by name on every use.
+- **Synchronous runs of statements:** a run of statements with no call to a user procedure and no `DoEvents`, `MsgBox` or `InputBox` cannot wait; evaluating it without an `await` per statement keeps the order exactly (D25 already does this for expressions).
+- **Property changes in batches:** many `Left`/`Top` changes in one round become one redraw at the next frame instead of one notification each.
+- **Cheaper control lookups:** a control's state found once per handler, not on every property access.
+
+If drawing is the slow part, the runtime's widgets are looked at instead (repainting only what moved), which a transpiler would not change.
+
+## 8. Risks
 
 - **macOS:** a signature broken by an added file stops the app; re-signing must cover the whole bundle, and Gatekeeper still asks for Open Anyway, since there is no Developer ID. The project goes inside the app, not next to it, so that the app is one thing to copy.
 - **Windows:** an unsigned program from the internet can be warned about by SmartScreen and some antivirus programs; the release notes already say so.
 - **Versions:** an app exported by one IDE version and a player of another must not meet unnoticed: the bundle's format version and the player's version are checked, and the IDE downloads the template of its own version.
-- **Speed:** heavy loops are slower than in a native app; programs of the size beginners write do not notice it (KNOWN_ISSUES). If one does, that is question 2's trigger.
+- **Speed:** heavy loops are slower than in a native app; programs of the size beginners write do not notice it (KNOWN_ISSUES). If one does, that is decision 2's trigger.
 - **The web app needs a web host:** opening `index.html` straight from the disk may not work in browsers; step 2-4 checks, and the export says how to host it.
 - **The source is inside the app:** anyone can read it. The secret-key warning (DESIGN §11) matters more once apps travel.
 - **One run window, two apps:** the move in step 2-1 must not change the IDE; its tests are the guard.
 
-## 8. Not now
+## 9. Not now
 
-- The transpiler (question 2), Flutter downloads and GitHub Actions builds of students' apps.
+- The transpiler (decision 2), Flutter downloads and GitHub Actions builds of students' apps.
 - iOS and Android, app stores, Developer ID signing and notarization (paid accounts).
 - Extra pub.dev components and the embedded-Dart escape hatch (stage 3; they need the transpiler).
 - The Publish menu (stage 3).
