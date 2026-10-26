@@ -68,6 +68,8 @@ The core Visual Basic experience, entirely inside the IDE.
 
 ## Beyond 1.0 (ideas)
 
+More ideas, not yet planned, are kept in [IDEAS.md](IDEAS.md): among them [adventure game controls](IDEAS.md#adventure-game-controls).
+
 - Debugger (breakpoints, step, watch)
 - Data binding (VB's Data control)
 - Automatic component adapters generated from a package's API
