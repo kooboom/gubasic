@@ -1,0 +1,10 @@
+' Benchmark 1 (STAGE2_PLAN §7): a million rounds of arithmetic.
+Sub btnStart_Click()
+    Debug.Print("bench:start")
+    Dim total As Integer = 0
+    Dim i As Integer
+    For i = 1 To 1000000
+        total = total + i * 2 - 1
+    Next
+    Debug.Print("bench:end " & total)
+End Sub

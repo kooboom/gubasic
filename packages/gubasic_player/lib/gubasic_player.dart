@@ -6,6 +6,7 @@ library;
 
 export 'src/fit_view.dart';
 export 'src/form_window.dart';
+export 'src/pictures.dart';
 export 'src/player_strings.dart';
 export 'src/project.dart';
 export 'src/run_host.dart';

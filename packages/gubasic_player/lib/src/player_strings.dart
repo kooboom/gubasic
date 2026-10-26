@@ -12,6 +12,8 @@ class PlayerStrings {
     required this.closeForm,
     required this.fitTip,
     required this.errorAt,
+    required this.programEnded,
+    required this.cannotStart,
   });
 
   /// The words on MsgBox and InputBox.
@@ -29,6 +31,13 @@ class PlayerStrings {
   /// `{0}` the file, `{1}` the line, `{2}` the message.
   final String errorAt;
 
+  /// What a web app shows once its program has ended (D81): a browser tab
+  /// cannot close itself.
+  final String programEnded;
+
+  /// Above the errors of a project that cannot start.
+  final String cannotStart;
+
   /// [diagnostic] in [file], in this language.
   String problem(String file, Diagnostic diagnostic) => errorAt
       .replaceAll('{0}', file)
@@ -41,6 +50,8 @@ class PlayerStrings {
     closeForm: 'Close',
     fitTip: 'Shrink a form larger than the space so that all of it shows; the form itself does not change',
     errorAt: '{0}, line {1}: {2}',
+    programEnded: 'The program has ended.',
+    cannotStart: 'The program cannot start because of these errors:',
   );
 
   static const ko = PlayerStrings(
@@ -49,5 +60,7 @@ class PlayerStrings {
     closeForm: '닫기',
     fitTip: '폼이 자리보다 크면 줄여서 다 보이게 합니다. 폼 자체는 바뀌지 않습니다',
     errorAt: '{0} 파일 {1}번째 줄: {2}',
+    programEnded: '프로그램이 끝났습니다.',
+    cannotStart: '다음 오류 때문에 프로그램을 시작할 수 없습니다.',
   );
 }

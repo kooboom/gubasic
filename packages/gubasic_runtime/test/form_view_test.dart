@@ -232,6 +232,26 @@ void main() {
       expect(find.text('Name?'), findsNothing);
     });
 
+    testWidgets('answerTop closes the topmost dialog with a value, or as '
+        'Cancel', (tester) async {
+      await app(tester, GbStrings.en);
+      var msgClosed = false;
+      dialogs.msgBox(context, 'first', '').then((_) => msgClosed = true);
+      await tester.pumpAndSettle();
+      final answer = dialogs.inputBox(context, 'second', '', 'typed');
+      await tester.pumpAndSettle();
+      expect(dialogs.answerTop('Kim'), isTrue);
+      await tester.pumpAndSettle();
+      expect(await answer, 'Kim');
+      expect(find.text('second'), findsNothing);
+      expect(msgClosed, isFalse, reason: 'only the topmost');
+      expect(dialogs.answerTop(null), isTrue);
+      await tester.pumpAndSettle();
+      expect(msgClosed, isTrue);
+      expect(dialogs.hasOpenDialog, isFalse);
+      expect(dialogs.answerTop(null), isFalse);
+    });
+
     testWidgets('closeAll closes every dialog as cancelled', (tester) async {
       await app(tester, GbStrings.en);
       var msgClosed = false;

@@ -1,0 +1,10 @@
+' Benchmark 3 (STAGE2_PLAN §7): the typing example, as a user types.
+txtName.Type "K"
+txtName.Type "Ki"
+txtName.Type "Kim"
+txtName.Type "Kim "
+txtName.Type "Kim J"
+txtName.Type "Kim Ju"
+txtName.Type "Kim Jun"
+btnHello.Click
+OK

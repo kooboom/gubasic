@@ -1,0 +1,180 @@
+formatVersion: 1
+properties:
+  Caption: Game
+  Width: 400
+  Height: 400
+controls:
+  - name: btnStart
+    type: Button
+    properties:
+      Caption: Start
+      Left: 8
+      Top: 8
+      Width: 96
+  - name: lblScore
+    type: Label
+    properties:
+      Caption: "Score: 0"
+      Left: 120
+      Top: 12
+      Width: 200
+  - name: img1
+    type: Image
+    properties:
+      Picture: ball.png
+      Left: 0
+      Top: 48
+      Width: 16
+      Height: 16
+  - name: img2
+    type: Image
+    properties:
+      Picture: ball.png
+      Left: 0
+      Top: 48
+      Width: 16
+      Height: 16
+  - name: img3
+    type: Image
+    properties:
+      Picture: ball.png
+      Left: 0
+      Top: 48
+      Width: 16
+      Height: 16
+  - name: img4
+    type: Image
+    properties:
+      Picture: ball.png
+      Left: 0
+      Top: 48
+      Width: 16
+      Height: 16
+  - name: img5
+    type: Image
+    properties:
+      Picture: ball.png
+      Left: 0
+      Top: 48
+      Width: 16
+      Height: 16
+  - name: img6
+    type: Image
+    properties:
+      Picture: ball.png
+      Left: 0
+      Top: 48
+      Width: 16
+      Height: 16
+  - name: img7
+    type: Image
+    properties:
+      Picture: ball.png
+      Left: 0
+      Top: 48
+      Width: 16
+      Height: 16
+  - name: img8
+    type: Image
+    properties:
+      Picture: ball.png
+      Left: 0
+      Top: 48
+      Width: 16
+      Height: 16
+  - name: img9
+    type: Image
+    properties:
+      Picture: ball.png
+      Left: 0
+      Top: 48
+      Width: 16
+      Height: 16
+  - name: img10
+    type: Image
+    properties:
+      Picture: ball.png
+      Left: 0
+      Top: 48
+      Width: 16
+      Height: 16
+  - name: img11
+    type: Image
+    properties:
+      Picture: ball.png
+      Left: 0
+      Top: 48
+      Width: 16
+      Height: 16
+  - name: img12
+    type: Image
+    properties:
+      Picture: ball.png
+      Left: 0
+      Top: 48
+      Width: 16
+      Height: 16
+  - name: img13
+    type: Image
+    properties:
+      Picture: ball.png
+      Left: 0
+      Top: 48
+      Width: 16
+      Height: 16
+  - name: img14
+    type: Image
+    properties:
+      Picture: ball.png
+      Left: 0
+      Top: 48
+      Width: 16
+      Height: 16
+  - name: img15
+    type: Image
+    properties:
+      Picture: ball.png
+      Left: 0
+      Top: 48
+      Width: 16
+      Height: 16
+  - name: img16
+    type: Image
+    properties:
+      Picture: ball.png
+      Left: 0
+      Top: 48
+      Width: 16
+      Height: 16
+  - name: img17
+    type: Image
+    properties:
+      Picture: ball.png
+      Left: 0
+      Top: 48
+      Width: 16
+      Height: 16
+  - name: img18
+    type: Image
+    properties:
+      Picture: ball.png
+      Left: 0
+      Top: 48
+      Width: 16
+      Height: 16
+  - name: img19
+    type: Image
+    properties:
+      Picture: ball.png
+      Left: 0
+      Top: 48
+      Width: 16
+      Height: 16
+  - name: img20
+    type: Image
+    properties:
+      Picture: ball.png
+      Left: 0
+      Top: 48
+      Width: 16
+      Height: 16

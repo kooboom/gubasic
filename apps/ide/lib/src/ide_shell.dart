@@ -13,7 +13,6 @@ import 'project/pictures_dialog.dart';
 
 import 'package:gubasic_player/gubasic_player.dart';
 
-import 'project/project_pictures.dart';
 import 'project/project_controller.dart';
 import 'strings.dart';
 import 'theme.dart';
@@ -41,7 +40,11 @@ class IdeShell extends StatefulWidget {
     required this.grid,
     this.fitDesigner,
     this.fitRun,
+    this.autoRun = false,
   });
+
+  /// Runs the project once the IDE has started (IdeApp.autoRun).
+  final bool autoRun;
 
   /// The open project, [ProjectController.current], and the commands
   /// that open and save projects.
@@ -96,6 +99,7 @@ class _IdeShellState extends State<IdeShell> {
       final controller = widget.controller;
       if (mounted) await controller.openLast(context);
       if (mounted) await controller.showRestored(context);
+      if (mounted && widget.autoRun) _run();
     });
   }
 

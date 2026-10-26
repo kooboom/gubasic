@@ -17,6 +17,7 @@ If a request conflicts with these documents, **stop and say so** instead of sile
 
 ```
 apps/ide/                Flutter IDE: macOS, Windows and web
+apps/player/             The player: one project as an app of its own (D79)
 apps/playground/         Web playground for development (pure Dart, no Flutter)
 packages/gubasic_lang/   Pure Dart: lexer, parser, AST, analyzer, interpreter, form files
                          (the transpiler comes later, D79)
@@ -30,14 +31,16 @@ test/parity/             Parity programs (.gbas, .form.yaml, .events, .in, .out)
                          the player joins in stage 2, the transpiled Dart later
 ```
 
-`apps/player/` (the player that runs an exported project, D79) arrives in stage 2 and becomes
-the phone Player in stage 3.
+`apps/player/` becomes the phone Player in stage 3. `test/bench/` holds the benchmark projects of
+docs/STAGE2_PLAN.md §7.
 
 Generated files that are checked in, each with a `--check` mode that CI runs:
 `packages/gubasic_lang/lib/src/forms/components.g.dart` (`tool/embed_components.dart`),
 `apps/ide/lib/src/project/examples.g.dart` (`tool/embed_examples.dart`),
-`apps/playground/test/parity_cases.g.dart` (`tool/embed_parity.dart`).
-After changing `components/`, `examples/` or `test/parity/`, run the generator in that package.
+`apps/playground/test/parity_cases.g.dart` (`tool/embed_parity.dart`),
+`packages/gubasic_player/lib/src/bench/projects.g.dart` (`tool/embed_bench.dart`).
+After changing `components/`, `examples/`, `test/parity/` or `test/bench/`, run the generator in
+that package.
 
 ## Hard rules
 
@@ -90,6 +93,6 @@ The Mac is the author's own computer, in use while you work.
 - `flutter test` in `packages/gubasic_runtime` passes
 - `dart test -p vm,chrome` in `apps/playground` passes (parity in Chrome)
 - `flutter test` in `packages/gubasic_player` passes (parity through the run window's widgets)
-- `flutter test` in `apps/ide` passes
+- `flutter test` in `apps/ide` and in `apps/player` passes
 - The generators' `--check` passes
 - Docs updated if behavior or a decision changed

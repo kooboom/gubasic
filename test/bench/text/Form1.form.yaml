@@ -1,0 +1,13 @@
+formatVersion: 1
+properties:
+  Caption: Text
+  Width: 320
+  Height: 120
+controls:
+  - name: btnStart
+    type: Button
+    properties:
+      Caption: Start
+      Left: 8
+      Top: 8
+      Width: 96

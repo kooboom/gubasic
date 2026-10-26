@@ -1,0 +1,11 @@
+Dim clickCount As Integer
+
+Sub Form_Load()
+    lblMessage.Caption = "Press the button"
+End Sub
+
+Sub btnHello_Click()
+    clickCount = clickCount + 1
+    Dim name = InputBox("What is your name?")
+    MsgBox("Hello, " & name & "! (" & clickCount & ")")
+End Sub

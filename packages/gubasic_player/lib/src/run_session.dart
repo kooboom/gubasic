@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:gubasic_lang/gubasic_lang.dart';
 import 'package:gubasic_runtime/gubasic_runtime.dart';
 
+import 'bench/probe.dart';
 import 'player_strings.dart';
 import 'project.dart';
 import 'run_host.dart';
@@ -39,7 +40,8 @@ class RunSession extends ChangeNotifier {
       ..onShowForm = () {
         formShown = true;
         notifyListeners();
-      };
+      }; // Measuring builds only (STAGE2_PLAN §7); compiled away elsewhere.
+    if (benchEnabled) BenchProbe.current?.attach(this);
   }
 
   final StartupForm startup;

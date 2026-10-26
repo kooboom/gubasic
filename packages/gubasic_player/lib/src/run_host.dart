@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:gubasic_lang/gubasic_lang.dart';
 import 'package:gubasic_runtime/gubasic_runtime.dart';
 
+import 'bench/probe.dart';
 import 'form_window.dart';
 
 /// Connects the interpreter to gubasic_runtime (docs/DESIGN.md §2.3): the
@@ -82,7 +83,12 @@ class RunHost implements FormHost {
 
   /// Lets frames be drawn and the Stop button work.
   @override
-  Future<void> yieldNow() => Future<void>.delayed(Duration.zero);
+  Future<void> yieldNow() async {
+    // Measuring builds only (STAGE2_PLAN §7); compiled away elsewhere.
+    if (benchEnabled) BenchProbe.current?.yieldStarted();
+    await Future<void>.delayed(Duration.zero);
+    if (benchEnabled) BenchProbe.current?.yieldEnded();
+  }
 
   @override
   Object getProperty(String? control, String property) =>

@@ -1,0 +1,38 @@
+name: gubasic_player_app
+description: >-
+  The player: runs one GuBASIC project as an app of its own, with the same
+  interpreter and run window as the IDE's F5 (docs/DESIGN.md D79, D80).
+version: 0.1.0
+publish_to: none
+
+environment:
+  sdk: ^3.13.5
+
+dependencies:
+  flutter:
+    sdk: flutter
+  gubasic_lang:
+    path: ../../packages/gubasic_lang
+  gubasic_player:
+    path: ../../packages/gubasic_player
+  gubasic_runtime:
+    path: ../../packages/gubasic_runtime
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
+  # The project the player runs, built in for now (STAGE2_PLAN step 2-2);
+  # the bundle of step 2-3 takes its place.
+  assets:
+    - project/
+    - project/pictures/
+  # Pretendard 1.3.9 (OFL, fonts/pretendard/LICENSE.txt), the IDE's font,
+  # so that an app lays its text out as the IDE showed it (KNOWN_ISSUES).
+  fonts:
+    - family: Pretendard
+      fonts:
+        - asset: fonts/pretendard/Pretendard-Regular.otf

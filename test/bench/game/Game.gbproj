@@ -1,0 +1,7 @@
+formatVersion: 1
+name: Game
+startup: Form1
+forms:
+  - Form1
+pictures:
+  - ball.png

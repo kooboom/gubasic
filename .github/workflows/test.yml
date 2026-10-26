@@ -105,8 +105,37 @@ jobs:
         run: dart format --output=none --set-exit-if-changed .
       - name: Analyze
         run: flutter analyze --fatal-infos
+      - name: Check the embedded benchmarks are up to date
+        run: dart run tool/embed_bench.dart --check
       - name: Test (the parity scripts through the run window's widgets)
         run: flutter test
+
+  player:
+    name: player (format, analyze, test, web build)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/player
+    steps:
+      - uses: actions/checkout@v5
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version-file: packages/gubasic_runtime/pubspec.yaml
+          cache: true
+      - name: Install dependencies
+        run: flutter pub get
+      - name: Check formatting
+        run: dart format --output=none --set-exit-if-changed .
+      - name: Analyze
+        run: flutter analyze --fatal-infos
+      - name: Test
+        run: flutter test
+      - name: Build for the web
+        run: flutter build web --release --no-web-resources-cdn
+      - name: The player's size on the web (STAGE2_PLAN step 2-2)
+        run: |
+          du -sh build/web build/web/canvaskit
+          ls -l build/web/main.dart.js
 
   ide:
     name: ide (format, analyze, test, web build)
@@ -155,6 +184,8 @@ jobs:
         working-directory: apps/ide
       - run: flutter build windows --release
         working-directory: packages/gubasic_runtime/tool/ime_probe
+      - run: flutter build windows --release
+        working-directory: apps/player
       # The IDE and the IME probe as folders that run on a Windows PC
       # without Flutter or Visual Studio: the Release folder with the
       # Visual C++ runtime next to the .exe ("application-local", as the
@@ -164,7 +195,7 @@ jobs:
         working-directory: .
         shell: pwsh
         run: |
-          foreach ($dir in 'apps/ide', 'packages/gubasic_runtime/tool/ime_probe') {
+          foreach ($dir in 'apps/ide', 'packages/gubasic_runtime/tool/ime_probe', 'apps/player') {
             foreach ($dll in 'msvcp140.dll', 'vcruntime140.dll', 'vcruntime140_1.dll') {
               Copy-Item "$env:WINDIR/System32/$dll" "$dir/build/windows/x64/runner/Release"
             }
@@ -173,6 +204,17 @@ jobs:
         with:
           name: gubasic-ide-windows
           path: apps/ide/build/windows/x64/runner/Release
+          retention-days: 30
+          if-no-files-found: error
+      - name: The player's size on Windows (STAGE2_PLAN step 2-2)
+        working-directory: apps/player/build/windows/x64/runner/Release
+        shell: pwsh
+        run: |
+          "{0:N1} MB" -f ((Get-ChildItem -Recurse | Measure-Object Length -Sum).Sum / 1MB)
+      - uses: actions/upload-artifact@v4
+        with:
+          name: gubasic-player-windows
+          path: apps/player/build/windows/x64/runner/Release
           retention-days: 30
           if-no-files-found: error
       - uses: actions/upload-artifact@v4
@@ -199,3 +241,8 @@ jobs:
       - run: flutter build macos --release
       - run: flutter build macos --release
         working-directory: apps/ide
+      - run: flutter build macos --release
+        working-directory: apps/player
+      - name: The player's size on macOS (STAGE2_PLAN step 2-2)
+        run: du -sh "build/macos/Build/Products/Release/GuBASIC Player.app"
+        working-directory: apps/player

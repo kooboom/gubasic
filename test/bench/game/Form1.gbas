@@ -1,0 +1,91 @@
+' Benchmark 4 (STAGE2_PLAN §7): a small game. 20 Images move a little
+' every round, every pair is checked for a collision, and the score
+' Label changes. With no Timer yet, DoEvents ends each round, as a 30 ms
+' Timer's Tick would.
+Dim x(19) As Integer
+Dim y(19) As Integer
+Dim dx(19) As Integer
+Dim dy(19) As Integer
+Dim score As Integer
+
+Sub Form_Load()
+    Dim i As Integer
+    For i = 0 To 19
+        x(i) = 20 + (i Mod 5) * 70
+        y(i) = 60 + (i \ 5) * 70
+        dx(i) = 1 + i Mod 3
+        dy(i) = 1 + i Mod 2
+        If i Mod 2 = 0 Then
+            dy(i) = -dy(i)
+        End If
+    Next
+End Sub
+
+Sub btnStart_Click()
+    Debug.Print("bench:start")
+    Dim r As Integer
+    Dim i As Integer
+    Dim j As Integer
+    For r = 1 To 300
+        For i = 0 To 19
+            x(i) = x(i) + dx(i)
+            y(i) = y(i) + dy(i)
+            If x(i) < 0 Or x(i) > 384 Then
+                dx(i) = -dx(i)
+            End If
+            If y(i) < 48 Or y(i) > 384 Then
+                dy(i) = -dy(i)
+            End If
+        Next
+        For i = 0 To 18
+            For j = i + 1 To 19
+                If Abs(x(i) - x(j)) < 16 And Abs(y(i) - y(j)) < 16 Then
+                    score = score + 1
+                End If
+            Next
+        Next
+        img1.Left = x(0)
+        img1.Top = y(0)
+        img2.Left = x(1)
+        img2.Top = y(1)
+        img3.Left = x(2)
+        img3.Top = y(2)
+        img4.Left = x(3)
+        img4.Top = y(3)
+        img5.Left = x(4)
+        img5.Top = y(4)
+        img6.Left = x(5)
+        img6.Top = y(5)
+        img7.Left = x(6)
+        img7.Top = y(6)
+        img8.Left = x(7)
+        img8.Top = y(7)
+        img9.Left = x(8)
+        img9.Top = y(8)
+        img10.Left = x(9)
+        img10.Top = y(9)
+        img11.Left = x(10)
+        img11.Top = y(10)
+        img12.Left = x(11)
+        img12.Top = y(11)
+        img13.Left = x(12)
+        img13.Top = y(12)
+        img14.Left = x(13)
+        img14.Top = y(13)
+        img15.Left = x(14)
+        img15.Top = y(14)
+        img16.Left = x(15)
+        img16.Top = y(15)
+        img17.Left = x(16)
+        img17.Top = y(16)
+        img18.Left = x(17)
+        img18.Top = y(17)
+        img19.Left = x(18)
+        img19.Top = y(18)
+        img20.Left = x(19)
+        img20.Top = y(19)
+        lblScore.Caption = "Score: " & score
+        DoEvents
+    Next
+    Debug.Print("bench:end " & score)
+End Sub

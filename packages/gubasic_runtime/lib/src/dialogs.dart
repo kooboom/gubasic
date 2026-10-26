@@ -21,6 +21,7 @@ class GbDialogs {
 
   GbStrings strings;
   final _open = <(Route<void>, Completer<String?>)>[];
+  final _closers = <void Function(String?)>[];
 
   bool get hasOpenDialog => _open.isNotEmpty;
 
@@ -89,6 +90,16 @@ class GbDialogs {
     }
   }
 
+  /// Closes the topmost dialog as its OK button would, with [value] as an
+  /// InputBox's text, or as Cancel when [value] is null; false when none is
+  /// open. For tools that drive a program without a mouse, such as the
+  /// player's measurements (STAGE2_PLAN §7).
+  bool answerTop(String? value) {
+    if (_open.isEmpty) return false;
+    _closers.last(value);
+    return true;
+  }
+
   /// Closes every open dialog as if it was cancelled (the program ended).
   void closeAll() {
     for (final (route, answer) in _open.reversed.toList()) {
@@ -96,6 +107,7 @@ class GbDialogs {
       if (!answer.isCompleted) answer.complete(null);
     }
     _open.clear();
+    _closers.clear();
   }
 
   Future<String?> _show(
@@ -108,6 +120,7 @@ class GbDialogs {
       if (answer.isCompleted) return;
       answer.complete(value);
       _open.removeWhere((e) => e.$1 == route);
+      _closers.remove(close);
       if (route.isActive) route.navigator?.removeRoute(route);
     }
 
@@ -136,6 +149,7 @@ class GbDialogs {
       ),
     );
     _open.add((route, answer));
+    _closers.add(close);
     Navigator.of(context).push(route);
     return answer.future;
   }

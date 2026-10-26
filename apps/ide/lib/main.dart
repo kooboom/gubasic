@@ -106,6 +106,7 @@ class IdeApp extends StatefulWidget {
     this.lastProject,
     this.pickZip,
     this.settings,
+    this.autoRun = false,
   });
 
   /// The built-in projects: name → files.
@@ -137,6 +138,10 @@ class IdeApp extends StatefulWidget {
 
   /// Where the programs' settings are kept; shared_preferences when null.
   final GbSettingsStore? settings;
+
+  /// Runs [open] as soon as the IDE has started, as F5 would: for the
+  /// measuring build only (`lib/bench_main.dart`, STAGE2_PLAN §7).
+  final bool autoRun;
 
   @override
   State<IdeApp> createState() => _IdeAppState();
@@ -222,6 +227,7 @@ class _IdeAppState extends State<IdeApp> {
         grid: _grid,
         fitDesigner: _fitDesigner,
         fitRun: _fitRun,
+        autoRun: widget.autoRun,
       ),
     ),
   );

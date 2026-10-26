@@ -128,10 +128,40 @@ The player runs the same interpreter as F5, so it should be as fast as the IDE; 
 3. **The examples:** `typing` and `quiz` driven by their event scripts: the time from each step to the screen showing its result.
 4. **A small game:** 20 Images on a form, each moved a little every round; every round checks each pair for a collision and changes a score Label. With no Timer yet (2-9), a loop with `DoEvents` does what a 30 ms Timer would, as fast as it can. Measured: **updates per second (the aim is 30 or more)**, milliseconds per update, and how much of it is the interpreter (from the loop's start to its `DoEvents`) and how much drawing (Flutter's frame timings: build and raster).
 
-**Criteria.** After 2-2 this section records the measurements and, from them, numbers of the form "if a benchmark takes more than … in the player, the transpiler is planned again". For the small game the line is already clear: **if it cannot reach 30 updates a second in the player on any of the three**, the cause is looked for first.
+**Measured in step 2-2** (2026-10-26, `main` at `ba11bc0` with step 2-2; the player and the IDE built for measuring, `lib/bench_main.dart`; Chrome and WebKit through Playwright on the author's Mac, WebKit standing in for Safari; the macOS apps as release builds). The player's numbers first, the IDE's in brackets:
+
+| Benchmark | Chrome | WebKit | macOS app |
+|---|---|---|---|
+| 1. Arithmetic loop, a million rounds | 7.5 s (7.7 s) | 7.1 s (7.2 s) | 1.38 s (1.38 s) |
+| — of which the interpreter | 3.0 s | 2.5 s | 1.35 s |
+| 2. Text | 32 ms (196 ms) | 36 ms (66 ms) | 12 ms (16 ms) |
+| 3. Typing and quiz: a step, after the first | 7.5–7.7 ms (9.6–10 ms) | 12–14 ms (14–15 ms) | 16–17 ms (8 ms) |
+| — the first step | 6–19 ms (183–210 ms) | 12–13 ms (30–46 ms) | 11–29 ms (11–13 ms) |
+| 4. Small game: updates per second | 141 (116) | 186 (164) | 2324 (1953) |
+| — the interpreter, per round | 0.93 ms (0.98 ms) | 0.59 ms (0.63 ms) | 0.39 ms (0.40 ms) |
+| — frames drawn per second | 93 (89) | 60 (55) | 63 (116) |
+| — a frame's build + raster | 6.8 ms (8.0 ms) | 2.6 ms (4.6 ms) | 2.1 ms (2.0 ms) |
+
+What they say:
+
+- **The small game is far above 30 updates a second everywhere** (141 to 2324 in the player). The interpreter needs under 1 ms of a 30 ms tick, drawing a few ms; the rest of a round on the web is the wait in `DoEvents`, about 5 ms, which is the browser's shortest timer.
+- **The player is as fast as the IDE**, as it runs the same interpreter; where it is faster (text, the first steps), the IDE was redrawing its own Output pane and run window.
+- **The steps of typing and quiz take a frame or less** (7 to 17 ms): what a user does shows at the next frame. On macOS the player's steps wait for the display's next frame (16.7 ms at 60 Hz), the IDE's come sooner because the IDE was drawing frames anyway.
+- **The million-round loop is the one slow case, and mostly not the interpreter's fault on the web:** of its 7.5 s, 3.0 s is the interpreter and 4.5 s is spent in the 1000 pauses the interpreter makes so that the screen can update and Stop can work (one every 1000 rounds, `_stepsPerYield`), each lasting the browser's shortest timer, about 4.5 ms. Pausing by time instead (when 10 ms or so have passed) would bring it close to 3 s with no change in what programs compute.
+
+**Sizes of the player** (release builds, the hello project built in): **web** 42 MB as a folder, of which 36 MB are CanvasKit's builds for different browsers; a browser loads about 11 MB (`main.dart.js` 2.8 MB, one CanvasKit 7 MB, Pretendard 1.6 MB); 15 MB as a `.zip`. **macOS** 43 MB (universal), 19 MB as a `.zip`. **Windows**: CI prints it from now on (the IDE's folder is 36 MB). The IDE for comparison: 51 MB on macOS, `main.dart.js` 3.4 MB.
+
+**Criteria.** The transpiler is planned again (decision 2) when, in the player, on any of the web or macOS:
+
+1. **the small game's interpreter needs more than 10 ms a round** (a third of a 30 ms tick; now 0.39 to 0.93 ms);
+2. **a step of the typing or quiz example, after the first, takes more than 50 ms** (now at most 26 ms);
+3. **the million-round loop's interpreter part takes more than 6 s** (twice today's 3.0 s on Chrome), or a student's real program is found too slow;
+
+but only after the interpreter has been made faster as below, and still fails them. The benchmarks are measured again with each change to the interpreter's speed.
 
 **If the interpreter is the slow part,** these come before a transpiler, each only where the result is provably the same (rule 4 forbids fast paths that change behaviour, and the parity tests are the judge):
 
+- **Pausing by time:** the pause that lets the screen update comes when about 10 ms have passed, not every 1000 rounds; on the web it is the largest part of the loop's time (above).
 - **Resolved names:** the analyzer already knows every variable; giving each a slot number instead of looking it up by name on every use.
 - **Synchronous runs of statements:** a run of statements with no call to a user procedure and no `DoEvents`, `MsgBox` or `InputBox` cannot wait; evaluating it without an `await` per statement keeps the order exactly (D25 already does this for expressions).
 - **Property changes in batches:** many `Left`/`Top` changes in one round become one redraw at the next frame instead of one notification each.

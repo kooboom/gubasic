@@ -8,6 +8,7 @@ import 'package:gubasic_ide/src/project/examples.g.dart';
 import 'package:gubasic_ide/src/project/folders.dart';
 import 'package:gubasic_ide/src/project/open_project.dart';
 import 'package:gubasic_ide/src/project/project_pictures.dart';
+import 'package:gubasic_player/gubasic_player.dart';
 import 'package:gubasic_ide/src/project/project_zip.dart';
 import 'package:gubasic_lang/gubasic_lang.dart';
 

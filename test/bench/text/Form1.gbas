@@ -1,0 +1,17 @@
+' Benchmark 2 (STAGE2_PLAN §7): building and searching a long text.
+Sub btnStart_Click()
+    Debug.Print("bench:start")
+    Dim letters As String = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    Dim s As String = ""
+    Dim i As Integer
+    For i = 0 To 1999
+        s = s & Mid(letters, i Mod 26 + 1, 1)
+    Next
+    Dim found As Integer = 0
+    For i = 1 To 1998
+        If InStr(s, Mid(s, i, 3)) > 0 Then
+            found = found + 1
+        End If
+    Next
+    Debug.Print("bench:end " & found & " " & Len(s))
+End Sub

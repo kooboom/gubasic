@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:gubasic_lang/gubasic_lang.dart';
-import 'package:gubasic_runtime/gubasic_runtime.dart' show GbPictureSource;
 
 /// Why a picture cannot be added to a project (D51).
 sealed class PictureRefused {
@@ -65,15 +64,6 @@ String? pictureNamed(Iterable<String> pictures, String name) {
     if (pictureKey(p) == key) return p;
   }
   return null;
-}
-
-/// [pictures] for the runtime to draw, found by name in any case.
-GbPictureSource pictureSource(Map<String, Uint8List> pictures) {
-  final byKey = {
-    for (final MapEntry(:key, :value) in pictures.entries)
-      pictureKey(key): value,
-  };
-  return (name) => byKey[pictureKey(name)];
 }
 
 /// Why picture [name] with [bytes] cannot be added to a project with

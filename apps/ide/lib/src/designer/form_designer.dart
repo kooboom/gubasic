@@ -11,7 +11,6 @@ import 'package:gubasic_runtime/gubasic_runtime.dart';
 import 'package:gubasic_player/gubasic_player.dart';
 
 import '../project/open_project.dart';
-import '../project/project_pictures.dart';
 import '../strings.dart';
 import '../theme.dart';
 import 'form_edit.dart';
