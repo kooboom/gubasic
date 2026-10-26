@@ -18,7 +18,7 @@ line, `GUBASIC_BENCH {json}`. The IDE has the same entry point.
 
     flutter build web --release -t lib/bench_main.dart \
       --dart-define=GUBASIC_BENCH=true --no-web-resources-cdn
-    # then open the page with ?bench=loop, text, typing, quiz or game
+    # then open the page with ?bench=loop, text, typing, quiz, game or galaga
 
     flutter build macos --release -t lib/bench_main.dart \
       --dart-define=GUBASIC_BENCH=true

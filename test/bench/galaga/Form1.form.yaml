@@ -1,0 +1,508 @@
+formatVersion: 1
+properties:
+  Caption: Galaga
+  Width: 480
+  Height: 640
+controls:
+  - name: btnStart
+    type: Button
+    properties:
+      Caption: Start
+      Left: 8
+      Top: 8
+      Width: 96
+  - name: lblScore
+    type: Label
+    properties:
+      Caption: "Score: 0"
+      Left: 120
+      Top: 12
+      Width: 200
+  - name: imgE1
+    type: Image
+    properties:
+      Picture: enemy.png
+      Left: 0
+      Top: -100
+      Width: 24
+      Height: 16
+  - name: imgE2
+    type: Image
+    properties:
+      Picture: enemy.png
+      Left: 0
+      Top: -100
+      Width: 24
+      Height: 16
+  - name: imgE3
+    type: Image
+    properties:
+      Picture: enemy.png
+      Left: 0
+      Top: -100
+      Width: 24
+      Height: 16
+  - name: imgE4
+    type: Image
+    properties:
+      Picture: enemy.png
+      Left: 0
+      Top: -100
+      Width: 24
+      Height: 16
+  - name: imgE5
+    type: Image
+    properties:
+      Picture: enemy.png
+      Left: 0
+      Top: -100
+      Width: 24
+      Height: 16
+  - name: imgE6
+    type: Image
+    properties:
+      Picture: enemy.png
+      Left: 0
+      Top: -100
+      Width: 24
+      Height: 16
+  - name: imgE7
+    type: Image
+    properties:
+      Picture: enemy.png
+      Left: 0
+      Top: -100
+      Width: 24
+      Height: 16
+  - name: imgE8
+    type: Image
+    properties:
+      Picture: enemy.png
+      Left: 0
+      Top: -100
+      Width: 24
+      Height: 16
+  - name: imgE9
+    type: Image
+    properties:
+      Picture: enemy.png
+      Left: 0
+      Top: -100
+      Width: 24
+      Height: 16
+  - name: imgE10
+    type: Image
+    properties:
+      Picture: enemy.png
+      Left: 0
+      Top: -100
+      Width: 24
+      Height: 16
+  - name: imgE11
+    type: Image
+    properties:
+      Picture: enemy.png
+      Left: 0
+      Top: -100
+      Width: 24
+      Height: 16
+  - name: imgE12
+    type: Image
+    properties:
+      Picture: enemy.png
+      Left: 0
+      Top: -100
+      Width: 24
+      Height: 16
+  - name: imgE13
+    type: Image
+    properties:
+      Picture: enemy.png
+      Left: 0
+      Top: -100
+      Width: 24
+      Height: 16
+  - name: imgE14
+    type: Image
+    properties:
+      Picture: enemy.png
+      Left: 0
+      Top: -100
+      Width: 24
+      Height: 16
+  - name: imgE15
+    type: Image
+    properties:
+      Picture: enemy.png
+      Left: 0
+      Top: -100
+      Width: 24
+      Height: 16
+  - name: imgE16
+    type: Image
+    properties:
+      Picture: enemy.png
+      Left: 0
+      Top: -100
+      Width: 24
+      Height: 16
+  - name: imgE17
+    type: Image
+    properties:
+      Picture: enemy.png
+      Left: 0
+      Top: -100
+      Width: 24
+      Height: 16
+  - name: imgE18
+    type: Image
+    properties:
+      Picture: enemy.png
+      Left: 0
+      Top: -100
+      Width: 24
+      Height: 16
+  - name: imgE19
+    type: Image
+    properties:
+      Picture: enemy.png
+      Left: 0
+      Top: -100
+      Width: 24
+      Height: 16
+  - name: imgE20
+    type: Image
+    properties:
+      Picture: enemy.png
+      Left: 0
+      Top: -100
+      Width: 24
+      Height: 16
+  - name: imgE21
+    type: Image
+    properties:
+      Picture: enemy.png
+      Left: 0
+      Top: -100
+      Width: 24
+      Height: 16
+  - name: imgE22
+    type: Image
+    properties:
+      Picture: enemy.png
+      Left: 0
+      Top: -100
+      Width: 24
+      Height: 16
+  - name: imgE23
+    type: Image
+    properties:
+      Picture: enemy.png
+      Left: 0
+      Top: -100
+      Width: 24
+      Height: 16
+  - name: imgE24
+    type: Image
+    properties:
+      Picture: enemy.png
+      Left: 0
+      Top: -100
+      Width: 24
+      Height: 16
+  - name: imgE25
+    type: Image
+    properties:
+      Picture: enemy.png
+      Left: 0
+      Top: -100
+      Width: 24
+      Height: 16
+  - name: imgE26
+    type: Image
+    properties:
+      Picture: enemy.png
+      Left: 0
+      Top: -100
+      Width: 24
+      Height: 16
+  - name: imgE27
+    type: Image
+    properties:
+      Picture: enemy.png
+      Left: 0
+      Top: -100
+      Width: 24
+      Height: 16
+  - name: imgE28
+    type: Image
+    properties:
+      Picture: enemy.png
+      Left: 0
+      Top: -100
+      Width: 24
+      Height: 16
+  - name: imgE29
+    type: Image
+    properties:
+      Picture: enemy.png
+      Left: 0
+      Top: -100
+      Width: 24
+      Height: 16
+  - name: imgE30
+    type: Image
+    properties:
+      Picture: enemy.png
+      Left: 0
+      Top: -100
+      Width: 24
+      Height: 16
+  - name: imgE31
+    type: Image
+    properties:
+      Picture: enemy.png
+      Left: 0
+      Top: -100
+      Width: 24
+      Height: 16
+  - name: imgE32
+    type: Image
+    properties:
+      Picture: enemy.png
+      Left: 0
+      Top: -100
+      Width: 24
+      Height: 16
+  - name: imgE33
+    type: Image
+    properties:
+      Picture: enemy.png
+      Left: 0
+      Top: -100
+      Width: 24
+      Height: 16
+  - name: imgE34
+    type: Image
+    properties:
+      Picture: enemy.png
+      Left: 0
+      Top: -100
+      Width: 24
+      Height: 16
+  - name: imgE35
+    type: Image
+    properties:
+      Picture: enemy.png
+      Left: 0
+      Top: -100
+      Width: 24
+      Height: 16
+  - name: imgE36
+    type: Image
+    properties:
+      Picture: enemy.png
+      Left: 0
+      Top: -100
+      Width: 24
+      Height: 16
+  - name: imgE37
+    type: Image
+    properties:
+      Picture: enemy.png
+      Left: 0
+      Top: -100
+      Width: 24
+      Height: 16
+  - name: imgE38
+    type: Image
+    properties:
+      Picture: enemy.png
+      Left: 0
+      Top: -100
+      Width: 24
+      Height: 16
+  - name: imgE39
+    type: Image
+    properties:
+      Picture: enemy.png
+      Left: 0
+      Top: -100
+      Width: 24
+      Height: 16
+  - name: imgE40
+    type: Image
+    properties:
+      Picture: enemy.png
+      Left: 0
+      Top: -100
+      Width: 24
+      Height: 16
+  - name: imgB1
+    type: Image
+    properties:
+      Picture: bullet.png
+      Left: 0
+      Top: -100
+      Width: 4
+      Height: 10
+  - name: imgB2
+    type: Image
+    properties:
+      Picture: bullet.png
+      Left: 0
+      Top: -100
+      Width: 4
+      Height: 10
+  - name: imgB3
+    type: Image
+    properties:
+      Picture: bullet.png
+      Left: 0
+      Top: -100
+      Width: 4
+      Height: 10
+  - name: imgB4
+    type: Image
+    properties:
+      Picture: bullet.png
+      Left: 0
+      Top: -100
+      Width: 4
+      Height: 10
+  - name: imgB5
+    type: Image
+    properties:
+      Picture: bullet.png
+      Left: 0
+      Top: -100
+      Width: 4
+      Height: 10
+  - name: imgB6
+    type: Image
+    properties:
+      Picture: bullet.png
+      Left: 0
+      Top: -100
+      Width: 4
+      Height: 10
+  - name: imgB7
+    type: Image
+    properties:
+      Picture: bullet.png
+      Left: 0
+      Top: -100
+      Width: 4
+      Height: 10
+  - name: imgB8
+    type: Image
+    properties:
+      Picture: bullet.png
+      Left: 0
+      Top: -100
+      Width: 4
+      Height: 10
+  - name: imgB9
+    type: Image
+    properties:
+      Picture: bullet.png
+      Left: 0
+      Top: -100
+      Width: 4
+      Height: 10
+  - name: imgB10
+    type: Image
+    properties:
+      Picture: bullet.png
+      Left: 0
+      Top: -100
+      Width: 4
+      Height: 10
+  - name: imgF1
+    type: Image
+    properties:
+      Picture: bullet.png
+      Left: 0
+      Top: -100
+      Width: 4
+      Height: 10
+  - name: imgF2
+    type: Image
+    properties:
+      Picture: bullet.png
+      Left: 0
+      Top: -100
+      Width: 4
+      Height: 10
+  - name: imgF3
+    type: Image
+    properties:
+      Picture: bullet.png
+      Left: 0
+      Top: -100
+      Width: 4
+      Height: 10
+  - name: imgF4
+    type: Image
+    properties:
+      Picture: bullet.png
+      Left: 0
+      Top: -100
+      Width: 4
+      Height: 10
+  - name: imgF5
+    type: Image
+    properties:
+      Picture: bullet.png
+      Left: 0
+      Top: -100
+      Width: 4
+      Height: 10
+  - name: imgF6
+    type: Image
+    properties:
+      Picture: bullet.png
+      Left: 0
+      Top: -100
+      Width: 4
+      Height: 10
+  - name: imgF7
+    type: Image
+    properties:
+      Picture: bullet.png
+      Left: 0
+      Top: -100
+      Width: 4
+      Height: 10
+  - name: imgF8
+    type: Image
+    properties:
+      Picture: bullet.png
+      Left: 0
+      Top: -100
+      Width: 4
+      Height: 10
+  - name: imgF9
+    type: Image
+    properties:
+      Picture: bullet.png
+      Left: 0
+      Top: -100
+      Width: 4
+      Height: 10
+  - name: imgF10
+    type: Image
+    properties:
+      Picture: bullet.png
+      Left: 0
+      Top: -100
+      Width: 4
+      Height: 10
+  - name: imgShip
+    type: Image
+    properties:
+      Picture: ship.png
+      Left: 0
+      Top: -100
+      Width: 32
+      Height: 24

@@ -1,0 +1,232 @@
+' Benchmark 5 (STAGE2_PLAN §7): a game like Galaga. 40 enemies, up to
+' 10 of the player's bullets and 10 of the enemies', and the player's
+' ship move every round; every bullet is checked against every enemy and
+' the ship. With no Timer yet, DoEvents ends each round, as a 16 ms Timer
+' (60 a second) would. Gone things move off the form (y = -100): an
+' Image has no Visible yet.
+Dim ex(39) As Integer
+Dim ey(39) As Integer
+Dim alive(39) As Boolean
+Dim bx(9) As Integer
+Dim by(9) As Integer
+Dim fx(9) As Integer
+Dim fy(9) As Integer
+Dim shipX As Integer
+Dim shipDx As Integer
+Dim sway As Integer
+Dim swayDx As Integer
+Dim score As Integer
+Dim hits As Integer
+
+Sub Form_Load()
+    Dim i As Integer
+    For i = 0 To 39
+        ex(i) = 40 + (i Mod 10) * 40
+        ey(i) = 60 + (i \ 10) * 32
+        alive(i) = True
+    Next
+    For i = 0 To 9
+        by(i) = -100
+        fy(i) = -100
+    Next
+    shipX = 224
+    shipDx = 3
+    swayDx = 1
+End Sub
+
+Sub btnStart_Click()
+    Debug.Print("bench:start")
+    Dim r As Integer
+    Dim i As Integer
+    Dim j As Integer
+    For r = 1 To 600
+        ' The formation sways; the ship goes from side to side.
+        sway = sway + swayDx
+        If sway > 30 Or sway < -30 Then
+            swayDx = -swayDx
+        End If
+        For i = 0 To 39
+            If alive(i) Then
+                ex(i) = 40 + (i Mod 10) * 40 + sway
+            Else
+                ey(i) = -100
+            End If
+        Next
+        shipX = shipX + shipDx
+        If shipX < 0 Or shipX > 448 Then
+            shipDx = -shipDx
+        End If
+        ' The player fires every 6 rounds, an enemy every 8.
+        If r Mod 6 = 0 Then
+            For i = 0 To 9
+                If by(i) < 0 Then
+                    bx(i) = shipX + 14
+                    by(i) = 580
+                    Exit For
+                End If
+            Next
+        End If
+        If r Mod 8 = 0 Then
+            j = r Mod 40
+            If alive(j) Then
+                For i = 0 To 9
+                    If fy(i) < 0 Then
+                        fx(i) = ex(j) + 10
+                        fy(i) = ey(j) + 16
+                        Exit For
+                    End If
+                Next
+            End If
+        End If
+        ' Bullets move; each is checked against every enemy, or the ship.
+        For i = 0 To 9
+            If by(i) >= 0 Then
+                by(i) = by(i) - 8
+                For j = 0 To 39
+                    If alive(j) Then
+                        If bx(i) >= ex(j) And bx(i) < ex(j) + 24 And by(i) >= ey(j) And by(i) < ey(j) + 16 Then
+                            alive(j) = False
+                            by(i) = -100
+                            score = score + 10
+                        End If
+                    End If
+                Next
+            End If
+            If fy(i) >= 0 Then
+                fy(i) = fy(i) + 6
+                If fy(i) > 640 Then
+                    fy(i) = -100
+                End If
+                If fx(i) >= shipX And fx(i) < shipX + 32 And fy(i) >= 590 And fy(i) < 614 Then
+                    hits = hits + 1
+                    fy(i) = -100
+                End If
+            End If
+        Next
+        imgE1.Left = ex(0)
+        imgE1.Top = ey(0)
+        imgE2.Left = ex(1)
+        imgE2.Top = ey(1)
+        imgE3.Left = ex(2)
+        imgE3.Top = ey(2)
+        imgE4.Left = ex(3)
+        imgE4.Top = ey(3)
+        imgE5.Left = ex(4)
+        imgE5.Top = ey(4)
+        imgE6.Left = ex(5)
+        imgE6.Top = ey(5)
+        imgE7.Left = ex(6)
+        imgE7.Top = ey(6)
+        imgE8.Left = ex(7)
+        imgE8.Top = ey(7)
+        imgE9.Left = ex(8)
+        imgE9.Top = ey(8)
+        imgE10.Left = ex(9)
+        imgE10.Top = ey(9)
+        imgE11.Left = ex(10)
+        imgE11.Top = ey(10)
+        imgE12.Left = ex(11)
+        imgE12.Top = ey(11)
+        imgE13.Left = ex(12)
+        imgE13.Top = ey(12)
+        imgE14.Left = ex(13)
+        imgE14.Top = ey(13)
+        imgE15.Left = ex(14)
+        imgE15.Top = ey(14)
+        imgE16.Left = ex(15)
+        imgE16.Top = ey(15)
+        imgE17.Left = ex(16)
+        imgE17.Top = ey(16)
+        imgE18.Left = ex(17)
+        imgE18.Top = ey(17)
+        imgE19.Left = ex(18)
+        imgE19.Top = ey(18)
+        imgE20.Left = ex(19)
+        imgE20.Top = ey(19)
+        imgE21.Left = ex(20)
+        imgE21.Top = ey(20)
+        imgE22.Left = ex(21)
+        imgE22.Top = ey(21)
+        imgE23.Left = ex(22)
+        imgE23.Top = ey(22)
+        imgE24.Left = ex(23)
+        imgE24.Top = ey(23)
+        imgE25.Left = ex(24)
+        imgE25.Top = ey(24)
+        imgE26.Left = ex(25)
+        imgE26.Top = ey(25)
+        imgE27.Left = ex(26)
+        imgE27.Top = ey(26)
+        imgE28.Left = ex(27)
+        imgE28.Top = ey(27)
+        imgE29.Left = ex(28)
+        imgE29.Top = ey(28)
+        imgE30.Left = ex(29)
+        imgE30.Top = ey(29)
+        imgE31.Left = ex(30)
+        imgE31.Top = ey(30)
+        imgE32.Left = ex(31)
+        imgE32.Top = ey(31)
+        imgE33.Left = ex(32)
+        imgE33.Top = ey(32)
+        imgE34.Left = ex(33)
+        imgE34.Top = ey(33)
+        imgE35.Left = ex(34)
+        imgE35.Top = ey(34)
+        imgE36.Left = ex(35)
+        imgE36.Top = ey(35)
+        imgE37.Left = ex(36)
+        imgE37.Top = ey(36)
+        imgE38.Left = ex(37)
+        imgE38.Top = ey(37)
+        imgE39.Left = ex(38)
+        imgE39.Top = ey(38)
+        imgE40.Left = ex(39)
+        imgE40.Top = ey(39)
+        imgB1.Left = bx(0)
+        imgB1.Top = by(0)
+        imgB2.Left = bx(1)
+        imgB2.Top = by(1)
+        imgB3.Left = bx(2)
+        imgB3.Top = by(2)
+        imgB4.Left = bx(3)
+        imgB4.Top = by(3)
+        imgB5.Left = bx(4)
+        imgB5.Top = by(4)
+        imgB6.Left = bx(5)
+        imgB6.Top = by(5)
+        imgB7.Left = bx(6)
+        imgB7.Top = by(6)
+        imgB8.Left = bx(7)
+        imgB8.Top = by(7)
+        imgB9.Left = bx(8)
+        imgB9.Top = by(8)
+        imgB10.Left = bx(9)
+        imgB10.Top = by(9)
+        imgF1.Left = fx(0)
+        imgF1.Top = fy(0)
+        imgF2.Left = fx(1)
+        imgF2.Top = fy(1)
+        imgF3.Left = fx(2)
+        imgF3.Top = fy(2)
+        imgF4.Left = fx(3)
+        imgF4.Top = fy(3)
+        imgF5.Left = fx(4)
+        imgF5.Top = fy(4)
+        imgF6.Left = fx(5)
+        imgF6.Top = fy(5)
+        imgF7.Left = fx(6)
+        imgF7.Top = fy(6)
+        imgF8.Left = fx(7)
+        imgF8.Top = fy(7)
+        imgF9.Left = fx(8)
+        imgF9.Top = fy(8)
+        imgF10.Left = fx(9)
+        imgF10.Top = fy(9)
+        imgShip.Left = shipX
+        imgShip.Top = 590
+        lblScore.Caption = "Score: " & score & "  Hits: " & hits
+        DoEvents
+    Next
+    Debug.Print("bench:end " & score & " " & hits)
+End Sub

@@ -1,0 +1,9 @@
+formatVersion: 1
+name: Galaga
+startup: Form1
+forms:
+  - Form1
+pictures:
+  - bullet.png
+  - enemy.png
+  - ship.png

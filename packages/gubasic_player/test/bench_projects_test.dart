@@ -25,7 +25,7 @@ void main() {
       // so here it is only started; the probe waits for its end.
       final mark = switch (name) {
         'loop' || 'text' => 'bench:end',
-        'game' => 'bench:start',
+        'game' || 'galaga' => 'bench:start',
         _ => null,
       };
       if (mark != null) {

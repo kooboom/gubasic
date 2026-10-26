@@ -127,6 +127,7 @@ The player runs the same interpreter as F5, so it should be as fast as the IDE; 
 2. **Text:** building and searching a long text with `&`, `Mid`, `InStr` and `Len` in a loop.
 3. **The examples:** `typing` and `quiz` driven by their event scripts: the time from each step to the screen showing its result.
 4. **A small game:** 20 Images on a form, each moved a little every round; every round checks each pair for a collision and changes a score Label. With no Timer yet (2-9), a loop with `DoEvents` does what a 30 ms Timer would, as fast as it can. Measured: **updates per second (the aim is 30 or more)**, milliseconds per update, and how much of it is the interpreter (from the loop's start to its `DoEvents`) and how much drawing (Flutter's frame timings: build and raster).
+5. **A game like Galaga:** see below, after the measurements.
 
 **Measured in step 2-2** (2026-10-26, `main` at `ba11bc0` with step 2-2; the player and the IDE built for measuring, `lib/bench_main.dart`; Chrome and WebKit through Playwright on the author's Mac, WebKit standing in for Safari; the macOS apps as release builds). The player's numbers first, the IDE's in brackets:
 
@@ -150,6 +151,25 @@ What they say:
 - **The million-round loop is the one slow case, and mostly not the interpreter's fault on the web:** of its 7.5 s, 3.0 s is the interpreter and 4.5 s is spent in the 1000 pauses the interpreter makes so that the screen can update and Stop can work (one every 1000 rounds, `_stepsPerYield`), each lasting the browser's shortest timer, about 4.5 ms. Pausing by time instead (when 10 ms or so have passed) was done right after step 2-2; see below.
 
 **After pausing by time** (the interpreter yields when about 10 ms have passed, LANGUAGE §9.1; measured the same way): the million-round loop takes **3.3 s in Chrome** (was 7.5 s), **1.1 s in WebKit** (7.1 s) and **1.33 s on macOS** (1.38 s), the player and the IDE alike; it now pauses 220, 82 and 130 times instead of 1000. The small game is unchanged (117, 179 and 1870 updates a second), since its `DoEvents` pauses every round as before; the parity tests are unchanged.
+
+**A game like Galaga** (benchmark 5, `test/bench/galaga`, added after step 2-2, measured with the time-based pause): 40 enemies, up to 10 bullets of the player's and 10 of the enemies', and the ship, 61 Images, moved every round; every bullet checked against every enemy and the ship (up to 410 checks); 600 rounds, each ended by `DoEvents` as a 16 ms Timer would (60 a second). In the player, the IDE in brackets:
+
+| | Chrome | WebKit | macOS app |
+|---|---|---|---|
+| Updates per second (aim: 60) | 116 (110) | 164 (145) | 1069 (1114) |
+| The interpreter, per round | 1.9 ms (1.9 ms) | 1.2 ms (1.2 ms) | 0.85 ms (0.80 ms) |
+| Frames drawn per second | 105 (93) | 60 (53) | 59 (102) |
+| A frame's build + raster | 6.5 ms (7.6 ms) | 2.5 ms (4.9 ms) | 1.1 ms (1.4 ms) |
+
+The interpreter needs 2 ms or less of a 16 ms tick, drawing 7 ms or less. **What a game like it needs beyond stage 2's plan**, none of which is decided:
+
+- **Several keys held at once:** `KeyDown`/`KeyUp` (step 2-10) tell when a key goes down or up; a game asks which keys are down now (left and fire together), as a call such as `Keyboard.IsDown(Keys.Left)`.
+- **`Visible`** on every control, to hide a shot enemy instead of moving it off the form.
+- **Many of the same control:** the language has no control arrays (rule 11), so 40 enemies are 40 names and 80 lines of `Left`/`Top`; run-time control creation, or a way to reach controls by number, is in the ROADMAP's stage 2 list (`Handles` clause; run-time control creation).
+- **Sound:** a short sound on a shot or a hit (`PlaySound("shot.wav")`), with the project's sounds kept as its pictures are.
+- **Pictures in turn:** an Image showing frames one after another (an explosion, a flying enemy), the "many pictures" of IDEAS.md.
+- **A Timer of 16 ms** (step 2-9) with ticks that do not pile up when one round runs long, and a way to read time in milliseconds for movement that does not depend on the frame rate.
+- **Collision help:** a function for whether two controls overlap, so each check is one call.
 
 **Sizes of the player** (release builds, the hello project built in): **web** 42 MB as a folder, of which 36 MB are CanvasKit's builds for different browsers; a browser loads about 11 MB (`main.dart.js` 2.8 MB, one CanvasKit 7 MB, Pretendard 1.6 MB); 15 MB as a `.zip`. **macOS** 43 MB (universal), 19 MB as a `.zip`. **Windows** 29.5 MB as a folder, with the Visual C++ runtime next to the program (CI prints it with every build; the IDE's folder is 36 MB). The IDE for comparison: 51 MB on macOS, `main.dart.js` 3.4 MB.
 
