@@ -122,6 +122,35 @@ void main() {
     expect(find.byKey(keptBarKey), findsNothing);
   });
 
+  testWidgets('the project menu lists every project kept in the browser, '
+      'the last saved first; choosing one opens it (D78)', (tester) async {
+    await startWeb(tester, names: ['Quiz', 'Fruit'], last: 'browser:Quiz');
+    expect(current(tester).project.name, 'Quiz');
+    // The project menu, not the Properties window's list.
+    final menu = find.descendant(
+      of: find.byType(AppBar),
+      matching: find.byType(DropdownButton<String>),
+    );
+    await tester.tap(menu);
+    await tester.pumpAndSettle();
+    // Fruit was kept after Quiz: above it, after the examples.
+    final fruit = tester.getTopLeft(find.text('Fruit').last).dy;
+    final quiz = tester.getTopLeft(find.text('Quiz').last).dy;
+    final hello = tester.getTopLeft(find.text('hello').last).dy;
+    expect(hello, lessThan(fruit));
+    expect(fruit, lessThan(quiz));
+    await tester.tap(find.text('Fruit').last);
+    await tester.pumpAndSettle();
+    expect(current(tester).project.name, 'Fruit');
+    expect(current(tester).location, isA<BrowserLocation>());
+
+    await tester.tap(menu);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Quiz').last);
+    await tester.pumpAndSettle();
+    expect(current(tester).project.name, 'Quiz');
+  });
+
   testWidgets('Korean words', (tester) async {
     await startWeb(
       tester,

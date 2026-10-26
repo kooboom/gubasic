@@ -139,18 +139,30 @@ class ProjectController extends ChangeNotifier {
   };
 
   /// The project menu's entries, a key and the words shown: the examples
-  /// by name, then the project on disk last opened or saved, if any.
-  List<(String, String)> get menuEntries => [
-    for (final name in examples.keys) ('example:$name', name),
-    if (_folderProject case final p?) ('folder', p.project.name),
-    if (_browserProject case final p?) ('browser', p.project.name),
-  ];
+  /// by name, then the project on disk last opened or saved, if any, then
+  /// every project kept in the browser, the last saved first (D78).
+  List<(String, String)> get menuEntries {
+    final kept = [
+      for (final p in _kept?.list() ?? const <StoredProject>[])
+        ('browser:${p.name}', p.name),
+    ];
+    final open = _browserProject?.location;
+    return [
+      for (final name in examples.keys) ('example:$name', name),
+      if (_folderProject case final p?) ('folder', p.project.name),
+      // The open one even when it is not kept (any more).
+      if (open is BrowserLocation &&
+          !kept.any((e) => e.$1 == 'browser:${open.name}'))
+        ('browser:${open.name}', open.name),
+      ...kept,
+    ];
+  }
 
   /// The menu key of the open project.
   String get currentKey => switch (_current.location) {
     ExampleLocation(:final name) => 'example:$name',
     FolderLocation() => 'folder',
-    BrowserLocation() => 'browser',
+    BrowserLocation(:final name) => 'browser:$name',
   };
 
   /// Opens the menu entry [key], after asking about unsaved changes.
@@ -160,8 +172,16 @@ class ProjectController extends ChangeNotifier {
     if (!await mayLeave(context)) return;
     if (key == 'folder') {
       _show(_folderProject!);
-    } else if (key == 'browser') {
-      _show(_browserProject!);
+    } else if (key.startsWith('browser:')) {
+      final name = key.substring('browser:'.length);
+      final open = _browserProject;
+      if (open != null &&
+          open.location is BrowserLocation &&
+          (open.location as BrowserLocation).name == name) {
+        _show(open);
+      } else if (context.mounted) {
+        await _openKeptNamed(context, name);
+      }
     } else {
       final name = key.substring('example:'.length);
       _show(_example(examples, examplePictures, name));
@@ -759,7 +779,12 @@ class ProjectController extends ChangeNotifier {
       context: context,
       builder: (context) => _KeptDialog(controller: this),
     );
-    if (name == null) return;
+    if (name == null || !context.mounted) return;
+    await _openKeptNamed(context, name);
+  }
+
+  /// Opens the project [name] kept in this browser.
+  Future<void> _openKeptNamed(BuildContext context, String name) async {
     final stored = _kept!.read(name);
     if (stored == null) return;
     final Map<String, Uint8List> pictures;
