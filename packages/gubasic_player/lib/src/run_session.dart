@@ -2,8 +2,8 @@ import 'package:flutter/foundation.dart';
 import 'package:gubasic_lang/gubasic_lang.dart';
 import 'package:gubasic_runtime/gubasic_runtime.dart';
 
-import '../project/project.dart';
-import '../strings.dart';
+import 'player_strings.dart';
+import 'project.dart';
 import 'run_host.dart';
 
 /// One run of a project's startup form: the interpreter, its [host], what
@@ -43,7 +43,7 @@ class RunSession extends ChangeNotifier {
   }
 
   final StartupForm startup;
-  final IdeStrings strings;
+  final PlayerStrings strings;
   final RunHost host;
   late final Interpreter interpreter;
 
@@ -74,14 +74,4 @@ class RunSession extends ChangeNotifier {
 
   /// The user closes the form.
   void closeForm() => interpreter.closeForm();
-
-  /// How the run ended, in words; null while it runs.
-  String? get endMessage => switch (result) {
-    null => null,
-    RunCompleted() => strings.closed,
-    RunEnded() => strings.ended,
-    RunStopped() => strings.stopped,
-    RunFailed(:final error) => strings.problem(startup.codeFile, error),
-    RunNotStarted() => strings.cannotStart,
-  };
 }

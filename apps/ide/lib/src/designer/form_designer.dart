@@ -8,8 +8,8 @@ import 'package:flutter/services.dart';
 import 'package:gubasic_lang/gubasic_lang.dart';
 import 'package:gubasic_runtime/gubasic_runtime.dart';
 
-import '../fit_view.dart';
-import '../form_window.dart';
+import 'package:gubasic_player/gubasic_player.dart';
+
 import '../project/open_project.dart';
 import '../project/project_pictures.dart';
 import '../strings.dart';

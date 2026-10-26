@@ -72,7 +72,7 @@ GuBASIC의 각 릴리스는 검증한 Flutter 버전에 고정됩니다(D29). Fl
 - **`GbFormModel`**은 폼과 컨트롤의 현재 속성(`GbControlState`, 이름과 타입은 `component.yaml`과 같음)을 담습니다. **`GbFormView`**가 이를 보여 줍니다: 각 컨트롤을 `Stack` 안의 `Left`, `Top` 위치에 둡니다(6절). Button은 테두리와 글자 사이를 8픽셀로 둡니다. 그래야 기본 너비의 Button에 자기 이름(`Button1`)이 다 보입니다. Material의 기본값 24로는 96픽셀 가운데 48픽셀만 글자에 남았습니다. 사용자가 한 일은 이벤트로 돌아옵니다: `Click`, 그리고 사용자가 TextBox의 확정된 글자나 CheckBox, ListBox에서 고른 항목을 바꿀 때의 `Changed`.
 - **`GbDialogs`**는 `MsgBox`와 `InputBox`를 모달로 보여 주고(D28), 프로그램이 끝나면 모두 닫습니다.
 - **`gubasic_runtime`은 `gubasic_lang`에 의존하지 않습니다.** 둘은 IDE와 플레이어가 이어 줍니다(인터프리터의 `FormHost`). 그래서 나중의 트랜스파일된 앱에는 인터프리터가 들어가지 않아도 됩니다.
-- **IDE의 실행 창**(`apps/ide`): `RunHost`가 `GbFormModel`과 `GbDialogs` 위에 `FormHost`를 구현합니다. 속성 값은 모델 한 곳에만 있고, 프로그램이 넣고 사용자가 바꿉니다. 클릭과 입력은 이벤트로 인터프리터에 갑니다. 실행 창은 IDE 가운데를 채우고 자기 내비게이터를 가집니다. 그래서 MsgBox나 InputBox는 폼과 폼의 닫기 단추를 가리지만(D28) IDE의 도구 막대는 가리지 않아, 중지(Shift+F5)는 언제나 됩니다. 폼은 `Form_Load`가 끝나면 나타납니다.
+- **IDE의 실행 창**(`packages/gubasic_player`, D79부터 플레이어와 함께 씀): `RunHost`가 `GbFormModel`과 `GbDialogs` 위에 `FormHost`를 구현합니다. 속성 값은 모델 한 곳에만 있고, 프로그램이 넣고 사용자가 바꿉니다. 클릭과 입력은 이벤트로 인터프리터에 갑니다. 실행 창은 IDE 가운데를 채우고 자기 내비게이터를 가집니다. 그래서 MsgBox나 InputBox는 폼과 폼의 닫기 단추를 가리지만(D28) IDE의 도구 막대는 가리지 않아, 중지(Shift+F5)는 언제나 됩니다. 폼은 `Form_Load`가 끝나면 나타납니다.
   - **대화상자는 프로그램만 막습니다.** MsgBox나 InputBox는 실행 중인 프로그램의 폼만 막습니다. IDE는 계속 쓸 수 있고, 무엇보다 중지 단추가 눌립니다. 대화상자가 IDE까지 막으면 대화상자에서 기다리는 프로그램을 중지할 수 없기 때문입니다.
   - **실행 중에 파일 보기.** 프로그램이 실행되는 동안 파일 목록 맨 위에 "실행 화면" 항목이 생깁니다. 파일을 고르면 그 파일을 보여 주고, 이 항목을 고르면 실행 창이 그대로 돌아옵니다. 열려 있던 대화상자도 답을 기다리는 채로 남아 있습니다. 실행 창은 가려져 있는 동안 다시 만들지 않으므로 대화상자가 사라지지 않습니다.
   - **대화상자가 열린 채 중지하면** 어느 화면을 보고 있든 대화상자가 닫히고 프로그램이 끝납니다.
@@ -80,7 +80,7 @@ GuBASIC의 각 릴리스는 검증한 Flutter 버전에 고정됩니다(D29). Fl
   - 테스트: `apps/ide/test/ide_shell_test.dart`.
 - **디스크의 프로젝트**(D32): macOS와 Windows에서는 IDE 왼쪽 위의 파일 메뉴로 프로젝트의 `.gbproj` 파일을 열고, 바뀐 파일을 저장하고(저장), 프로젝트 전체를 새 폴더에 복사합니다(다른 이름으로 저장…). 내장 예제는 덮어쓰지 않습니다. 예제를 고칠 수는 있고, 저장을 누르면 복사본을 저장합니다. 저장하지 않은 변경이 있으면 프로젝트 이름 뒤에 "— 편집됨"을 붙이고, 변경이 사라지기 전에 묻습니다: 다른 프로젝트를 열 때와 IDE를 끌 때입니다. 프로그램이 실행되는 동안에는 열지도 저장하지도 않습니다. 테스트: `apps/ide/test/folders_test.dart`, `folders_io_test.dart`, `project_menu_test.dart`.
 - **브라우저의 프로젝트**(D33): 웹에서는 같은 파일 메뉴가 프로젝트를 브라우저에 보관하고, .zip으로 내려받기와 .zip 올리기…를 더합니다. 위쪽 막대에는 .zip 버튼이 늘 있고, 그 아래 상태 줄이 프로젝트가 어디 있는지 알립니다. 테스트: `apps/ide/test/browser_test.dart`, `project_zip_test.dart`, `web_menu_test.dart`, Chrome에서 도는 `test/web/`.
-- **폼 디자이너**(D34): `.form.yaml` 파일을 고르면 실행 화면이 보여 줄 모양 그대로, 같은 runtime 위젯으로 폼을 그립니다(`apps/ide/lib/src/form_window.dart`의 `formModelOf`와 `FormWindowFrame`). 왼쪽에는 도구상자가 있습니다. 테두리가 없는 Label에는 디자이너에서만 점선 테두리를 그려서, 비어 있는 Label도 찾을 수 있습니다. 컨트롤 종류를 고르고 폼 위에서 사각형을 어느 방향으로든 끌면 컨트롤이 그려지고(클릭하거나 몇 픽셀만 끌면 기본 크기로 놓임), 종류를 더블클릭하면 폼 가운데에, 도구상자에서 끌어다 놓으면 놓은 자리에 놓입니다(D69). 선택한 컨트롤은 끌어서 옮기고 손잡이 8개로 크기를 바꾸며, 폼의 오른쪽과 아래 변의 손잡이로 폼 크기를 바꿉니다. ⌘와 화살표 키(Windows에서는 Ctrl)로 선택한 컨트롤을 옮기고, Shift와 화살표 키로 크기를 바꿉니다. 마우스 커서는 끌면 무엇이 되는지 보여 줍니다. Delete나 Backspace는 선택한 컨트롤을 지우고, 되돌리기와 다시 하기(⌘Z / ⇧⌘Z, Ctrl+Z / Ctrl+Y)는 바뀐 것을 한 단계씩 오갑니다. Esc는 포인터로 돌아가고, 8픽셀 격자는 켜고 끌 수 있습니다. "폼 파일 보기"는 파일의 글자를 보여 줍니다. 오른쪽의 속성 창(D35)은 목록에서 폼이나 컨트롤을 고르고 속성을 바꿉니다. 글자는 치는 대로, 숫자는 Enter를 누르거나 칸에서 나갈 때 바뀝니다. 프로그램이 실행되는 동안과 폼 파일에 오류가 있을 때는 폼을 보여 주기만 합니다. 테스트: `apps/ide/test/designer_test.dart`, `form_edit_test.dart`, `toolbox_test.dart`.
+- **폼 디자이너**(D34): `.form.yaml` 파일을 고르면 실행 화면이 보여 줄 모양 그대로, 같은 runtime 위젯으로 폼을 그립니다(`packages/gubasic_player/lib/src/form_window.dart`의 `formModelOf`와 `FormWindowFrame`). 왼쪽에는 도구상자가 있습니다. 테두리가 없는 Label에는 디자이너에서만 점선 테두리를 그려서, 비어 있는 Label도 찾을 수 있습니다. 컨트롤 종류를 고르고 폼 위에서 사각형을 어느 방향으로든 끌면 컨트롤이 그려지고(클릭하거나 몇 픽셀만 끌면 기본 크기로 놓임), 종류를 더블클릭하면 폼 가운데에, 도구상자에서 끌어다 놓으면 놓은 자리에 놓입니다(D69). 선택한 컨트롤은 끌어서 옮기고 손잡이 8개로 크기를 바꾸며, 폼의 오른쪽과 아래 변의 손잡이로 폼 크기를 바꿉니다. ⌘와 화살표 키(Windows에서는 Ctrl)로 선택한 컨트롤을 옮기고, Shift와 화살표 키로 크기를 바꿉니다. 마우스 커서는 끌면 무엇이 되는지 보여 줍니다. Delete나 Backspace는 선택한 컨트롤을 지우고, 되돌리기와 다시 하기(⌘Z / ⇧⌘Z, Ctrl+Z / Ctrl+Y)는 바뀐 것을 한 단계씩 오갑니다. Esc는 포인터로 돌아가고, 8픽셀 격자는 켜고 끌 수 있습니다. "폼 파일 보기"는 파일의 글자를 보여 줍니다. 오른쪽의 속성 창(D35)은 목록에서 폼이나 컨트롤을 고르고 속성을 바꿉니다. 글자는 치는 대로, 숫자는 Enter를 누르거나 칸에서 나갈 때 바뀝니다. 프로그램이 실행되는 동안과 폼 파일에 오류가 있을 때는 폼을 보여 주기만 합니다. 테스트: `apps/ide/test/designer_test.dart`, `form_edit_test.dart`, `toolbox_test.dart`.
 - **런타임은 글꼴을 정하지 않습니다.** 런타임을 감싼 앱이 테마로 정합니다. 그래서 데스크톱과 휴대폰 앱은 계속 운영체제 글꼴을 씁니다. IDE는 자기 글꼴인 Pretendard를 담아 모든 플랫폼에서 씁니다(D30). 폼 위 컨트롤은 크기와 색을 스스로 정하고(`gbFormTheme`, D49), 글꼴만 감싼 앱에서 가져옵니다.
 - `packages/gubasic_runtime/example`은 폼을 손으로 그린 예제입니다. CI가 변경마다 웹과 Windows로, PR에서는 macOS로도 빌드합니다.
 
@@ -273,7 +273,7 @@ IDE 메시지와 오류 설명은 **영어와 한국어**로 제공됩니다.
 
 - `gubasic_lang`은 일반 `dart test`로, `gubasic_runtime`은 `flutter test`로 테스트합니다.
 - **실제 입력기로 입력하기.** `packages/gubasic_runtime/tool/ime_probe`는 실제 입력기가 입력 칸에 보내는 것(조합 중인 부분을 포함한 모든 값)을 기록합니다. 기록은 `packages/gubasic_runtime/test/ime_logs/`에 두고 TextBox 테스트가 그대로 재생하므로, 한글 입력을 지어낸 신호가 아니라 실제 신호로 시험합니다. 재생은 두 층으로 검사합니다. LANGUAGE 11.1절의 규칙은 모든 입력기에 똑같이 적용하고, 각 기록이 만든 이벤트는 순서 그대로 고정합니다. 그래서 Flutter를 올리면서 한 입력기의 동작이 바뀌면 알아챕니다. 기록하는 방법: [README](../packages/gubasic_runtime/tool/ime_probe/README.ko.md).
-- **동일성 테스트 (처음부터 필수):** `test/parity/`의 예제 프로그램을 모든 실행 방식으로 돌려 기록된 출력이 같아야 합니다. 지금은 VM, Chrome, IDE의 위젯에서 도는 인터프리터, 2단계부터는 플레이어(D79), 트랜스파일러가 오면 변환된 Dart입니다. 동일성을 깨는 변경은 병합하지 않습니다.
+- **동일성 테스트 (처음부터 필수):** `test/parity/`의 예제 프로그램을 모든 실행 방식으로 돌려 기록된 출력이 같아야 합니다. 지금은 VM, Chrome, 실행 창의 위젯에서 도는 인터프리터, 2단계부터는 플레이어(D79), 트랜스파일러가 오면 변환된 Dart입니다. 동일성을 깨는 변경은 병합하지 않습니다.
 - 같은 동일성 프로그램을 Chrome(`apps/playground`)에서도 실행해서, 인터프리터가 VM과 웹에서 같은 출력을 내는지 확인합니다.
 
 ### 9.1 이벤트 스크립트
@@ -291,7 +291,7 @@ Form.Resize 600 400   ' 사용자가 폼을 600 x 400으로 바꿈. Form_Resize�
 Close                 ' 폼을 닫음
 ```
 
-각 줄은 프로그램이 사용자를 기다릴 때만 실행합니다: 실행 중인 처리기가 없거나, 실행 중인 처리기가 `DoEvents`에서 기다리거나, 대화상자가 열려 있을 때입니다. 그래서 출력이 모든 플랫폼에서 같습니다. `NAME.out`에는 각 줄을 `> 줄`로 적고, 이어서 프로그램이 보여 준 것(`Debug.Print`, `MsgBox`, `InputBox`), 프로그램이 넣은 속성 값(`Set lblMessage.Caption: Hello`), 이벤트가 어떻게 되었는지(`Ignored: …`, `Blocked: …`)를 적습니다. 마지막 줄은 실행이 어떻게 끝났는지입니다: `Closed`, `Ended`, `Stopped`, `Error R0xx @ 줄`. 실행 도구는 `package:gubasic_lang/testing.dart`이며, VM 테스트, Chrome 테스트, IDE의 위젯 테스트(`apps/ide/test/widget_parity_test.dart`)가 함께 씁니다. 위젯 테스트는 각 줄을 실제 실행 창에서 합니다. 단추를 누르고, TextBox에 치고, 대화상자의 단추와 창의 닫기 단추를 누릅니다. 위젯이 열린 대화상자에 가려졌거나 아직 화면에 없으면(`Form_Load` 중) 그 줄은 프로그램에 닿지 않고 `Blocked`가 됩니다. 사용자에게도 그렇기 때문입니다. 그래서 동일성 폼의 컨트롤은 서로 겹치면 안 됩니다.
+각 줄은 프로그램이 사용자를 기다릴 때만 실행합니다: 실행 중인 처리기가 없거나, 실행 중인 처리기가 `DoEvents`에서 기다리거나, 대화상자가 열려 있을 때입니다. 그래서 출력이 모든 플랫폼에서 같습니다. `NAME.out`에는 각 줄을 `> 줄`로 적고, 이어서 프로그램이 보여 준 것(`Debug.Print`, `MsgBox`, `InputBox`), 프로그램이 넣은 속성 값(`Set lblMessage.Caption: Hello`), 이벤트가 어떻게 되었는지(`Ignored: …`, `Blocked: …`)를 적습니다. 마지막 줄은 실행이 어떻게 끝났는지입니다: `Closed`, `Ended`, `Stopped`, `Error R0xx @ 줄`. 실행 도구는 `package:gubasic_lang/testing.dart`이며, VM 테스트, Chrome 테스트, 실행 창의 위젯 테스트(`packages/gubasic_player/test/widget_parity_test.dart`)가 함께 씁니다. 위젯 테스트는 각 줄을 실제 실행 창에서 합니다. 단추를 누르고, TextBox에 치고, 대화상자의 단추와 창의 닫기 단추를 누릅니다. 위젯이 열린 대화상자에 가려졌거나 아직 화면에 없으면(`Form_Load` 중) 그 줄은 프로그램에 닿지 않고 `Blocked`가 됩니다. 사용자에게도 그렇기 때문입니다. 그래서 동일성 폼의 컨트롤은 서로 겹치면 안 됩니다.
 
 ---
 

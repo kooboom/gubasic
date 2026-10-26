@@ -7,7 +7,7 @@ import 'package:gubasic_ide/src/ide_shell.dart';
 import 'package:gubasic_ide/src/project/examples.g.dart';
 import 'package:gubasic_ide/src/project/pictures_dialog.dart';
 import 'package:gubasic_ide/src/project/project_pictures.dart';
-import 'package:gubasic_ide/src/run/run_window.dart';
+import 'package:gubasic_player/gubasic_player.dart';
 import 'package:gubasic_ide/src/strings.dart';
 
 void main() {

@@ -10,11 +10,11 @@ import 'designer/form_designer.dart';
 import 'designer/form_edit.dart';
 import 'project/open_project.dart';
 import 'project/pictures_dialog.dart';
-import 'project/project.dart';
+
+import 'package:gubasic_player/gubasic_player.dart';
+
 import 'project/project_pictures.dart';
 import 'project/project_controller.dart';
-import 'run/run_session.dart';
-import 'run/run_window.dart';
 import 'strings.dart';
 import 'theme.dart';
 
@@ -171,7 +171,7 @@ class _IdeShellState extends State<IdeShell> {
       _runFiles = Map.of(project.files);
       _session = RunSession(
         startup,
-        strings: s,
+        strings: s.player,
         project: project.name,
         settings: widget.controller.settings,
         // The pictures as the run starts; they cannot change while it runs.
@@ -585,6 +585,18 @@ class _IdeShellState extends State<IdeShell> {
     });
   }
 
+  /// How a run ended, in words.
+  String _endMessage(RunResult result, String codeFile) {
+    final s = widget.strings;
+    return switch (result) {
+      RunCompleted() => s.closed,
+      RunEnded() => s.ended,
+      RunStopped() => s.stopped,
+      RunFailed(:final error) => s.problem(codeFile, error),
+      RunNotStarted() => s.cannotStart,
+    };
+  }
+
   Widget _output(BuildContext context) {
     final session = _session;
     final error = switch (session?.result) {
@@ -595,8 +607,12 @@ class _IdeShellState extends State<IdeShell> {
       ..._problems,
       for (final l in session?.output ?? const <String>[])
         (text: l, file: null, line: null),
-      if (session?.endMessage case final end?)
-        (text: end, file: session!.startup.codeFile, line: error?.line),
+      if (session?.result case final result?)
+        (
+          text: _endMessage(result, session!.startup.codeFile),
+          file: session.startup.codeFile,
+          line: error?.line,
+        ),
     ];
     final theme = Theme.of(context);
     return Column(

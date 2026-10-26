@@ -1,0 +1,53 @@
+import 'package:gubasic_lang/gubasic_lang.dart';
+import 'package:gubasic_runtime/gubasic_runtime.dart';
+
+/// The words of a running program, in English or Korean: the dialogs'
+/// buttons, the diagnostic messages and the run window's own words. The
+/// IDE's words include them, so a program says the same in the IDE and in
+/// an exported app.
+class PlayerStrings {
+  const PlayerStrings({
+    required this.runtime,
+    required this.messages,
+    required this.closeForm,
+    required this.fitTip,
+    required this.errorAt,
+  });
+
+  /// The words on MsgBox and InputBox.
+  final GbStrings runtime;
+
+  /// Diagnostic messages.
+  final Map<DiagnosticCode, String> messages;
+
+  /// The run window's close button.
+  final String closeForm;
+
+  /// The run window's switch that shrinks a large form to fit (D66).
+  final String fitTip;
+
+  /// `{0}` the file, `{1}` the line, `{2}` the message.
+  final String errorAt;
+
+  /// [diagnostic] in [file], in this language.
+  String problem(String file, Diagnostic diagnostic) => errorAt
+      .replaceAll('{0}', file)
+      .replaceAll('{1}', '${diagnostic.line}')
+      .replaceAll('{2}', diagnostic.formatMessage(messages));
+
+  static const en = PlayerStrings(
+    runtime: GbStrings.en,
+    messages: englishMessages,
+    closeForm: 'Close',
+    fitTip: 'Shrink a form larger than the space so that all of it shows; the form itself does not change',
+    errorAt: '{0}, line {1}: {2}',
+  );
+
+  static const ko = PlayerStrings(
+    runtime: GbStrings.ko,
+    messages: koreanMessages,
+    closeForm: '닫기',
+    fitTip: '폼이 자리보다 크면 줄여서 다 보이게 합니다. 폼 자체는 바뀌지 않습니다',
+    errorAt: '{0} 파일 {1}번째 줄: {2}',
+  );
+}

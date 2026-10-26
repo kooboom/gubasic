@@ -3,11 +3,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:gubasic_ide/src/project/project.dart';
-import 'package:gubasic_ide/src/run/run_host.dart';
-import 'package:gubasic_ide/src/run/run_session.dart';
-import 'package:gubasic_ide/src/run/run_window.dart';
-import 'package:gubasic_ide/src/strings.dart';
+import 'package:gubasic_player/gubasic_player.dart';
 import 'package:gubasic_lang/gubasic_lang.dart';
 import 'package:gubasic_lang/testing.dart';
 import 'package:gubasic_runtime/gubasic_runtime.dart';
@@ -53,7 +49,7 @@ void main() {
       );
       final session = RunSession(
         StartupForm(form, '$name.gbas', program),
-        strings: IdeStrings.en,
+        strings: PlayerStrings.en,
         host: host,
       );
       await tester.pumpWidget(
@@ -237,7 +233,7 @@ class _WidgetDriver implements ScriptDriver {
     return _tap(
       find.descendant(
         of: _dialog,
-        matching: find.text(IdeStrings.en.runtime.ok),
+        matching: find.text(PlayerStrings.en.runtime.ok),
       ),
     );
   }
@@ -245,7 +241,7 @@ class _WidgetDriver implements ScriptDriver {
   @override
   Future<bool> answer(String? value) async {
     if (!host.dialogs.hasOpenDialog || !_dialogIsInputBox) return false;
-    final strings = IdeStrings.en.runtime;
+    final strings = PlayerStrings.en.runtime;
     if (value != null) {
       await tester.enterText(
         find.descendant(of: _dialog, matching: find.byType(TextField)),

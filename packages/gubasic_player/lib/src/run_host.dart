@@ -2,7 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:gubasic_lang/gubasic_lang.dart';
 import 'package:gubasic_runtime/gubasic_runtime.dart';
 
-import '../form_window.dart';
+import 'form_window.dart';
 
 /// Connects the interpreter to gubasic_runtime (docs/DESIGN.md §2.3): the
 /// form's properties live in [model], which the run window shows, and

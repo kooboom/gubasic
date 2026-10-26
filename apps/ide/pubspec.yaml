@@ -15,6 +15,8 @@ dependencies:
     sdk: flutter
   gubasic_lang:
     path: ../../packages/gubasic_lang
+  gubasic_player:
+    path: ../../packages/gubasic_player
   gubasic_runtime:
     path: ../../packages/gubasic_runtime
   shared_preferences: ^2.5.6

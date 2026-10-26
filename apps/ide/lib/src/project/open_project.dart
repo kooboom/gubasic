@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 
-import 'project.dart';
+import 'package:gubasic_player/gubasic_player.dart';
+
 import 'project_pictures.dart';
 
 /// Where an open project's files come from.

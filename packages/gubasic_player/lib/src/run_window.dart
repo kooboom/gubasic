@@ -4,8 +4,8 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:gubasic_runtime/gubasic_runtime.dart';
 
-import '../fit_view.dart';
-import '../form_window.dart';
+import 'fit_view.dart';
+import 'form_window.dart';
 import 'run_session.dart';
 
 /// The key of the run window's close button.

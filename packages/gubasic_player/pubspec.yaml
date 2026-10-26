@@ -1,0 +1,23 @@
+name: gubasic_player
+description: >-
+  Runs a GuBASIC project's form: the run window and the host that connects
+  the interpreter to gubasic_runtime. Shared by the IDE's run window and the
+  player app (docs/DESIGN.md D79).
+version: 0.1.0
+publish_to: none
+
+environment:
+  sdk: ^3.13.5
+
+dependencies:
+  flutter:
+    sdk: flutter
+  gubasic_lang:
+    path: ../gubasic_lang
+  gubasic_runtime:
+    path: ../gubasic_runtime
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0

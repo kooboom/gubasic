@@ -1,14 +1,13 @@
 import 'package:gubasic_lang/gubasic_lang.dart';
+import 'package:gubasic_player/gubasic_player.dart';
 import 'package:gubasic_runtime/gubasic_runtime.dart';
 
 /// The IDE's words, in English and Korean.
 class IdeStrings {
   const IdeStrings({
-    required this.runtime,
-    required this.messages,
+    required this.player,
     required this.run,
     required this.stop,
-    required this.closeForm,
     required this.files,
     required this.runWindow,
     required this.output,
@@ -16,7 +15,6 @@ class IdeStrings {
     required this.closed,
     required this.ended,
     required this.stopped,
-    required this.errorAt,
     required this.fileMenu,
     required this.open,
     required this.save,
@@ -131,7 +129,6 @@ class IdeStrings {
     required this.noAnchor,
     required this.formSize,
     required this.fit,
-    required this.fitTip,
     required this.phonePreset,
     required this.tabletPreset,
     required this.desktopPreset,
@@ -162,15 +159,20 @@ class IdeStrings {
     required this.missingPicturesKept,
   });
 
+  /// The words of a running program, shared with the player (D79).
+  final PlayerStrings player;
+
   /// The words on MsgBox and InputBox.
-  final GbStrings runtime;
+  GbStrings get runtime => player.runtime;
 
   /// Diagnostic messages.
-  final Map<DiagnosticCode, String> messages;
+  Map<DiagnosticCode, String> get messages => player.messages;
+
+  String get closeForm => player.closeForm;
+  String get fitTip => player.fitTip;
 
   final String run;
   final String stop;
-  final String closeForm;
 
   /// The heading of the file list: the files of the project.
   final String files;
@@ -182,9 +184,6 @@ class IdeStrings {
   final String closed;
   final String ended;
   final String stopped;
-
-  /// `{0}` the file, `{1}` the line, `{2}` the message.
-  final String errorAt;
 
   // Opening and saving projects (D32).
   final String fileMenu;
@@ -417,7 +416,6 @@ class IdeStrings {
   /// Shrinking a large form to fit (D66): the designer's switch, and what
   /// it does.
   final String fit;
-  final String fitTip;
   final String phonePreset;
   final String tabletPreset;
   final String desktopPreset;
@@ -474,17 +472,13 @@ class IdeStrings {
   final String missingPicturesKept;
 
   /// [diagnostic] in [file], in this language.
-  String problem(String file, Diagnostic diagnostic) => errorAt
-      .replaceAll('{0}', file)
-      .replaceAll('{1}', '${diagnostic.line}')
-      .replaceAll('{2}', diagnostic.formatMessage(messages));
+  String problem(String file, Diagnostic diagnostic) =>
+      player.problem(file, diagnostic);
 
   static const en = IdeStrings(
-    runtime: GbStrings.en,
-    messages: englishMessages,
+    player: PlayerStrings.en,
     run: 'Run',
     stop: 'Stop',
-    closeForm: 'Close',
     files: 'Project',
     runWindow: 'Run window',
     output: 'Output',
@@ -494,7 +488,6 @@ class IdeStrings {
     closed: 'The program ended: its form was closed.',
     ended: 'The program ended at End.',
     stopped: 'The program was stopped.',
-    errorAt: '{0}, line {1}: {2}',
     fileMenu: 'File',
     open: 'Open…',
     save: 'Save',
@@ -627,7 +620,6 @@ class IdeStrings {
     noAnchor: '(None: stays near the middle)',
     formSize: 'Size',
     fit: 'Fit',
-    fitTip: 'Shrink a form larger than the space so that all of it shows; the form itself does not change',
     phonePreset: 'Phone',
     tabletPreset: 'Tablet',
     desktopPreset: 'Desktop',
@@ -665,11 +657,9 @@ class IdeStrings {
   );
 
   static const ko = IdeStrings(
-    runtime: GbStrings.ko,
-    messages: koreanMessages,
+    player: PlayerStrings.ko,
     run: '실행',
     stop: '중지',
-    closeForm: '닫기',
     files: '프로젝트',
     runWindow: '실행 화면',
     output: '출력',
@@ -677,7 +667,6 @@ class IdeStrings {
     closed: '폼을 닫아서 프로그램이 끝났습니다.',
     ended: 'End 문에서 프로그램이 끝났습니다.',
     stopped: '프로그램을 중지했습니다.',
-    errorAt: '{0} 파일 {1}번째 줄: {2}',
     fileMenu: '파일',
     open: '열기…',
     save: '저장',
@@ -812,7 +801,6 @@ class IdeStrings {
     noAnchor: '(없음: 가운데 가까이 머묾)',
     formSize: '크기',
     fit: '화면에 맞춤',
-    fitTip: '폼이 자리보다 크면 줄여서 다 보이게 합니다. 폼 자체는 바뀌지 않습니다',
     phonePreset: '폰',
     tabletPreset: '태블릿',
     desktopPreset: '데스크톱',

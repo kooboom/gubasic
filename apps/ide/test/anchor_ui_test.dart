@@ -7,7 +7,7 @@ import 'package:gubasic_ide/src/designer/form_designer.dart';
 import 'package:gubasic_ide/src/designer/properties_panel.dart';
 import 'package:gubasic_ide/src/ide_shell.dart';
 import 'package:gubasic_ide/src/project/examples.g.dart';
-import 'package:gubasic_ide/src/run/run_window.dart';
+import 'package:gubasic_player/gubasic_player.dart';
 import 'package:gubasic_ide/src/strings.dart';
 import 'package:gubasic_lang/gubasic_lang.dart';
 import 'package:gubasic_runtime/gubasic_runtime.dart';

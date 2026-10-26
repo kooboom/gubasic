@@ -21,16 +21,17 @@ apps/playground/         Web playground for development (pure Dart, no Flutter)
 packages/gubasic_lang/   Pure Dart: lexer, parser, AST, analyzer, interpreter, form files
                          (the transpiler comes later, D79)
 packages/gubasic_runtime/ Flutter runtime used by BOTH interpreter and generated apps
+packages/gubasic_player/  The run window, its host and the project model, shared by the IDE
+                         and the player (D79)
 components/<Name>/       component.yaml (the adapter comes with the transpiler)
 examples/                Sample projects, built into the IDE
 test/parity/             Parity programs (.gbas, .form.yaml, .events, .in, .out), run by
-                         the interpreter on the VM, in Chrome and through the IDE's widgets;
+                         the interpreter on the VM, in Chrome and through the run window's widgets;
                          the player joins in stage 2, the transpiled Dart later
 ```
 
-`apps/player/` (the player that runs an exported project, D79) and `packages/gubasic_player/`
-(the run window shared by the IDE and the player) arrive in stage 2; the player becomes the
-phone Player in stage 3.
+`apps/player/` (the player that runs an exported project, D79) arrives in stage 2 and becomes
+the phone Player in stage 3.
 
 Generated files that are checked in, each with a `--check` mode that CI runs:
 `packages/gubasic_lang/lib/src/forms/components.g.dart` (`tool/embed_components.dart`),
@@ -88,6 +89,7 @@ The Mac is the author's own computer, in use while you work.
 - `dart test` in `packages/gubasic_lang` passes (parity on the VM)
 - `flutter test` in `packages/gubasic_runtime` passes
 - `dart test -p vm,chrome` in `apps/playground` passes (parity in Chrome)
-- `flutter test` in `apps/ide` passes (parity through the widgets)
+- `flutter test` in `packages/gubasic_player` passes (parity through the run window's widgets)
+- `flutter test` in `apps/ide` passes
 - The generators' `--check` passes
 - Docs updated if behavior or a decision changed
