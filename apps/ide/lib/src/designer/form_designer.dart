@@ -34,6 +34,9 @@ const designerFormKey = ValueKey('designer.form');
 const designerOutsideKey = ValueKey('designer.outside');
 const designerFitInsideKey = ValueKey('designer.outside.fit');
 
+/// The height of that bar, and of the strip above the form kept for it.
+const outsideBarHeight = 40.0;
+
 ValueKey<String> designerMenuKey(String item) =>
     ValueKey('designer.menu.$item');
 
@@ -928,10 +931,6 @@ class _FormDesignerState extends State<FormDesigner> {
               for (final d in _read.diagnostics)
                 if (d.isError) s.problem(widget.file, d),
             ]),
-          if (!_read.hasErrors && !_showText)
-            if (controlsOutside(form) case final outside
-                when outside.isNotEmpty)
-              _outsideBanner(context, outside, editable),
           Expanded(
             child: _showText
                 ? SingleChildScrollView(
@@ -1139,8 +1138,9 @@ class _FormDesignerState extends State<FormDesigner> {
     final text = TextStyle(color: scheme.onErrorContainer);
     return Container(
       key: designerOutsideKey,
+      height: outsideBarHeight,
       color: scheme.errorContainer,
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 12),
       child: Row(
         children: [
           Icon(Icons.warning_amber, size: 18, color: scheme.onErrorContainer),
@@ -1151,26 +1151,29 @@ class _FormDesignerState extends State<FormDesigner> {
                 : s.outsideMany.replaceAll('{0}', '${outside.length}'),
             style: text,
           ),
+          // One line however many there are: the names scroll sideways.
           Expanded(
-            child: Wrap(
-              crossAxisAlignment: WrapCrossAlignment.center,
-              children: [
-                for (final c in outside)
-                  TextButton(
-                    key: ValueKey('designer.outside.${c.name}'),
-                    onPressed: () {
-                      _focus.requestFocus();
-                      setState(() => _selected = c.name);
-                    },
-                    child: Text(
-                      c.name,
-                      style: text.copyWith(
-                        decoration: TextDecoration.underline,
-                        decorationColor: scheme.onErrorContainer,
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: [
+                  for (final c in outside)
+                    TextButton(
+                      key: ValueKey('designer.outside.${c.name}'),
+                      onPressed: () {
+                        _focus.requestFocus();
+                        setState(() => _selected = c.name);
+                      },
+                      child: Text(
+                        c.name,
+                        style: text.copyWith(
+                          decoration: TextDecoration.underline,
+                          decorationColor: scheme.onErrorContainer,
+                        ),
                       ),
                     ),
-                  ),
-              ],
+                ],
+              ),
             ),
           ),
           Tooltip(
@@ -1371,11 +1374,25 @@ class _FormDesignerState extends State<FormDesigner> {
     );
     // The window with its handles, as it is laid out unshrunk.
     final natural = Size(width + reach, formTitleHeight + height + reach);
+    // The bar about controls outside the form (D72) lies over the canvas,
+    // in a strip above the form kept free for it whether it shows or not:
+    // so that it never moves the form, its scale or the Properties window,
+    // and never covers the form or its handles (D75).
+    final outside = _read.hasErrors
+        ? const <ControlDecl>[]
+        : controlsOutside(form);
     return LayoutBuilder(
       builder: (context, constraints) {
         const padding = 24.0;
+        const top = outsideBarHeight + 8;
         _scale = widget.fit?.value ?? false
-            ? fitScale(natural, inside(constraints, padding))
+            ? fitScale(
+                natural,
+                Size(
+                  max(0, constraints.maxWidth - 2 * padding),
+                  max(0, constraints.maxHeight - top - padding),
+                ),
+              )
             : 1.0;
         return Stack(
           children: [
@@ -1386,7 +1403,12 @@ class _FormDesignerState extends State<FormDesigner> {
                   child: ConstrainedBox(
                     constraints: BoxConstraints(minWidth: constraints.maxWidth),
                     child: Padding(
-                      padding: const EdgeInsets.all(padding),
+                      padding: const EdgeInsets.fromLTRB(
+                        padding,
+                        top,
+                        padding,
+                        padding,
+                      ),
                       child: Align(
                         alignment: Alignment.topCenter,
                         child: fitted(framed, natural, _scale),
@@ -1398,6 +1420,13 @@ class _FormDesignerState extends State<FormDesigner> {
             ),
             if (_scale < 1)
               Positioned(right: 8, bottom: 8, child: FitPercent(_scale)),
+            if (outside.isNotEmpty)
+              Positioned(
+                left: 0,
+                right: 0,
+                top: 0,
+                child: _outsideBanner(context, outside, editable),
+              ),
           ],
         );
       },

@@ -5,6 +5,7 @@ import 'package:gubasic_ide/main.dart';
 import 'package:gubasic_ide/src/designer/form_designer.dart';
 import 'package:gubasic_ide/src/designer/form_edit.dart';
 import 'package:gubasic_ide/src/designer/properties_panel.dart';
+import 'package:gubasic_ide/src/form_window.dart';
 import 'package:gubasic_ide/src/ide_shell.dart';
 import 'package:gubasic_ide/src/project/examples.g.dart';
 import 'package:gubasic_ide/src/strings.dart';
@@ -121,6 +122,11 @@ void main() {
       findsNothing,
     );
 
+    // The names scroll sideways when the bar is narrow.
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('designer.outside.btnNext')),
+    );
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('designer.outside.btnNext')));
     await tester.pumpAndSettle();
     expect(
@@ -176,6 +182,43 @@ void main() {
       tester.widget<OutlinedButton>(find.byKey(designerFitInsideKey)).onPressed,
       isNull,
     );
+  });
+
+  testWidgets('the bar lies over the canvas: as it comes and goes, the form, '
+      'its scale and the Properties window stay where they are, and it covers '
+      'neither the form nor its handles (D75)', (tester) async {
+    await open(tester);
+    await phone(tester);
+    Rect rect(Finder f) => tester.getRect(f);
+    final form = find.byKey(designerFormKey);
+    final window = find.byType(FormWindowFrame);
+    final panel = find.byType(PropertiesPanel);
+    final corner = find.byKey(const ValueKey('designer.formHandle.1.1'));
+    final bar = find.byKey(designerOutsideKey);
+    expect(bar, findsOneWidget);
+    final withBar = (rect(form), rect(panel), rect(corner));
+    expect(rect(bar).bottom, lessThanOrEqualTo(rect(window).top));
+    expect(rect(bar).right, lessThanOrEqualTo(rect(panel).left));
+
+    // A selected control's handles are inside the form: below the bar.
+    // The names scroll sideways when the bar is narrow.
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('designer.outside.btnNext')),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('designer.outside.btnNext')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(designerFitInsideKey));
+    await tester.pumpAndSettle();
+    expect(bar, findsNothing);
+    expect((rect(form), rect(panel), rect(corner)), withBar);
+
+    await tester.sendKeyDownEvent(LogicalKeyboardKey.control);
+    await tester.sendKeyEvent(LogicalKeyboardKey.keyZ);
+    await tester.sendKeyUpEvent(LogicalKeyboardKey.control);
+    await tester.pumpAndSettle();
+    expect(bar, findsOneWidget);
+    expect((rect(form), rect(panel), rect(corner)), withBar);
   });
 
   testWidgets('Korean words', (tester) async {
