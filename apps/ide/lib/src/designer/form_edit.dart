@@ -486,21 +486,29 @@ List<ControlDecl> controlsOutside(FormFile form) {
   ];
 }
 
-/// [box] brought inside a form of [size], along each axis on its own: a
-/// control that fits is moved in as little as it takes, its size kept; one
-/// larger than the form keeps its start, if that is inside, and is made
-/// to end at the form's edge, or else fills the form that way.
-ControlBox fittedInside(ControlBox box, ({int width, int height}) size) {
-  (int, int) along(int start, int length, int room) {
-    if (length <= room) return (start.clamp(0, room - length), length);
-    if (start >= 0 && room - start >= minControlSize) {
-      return (start, room - start);
+/// [box] brought inside a form of [size], along each axis on its own
+/// (D72): a control that starts inside the form keeps its start and is
+/// made to end at the form's edge, unless that would make it smaller than
+/// [least], its type's default size; that one, and one that starts
+/// outside, is moved in as little as it takes, made no larger than the
+/// form.
+ControlBox fittedInside(
+  ControlBox box,
+  ({int width, int height}) size, {
+  required ({int width, int height}) least,
+}) {
+  (int, int) along(int start, int length, int room, int smallest) {
+    if (start >= 0 && start < room) {
+      if (start + length <= room) return (start, length);
+      final shortened = room - start;
+      if (shortened >= min(smallest, room)) return (start, shortened);
     }
-    return (0, room);
+    final fitted = min(length, room);
+    return (start.clamp(0, room - fitted), fitted);
   }
 
-  final (left, width) = along(box.left, box.width, size.width);
-  final (top, height) = along(box.top, box.height, size.height);
+  final (left, width) = along(box.left, box.width, size.width, least.width);
+  final (top, height) = along(box.top, box.height, size.height, least.height);
   return (left: left, top: top, width: width, height: height);
 }
 
@@ -510,7 +518,11 @@ FormFile withControlsInside(FormFile form) {
   final size = formSizeOf(form);
   var inside = form;
   for (final c in controlsOutside(form)) {
-    inside = withBox(inside, c.name, fittedInside(boxOf(c), size));
+    inside = withBox(
+      inside,
+      c.name,
+      fittedInside(boxOf(c), size, least: defaultSizeOf(c.component)),
+    );
   }
   return inside;
 }

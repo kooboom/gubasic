@@ -42,31 +42,59 @@ void main() {
     expect(isOutside((left: 0, top: 791, width: 10, height: 10), size), isTrue);
   });
 
-  test('a box that fits is moved in; a larger one keeps its start', () {
-    expect(fittedInside((left: 600, top: 520, width: 120, height: 40), size), (
+  test('a control that starts inside keeps its start and ends at the '
+      "form's edge; one that starts outside, or would become smaller than "
+      'its default size, is moved in', () {
+    const button = (width: 80, height: 32);
+    ControlBox fit(ControlBox b) => fittedInside(b, size, least: button);
+    // Third test, C-4: Button2 next to Button1 is shortened, not moved
+    // over it.
+    expect(fit((left: 192, top: 128, width: 250, height: 48)), (
+      left: 192,
+      top: 128,
+      width: 168,
+      height: 48,
+    ));
+    expect(fit((left: 16, top: 56, width: 500, height: 24)), (
+      left: 16,
+      top: 56,
+      width: 344,
+      height: 24,
+    ));
+    // Starts outside: moved, its size kept.
+    expect(fit((left: 600, top: 520, width: 120, height: 40)), (
       left: 240,
       top: 520,
       width: 120,
       height: 40,
     ));
-    expect(fittedInside((left: 16, top: 56, width: 500, height: 24), size), (
-      left: 16,
-      top: 56,
-      width: 344,
-      height: 24,
-    ), reason: 'larger than the form: its start kept');
-    expect(fittedInside((left: -20, top: 900, width: 50, height: 900), size), (
-      left: 0,
+    // Shortened to 30, less than a Button's 80: moved instead.
+    expect(fit((left: 330, top: 0, width: 120, height: 40)), (
+      left: 240,
       top: 0,
-      width: 50,
-      height: 800,
+      width: 120,
+      height: 40,
     ));
-    expect(fittedInside((left: 355, top: 0, width: 400, height: 20), size), (
+    // Each axis on its own: down past the bottom, from a start inside.
+    expect(fit((left: 0, top: 790, width: 50, height: 40)), (
+      left: 0,
+      top: 760,
+      width: 50,
+      height: 40,
+    ));
+    expect(fit((left: 0, top: 700, width: 50, height: 400)), (
+      left: 0,
+      top: 700,
+      width: 50,
+      height: 100,
+    ));
+    // Starts outside and larger than the form: the form's size.
+    expect(fit((left: -20, top: 900, width: 400, height: 900)), (
       left: 0,
       top: 0,
       width: 360,
-      height: 20,
-    ), reason: 'no room after its start: the width of the form');
+      height: 800,
+    ));
   });
 
   Future<void> open(
@@ -142,6 +170,7 @@ void main() {
     await tester.pumpAndSettle();
     final after = form(tester);
     expect(controlsOutside(after), isEmpty);
+    // btnNext starts past the phone's right edge: moved in.
     expect(boxOf(after.control('btnNext')!), (
       left: 240,
       top: 520,
