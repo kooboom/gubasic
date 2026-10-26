@@ -36,24 +36,26 @@ GuBASIC is built first for its author's own enjoyment, **but it must stay usable
 
 C was considered for the IDE and rejected: building a GUI in C costs far more effort than it returns.
 
-### 2.2 Two ways to run the same code
+### 2.2 Ways to run the same code
 
 ```
 source (.gbas) + forms (.form.yaml)
             │
      lexer → parser → AST → analyzer
             │
-     ┌──────┴───────┐
- Interpreter     Transpiler
- (F5, in IDE)    (Build, → Dart → Flutter → native app)
+     ┌──────┴──────────────┬──────────────────┐
+ Interpreter            Player             Transpiler (later)
+ (F5, in IDE)   (exported app: the     (→ Dart → Flutter
+                 same interpreter)       → native app)
 ```
 
 - **Interpreter** — runs the program inside the IDE instantly. This keeps the classic "press F5 and it runs" feel and means beginners never need Flutter installed to make and run apps.
-- **Transpiler** — converts BASIC to Dart, generates a Flutter project and calls `flutter build`. The released app is AOT-compiled native code, so it runs as fast as a hand-written Flutter app.
+- **Player** (stage 2, D79) — an app built once by GuBASIC's own CI that carries the interpreter and the run window; exporting a project puts its files into a copy of it, for the web, macOS or Windows, with no Flutter on the user's computer (D80).
+- **Transpiler** (later, D79) — converts BASIC to Dart, generates a Flutter project and calls `flutter build`. The released app is AOT-compiled native code, so it runs as fast as a hand-written Flutter app.
 
-Both share the same lexer, parser, AST and analyzer. The original Visual Basic used the same split (interpreted in the IDE, compiled for release).
+All share the same lexer, parser, AST and analyzer. The original Visual Basic used the same split: every app used its run-time DLL, and could be compiled to p-code, which the runtime ran statement by statement, or to native code, which still needed the DLL ([Microsoft](https://learn.microsoft.com/en-us/previous-versions/visualstudio/visual-basic-6/aa240843(v=vs.60))). The player is that runtime, with the interpreter in the place of p-code; the transpiler is the native-code option.
 
-**Biggest risk:** the two modes behaving differently. See §9 (parity tests).
+**Biggest risk:** the ways of running behaving differently. The interpreter and the player share one run window and one interpreter, so they cannot drift; the transpiler, when it comes, must pass the same parity tests (§9).
 
 ### 2.3 Runtime layer
 
@@ -69,7 +71,7 @@ Each GuBASIC release is pinned to a Flutter version it has been verified against
 How it is built:
 - **`GbFormModel`** holds the form and its controls' current properties (`GbControlState`, named and typed as in `component.yaml`). **`GbFormView`** shows them: each control at `Left`, `Top` in a `Stack` (§6). A Button keeps 8 pixels between its edges and its text, so that a Button of the default width shows its own name (`Button1`); Material's default, 24, left only 48 of its 96 pixels for text. What the user does comes back as events: `Click`, and `Changed` when the user changes a TextBox's committed text, a CheckBox, or the item chosen in a ListBox.
 - **`GbDialogs`** shows `MsgBox` and `InputBox`, modal (D28), and closes them all when a program ends.
-- **`gubasic_runtime` does not depend on `gubasic_lang`.** The IDE connects the two (the interpreter's `FormHost`), so that generated apps never carry the interpreter.
+- **`gubasic_runtime` does not depend on `gubasic_lang`.** The IDE and the player connect the two (the interpreter's `FormHost`), so that a transpiled app, later, need not carry the interpreter.
 - **The IDE's run window** (`apps/ide`): `RunHost` implements `FormHost` on a `GbFormModel` and `GbDialogs`. Properties live only in the model, which the program sets and the user changes; clicks and typing go to the interpreter as events. The run window fills the middle of the IDE and has its own navigator: a MsgBox or InputBox covers the form and its close button (D28), but not the IDE's toolbar, so Stop (Shift+F5) always works. The form appears when `Form_Load` has finished.
   - **Dialogs are program-modal.** A MsgBox or InputBox blocks the running program's form only. The IDE stays usable, above all its Stop button: if dialogs blocked the IDE too, a program waiting in one could not be stopped.
   - **Looking at a file during a run.** While a program runs, the file list starts with a "Run window" entry. Choosing a file shows the file; choosing the entry brings back the run window exactly as it was, an open dialog included, still waiting for its answer. The run window is never rebuilt while hidden, so a dialog cannot be lost.
@@ -88,15 +90,18 @@ How it is built:
 gubasic/
 ├── apps/
 │   ├── ide/                 Flutter IDE (macOS, Windows, web)
-│   ├── player/              GuBASIC Player for phones (stage 3)
+│   ├── player/              The player: runs one exported project (stage 2),
+│   │                        and becomes the phone Player in stage 3
 │   └── playground/          Web playground for development (pure Dart, no Flutter)
 ├── packages/
 │   ├── gubasic_lang/        Pure Dart: lexer, parser, AST, analyzer,
-│   │                        interpreter, transpiler. No Flutter dependency.
-│   └── gubasic_runtime/     Runtime controls and functions (Flutter)
+│   │                        interpreter (the transpiler later). No Flutter dependency.
+│   ├── gubasic_runtime/     Runtime controls and functions (Flutter)
+│   └── gubasic_player/      The run window and its FormHost, shared by the
+│                            IDE and the player (stage 2)
 ├── components/              One folder per component (component.yaml + adapter)
 ├── examples/                Sample GuBASIC projects
-├── test/parity/             Interpreter-vs-transpiler parity tests
+├── test/parity/             Parity tests: every way of running, same output
 └── docs/
 ```
 
@@ -128,7 +133,7 @@ Consequences and how they are handled:
 - Project setting **Startup object**: a form (default) or `Sub Main`.
 - Most apps use a startup form and initialise in `Form_Load`.
 - `Sub Main` is for choosing the first form conditionally (e.g. show a login form only if not signed in).
-- The transpiler generates Dart's `main()` from this setting.
+- The player starts the program from this setting; the transpiler, later, generates Dart's `main()` from it.
 
 ### 3.3 Forms and navigation
 
@@ -268,7 +273,7 @@ IDE messages and error explanations are available in **English and Korean**.
 
 - `gubasic_lang` is tested with plain `dart test`; `gubasic_runtime` with `flutter test`.
 - **Typing with real input methods.** `packages/gubasic_runtime/tool/ime_probe` records what a real input method sends to a text field (every value, with the part still being composed). The recordings are kept in `packages/gubasic_runtime/test/ime_logs/`, and the TextBox tests replay them, so Korean typing is tested with real signals, not invented ones. Each replay is checked in two layers: the rules of LANGUAGE §11.1, the same for every input method, and the exact events that recording made, so a Flutter upgrade that changes what one input method does is noticed. How to record: [its README](../packages/gubasic_runtime/tool/ime_probe/README.md).
-- **Parity tests (mandatory from the start):** each sample program in `test/parity/` is run once through the interpreter and once through the transpiled Dart; recorded output must be identical. A change that breaks parity does not merge.
+- **Parity tests (mandatory from the start):** each sample program in `test/parity/` is run through every way of running and the recorded output must be identical: the interpreter on the VM, in Chrome and through the IDE's widgets now, the player from stage 2 (D79), and the transpiled Dart when the transpiler comes. A change that breaks parity does not merge.
 - The same parity programs also run in Chrome (`apps/playground`), so the interpreter gives the same output on the VM and on the web.
 
 ### 9.1 Event scripts
@@ -332,8 +337,10 @@ A **Publish** menu sends `build/web` to: Vercel, Firebase Hosting, GitHub Pages,
 |---|---|---|
 | Draw, code, run | GuBASIC only | Beginners |
 | Test on a phone | **GuBASIC Player** app (like the App Inventor Companion) | Beginners |
-| Release Android / Web / desktop | Flutter SDK, **downloaded automatically** on the first Build, or a **GitHub Actions** cloud build | Intermediate |
-| Release iOS / macOS | A Mac, Xcode, an Apple Developer account | Intermediate+ |
+| Export an app for the web, macOS or Windows | GuBASIC only: the IDE adds the project to a prebuilt player it downloads once per version; macOS apps only from the macOS IDE (D80) | Beginners |
+| Release Android | The phone Player (stage 3) | Beginners |
+| Native release builds (the transpiler, later) | Flutter, or a GitHub Actions cloud build | Intermediate |
+| Release iOS, or sign a macOS app with a Developer ID | A Mac, Xcode, an Apple Developer account | Intermediate+ |
 
 The iOS/macOS requirement comes from Apple's policy, not from GuBASIC.
 
@@ -428,3 +435,7 @@ The iOS/macOS requirement comes from Apple's policy, not from GuBASIC.
 | D76 | **The lines of errors that keep the project from starting are marked in the code editor.** When F5 finds errors that keep the project from starting (D40), each line of the code file that has one gets the same band as the line a run stopped on, while the code file is as it was when F5 was pressed: a change to it takes the bands away, putting it back shows them again, and a run that starts clears them | The agent's third test pressed F5 on a misspelt name and looked for a red mark on the line, as a run-time error has one; it found the error only in the output. Marking both kinds the same way says the same thing: this line kept the program from going on |
 | D77 | **The form's edge says why it stops a drag, and a control wholly outside has an arrow pointing to it.** While a control moved or resized with the mouse is held at the form's edge (D34), the designer's status line says, in red, that a control dragged with the mouse stays inside the form, and that its Left, Top, Width or Height typed in the Properties window puts it past the edge (D35); when the button comes up the line shows the control again. A control wholly outside the form, which shows no part to edge in red (D72), has a red arrow on the form's edge nearest its middle, pointing out towards it | In the agent's third test a handle stopped at the form's edge without a word and a beginner was left asking why it would not grow (C-1), while a typed Width went past it: the two rules are each sound, so the edge says which one it is. A ListBox moved wholly outside vanished, with only its name in the bar to tell (C-5) |
 | D78 | **The project menu lists every project kept in the browser.** The menu at the top right shows the examples, then the project on disk last opened or saved (desktop), then every project kept in the browser by name, the last saved first; the open one is listed even if it is no longer kept. Choosing a kept project asks about unsaved changes, as any switch does, and opens it as File → Projects in this browser would | The agent's third test looked for its other projects in that menu and found only the examples and the open project; MyQuiz and MyQuiz2 were reachable only through File → Open or, after a reload, the bar of D74 |
+| D79 | **Stage 2 ships apps with a player; the transpiler comes later.** A student's app runs in the **player**, a Flutter app built by GuBASIC's own CI that carries the interpreter (`gubasic_lang`), the run window and `gubasic_runtime`, and runs the project put into it, exactly as F5 does. The IDE's run window and its `FormHost` move into a package both use (`packages/gubasic_player`), so there is one implementation. The **transpiler** (§2.2, D3) stays the long-term fast path and is planned again when a benchmark is slower in the player than the criteria of STAGE2_PLAN §7, or for extra components and the embedded-Dart escape hatch, at the latest at the start of stage 3. The hard rules stay as they are (one AST, parity, an async interpreter, drawing only through `gubasic_runtime`), which keeps the way to it open. The whole plan: [STAGE2_PLAN.md](STAGE2_PLAN.md) | A transpiler needs Flutter and, for desktop apps, Xcode or Visual Studio on the computer that builds ([Flutter](https://docs.flutter.dev/platform-integration/macos/setup), [Flutter](https://docs.flutter.dev/platform-integration/windows/setup)): not something elementary school students or their teachers install. A player needs nothing, works from the web IDE too, and is parity by construction. Visual Basic 6 did the same: its apps used the run-time DLL MSVBVM60.DLL, and p-code was translated statement by statement as it ran ([Microsoft](https://learn.microsoft.com/en-us/previous-versions/visualstudio/visual-basic-6/aa240843(v=vs.60))) |
+| D80 | **An app is exported by putting the project into a prebuilt player.** GuBASIC's CI builds the player for the web, macOS and Windows with each release; the IDE does not carry them, but downloads the one it needs for its own version from GuBASIC's GitHub Release or Pages the first time, and keeps it. The project goes inside the app in one bundle with a format version, which can hold several forms from the start. **Web:** a `.zip` of the player and the project, made in the browser too, with short steps for putting it on GitHub Pages or a school server. **Windows:** a folder with the program and the project. **macOS:** only from the macOS IDE, which signs the app again, ad-hoc, with the system's `codesign`, since a changed app must be signed to run on Apple silicon; Gatekeeper still asks for Open Anyway, as there is no Developer ID. **Android** moves to stage 3, with the phone Player: stage 2 is done when one project ships to the web, macOS and Windows | No compiler, no account and no developer tools for the people GuBASIC is for. Children cannot use GitHub Actions: GitHub's terms say "You must be age 13 or older" ([GitHub](https://docs.github.com/en/site-policy/github-terms/github-terms-of-service)). On Apple silicon every executable must be signed, an ad-hoc signature being enough ([Apple](https://developer.apple.com/documentation/macos-release-notes/macos-big-sur-11_0_1-universal-apps-release-notes), quoted by [The Eclectic Light Company](https://eclecticlight.co/2020/08/22/apple-silicon-macs-will-require-signed-code/)). An Android app changed after it is built must be signed again with Android's own tools ([Android Developers](https://developer.android.com/tools/apksigner)), which a phone Player avoids |
+| D81 | **An exported app is the project's app.** Its name is the project's name, its window the startup form's size, its icon GuBASIC's (choosing one comes later). A run-time error ends the program, as with F5: the app shows the error, its code, message and line, in a dialog, and closes when the dialog is dismissed | The student made the app, so it carries their name for it. Ending as F5 does keeps one rule; leaving a broken program running would leave the user with a form whose code has stopped |
+| D82 | **Timer and key events come in stage 2, after several forms.** A `Timer` control (`Interval`, `Enabled`, `Tick`) and the form's `KeyDown` and `KeyUp`, each with an event-script step for parity tests (STAGE2_PLAN steps 2-9 and 2-10). A tick is an event like a click: it does not re-enter, and waits while another handler runs (§3.1). Key events come on the web and the desktop; on phones (stage 3) they simply do not come | They turn a form into a small game or an animation, the next thing children want to make, and both run in the interpreter and the player alike, with no transpiler |

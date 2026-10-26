@@ -40,23 +40,29 @@ IDE 안에서 완결되는 비주얼 베이직의 핵심 경험입니다.
 
 ## 2단계 — 진짜 앱 만들기 (다음)
 
-- [ ] 트랜스파일러: GuBASIC → Dart → Flutter 프로젝트
-- [ ] macOS, Windows, Android, 웹 빌드
-- [ ] CI에서 도는 **동일성 테스트 묶음** (인터프리터 대 트랜스파일러)
-- [ ] 첫 빌드 때 Flutter SDK 자동 내려받기
-- [ ] 클라우드 빌드용 GitHub Actions 템플릿
+계획, 단계, 결정: [STAGE2_PLAN.ko.md](STAGE2_PLAN.ko.md) (D79–D82).
+
+- [ ] 실행 창을 IDE와 플레이어가 함께 쓰는 패키지로 (2-1)
+- [ ] **플레이어**: 프로젝트 하나를 혼자 도는 앱으로. CI가 웹, macOS, Windows로 빌드. 크기와 속도 측정 (2-2)
+- [ ] 형식 버전이 있고 여러 폼을 담을 수 있는 프로젝트 묶음 (2-3)
+- [ ] 파일 → 앱으로 내보내기: 웹 `.zip` (2-4), Windows (2-5), macOS IDE에서 macOS (2-6)
+- [ ] 동일성 테스트 프로그램을 플레이어로도 돌리기
 - [ ] 레이아웃: `LayoutMode` (세로 / 가로 / 격자), `Dock`
 - [ ] `Handles` 절; 실행 중 컨트롤 생성
 - [ ] `OptionButton`: 묶음 안에서 하나만 고르는 라디오 버튼과 묶음을 만드는 방법(Visual Basic 6에서는 폼 위의 옵션 버튼이 한 묶음이고, 프레임마다 또 한 묶음: [Microsoft](https://learn.microsoft.com/en-us/previous-versions/visualstudio/visual-basic-6/aa241737(v=vs.60))). 퀴즈의 보기에 자연스러운 컨트롤이며, 1단계의 퀴즈는 ListBox를 씀
 - [ ] 학생 앱의 메뉴: 메뉴 막대와 오른쪽 클릭 메뉴(Visual Basic 6의 [메뉴 편집기](https://learn.microsoft.com/en-us/previous-versions/visualstudio/visual-studio-2008/62aawczc(v=vs.90))와 [PopupMenu](https://learn.microsoft.com/en-us/previous-versions/visualstudio/visual-basic-6/aa716251(v=vs.60)), Visual Basic .NET의 `ContextMenuStrip`(같은 출처)에 해당)
 - [ ] `Database` (SQLite)와 `Http` + JSON
-- [ ] 여러 폼과 플랫폼별 `Form2.Show` 동작. 이때 폼 하나만 따로 저장하는 기능(Visual Basic 6의 "Form1을 다른 이름으로 저장")을 둘지 정함(그때까지 저장은 프로젝트 전체 저장, D32)
+- [ ] 여러 폼과 플랫폼별 `Form2.Show` 동작 (2-7, 2-8). 이때 폼 하나만 따로 저장하는 기능(Visual Basic 6의 "Form1을 다른 이름으로 저장")을 둘지 정함(그때까지 저장은 프로젝트 전체 저장, D32)
+- [ ] `Timer` 컨트롤 (2-9)과 `KeyDown` / `KeyUp` (2-10) (D82)
 - [ ] `ByRef`
 
-**완료 기준:** 프로젝트 하나를 네 플랫폼에 출시할 수 있다.
+**완료 기준:** 프로젝트 하나를 웹, macOS, Windows에 출시할 수 있다.
 
 ## 3단계 — 생태계
 
+- [ ] 트랜스파일러: GuBASIC → Dart → Flutter 프로젝트. CI에서 변환된 Dart로 동일성 테스트 묶음을 돌림. STAGE2_PLAN §7의 기준이 요구하면 더 일찍 (D79)
+- [ ] 트랜스파일러와 함께, 네이티브 빌드를 위한 Flutter SDK 내려받기와 GitHub Actions 템플릿
+- [ ] 폰용 Player와 함께 Android 빌드 (D80)
 - [ ] iOS 빌드
 - [ ] 폰용 **GuBASIC Player**
 - [ ] `component.yaml` 어댑터를 통한 pub.dev 추가 컴포넌트

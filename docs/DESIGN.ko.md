@@ -36,24 +36,26 @@ GuBASIC은 우선 만든 사람 자신이 즐기려고 만들지만, **초보자
 
 IDE를 C로 만드는 방안도 검토했지만 제외했습니다. C로 GUI를 만드는 수고에 비해 얻는 것이 적습니다.
 
-### 2.2 같은 코드를 실행하는 두 가지 방식
+### 2.2 같은 코드를 실행하는 방식
 
 ```
 소스 (.gbas) + 폼 (.form.yaml)
             │
      렉서 → 파서 → AST → 분석기
             │
-     ┌──────┴───────┐
- 인터프리터      트랜스파일러
- (F5, IDE 안)    (빌드 → Dart → Flutter → 네이티브 앱)
+     ┌──────┴──────────────┬──────────────────┐
+ 인터프리터              플레이어          트랜스파일러 (나중)
+ (F5, IDE 안)    (내보낸 앱: 같은       (→ Dart → Flutter
+                  인터프리터)              → 네이티브 앱)
 ```
 
 - **인터프리터**: 프로그램을 IDE 안에서 즉시 실행합니다. "F5를 누르면 바로 실행되는" 감각을 살리고, 초보자는 Flutter를 설치하지 않고도 앱을 만들고 실행할 수 있습니다.
-- **트랜스파일러**: BASIC을 Dart로 변환해 Flutter 프로젝트를 만들고 `flutter build`를 호출합니다. 출시되는 앱은 AOT 컴파일된 네이티브 코드라서, Flutter로 직접 짠 앱과 속도가 같습니다.
+- **플레이어**(2단계, D79): GuBASIC의 CI가 한 번 빌드해 두는 앱으로, 인터프리터와 실행 창이 들어 있습니다. 프로젝트를 내보내면 그 복사본에 프로젝트 파일을 넣어 웹, macOS, Windows 앱을 만들며, 사용자 컴퓨터에 Flutter가 필요 없습니다(D80).
+- **트랜스파일러**(나중, D79): BASIC을 Dart로 변환해 Flutter 프로젝트를 만들고 `flutter build`를 호출합니다. 출시되는 앱은 AOT 컴파일된 네이티브 코드라서, Flutter로 직접 짠 앱과 속도가 같습니다.
 
-두 방식은 렉서, 파서, AST, 분석기를 공유합니다. 원조 비주얼 베이직도 IDE에서는 해석 실행하고 출시할 때 컴파일하는 같은 구조였습니다.
+모두 렉서, 파서, AST, 분석기를 공유합니다. 원조 비주얼 베이직도 같은 구조였습니다. 모든 앱이 런타임 DLL을 썼고, 런타임이 문장 하나하나를 실행하는 p-code로, 또는 그래도 DLL이 필요한 네이티브 코드로 컴파일할 수 있었습니다([Microsoft](https://learn.microsoft.com/en-us/previous-versions/visualstudio/visual-basic-6/aa240843(v=vs.60))). 플레이어는 p-code 자리에 인터프리터가 들어간 그 런타임이고, 트랜스파일러는 네이티브 코드 선택지입니다.
 
-**가장 큰 위험**은 두 방식의 동작이 어긋나는 것입니다. §9(동일성 테스트)를 보세요.
+**가장 큰 위험**은 실행 방식끼리 동작이 어긋나는 것입니다. 인터프리터와 플레이어는 실행 창 하나와 인터프리터 하나를 함께 쓰므로 어긋날 수 없고, 나중에 올 트랜스파일러는 같은 동일성 테스트를 통과해야 합니다(§9).
 
 ### 2.3 런타임 층
 
@@ -69,7 +71,7 @@ GuBASIC의 각 릴리스는 검증한 Flutter 버전에 고정됩니다(D29). Fl
 구조는 이렇습니다.
 - **`GbFormModel`**은 폼과 컨트롤의 현재 속성(`GbControlState`, 이름과 타입은 `component.yaml`과 같음)을 담습니다. **`GbFormView`**가 이를 보여 줍니다: 각 컨트롤을 `Stack` 안의 `Left`, `Top` 위치에 둡니다(6절). Button은 테두리와 글자 사이를 8픽셀로 둡니다. 그래야 기본 너비의 Button에 자기 이름(`Button1`)이 다 보입니다. Material의 기본값 24로는 96픽셀 가운데 48픽셀만 글자에 남았습니다. 사용자가 한 일은 이벤트로 돌아옵니다: `Click`, 그리고 사용자가 TextBox의 확정된 글자나 CheckBox, ListBox에서 고른 항목을 바꿀 때의 `Changed`.
 - **`GbDialogs`**는 `MsgBox`와 `InputBox`를 모달로 보여 주고(D28), 프로그램이 끝나면 모두 닫습니다.
-- **`gubasic_runtime`은 `gubasic_lang`에 의존하지 않습니다.** 둘은 IDE가 이어 줍니다(인터프리터의 `FormHost`). 그래서 생성된 앱에는 인터프리터가 들어가지 않습니다.
+- **`gubasic_runtime`은 `gubasic_lang`에 의존하지 않습니다.** 둘은 IDE와 플레이어가 이어 줍니다(인터프리터의 `FormHost`). 그래서 나중의 트랜스파일된 앱에는 인터프리터가 들어가지 않아도 됩니다.
 - **IDE의 실행 창**(`apps/ide`): `RunHost`가 `GbFormModel`과 `GbDialogs` 위에 `FormHost`를 구현합니다. 속성 값은 모델 한 곳에만 있고, 프로그램이 넣고 사용자가 바꿉니다. 클릭과 입력은 이벤트로 인터프리터에 갑니다. 실행 창은 IDE 가운데를 채우고 자기 내비게이터를 가집니다. 그래서 MsgBox나 InputBox는 폼과 폼의 닫기 단추를 가리지만(D28) IDE의 도구 막대는 가리지 않아, 중지(Shift+F5)는 언제나 됩니다. 폼은 `Form_Load`가 끝나면 나타납니다.
   - **대화상자는 프로그램만 막습니다.** MsgBox나 InputBox는 실행 중인 프로그램의 폼만 막습니다. IDE는 계속 쓸 수 있고, 무엇보다 중지 단추가 눌립니다. 대화상자가 IDE까지 막으면 대화상자에서 기다리는 프로그램을 중지할 수 없기 때문입니다.
   - **실행 중에 파일 보기.** 프로그램이 실행되는 동안 파일 목록 맨 위에 "실행 화면" 항목이 생깁니다. 파일을 고르면 그 파일을 보여 주고, 이 항목을 고르면 실행 창이 그대로 돌아옵니다. 열려 있던 대화상자도 답을 기다리는 채로 남아 있습니다. 실행 창은 가려져 있는 동안 다시 만들지 않으므로 대화상자가 사라지지 않습니다.
@@ -88,15 +90,18 @@ GuBASIC의 각 릴리스는 검증한 Flutter 버전에 고정됩니다(D29). Fl
 gubasic/
 ├── apps/
 │   ├── ide/                 Flutter IDE (macOS, Windows, 웹)
-│   ├── player/              폰용 GuBASIC Player (3단계)
+│   ├── player/              플레이어: 내보낸 프로젝트 하나를 실행 (2단계),
+│   │                        3단계에서 폰용 Player가 됨
 │   └── playground/          개발용 웹 놀이터 (순수 Dart, Flutter 없음)
 ├── packages/
 │   ├── gubasic_lang/        순수 Dart: 렉서, 파서, AST, 분석기,
-│   │                        인터프리터, 트랜스파일러. Flutter 의존 없음.
-│   └── gubasic_runtime/     런타임 컨트롤과 함수 (Flutter)
+│   │                        인터프리터 (트랜스파일러는 나중). Flutter 의존 없음.
+│   ├── gubasic_runtime/     런타임 컨트롤과 함수 (Flutter)
+│   └── gubasic_player/      실행 창과 그 FormHost. IDE와 플레이어가 함께 씀
+│                            (2단계)
 ├── components/              컴포넌트마다 폴더 하나 (component.yaml + 어댑터)
 ├── examples/                예제 GuBASIC 프로젝트
-├── test/parity/             인터프리터-트랜스파일러 동일성 테스트
+├── test/parity/             동일성 테스트: 모든 실행 방식, 같은 출력
 └── docs/
 ```
 
@@ -128,7 +133,7 @@ gubasic/
 - 프로젝트 설정 **시작 개체**: 폼(기본값) 또는 `Sub Main`.
 - 대부분의 앱은 시작 폼을 쓰고 `Form_Load`에서 초기화합니다.
 - `Sub Main`은 첫 폼을 조건에 따라 정할 때 씁니다 (예: 로그인하지 않았을 때만 로그인 폼 표시).
-- 트랜스파일러는 이 설정으로 Dart의 `main()`을 만듭니다.
+- 플레이어는 이 설정으로 프로그램을 시작합니다. 나중의 트랜스파일러는 이 설정으로 Dart의 `main()`을 만듭니다.
 
 ### 3.3 폼과 화면 이동
 
@@ -268,7 +273,7 @@ IDE 메시지와 오류 설명은 **영어와 한국어**로 제공됩니다.
 
 - `gubasic_lang`은 일반 `dart test`로, `gubasic_runtime`은 `flutter test`로 테스트합니다.
 - **실제 입력기로 입력하기.** `packages/gubasic_runtime/tool/ime_probe`는 실제 입력기가 입력 칸에 보내는 것(조합 중인 부분을 포함한 모든 값)을 기록합니다. 기록은 `packages/gubasic_runtime/test/ime_logs/`에 두고 TextBox 테스트가 그대로 재생하므로, 한글 입력을 지어낸 신호가 아니라 실제 신호로 시험합니다. 재생은 두 층으로 검사합니다. LANGUAGE 11.1절의 규칙은 모든 입력기에 똑같이 적용하고, 각 기록이 만든 이벤트는 순서 그대로 고정합니다. 그래서 Flutter를 올리면서 한 입력기의 동작이 바뀌면 알아챕니다. 기록하는 방법: [README](../packages/gubasic_runtime/tool/ime_probe/README.ko.md).
-- **동일성 테스트 (처음부터 필수):** `test/parity/`의 예제 프로그램을 인터프리터로 한 번, 변환된 Dart로 한 번 실행해서 기록된 출력이 같아야 합니다. 동일성을 깨는 변경은 병합하지 않습니다.
+- **동일성 테스트 (처음부터 필수):** `test/parity/`의 예제 프로그램을 모든 실행 방식으로 돌려 기록된 출력이 같아야 합니다. 지금은 VM, Chrome, IDE의 위젯에서 도는 인터프리터, 2단계부터는 플레이어(D79), 트랜스파일러가 오면 변환된 Dart입니다. 동일성을 깨는 변경은 병합하지 않습니다.
 - 같은 동일성 프로그램을 Chrome(`apps/playground`)에서도 실행해서, 인터프리터가 VM과 웹에서 같은 출력을 내는지 확인합니다.
 
 ### 9.1 이벤트 스크립트
@@ -332,8 +337,10 @@ Next
 |---|---|---|
 | 그리기, 코딩, 실행 | GuBASIC만 | 초보자 |
 | 폰에서 테스트 | **GuBASIC Player** 앱 (App Inventor Companion 같은 방식) | 초보자 |
-| Android / 웹 / 데스크톱 출시 | 첫 빌드 때 **자동으로 내려받는** Flutter SDK, 또는 **GitHub Actions** 클라우드 빌드 | 중급 |
-| iOS / macOS 출시 | 맥, Xcode, 애플 개발자 계정 | 중급 이상 |
+| 웹, macOS, Windows 앱 내보내기 | GuBASIC만: IDE가 버전마다 한 번 받는 미리 만든 플레이어에 프로젝트를 넣음. macOS 앱은 macOS IDE에서만(D80) | 초보자 |
+| Android 출시 | 폰용 Player(3단계) | 초보자 |
+| 네이티브 출시 빌드(나중의 트랜스파일러) | Flutter, 또는 GitHub Actions 클라우드 빌드 | 중급 |
+| iOS 출시, 또는 Developer ID로 macOS 앱 서명 | 맥, Xcode, 애플 개발자 계정 | 중급 이상 |
 
 iOS/macOS 요구 사항은 GuBASIC이 아니라 애플의 정책에서 옵니다.
 
@@ -428,3 +435,7 @@ iOS/macOS 요구 사항은 GuBASIC이 아니라 애플의 정책에서 옵니다
 | D76 | **프로젝트가 시작하지 못하게 한 오류의 줄을 코드 편집기에 표시함.** F5가 프로젝트를 시작하지 못하게 하는 오류를 찾으면(D40), 코드 파일에서 오류가 있는 줄마다 실행이 멈춘 줄과 같은 띠를 그리며, 코드 파일이 F5를 눌렀을 때 그대로일 때만 보임: 고치면 띠가 사라지고, 되돌리면 다시 보이고, 실행이 시작되면 지워짐 | 에이전트의 3차 시험은 철자가 틀린 이름에서 F5를 누른 뒤, 실행 중 오류처럼 그 줄에 빨간 표시가 있기를 기대했지만 출력 칸에서만 오류를 찾았음. 두 가지를 같은 방식으로 표시하면 같은 뜻을 전함: 이 줄이 프로그램을 더 나아가지 못하게 했음 |
 | D77 | **폼 끝은 끌기를 멈추는 까닭을 알리고, 폼 밖으로 완전히 나간 컨트롤은 화살표로 가리킴.** 마우스로 옮기거나 크기를 바꾸는 컨트롤이 폼 끝에 막혀 있는 동안(D34), 디자이너의 상태 표시줄이 빨간 글자로 마우스로 끄는 컨트롤은 폼 안에 머물고, 속성 창에서 Left, Top, Width나 Height를 치면 폼 밖으로 둘 수 있다고(D35) 알림. 단추를 떼면 표시줄은 다시 그 컨트롤을 보여 줌. 폼 밖으로 완전히 나가 빨간 테두리를 그릴 부분이 없는 컨트롤(D72)은 그 가운데에서 가장 가까운 폼 끝에 그쪽을 가리키는 빨간 화살표를 그림 | 에이전트의 3차 시험에서 손잡이가 아무 말 없이 폼 끝에서 멈춰 초보자가 왜 더 늘어나지 않는지 헷갈렸고(C-1), 친 Width는 폼 밖으로 나갔음. 두 규칙은 각각 맞으므로, 폼 끝에서 어느 규칙인지 알려 줌. 폼 밖으로 완전히 옮긴 ListBox는 사라져서 띠의 이름만이 단서였음(C-5) |
 | D78 | **프로젝트 목록에 브라우저에 보관된 프로젝트를 모두 보임.** 오른쪽 위 목록은 예제, 디스크에서 마지막으로 열거나 저장한 프로젝트(데스크톱), 그리고 브라우저에 보관된 프로젝트를 모두 이름으로, 마지막에 저장한 것부터 보임. 열린 프로젝트는 더 이상 보관되어 있지 않아도 보임. 보관된 프로젝트를 고르면 다른 전환처럼 저장하지 않은 변경을 묻고, 파일 → 이 브라우저의 프로젝트에서 연 것처럼 엶 | 에이전트의 3차 시험은 다른 프로젝트를 이 목록에서 찾았지만 예제와 열린 프로젝트만 있었음. MyQuiz와 MyQuiz2는 파일 → 열기나, 새로 고친 뒤 D74의 띠로만 찾을 수 있었음 |
+| D79 | **2단계는 플레이어로 앱을 내보내고, 트랜스파일러는 나중에 함.** 학생의 앱은 **플레이어**에서 돎. 플레이어는 GuBASIC의 CI가 빌드하는 Flutter 앱으로, 인터프리터(`gubasic_lang`), 실행 창, `gubasic_runtime`이 들어 있고, 넣어 준 프로젝트를 F5와 똑같이 실행함. IDE의 실행 창과 그 `FormHost`는 둘이 함께 쓰는 패키지(`packages/gubasic_player`)로 옮겨 구현을 하나로 둠. **트랜스파일러**(§2.2, D3)는 장기적인 빠른 길로 남기고, 기준 프로그램이 플레이어에서 STAGE2_PLAN §7의 기준보다 느릴 때, 또는 추가 컴포넌트와 Dart 직접 넣기를 할 때 다시 계획함. 늦어도 3단계 시작 때. 하드 규칙(AST 하나, 동일성, 비동기 인터프리터, `gubasic_runtime`으로만 그리기)은 그대로 두어 그 길을 열어 둠. 전체 계획: [STAGE2_PLAN.ko.md](STAGE2_PLAN.ko.md) | 트랜스파일러는 빌드하는 컴퓨터에 Flutter와, 데스크톱 앱이면 Xcode나 Visual Studio가 필요함([Flutter](https://docs.flutter.dev/platform-integration/macos/setup), [Flutter](https://docs.flutter.dev/platform-integration/windows/setup)). 초등학생이나 교사가 설치할 것이 아님. 플레이어는 아무것도 필요 없고, 웹 IDE에서도 되고, 구조적으로 동일함. Visual Basic 6도 같았음: 앱이 런타임 DLL MSVBVM60.DLL을 썼고, p-code는 실행하면서 문장 하나하나 바뀌었음([Microsoft](https://learn.microsoft.com/en-us/previous-versions/visualstudio/visual-basic-6/aa240843(v=vs.60))) |
+| D80 | **앱은 미리 만든 플레이어에 프로젝트를 넣어 내보냄.** GuBASIC의 CI가 릴리스마다 웹, macOS, Windows 플레이어를 빌드함. IDE는 플레이어를 담지 않고, 처음 내보낼 때 자기 버전에 맞는 것을 GuBASIC의 GitHub Release나 Pages에서 받아 보관함. 프로젝트는 형식 버전이 있는 묶음 하나로 앱 안에 들어가고, 묶음은 처음부터 여러 폼을 담을 수 있음. **웹:** 플레이어와 프로젝트의 `.zip`. 브라우저 안에서도 만들고, GitHub Pages나 학교 서버에 올리는 짧은 안내를 붙임. **Windows:** 프로그램과 프로젝트가 든 폴더. **macOS:** macOS IDE에서만. 바뀐 앱은 Apple Silicon에서 서명이 있어야 실행되므로, 시스템의 `codesign`으로 ad-hoc 서명을 다시 함. Developer ID가 없으므로 Gatekeeper는 여전히 "그래도 열기"를 요구함. **Android**는 폰용 Player와 함께 3단계로 옮김: 2단계는 한 프로젝트를 웹, macOS, Windows에 출시하면 끝 | GuBASIC을 쓰는 사람에게 컴파일러도, 계정도, 개발 도구도 필요 없음. 아이들은 GitHub Actions를 쓸 수 없음: GitHub 약관은 "만 13세 이상이어야 한다"고 정함([GitHub](https://docs.github.com/en/site-policy/github-terms/github-terms-of-service)). Apple Silicon에서는 모든 실행 파일이 서명되어야 하고, ad-hoc 서명이면 충분함([Apple](https://developer.apple.com/documentation/macos-release-notes/macos-big-sur-11_0_1-universal-apps-release-notes), [The Eclectic Light Company의 인용](https://eclecticlight.co/2020/08/22/apple-silicon-macs-will-require-signed-code/)). 빌드한 뒤 바꾼 Android 앱은 Android의 도구로 다시 서명해야 하는데([Android Developers](https://developer.android.com/tools/apksigner)), 폰용 Player는 그 일을 피함 |
+| D81 | **내보낸 앱은 그 프로젝트의 앱임.** 이름은 프로젝트 이름, 창은 시작 폼의 크기, 아이콘은 GuBASIC 아이콘(고르기는 나중). 실행 중 오류는 F5처럼 프로그램을 끝냄: 앱이 오류의 코드, 메시지, 줄을 대화상자로 보이고, 대화상자를 닫으면 앱도 닫힘 | 앱을 만든 것은 학생이므로 학생이 붙인 이름을 씀. F5처럼 끝내면 규칙이 하나로 남음. 고장 난 프로그램을 계속 두면 사용자에게 코드가 멈춘 폼만 남음 |
+| D82 | **Timer와 키 이벤트는 2단계에, 여러 폼 다음에 넣음.** `Timer` 컨트롤(`Interval`, `Enabled`, `Tick`)과 폼의 `KeyDown`·`KeyUp`. 각각 동일성 테스트를 위한 이벤트 스크립트 단계가 있음(STAGE2_PLAN 2-9, 2-10 단계). 틱은 클릭과 같은 이벤트라 다시 들어가지 않고, 다른 처리기가 도는 동안 기다림(§3.1). 키 이벤트는 웹과 데스크톱에서 오고, 폰(3단계)에서는 그냥 오지 않음 | 폼을 작은 게임이나 애니메이션으로 바꾸는 것이 이 둘이고, 아이들이 다음으로 만들고 싶어 하는 것임. 둘 다 인터프리터와 플레이어에서 똑같이 돌므로 트랜스파일러가 필요 없음 |

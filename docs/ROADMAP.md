@@ -40,23 +40,29 @@ The core Visual Basic experience, entirely inside the IDE.
 
 ## Stage 2 — Build real apps (next)
 
-- [ ] Transpiler: GuBASIC → Dart → Flutter project
-- [ ] Build for macOS, Windows, Android, Web
-- [ ] **Parity test suite** (interpreter vs transpiler) running in CI
-- [ ] Flutter SDK auto-download on first Build
-- [ ] GitHub Actions template for cloud builds
+The plan, its steps and decisions: [STAGE2_PLAN.md](STAGE2_PLAN.md) (D79–D82).
+
+- [ ] The run window in a package shared by the IDE and the player (2-1)
+- [ ] **The player**: one project as an app of its own, built by CI for the web, macOS and Windows; sizes and speed measured (2-2)
+- [ ] The project bundle, with a format version and room for several forms (2-3)
+- [ ] File → Export as app: web `.zip` (2-4), Windows (2-5), macOS from the macOS IDE (2-6)
+- [ ] Parity programs run through the player too
 - [ ] Layout: `LayoutMode` (Vertical / Horizontal / Grid), `Dock`
 - [ ] `Handles` clause; run-time control creation
 - [ ] `OptionButton`: radio buttons, of which one in a group is chosen, with a way to form groups (in Visual Basic 6 the option buttons on a form are one group and those in each frame another: [Microsoft](https://learn.microsoft.com/en-us/previous-versions/visualstudio/visual-basic-6/aa241737(v=vs.60))). A natural control for a quiz's choices; the stage 1 quiz uses a ListBox
 - [ ] Menus in students' apps: a menu bar and right-click menus (Visual Basic 6's [Menu Editor](https://learn.microsoft.com/en-us/previous-versions/visualstudio/visual-studio-2008/62aawczc(v=vs.90)) and [PopupMenu](https://learn.microsoft.com/en-us/previous-versions/visualstudio/visual-basic-6/aa716251(v=vs.60)); Visual Basic .NET's `ContextMenuStrip`, same source)
 - [ ] `Database` (SQLite) and `Http` + JSON
-- [ ] Multiple forms and `Form2.Show` platform behavior; decide then whether one form can be saved on its own (Visual Basic 6's "Save Form1 As"; until then Save saves the whole project, D32)
+- [ ] Multiple forms and `Form2.Show` platform behavior (2-7, 2-8); decide then whether one form can be saved on its own (Visual Basic 6's "Save Form1 As"; until then Save saves the whole project, D32)
+- [ ] `Timer` control (2-9) and `KeyDown` / `KeyUp` (2-10) (D82)
 - [ ] `ByRef`
 
-**Done when:** one project ships to four platforms.
+**Done when:** one project ships to the web, macOS and Windows.
 
 ## Stage 3 — Ecosystem
 
+- [ ] Transpiler: GuBASIC → Dart → Flutter project, with the parity suite running the transpiled Dart in CI; earlier if the criteria of STAGE2_PLAN §7 call for it (D79)
+- [ ] Flutter SDK download and a GitHub Actions template for native builds, with the transpiler
+- [ ] Android builds, with the phone Player (D80)
 - [ ] iOS builds
 - [ ] **GuBASIC Player** for phones
 - [ ] Extra components from pub.dev via `component.yaml` adapters

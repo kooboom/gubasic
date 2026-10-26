@@ -10,7 +10,7 @@ Problems we know about and have **deliberately** left unfixed for now. Each entr
 
 - **What:** a loop of a million rounds (`total = total + i * 2 - 1`) takes about 3 seconds in the playground's optimized web build and about 0.8 seconds on the VM.
 - **Why deferred:** it is not a correctness problem, and programs of the size beginners write do not notice it.
-- **Revisit:** when someone finds the playground or the IDE noticeably slow in practice, or in the transpiler stage.
+- **Revisit:** when someone finds the playground or the IDE noticeably slow in practice; step 2-2 measures it in the player and sets the criteria for the transpiler (STAGE2_PLAN §7, D79).
 
 ## The playground does not run forms
 
@@ -52,8 +52,8 @@ Problems we know about and have **deliberately** left unfixed for now. Each entr
 ## Apps built later may cut off text drawn in the IDE
 
 - **What:** the runtime does not choose fonts (DESIGN §2.3), so apps made later by the transpiler will use the device's default font, while the IDE uses its bundled Pretendard (D30). Letters can then be wider in the released app than in the IDE, and text in a Label drawn to fit can be cut off.
-- **Why deferred:** there is no transpiler yet.
-- **Revisit:** in the transpiler stage. Options include putting the same font into generated apps (they grow by about 3 MB), or having the designer warn when text may be cut off.
+- **Why deferred:** there is no transpiler yet. The player of stage 2 (D79) is an app of GuBASIC's own, so it can bring the IDE's font: step 2-2 does, and its apps then lay text out as the IDE does.
+- **Revisit:** with the transpiler. Options include putting the same font into generated apps (they grow by about 3 MB), or having the designer warn when text may be cut off.
 
 ## The web IDE's font loading is not checked on the school network
 

@@ -4,7 +4,7 @@ Read this before changing anything in this repository.
 
 ## What this project is
 
-GuBASIC: a Visual Basic–style RAD tool built with Flutter. Users draw forms, double-click controls and write event handlers in a BASIC dialect. The same code runs instantly in an interpreter inside the IDE and is transpiled to Dart for native release builds.
+GuBASIC: a Visual Basic–style RAD tool built with Flutter. Users draw forms, double-click controls and write event handlers in a BASIC dialect. The same code runs instantly in an interpreter inside the IDE, and an exported app runs it in a player that carries the same interpreter (stage 2); a transpiler to Dart for native builds comes later (DESIGN D79).
 
 Source of truth, in this order:
 1. `docs/DESIGN.md` — architecture and the decision record (§14, D1 onwards)
@@ -19,16 +19,18 @@ If a request conflicts with these documents, **stop and say so** instead of sile
 apps/ide/                Flutter IDE: macOS, Windows and web
 apps/playground/         Web playground for development (pure Dart, no Flutter)
 packages/gubasic_lang/   Pure Dart: lexer, parser, AST, analyzer, interpreter, form files
-                         (the transpiler comes in stage 2)
+                         (the transpiler comes later, D79)
 packages/gubasic_runtime/ Flutter runtime used by BOTH interpreter and generated apps
 components/<Name>/       component.yaml (the adapter comes with the transpiler)
 examples/                Sample projects, built into the IDE
 test/parity/             Parity programs (.gbas, .form.yaml, .events, .in, .out), run by
                          the interpreter on the VM, in Chrome and through the IDE's widgets;
-                         the transpiled Dart joins in stage 2
+                         the player joins in stage 2, the transpiled Dart later
 ```
 
-`apps/player/` (the phone player) arrives in stage 3.
+`apps/player/` (the player that runs an exported project, D79) and `packages/gubasic_player/`
+(the run window shared by the IDE and the player) arrive in stage 2; the player becomes the
+phone Player in stage 3.
 
 Generated files that are checked in, each with a `--check` mode that CI runs:
 `packages/gubasic_lang/lib/src/forms/components.g.dart` (`tool/embed_components.dart`),
@@ -39,7 +41,7 @@ After changing `components/`, `examples/` or `test/parity/`, run the generator i
 ## Hard rules
 
 1. **`gubasic_lang` must not depend on Flutter.** It must run with plain `dart test`.
-2. **Interpreter and transpiler share one AST.** Never add a language feature to only one of them.
+2. **Interpreter and transpiler share one AST.** Never add a language feature to only one of them. The transpiler comes later (D79); nothing may close the way to it.
 3. **Every language feature gets a parity test** in `test/parity/`: same program, same output, both modes. Do not merge if parity fails.
 4. **The interpreter is async.** Every user procedure is async; every call to one is awaited. Do not introduce synchronous fast paths that change behavior.
 5. **A running event handler must not re-enter.**
