@@ -133,6 +133,52 @@ void main() {
     expect(find.byKey(codeErrorLineKey), findsNothing, reason: 'not a run');
   });
 
+  testWidgets('errors that keep the project from starting: their lines are '
+      'marked while the code is as it was, gone after a run (D76)', (
+    tester,
+  ) async {
+    const broken =
+        'Sub Form_Load()\n'
+        '    x = \n'
+        '    Dim a As Integer\n'
+        '    y = 1\n'
+        'End Sub\n';
+    await open(tester, broken);
+    await tester.tap(find.text(codeFile));
+    await tester.pumpAndSettle();
+    await run(tester);
+    expect(find.text(s.cannotStart), findsOneWidget);
+    final line2 = find.byKey(codeProblemLineKey(2));
+    final line4 = find.byKey(codeProblemLineKey(4));
+    expect(line2, findsOneWidget);
+    expect(line4, findsOneWidget, reason: 'y is not declared');
+    expect(find.byKey(codeProblemLineKey(3)), findsNothing);
+    expectOnLine(tester, line2, broken, 2);
+    expectOnLine(tester, line4, broken, 4);
+
+    // A change: the lines may be others now. Back as it was: marked again.
+    tester.testTextInput.enterText(broken.replaceFirst('x = ', 'x = 1'));
+    await tester.pumpAndSettle();
+    expect(line2, findsNothing);
+    tester.testTextInput.enterText(broken);
+    await tester.pumpAndSettle();
+    expect(line2, findsOneWidget);
+
+    // Fixed and run: no marks.
+    const fixed =
+        'Sub Form_Load()\n'
+        '    Dim x As Integer\n'
+        '    x = 1\n'
+        'End Sub\n';
+    tester.testTextInput.enterText(fixed);
+    await tester.pumpAndSettle();
+    await run(tester);
+    await tester.tap(find.text(codeFile));
+    await tester.pumpAndSettle();
+    expect(find.byKey(codeProblemLineKey(2)), findsNothing);
+    expect(find.byKey(codeProblemLineKey(4)), findsNothing);
+  });
+
   /// A long program: [error] on line 280 of 300.
   String long(String error) => [
     'Sub Form_Load()',

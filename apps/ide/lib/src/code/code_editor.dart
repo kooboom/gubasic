@@ -26,6 +26,11 @@ const codeEventsKey = ValueKey('code.events');
 /// The mark behind the line where the last run stopped with an error.
 const codeErrorLineKey = ValueKey('code.errorLine');
 
+/// The mark behind line [line], which has an error that kept the project
+/// from starting (D76).
+ValueKey<String> codeProblemLineKey(int line) =>
+    ValueKey('code.problemLine.$line');
+
 /// The mark that lights up the line an error in the output led to.
 const codeFlashLineKey = ValueKey('code.flashLine');
 
@@ -87,6 +92,7 @@ class CodeEditor extends StatefulWidget {
     this.focusCount = 0,
     this.goTo,
     this.errorLine,
+    this.problemLines = const {},
   });
 
   final OpenProject project;
@@ -107,6 +113,11 @@ class CodeEditor extends StatefulWidget {
   /// The line (1-based) where the last run stopped with an error, shown
   /// marked while the code is as it was run (D40); null for none.
   final int? errorLine;
+
+  /// The lines (1-based) with errors that kept the project from starting
+  /// the last time F5 was pressed, marked as [errorLine] is, while the code
+  /// is as it was then (D76).
+  final Set<int> problemLines;
 
   @override
   State<CodeEditor> createState() => _CodeEditorState();
@@ -184,7 +195,10 @@ class _CodeEditorState extends State<CodeEditor>
     super.didUpdateWidget(old);
     _updateControls();
     if (widget.locked) _closeCompletion();
-    if (widget.errorLine != old.errorLine) _built = null;
+    if (widget.errorLine != old.errorLine ||
+        !setEquals(widget.problemLines, old.problemLines)) {
+      _built = null;
+    }
     final goTo = widget.goTo;
     final again = goTo != null && goTo.id != old.goTo?.id;
     if (widget.focusCount != old.focusCount || again) {
@@ -1146,6 +1160,16 @@ class _CodeEditorState extends State<CodeEditor>
           padding: const EdgeInsets.symmetric(vertical: 8),
           child: Stack(
             children: [
+              for (final line in widget.problemLines)
+                if (line >= 1 && line <= lines)
+                  Positioned(
+                    key: codeProblemLineKey(line),
+                    left: 0,
+                    right: 0,
+                    top: (line - 1) * pitch,
+                    height: pitch,
+                    child: ColoredBox(color: scheme.errorContainer),
+                  ),
               if (widget.errorLine case final line? when line <= lines)
                 Positioned(
                   key: codeErrorLineKey,

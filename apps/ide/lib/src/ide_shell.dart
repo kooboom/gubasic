@@ -112,8 +112,9 @@ class _IdeShellState extends State<IdeShell> {
   /// Shown instead of a run when the project cannot start.
   var _problems = <_Output>[];
 
-  /// The files as the last run started, to tell whether the line of its
-  /// error is still that line.
+  /// The files as the last run started, or as F5 found them when the
+  /// project could not start: to tell whether the line of an error is
+  /// still that line.
   Map<String, String> _runFiles = const {};
 
   /// Where the last run stopped with an error, while the code is still as
@@ -129,6 +130,17 @@ class _IdeShellState extends State<IdeShell> {
     return null;
   }
 
+  /// The lines of [file] with errors that kept the project from starting,
+  /// while the file is as it was then (D76).
+  Set<int> _problemLinesIn(String file) =>
+      _project.files[file] == _runFiles[file]
+      ? {
+          for (final p in _problems)
+            if ((p.file, p.line) case (final f?, final line?) when f == file)
+              line,
+        }
+      : const {};
+
   bool get _running => _session?.isRunning ?? false;
 
   void _run() {
@@ -139,6 +151,7 @@ class _IdeShellState extends State<IdeShell> {
     _session = null;
     final startup = project.startup;
     if (!project.canRun || startup == null) {
+      _runFiles = Map.of(project.files);
       setState(
         () => _problems = [
           (text: s.cannotStart, file: null, line: null),
@@ -531,6 +544,7 @@ class _IdeShellState extends State<IdeShell> {
             focusCount: _codeFocusCount,
             goTo: _goTo,
             errorLine: _errorAt?.file == file ? _errorAt!.line : null,
+            problemLines: _problemLinesIn(file),
           )
         : SingleChildScrollView(
             padding: const EdgeInsets.all(12),
