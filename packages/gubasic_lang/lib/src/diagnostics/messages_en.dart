@@ -97,6 +97,11 @@ const Map<DiagnosticCode, String> englishMessages = {
   DiagnosticCode.expectedValueAndParen:
       'A value and the symbol ")" are missing here. Write the value, then '
           'close the parenthesis.',
+  DiagnosticCode.unloadStatement: 'GuBASIC closes a form with a method, '
+      'not Unload: write {0}.Close.',
+  DiagnosticCode.loadStatement: 'GuBASIC has no Load statement: to show a '
+      'form, write {0}.Show. To call a procedure, put its arguments in '
+      'parentheses.',
 
   // Analyzer: names
   DiagnosticCode.unknownName: '"{0}" is not declared. '
@@ -161,6 +166,8 @@ const Map<DiagnosticCode, String> englishMessages = {
   DiagnosticCode.unknownPictureInCode: '"{0}" is not one of this project\'s '
       'pictures, so the program will stop here when it runs. Add the picture '
       'to the project, or check its name.',
+  DiagnosticCode.showWithArgument: 'Show takes no argument. To show the '
+      'form as a dialog and wait until it is closed, write {0}.ShowDialog.',
   DiagnosticCode.badAnchorInCode: '"{0}" is not an Anchor, so the program '
       'will stop here when it runs. Name the edges the control keeps its '
       'distance to with Left, Top, Right and Bottom, as in "Right Bottom", '
@@ -270,6 +277,8 @@ const Map<DiagnosticCode, String> englishMessages = {
   DiagnosticCode.badAnchorValue: '"{0}" is not an Anchor. Name the edges '
       'with Left, Top, Right and Bottom, as in "Right Bottom", or "" for '
       'none.',
+  DiagnosticCode.dialogAlreadyShown: '{0} is already shown, so it cannot '
+      'be shown as a dialog. Hide or close it first, or use {0}.Show.',
   DiagnosticCode.settingsNotSaved: 'The setting could not be saved ({0}). '
       'There may be no room left where settings are kept.',
   DiagnosticCode.unhandledException: 'An error was thrown and not caught: '

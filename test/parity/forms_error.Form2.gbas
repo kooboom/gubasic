@@ -1,0 +1,4 @@
+Sub Form_Load()
+    Dim zero As Integer
+    Debug.Print(1 \ zero)
+End Sub

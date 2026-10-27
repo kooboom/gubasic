@@ -225,11 +225,15 @@ jobs:
           $name = [string][char]0xC548 + [char]0xB155
           ./tool/check_windows_app.ps1 -Zip "$env:RUNNER_TEMP/hello-windows.zip" -Name $name -Width 320 -Height 120 -Shot "$env:RUNNER_TEMP/exported-app.png"
           ./tool/check_windows_app.ps1 -Zip "$env:RUNNER_TEMP/hello-windows-end.zip" -Name Ending -Ends -AppId ciwindowsending1
+          # Two forms (D88, D89): Swap's window takes Form2's size; Dialog
+          # keeps Form1's, with Form2 over it.
+          ./tool/check_windows_app.ps1 -Zip "$env:RUNNER_TEMP/hello-windows-swap.zip" -Name Swap -Width 360 -Height 220 -Shot "$env:RUNNER_TEMP/exported-swap.png"
+          ./tool/check_windows_app.ps1 -Zip "$env:RUNNER_TEMP/hello-windows-dialog.zip" -Name Dialog -Width 320 -Height 200 -Shot "$env:RUNNER_TEMP/exported-dialog.png"
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: exported-windows-app
-          path: ${{ runner.temp }}/exported-app.png
+          path: ${{ runner.temp }}/exported-*.png
           retention-days: 30
           if-no-files-found: warn
       - uses: actions/upload-artifact@v4

@@ -1,0 +1,8 @@
+formatVersion: 1
+properties:
+  Caption: Only
+controls:
+  - name: btnHide
+    type: Button
+    properties:
+      Caption: Hide

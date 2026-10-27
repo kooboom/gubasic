@@ -1,0 +1,20 @@
+formatVersion: 1
+properties:
+  Caption: Name
+  Width: 300
+  Height: 200
+controls:
+  - name: txtName
+    type: TextBox
+    properties:
+      Text: ""
+  - name: btnOK
+    type: Button
+    properties:
+      Caption: OK
+      Top: 40
+  - name: btnClose
+    type: Button
+    properties:
+      Caption: Close
+      Top: 80

@@ -1,0 +1,13 @@
+formatVersion: 1
+properties:
+  Caption: Main
+controls:
+  - name: btnNext
+    type: Button
+    properties:
+      Caption: Next
+  - name: lblGreeting
+    type: Label
+    properties:
+      Caption: ""
+      Top: 40

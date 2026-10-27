@@ -126,8 +126,7 @@ class _IdeShellState extends State<IdeShell> {
   /// it was run (D40).
   ({String file, int line})? get _errorAt {
     final session = _session;
-    if (session?.result case RunFailed(:final error)) {
-      final file = session!.startup.codeFile;
+    if (session?.result case RunFailed(:final error, :final file?)) {
       if (_project.files[file] == _runFiles[file]) {
         return (file: file, line: error.line);
       }
@@ -638,6 +637,13 @@ class _IdeShellState extends State<IdeShell> {
     };
   }
 
+  /// The code file a run ended in: the error's, or the startup form's.
+  static String _endFile(RunResult result, RunSession session) =>
+      switch (result) {
+        RunFailed(:final file?) => file,
+        _ => session.startup.codeFile,
+      };
+
   Widget _output(BuildContext context) {
     final session = _session;
     final error = switch (session?.result) {
@@ -650,8 +656,9 @@ class _IdeShellState extends State<IdeShell> {
         (text: l, file: null, line: null),
       if (session?.result case final result?)
         (
-          text: _endMessage(result, session!.startup.codeFile),
-          file: session.startup.codeFile,
+          // The file of the form whose code stopped (D88).
+          text: _endMessage(result, _endFile(result, session!)),
+          file: _endFile(result, session),
           line: error?.line,
         ),
     ];

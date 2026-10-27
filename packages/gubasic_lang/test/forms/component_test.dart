@@ -47,7 +47,7 @@ void main() {
     expect(
         describe('Form'),
         'Caption As String = , Width As Integer = 480, Height As Integer = 360'
-        ' | x_Load(), x_Resize() | default Load');
+        ' | x_Load(), x_Resize(), x_Closed() | default Load');
     expect(
         describe('Button'),
         'Caption As String = , Left As Integer = 0, Top As Integer = 0, '

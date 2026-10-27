@@ -94,17 +94,23 @@ class _Host implements FormHost {
   @override
   Future<void> yieldNow() => Future<void>.delayed(Duration.zero);
   @override
-  Object getProperty(String? control, String property) =>
-      _properties['$control.$property'] ?? '';
+  Object getProperty(String form, String? control, String property) =>
+      _properties['$form.$control.$property'] ?? '';
   @override
-  void setProperty(String? control, String property, Object value) =>
-      _properties['$control.$property'] = value;
+  void setProperty(
+          String form, String? control, String property, Object value) =>
+      _properties['$form.$control.$property'] = value;
   @override
   Future<String?> loadSettings() async => null;
   @override
   Future<void> saveSettings(String text) async {}
   @override
-  void showForm() => shown.complete();
+  void showForms(List<ShownForm> forms) {
+    if (!shown.isCompleted) shown.complete();
+  }
+
+  @override
+  void resetForm(String form) {}
   @override
   void endProgram() {}
 }

@@ -1,0 +1,9 @@
+btnNext.Click
+btnOK.Click         ' no name yet
+OK
+txtName.Type "민준"
+btnOK.Click         ' back to Form1, greeted
+btnNext.Click       ' Form2 starts again, its name empty
+txtName.Type "Kim"
+btnOK.Click
+Close

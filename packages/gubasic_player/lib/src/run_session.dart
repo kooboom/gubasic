@@ -22,17 +22,17 @@ class RunSession extends ChangeNotifier {
            host ??
            RunHost(
              startup.form,
+             others: startup.forms.skip(1).toList(),
              strings: strings.runtime,
              project: project,
              settingsKey: settingsKey,
              settings: settings,
              pictures: pictures,
            ) {
-    interpreter = Interpreter(
-      startup.program,
-      this.host,
-      messages: strings.messages,
-    );
+    final project = startup.project;
+    interpreter = project == null
+        ? Interpreter(startup.program, this.host, messages: strings.messages)
+        : Interpreter.project(project, this.host, messages: strings.messages);
     this.host
       ..interpreter = interpreter
       ..onDebugPrint = (line) {
@@ -42,7 +42,9 @@ class RunSession extends ChangeNotifier {
       ..onShowForm = () {
         formShown = true;
         notifyListeners();
-      }; // Measuring builds only (STAGE2_PLAN §7); compiled away elsewhere.
+      }
+      ..onFormsChanged = notifyListeners;
+    // Measuring builds only (STAGE2_PLAN §7); compiled away elsewhere.
     if (benchEnabled) BenchProbe.current?.attach(this);
   }
 

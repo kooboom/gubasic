@@ -11,14 +11,25 @@ const _window = MethodChannel('gubasic/window');
 /// nothing where the app's runner has no such channel: on the web, where
 /// the page is the frame. The Windows and macOS runners have it (D86,
 /// D87).
-Future<void> fitAppWindow(Project project) async {
+Future<void> fitAppWindow(Project project) {
   final form = project.startup?.form;
+  return fitWindow(
+    project.name,
+    width: form?.valueOf('Width') as int?,
+    height: form?.valueOf('Height') as int?,
+  );
+}
+
+/// Gives the app's window [title] and, when given, makes the area inside
+/// its frame [width] by [height]: also when another form comes to the
+/// front (D88).
+Future<void> fitWindow(String title, {int? width, int? height}) async {
   try {
     await _window.invokeMethod<void>('fit', {
-      'title': project.name,
-      if (form != null) ...{
-        'width': (form.valueOf('Width') as int).toDouble(),
-        'height': (form.valueOf('Height') as int).toDouble(),
+      'title': title,
+      if (width != null && height != null) ...{
+        'width': width.toDouble(),
+        'height': height.toDouble(),
       },
     });
   } on MissingPluginException {

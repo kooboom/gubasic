@@ -1,0 +1,16 @@
+' The answer stays readable after Close, until Form2 is shown again.
+Public Answer As String
+
+Sub Form_Load()
+    Answer = ""
+End Sub
+
+Sub btnOK_Click()
+    MsgBox("Thanks")
+    Answer = txtAnswer.Text
+    Me.Close
+End Sub
+
+Sub btnCancel_Click()
+    Me.Hide
+End Sub

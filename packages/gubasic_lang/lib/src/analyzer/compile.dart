@@ -4,6 +4,7 @@ import '../parser/parse_result.dart';
 import '../parser/parser.dart';
 import 'analysis_result.dart';
 import 'analyzer.dart';
+import 'forms.dart';
 
 /// Lexing, parsing and analysis of one source file.
 class CompileResult {
@@ -25,13 +26,15 @@ class CompileResult {
 }
 
 /// Lexes, parses and analyzes [source]; [form] is the form the code
-/// belongs to, if any, and [pictures] the project's pictures (see
-/// [analyze]).
+/// belongs to, if any, [pictures] the project's pictures and [forms] the
+/// project's forms (see [analyze]).
 CompileResult compile(
   String source, {
   FormFile? form,
   List<String>? pictures,
+  Map<String, FormInterface>? forms,
 }) {
   final parsed = parse(source);
-  return CompileResult(parsed, analyze(parsed, form: form, pictures: pictures));
+  return CompileResult(
+      parsed, analyze(parsed, form: form, pictures: pictures, forms: forms));
 }

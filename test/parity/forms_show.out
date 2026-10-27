@@ -1,0 +1,32 @@
+Debug.Print: Form1 loaded; Form2's score starts at 10
+Forms: Form1
+> btnNext.Click
+Debug.Print: Form2 loaded 1, score 11
+Forms: Form1 > Form2
+Debug.Print: Form2 resized 300x200
+Debug.Print: after Show: 1
+> Form1.btnNext.Click
+Blocked: Form1.btnNext.Click
+> txtName.Type "Kim"
+> btnOK.Click
+Forms: Form1
+Set Form1.lblGreeting.Caption: Hello, Kim!
+Debug.Print: greeted, Form2 says Kim
+> btnNext.Click
+Forms: Form1 > Form2
+Debug.Print: after Show: 2
+> btnClose.Click
+Forms: Form1
+Debug.Print: Form2 closed
+Debug.Print: still running after Close
+> btnNext.Click
+Debug.Print: Form2 loaded 1, score 11
+Forms: Form1 > Form2
+Debug.Print: Form2 resized 300x200
+Debug.Print: after Show: 3
+> Form2.btnOK.Click
+Forms: Form1
+Set Form1.lblGreeting.Caption: Hello, !
+Debug.Print: greeted, Form2 says 
+> Close
+Closed

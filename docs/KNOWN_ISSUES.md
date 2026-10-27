@@ -159,3 +159,21 @@ Problems we know about and have **deliberately** left unfixed for now. Each entr
 - **What:** an exported macOS app is named after the project, in the Finder, the Dock, its menus and Force Quit (D87), but the program inside it (`Contents/MacOS`) keeps the name `GuBASIC Player`, which `ps` and crash reports show; the app also keeps the template's `get-task-allow` entitlement, which lets a debugger attach.
 - **Why deferred:** `codesign` cannot check an app whose program's name is not ASCII; a program named after an English project alone would make Korean projects differ. Removing the entitlement means writing the entitlements anew at each export.
 - **Revisit:** with choosing an app's icon (STAGE2_PLAN §9), when the export writes more of the app's metadata.
+
+## A project's forms share one window
+
+- **What:** `Form2.Show` shows Form2 in the same window, or page, as Form1, which it covers (D88, D89); on the desktop the window takes Form2's size. Visual Basic and the plan before step 2-7 (DESIGN §3.3) opened a window for each form on the desktop.
+- **Why deferred:** Flutter 3.47.7, which GuBASIC is pinned to, has the classes for several windows only as internal ones behind a flag; a window for each engine would keep the forms from sharing variables.
+- **Revisit:** when Flutter's multi-window API is public.
+
+## A dialog form has no close button
+
+- **What:** a form shown by `ShowDialog` is drawn over the form behind it with no close button of its own (D89): only its code, `Me.Hide` or `Me.Close`, takes it away. A dialog whose code never does stays until the window is closed, which ends the program.
+- **Why deferred:** a close button on the dialog needs a rule for what it does (Visual Basic .NET treats it as Cancel, with a `DialogResult`), which waits for `DialogResult` (D90).
+- **Revisit:** with `DialogResult`.
+
+## A form's closing cannot be cancelled
+
+- **What:** `Form_Closed` runs after a form is closed, or before the program ends when the window is closed (D88); there is no event that can keep the form open, as Visual Basic 6's `QueryUnload` and .NET's `FormClosing` do with their Cancel argument.
+- **Why deferred:** a Cancel argument is a `ByRef` parameter, which comes later in stage 2.
+- **Revisit:** with `ByRef`.

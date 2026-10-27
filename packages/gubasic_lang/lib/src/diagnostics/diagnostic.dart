@@ -118,6 +118,14 @@ enum DiagnosticCode {
   /// `(1 +`, `f(1,`. Says both what and `)` are missing.
   expectedValueAndParen('P023'),
 
+  /// `Unload Form2` (Visual Basic 6): GuBASIC closes a form with
+  /// `Form2.Close` (docs/DESIGN.md D88). Args: the form as written.
+  unloadStatement('P024'),
+
+  /// `Load Form2` (Visual Basic 6): GuBASIC shows a form with
+  /// `Form2.Show`. Args: the form as written.
+  loadStatement('P025'),
+
   // Analyzer: names
 
   /// A name that is not declared. Args: the name.
@@ -265,6 +273,11 @@ enum DiagnosticCode {
   /// not an edge: the program would stop there (R014). Args: the text.
   badAnchorInCode('A038', DiagnosticSeverity.warning),
 
+  /// `Form2.Show vbModal` (Visual Basic 6): Show takes no argument; a form
+  /// that the code waits for is shown with ShowDialog (D88). Args: the
+  /// form as written.
+  showWithArgument('A039'),
+
   // Form and project files (.form.yaml, .gbproj)
 
   /// The file is not in the expected layout (YAML syntax).
@@ -381,7 +394,10 @@ enum DiagnosticCode {
   pictureNotFound('R013'),
 
   /// `Anchor` set to text with a word that is not an edge. Args: the text.
-  badAnchorValue('R014');
+  badAnchorValue('R014'),
+
+  /// ShowDialog of a form that is already shown (D88). Args: the form.
+  dialogAlreadyShown('R015');
 
   const DiagnosticCode(this.code, [this.severity = DiagnosticSeverity.error]);
 

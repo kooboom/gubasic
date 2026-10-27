@@ -43,8 +43,35 @@ void main() {
     expect(parityCases.length, greaterThanOrEqualTo(12));
   });
 
-  for (final (name, source, answers, expected, form, events, settings, pictures)
-      in parityCases) {
+  for (final (
+        name,
+        source,
+        answers,
+        expected,
+        form,
+        events,
+        settings,
+        pictures,
+        others
+      ) in parityCases) {
+    if (others.isNotEmpty) {
+      // A project with several forms (D88).
+      test(name, () async {
+        final lines = await runProjectScript([
+          (
+            file: readFormFile(form!, name: 'Form1', pictures: pictures).form,
+            source: source
+          ),
+          for (final (formName, file, code) in others)
+            (
+              file: readFormFile(file, name: formName, pictures: pictures).form,
+              source: code
+            ),
+        ], events!, settings: settings, pictures: pictures);
+        expect('${lines.join('\n')}\n', expected);
+      });
+      continue;
+    }
     if (form != null) {
       test(name, () async {
         final lines = await runEventScript(source,

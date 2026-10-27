@@ -1,4 +1,5 @@
 import '../forms/component.dart';
+import 'forms.dart';
 
 /// A GuBASIC type, as seen by the analyzer (and later the interpreter).
 sealed class GbType {
@@ -99,14 +100,19 @@ final class ArrayType extends GbType {
 }
 
 /// A control or form: `Button`, `Label`, `Form`, … Its members are the
-/// properties of its component (docs/DESIGN.md §5).
+/// properties of its component (docs/DESIGN.md §5); a form of a project
+/// ([form]) also has its controls, `Public` variables and procedures as
+/// members (D88).
 final class ControlType extends GbType {
-  ControlType(this.component);
+  ControlType(this.component, {this.form});
 
   final ComponentSpec component;
 
+  /// The project's form this is, for `Form2` and `Me`; null otherwise.
+  final FormInterface? form;
+
   @override
-  String get displayName => component.name;
+  String get displayName => form?.name ?? component.name;
 }
 
 /// The type names a program can write after `As` or `New`, besides

@@ -1,0 +1,20 @@
+formatVersion: 1
+properties:
+  Caption: Question
+  Width: 240
+  Height: 120
+controls:
+  - name: txtAnswer
+    type: TextBox
+    properties:
+      Text: ""
+  - name: btnOK
+    type: Button
+    properties:
+      Caption: OK
+      Top: 40
+  - name: btnCancel
+    type: Button
+    properties:
+      Caption: Cancel
+      Top: 80

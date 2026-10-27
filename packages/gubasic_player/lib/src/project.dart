@@ -29,27 +29,39 @@ class Project {
       final diagnostics = <FileDiagnostic>[
         for (final d in read.diagnostics) FileDiagnostic(projectName, d),
       ];
-      final formName = read.project.startupForm;
       StartupForm? startup;
-      if (!read.hasErrors && formName != null) {
-        final formFile = '$formName.form.yaml';
-        final codeFile = '$formName.gbas';
+      if (!read.hasErrors && read.project.startupForm != null) {
+        // Every form, each knowing the others (D88).
         final pictures = read.project.pictures;
-        final form = readFormFile(
-          files[formFile] ?? '',
-          name: formName,
+        final sources = <FormSource>[];
+        var readable = true;
+        for (final name in read.project.forms) {
+          final formFile = '$name.form.yaml';
+          final form = readFormFile(
+            files[formFile] ?? '',
+            name: name,
+            pictures: pictures,
+          );
+          diagnostics.addAll([
+            for (final d in form.diagnostics) FileDiagnostic(formFile, d),
+          ]);
+          readable &= !form.hasErrors && files.containsKey(formFile);
+          sources.add((file: form.form, source: files['$name.gbas'] ?? ''));
+        }
+        final compiled = compileProject(
+          sources,
+          startup: read.project.startupForm,
           pictures: pictures,
         );
-        diagnostics.addAll([
-          for (final d in form.diagnostics) FileDiagnostic(formFile, d),
-        ]);
-        final source = files[codeFile] ?? '';
-        final program = compile(source, form: form.form, pictures: pictures);
-        diagnostics.addAll([
-          for (final d in program.diagnostics) FileDiagnostic(codeFile, d),
-        ]);
-        if (!form.hasErrors && files.containsKey(formFile)) {
-          startup = StartupForm(form.form, codeFile, program);
+        for (final f in compiled.forms) {
+          diagnostics.addAll([
+            for (final d in f.program.diagnostics)
+              FileDiagnostic(f.codeFile, d),
+          ]);
+        }
+        if (readable) {
+          final s = compiled.startup;
+          startup = StartupForm(s.file, s.codeFile, s.program, compiled);
         }
       }
       return (diagnostics, startup);
@@ -78,11 +90,21 @@ class Project {
 
 /// The form a project starts with, and its compiled code.
 class StartupForm {
-  const StartupForm(this.form, this.codeFile, this.program);
+  const StartupForm(this.form, this.codeFile, this.program, [this.project]);
 
   final FormFile form;
 
   /// The file the code is in (`Form1.gbas`), for run-time errors.
   final String codeFile;
   final CompileResult program;
+
+  /// All the project's forms, compiled (D88); null for a form on its own.
+  final ProjectProgram? project;
+
+  /// The project's forms' files, this one first.
+  List<FormFile> get forms => [
+    form,
+    for (final f in project?.forms ?? const <FormProgram>[])
+      if (f.file != form) f.file,
+  ];
 }

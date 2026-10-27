@@ -1,0 +1,13 @@
+formatVersion: 1
+properties:
+  Caption: Main
+controls:
+  - name: btnAsk
+    type: Button
+    properties:
+      Caption: Ask
+  - name: btnTwice
+    type: Button
+    properties:
+      Caption: Twice
+      Top: 40

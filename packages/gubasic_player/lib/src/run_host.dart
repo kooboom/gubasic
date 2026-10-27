@@ -5,29 +5,69 @@ import 'package:gubasic_runtime/gubasic_runtime.dart';
 import 'bench/probe.dart';
 import 'form_window.dart';
 
-/// Connects the interpreter to gubasic_runtime (docs/DESIGN.md §2.3): the
-/// form's properties live in [model], which the run window shows, and
-/// MsgBox and InputBox are [dialogs]. What the user does on the form goes
-/// to the interpreter as events.
+/// Connects the interpreter to gubasic_runtime (docs/DESIGN.md §2.3): each
+/// form's properties live in a model ([modelOf]), which the run window
+/// shows, and MsgBox and InputBox are [dialogs]. What the user does on a
+/// form goes to the interpreter as events.
 class RunHost implements FormHost {
+  /// [form] is the startup form, [others] the project's other forms (D88).
   RunHost(
     FormFile form, {
+    List<FormFile> others = const [],
     GbStrings strings = GbStrings.en,
     this.project = '',
     String? settingsKey,
     this._settings,
-    GbPictureSource? pictures,
+    this._pictures,
   }) : settingsKey = settingsKey ?? project,
-       dialogs = GbDialogs(strings: strings) {
-    model = formModelOf(
-      form,
-      onEvent: _onEvent,
-      accepts: _accepts,
-      pictures: pictures,
-    );
+       dialogs = GbDialogs(strings: strings),
+       _startup = form.name {
+    for (final f in [form, ...others]) {
+      _files[f.name.toLowerCase()] = f;
+      _models[f.name.toLowerCase()] = _modelOf(f);
+    }
   }
 
-  late final GbFormModel model;
+  final _files = <String, FormFile>{};
+  final _models = <String, GbFormModel>{};
+  final GbPictureSource? _pictures;
+  final String _startup;
+
+  GbFormModel _modelOf(FormFile form) => formModelOf(
+    form,
+    onEvent: (control, event) => _onEvent(form.name, control, event),
+    accepts: (control, event) => _accepts(form.name, control, event),
+    pictures: _pictures,
+  );
+
+  /// The model of [form], shown or not.
+  GbFormModel modelOf(String form) => _models[form.toLowerCase()]!;
+
+  /// The model of the form in front ([front]), or of the startup form
+  /// before one is shown.
+  GbFormModel get model => modelOf(front?.name ?? _startup);
+
+  /// The forms shown, from the back to the front (D88).
+  List<ShownForm> shown = const [];
+
+  /// The form in front, which takes what the user does; null before the
+  /// first is shown.
+  ShownForm? get front => shown.isEmpty ? null : shown.last;
+
+  /// The form drawn as the run window's, or the app's page or window
+  /// (D88): the frontmost shown that is not a dialog, or the startup form
+  /// before one is shown.
+  String get windowForm {
+    final i = shown.lastIndexWhere((f) => !f.dialog);
+    return i < 0 ? _startup : shown[i].name;
+  }
+
+  /// The model of [windowForm].
+  GbFormModel get windowModel => modelOf(windowForm);
+
+  /// Called when the forms shown change.
+  VoidCallback? onFormsChanged;
+
   final GbDialogs dialogs;
 
   /// The project's name, shown in a dialog with no title (D68).
@@ -53,19 +93,20 @@ class RunHost implements FormHost {
   /// Called for each `Debug.Print` line.
   void Function(String line)? onDebugPrint;
 
-  /// Called when Form_Load has finished and the form is shown.
+  /// Called when the startup form's Form_Load has finished and it is
+  /// shown.
   VoidCallback? onShowForm;
 
   /// What the interpreter did with the last event the user caused; tests
   /// read it.
   EventOutcome? lastOutcome;
 
-  void _onEvent(String? control, String event) =>
-      lastOutcome = interpreter.raiseEvent(control, event);
+  void _onEvent(String form, String? control, String event) =>
+      lastOutcome = interpreter.raiseEvent(control, event, form: form);
 
   /// A CheckBox asks before a click changes it (D44).
-  bool _accepts(String? control, String event) {
-    final refused = interpreter.refusal(control, event);
+  bool _accepts(String form, String? control, String event) {
+    final refused = interpreter.refusal(control, event, form: form);
     if (refused != null) lastOutcome = refused;
     return refused == null;
   }
@@ -98,12 +139,16 @@ class RunHost implements FormHost {
   }
 
   @override
-  Object getProperty(String? control, String property) =>
-      model.control(control)![property];
+  Object getProperty(String form, String? control, String property) =>
+      modelOf(form).control(control)![property];
 
   @override
-  void setProperty(String? control, String property, Object value) =>
-      model.setProperty(control, property, value);
+  void setProperty(
+    String form,
+    String? control,
+    String property,
+    Object value,
+  ) => modelOf(form).setProperty(control, property, value);
 
   @override
   Future<String?> loadSettings() => settings.load(settingsKey);
@@ -112,7 +157,18 @@ class RunHost implements FormHost {
   Future<void> saveSettings(String text) => settings.save(settingsKey, text);
 
   @override
-  void showForm() => onShowForm?.call();
+  void showForms(List<ShownForm> forms) {
+    final first = shown.isEmpty;
+    shown = List.unmodifiable(forms);
+    if (first) onShowForm?.call();
+    onFormsChanged?.call();
+  }
+
+  @override
+  void resetForm(String form) {
+    final file = _files[form.toLowerCase()]!;
+    _models[form.toLowerCase()] = _modelOf(file);
+  }
 
   @override
   void endProgram() => dialogs.closeAll();

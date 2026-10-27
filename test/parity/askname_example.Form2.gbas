@@ -1,0 +1,11 @@
+' OK greets on Form1, then closes this form: Form1 is in front again.
+' The next time Form2 is shown, it starts again with an empty name.
+
+Sub btnOK_Click()
+    If txtName.Text = "" Then
+        MsgBox("Please type your name.")
+    Else
+        Form1.Greet(txtName.Text)
+        Me.Close
+    End If
+End Sub

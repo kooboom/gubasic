@@ -110,8 +110,15 @@ void main() {
       expect(_names('Sub W()\n    Debug.|\nEnd Sub\n'), ['Print']);
       expect(_names('Sub W()\n    Integer.|\nEnd Sub\n'),
           ['MaxValue', 'MinValue']);
-      expect(_names('Sub W()\n    Me.|\nEnd Sub\n'),
-          ['Caption', 'Height', 'Width']);
+      expect(_names('Sub W()\n    Me.|\nEnd Sub\n'), [
+        'Caption',
+        'Close',
+        'Height',
+        'Hide',
+        'Show',
+        'ShowDialog',
+        'Width'
+      ]);
       expect(_names('Sub W()\n    Trim(lblMessage.Caption).Len|\nEnd Sub\n'),
           ['Length']);
     });

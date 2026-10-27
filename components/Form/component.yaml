@@ -3,6 +3,10 @@
 # when it changes, and once when the form is first shown (D58).
 # Integer properties are 32-bit (min and max narrow that); a value outside
 # is a run-time error (R007) or, in a form file, F012.
+# A project's forms are shown one over another (docs/DESIGN.md D88): Show
+# puts the form in front, ShowDialog puts it in front as a dialog and waits
+# until it goes, Hide takes it away keeping its values, Close takes it away
+# and starts it again the next time it is shown. Closed runs after Close.
 name: Form
 version: 1
 visual: true
@@ -14,7 +18,12 @@ properties:
 events:
   - Load()
   - Resize()
-methods: []
+  - Closed()
+methods:
+  - Show()
+  - ShowDialog()
+  - Hide()
+  - Close()
 # Names other versions of BASIC use, pointed to GuBASIC's (A036,
 # docs/DESIGN.md D50).
 otherNames:

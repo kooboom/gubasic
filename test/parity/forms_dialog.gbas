@@ -1,0 +1,15 @@
+' ShowDialog (docs/DESIGN.md D88): Form2 in front as a dialog; the handler
+' waits until it goes, then reads its answer from a Public variable.
+' Meanwhile Form1 takes no clicks.
+Sub btnAsk_Click()
+    Debug.Print("asking")
+    Form2.ShowDialog
+    Debug.Print("answer: [" & Form2.Answer & "]")
+End Sub
+
+' A form shown already cannot be shown as a dialog (R015).
+Sub btnTwice_Click()
+    Form2.Show
+    Form2.ShowDialog
+    Debug.Print("not reached")
+End Sub

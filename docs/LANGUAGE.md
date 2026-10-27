@@ -103,6 +103,8 @@ How the parser recovers:
 | P021 | `ByRef` (not available yet; stage 2) | Reads it normally; the message suggests a `Function` with `Return` |
 | P022 | `Handles` (not available yet; stage 2) | Reads it normally; the message suggests a `ControlName_EventName` Sub |
 | P023 | A line ends inside an open parenthesis with a value missing (`(1 +`, `f(1,`) | One diagnostic for both the value and `)` |
+| P024 | `Unload Form2` (Visual Basic 6) | GuBASIC closes a form with `Form2.Close` (§11) |
+| P025 | `Load Form2` (Visual Basic 6) | GuBASIC shows a form with `Form2.Show` (§11) |
 
 **Analyzer**
 
@@ -148,6 +150,7 @@ The analyzer checks names and types (§2.1, §3.2, §5.2). It runs even when the
 | A036 | A member the type does not have, under the name other versions of BASIC use for a member GuBASIC calls differently (`btnOK.Text`: use `Caption`; DESIGN.md D50) |
 | A037 | **Warning.** Text given to a picture property that is not one of the project's pictures (`imgShape.Picture = "tri.png"`); the program would stop there (R013) (§11.1) |
 | A038 | **Warning.** Text given to `Anchor` with a word that is not an edge (`btnOk.Anchor = "Rihgt"`); the program would stop there (R014) (§11.1) |
+| A039 | `Form2.Show vbModal`: `Show` takes no argument; a form the code waits for is shown with `ShowDialog` (§11) |
 
 **Form and project files**
 
@@ -194,6 +197,7 @@ Errors found while a program runs. Each stops the program and points at its line
 | R012 | `SaveSetting` could not keep the settings, for example because the browser's storage is full (§10) |
 | R013 | A picture property set to a name the project has no picture of (§11.1) |
 | R014 | `Anchor` set to text with a word that is not an edge (§11.1) |
+| R015 | `ShowDialog` of a form that is already shown (§11) |
 
 ## 2. Types
 
@@ -261,7 +265,8 @@ Dim total As Integer = 100    ' type and initial value
 | Kind | Where / how | Visible in | Lives until |
 |---|---|---|---|
 | Local | `Dim` inside a `Sub` / `Function` | that procedure | the call returns |
-| Form-level | `Dim` (or `Private`) at the top of a form's code | every procedure of that form | the form closes |
+| Form-level | `Dim` (or `Private`) at the top of a form's code | every procedure of that form | the form is shown again after `Close` (DESIGN.md D88) |
+| Form-level, public | `Public` at the top of a form's code | that form, and the project's other forms as `Form2.Score` (§11) | the same |
 | Global | `Public` in a module file (`Module1.gbas`) | the whole app | the app exits |
 | Static | `Static` inside a procedure | that procedure | the app exits (value kept between calls) |
 
@@ -534,7 +539,7 @@ End Try
 ### 9.1 Running a program
 
 - Code without a form starts at `Sub Main()`, or at `Sub Form_Load()` if there is no `Main`, and ends when that procedure returns. Form-level variables get their initial values first.
-- A program with a form starts with its form: form-level variables get their initial values, `Form_Load` runs, and then the form is shown and waits for events (§8.1). `Sub Main` is then an ordinary procedure. The program ends when the form is closed, `End` runs, an error is not caught, or the Stop button is pressed.
+- A program with a form starts with its form: form-level variables get their initial values, `Form_Load` runs, and then the form is shown and waits for events (§8.1). `Sub Main` is then an ordinary procedure. With several forms, every form's variables get their initial values first, the startup form's first, and the startup form starts (§11). The program ends when no form is shown any more, the window is closed, `End` runs, an error is not caught, or the Stop button is pressed.
 - A program with errors does not run; one with only warnings does (D23).
 - Calls may nest 10,000 deep; one more is R009. The limit is the same on every platform. It catches endless recursion within a fraction of a second; the interpreter itself was measured to stay safe beyond a million calls on the VM and in Chrome.
 - While a program runs, the interpreter lets the screen update once about 10 ms have passed since it last did, looking at the clock every 256 loop rounds or calls, so that the Stop button works. This never changes what the program computes and never lets another handler run. `DoEvents` updates the screen on request and also lets other handlers run (§8.1).
@@ -592,6 +597,30 @@ End Sub
 - The controls are the ones in the form file (§11.2). Their names can be used anywhere in the form's code, like form-level variables. A form-level variable or procedure cannot have a control's name (A030); a local can, but then hides the control (warning A031).
 - **Where controls overlap**, a `Label` is always under the other controls (`Button`, `TextBox`, `CheckBox`, `ListBox`), whatever their order in the form file, and the control on top takes the click. Among controls of the same kind of layer, the one later in the form file is on top (DESIGN.md D41).
 - Code without a form, such as a program in the playground, cannot use controls or `Me` (A003).
+- **Several forms** (DESIGN.md D88). A project's forms are used by their names, each one object: `Form2.Show`, `Form2.txtName.Text`.
+  - The forms shown are a stack in one window. `Form2.Show` puts Form2 on top, and the forms under it keep their values; a form shown already comes to the top. `Form2.ShowDialog` puts it on top as a dialog, over the form behind, which is dimmed, and the code waits until it goes. `Me.Hide` goes back to the form under, keeping this one's values; `Me.Close` goes back too, runs `Form_Closed`, and the next `Show` starts the form again: its variables and controls as at the start, and `Form_Load` again. With no form shown, the program has ended.
+  - Only the form on top takes clicks and typing. The window's close button ends the program; each form shown first gets its `Form_Closed`, from the top down. `End` runs none.
+  - `Form_Load` runs when a form is shown (the first time, and after `Close`), `Form_Resize` once after that, `Form_Closed` after `Close`. Every form's variables get their initial values when the program starts, so another form's members can be used before it is shown.
+  - Another form's members are its controls, its `Public` variables and constants, and its procedures that are not `Private`: `Form2.Score = 5`, `lblName.Caption = Form2.Hello("Kim")`. A `Dim` at the top of a form's code stays its own. A dialog's answer is a `Public` variable, which keeps its value after `Close` until the form is shown again:
+
+    ```vb
+    ' Form1
+    Sub btnAsk_Click()
+        Form2.ShowDialog
+        lblAnswer.Caption = Form2.Answer
+    End Sub
+
+    ' Form2
+    Public Answer As String
+
+    Sub btnOK_Click()
+        Answer = txtAnswer.Text
+        Me.Close
+    End Sub
+    ```
+
+  - A variable whose type comes from another form's member is not known to the other forms (`Public n = Form2.Score`): give it a type, `Public n As Integer = Form2.Score`.
+  - Visual Basic 6's `Unload Form2` and `Load Form2` are `Form2.Close` and `Form2.Show` (P024, P025), and `Show vbModal` is `ShowDialog` (A039). `ShowDialog` of a form shown already stops the program (R015).
 - Stage 2: controls can be created at run time.
 
   ```vb

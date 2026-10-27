@@ -1,0 +1,11 @@
+' Two forms (docs/DESIGN.md D88): Next shows Form2, which asks for a name
+' and comes back here with it.
+
+Sub btnNext_Click()
+    Form2.Show
+End Sub
+
+' Form2 calls this before it closes.
+Sub Greet(name As String)
+    lblGreeting.Caption = "Hello, " & name & "!"
+End Sub

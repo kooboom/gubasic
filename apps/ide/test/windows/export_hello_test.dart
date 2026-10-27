@@ -4,12 +4,16 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:gubasic_ide/src/project/app_export.dart';
 import 'package:gubasic_player/gubasic_player.dart';
 
+import '../support/form_demos.dart';
+
 /// Exports the hello example, named 안녕, as a Windows app from the real
 /// Windows template (D86), and next to it Ending, whose program saves a
 /// setting and ends, for CI to unzip and run on Windows
 /// (`apps/player/tool/check_windows_app.ps1`). Runs only when
 /// GUBASIC_WINDOWS_TEMPLATE names the template and GUBASIC_WINDOWS_APP the
-/// `.zip` to write; Ending's is the same name ending in `-end.zip`.
+/// `.zip` to write; Ending's is the same name ending in `-end.zip`, and
+/// the two-form demos (form_demos.dart) end in `-swap.zip` and
+/// `-dialog.zip`.
 void main() {
   final template = Platform.environment['GUBASIC_WINDOWS_TEMPLATE'];
   final out = Platform.environment['GUBASIC_WINDOWS_APP'];
@@ -52,6 +56,14 @@ void main() {
       );
       File(out.replaceFirst(RegExp(r'\.zip$'), '-end.zip'))
           .writeAsBytesSync(windowsAppZip(bytes, ending, 'README'));
+      for (final demo in formDemos()) {
+        File(
+          out.replaceFirst(
+            RegExp(r'\.zip$'),
+            '-${demo.name.toLowerCase()}.zip',
+          ),
+        ).writeAsBytesSync(windowsAppZip(bytes, demo, 'README'));
+      }
     },
     skip: template == null || out == null
         ? 'GUBASIC_WINDOWS_TEMPLATE and GUBASIC_WINDOWS_APP are not set'

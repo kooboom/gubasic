@@ -1,0 +1,20 @@
+' Two forms (docs/DESIGN.md D88): Form2.Show puts Form2 in front; Form1
+' stays behind with its values. Form2's members are its controls, its
+' Public variables and its procedures that are not Private.
+Dim visits As Integer
+
+Sub Form_Load()
+    Debug.Print("Form1 loaded; Form2's score starts at " & Form2.Score)
+End Sub
+
+Sub btnNext_Click()
+    visits = visits + 1
+    Form2.Show
+    Debug.Print("after Show: " & visits)
+End Sub
+
+' Form2 calls this when it goes back.
+Sub Greet(name As String)
+    lblGreeting.Caption = Form2.Hello(name)
+    Debug.Print("greeted, Form2 says " & Form2.txtName.Text)
+End Sub

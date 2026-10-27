@@ -322,6 +322,9 @@ Completion _ofSymbol(Symbol s) => switch (s.kind) {
       SymbolKind.builtinObject => Completion(s.name, CompletionKind.object),
       SymbolKind.control =>
         Completion(s.name, CompletionKind.control, detail: _typeName(s.type)),
+      // A form of the project (D88).
+      SymbolKind.form =>
+        Completion(s.name, CompletionKind.object, detail: 'Form'),
     };
 
 String _typeName(GbType t) => t == GbType.unknown ? '' : t.displayName;

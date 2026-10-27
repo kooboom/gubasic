@@ -1,0 +1,11 @@
+' With no form shown, the program has ended (docs/DESIGN.md D88): hiding
+' the last one ends it at once.
+Sub btnHide_Click()
+    Debug.Print("hiding")
+    Me.Hide
+    Debug.Print("not reached")
+End Sub
+
+Sub Form_Closed()
+    Debug.Print("not called: Hide is not Close")
+End Sub

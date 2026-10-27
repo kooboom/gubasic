@@ -1,0 +1,9 @@
+btnNext.Click
+Form1.btnNext.Click     ' blocked: Form1 is behind Form2
+txtName.Type "Kim"
+btnOK.Click             ' Form2 hides: back to Form1, its values kept
+btnNext.Click           ' Form2 again, as it was: no Form_Load
+btnClose.Click          ' closed: back to Form1
+btnNext.Click           ' starts again: Form_Load, Score back to 10 + 1
+Form2.btnOK.Click
+Close

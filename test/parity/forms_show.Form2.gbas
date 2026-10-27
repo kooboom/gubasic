@@ -1,0 +1,37 @@
+' Hide takes Form2 away and keeps its values; Close takes it away and runs
+' Form_Closed, and the next Show starts it again: Form_Load, its
+' variables and controls as at the start.
+Public Score As Integer = 10
+Dim loads As Integer
+
+Sub Form_Load()
+    loads = loads + 1
+    Score = Score + 1
+    Debug.Print("Form2 loaded " & loads & ", score " & Score)
+End Sub
+
+Sub Form_Resize()
+    Debug.Print("Form2 resized " & Me.Width & "x" & Me.Height)
+End Sub
+
+Function Hello(name As String) As String
+    Return "Hello, " & name & "!"
+End Function
+
+Private Sub Tidy()
+    txtName.Text = ""
+End Sub
+
+Sub btnOK_Click()
+    Me.Hide
+    Form1.Greet(txtName.Text)
+End Sub
+
+Sub btnClose_Click()
+    Me.Close
+    Debug.Print("still running after Close")
+End Sub
+
+Sub Form_Closed()
+    Debug.Print("Form2 closed")
+End Sub

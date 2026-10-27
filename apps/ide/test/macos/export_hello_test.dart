@@ -4,12 +4,15 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:gubasic_ide/src/project/mac_app_source_io.dart';
 import 'package:gubasic_player/gubasic_player.dart';
 
+import '../support/form_demos.dart';
+
 /// Exports two macOS apps from the real macOS template with the IDE's own
 /// code (D87), for a Mac to open: 안녕, the hello example counting its runs
 /// with SaveSetting, and Ending, whose program saves a setting and ends.
 /// Runs only on a Mac, when GUBASIC_MACOS_TEMPLATE names the template and
-/// GUBASIC_MACOS_APPS the folder to write `안녕-macos.zip` and
-/// `Ending-macos.zip` into.
+/// GUBASIC_MACOS_APPS the folder to write `안녕-macos.zip`,
+/// `Ending-macos.zip`, and the two-form demos' `Swap-macos.zip` and
+/// `Dialog-macos.zip` (form_demos.dart) into.
 void main() {
   final template = Platform.environment['GUBASIC_MACOS_TEMPLATE'];
   final out = Platform.environment['GUBASIC_MACOS_APPS'];
@@ -56,6 +59,7 @@ void main() {
                 'End Sub\n',
           ),
         ),
+        ...formDemos(),
       ]) {
         File('$out/${bundle.name}-macos.zip')
             .writeAsBytesSync(await macosAppZip(bytes, bundle, 'README'));

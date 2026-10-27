@@ -1,0 +1,7 @@
+Sub btnGo_Click()
+    Form3.Show
+End Sub
+
+Sub Form_Closed()
+    Debug.Print("Form2 closed")
+End Sub

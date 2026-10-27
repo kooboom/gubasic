@@ -6,6 +6,11 @@ import '../lexer/lexer.dart';
 import '../lexer/token.dart';
 import 'parse_result.dart';
 
+/// Visual Basic 6's statements for forms, which GuBASIC writes as methods:
+/// `Unload Form2` is `Form2.Close`, `Load Form2` is `Form2.Show` (P024,
+/// P025, docs/DESIGN.md D88).
+const formStatements = {'unload', 'load'};
+
 /// Lexes and parses GuBASIC [source].
 ///
 /// Never throws. Syntax errors become diagnostics; the parser then resumes
@@ -839,7 +844,20 @@ class _Parser {
         !_is(TokenKind.minus) &&
         !_is(TokenKind.plus) &&
         _startsExpression(_tok)) {
-      _errorAt(_tok, DiagnosticCode.callWithoutParentheses);
+      final statement = target is NameExpr ? target.name.toLowerCase() : null;
+      if (statement != null && formStatements.contains(statement)) {
+        // VB6's `Unload Form2`: a method in GuBASIC (P024, P025).
+        _errorAt(
+            _tok,
+            statement == 'unload'
+                ? DiagnosticCode.unloadStatement
+                : DiagnosticCode.loadStatement,
+            [_tok.text]);
+      } else if (target is! MemberExpr ||
+          target.name.name.toLowerCase() != 'show') {
+        // `Form2.Show vbModal` is reported by the analyzer (A039).
+        _errorAt(_tok, DiagnosticCode.callWithoutParentheses);
+      }
       final arguments = <Expr>[_expression()];
       while (_is(TokenKind.comma)) {
         _advance();

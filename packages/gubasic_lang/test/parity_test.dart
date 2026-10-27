@@ -29,6 +29,10 @@ import 'interpreter/fake_host.dart';
 ///
 /// and its output echoes each step as "> step" (see runEventScript).
 ///
+/// A program with several forms (docs/DESIGN.md D88) has, for each form
+/// besides Form1, NAME.FORM.form.yaml and NAME.FORM.gbas (FORM: `Form2`);
+/// Form1 starts.
+///
 /// Today the programs run in the interpreter; when the transpiler exists,
 /// the same files run through it too and must give the same output. The
 /// same cases also run in Chrome (apps/playground/test/parity_web_test.dart).
@@ -41,6 +45,10 @@ void main() {
       .listSync()
       .whereType<File>()
       .where((f) => f.path.endsWith('.gbas'))
+      // NAME.Form2.gbas is a form of NAME's project.
+      .where((f) => !f.uri.pathSegments.last
+          .substring(0, f.uri.pathSegments.last.length - 5)
+          .contains('.'))
       .toList()
     ..sort((a, b) => a.path.compareTo(b.path));
 
@@ -62,7 +70,39 @@ void main() {
           ? picturesFile.readAsLinesSync().where((l) => l.isNotEmpty).toList()
           : <String>[];
       final List<String> lines;
-      if (formFile.existsSync()) {
+      final base = program.path.substring(0, program.path.length - 5);
+      final otherForms = Directory('../../test/parity')
+          .listSync()
+          .whereType<File>()
+          .map((f) => f.path)
+          .where((p) => p.startsWith('$base.') && p.endsWith('.form.yaml'))
+          .where((p) => p != '$base.form.yaml')
+          .toList()
+        ..sort();
+      if (otherForms.isNotEmpty) {
+        final forms = <FormSource>[];
+        for (final (name, formPath, codePath) in [
+          ('Form1', formFile.path, program.path),
+          for (final p in otherForms)
+            (
+              p.substring(base.length + 1, p.length - '.form.yaml'.length),
+              p,
+              p.replaceFirst('.form.yaml', '.gbas'),
+            ),
+        ]) {
+          final read = readFormFile(File(formPath).readAsStringSync(),
+              name: name, pictures: pictures);
+          expect(read.diagnostics, isEmpty);
+          forms.add(
+              (file: read.form, source: File(codePath).readAsStringSync()));
+        }
+        lines = await runProjectScript(
+            forms,
+            File(program.path.replaceFirst('.gbas', '.events'))
+                .readAsStringSync(),
+            settings: settings,
+            pictures: pictures);
+      } else if (formFile.existsSync()) {
         final form = readFormFile(formFile.readAsStringSync(),
             name: 'Form1', pictures: pictures);
         expect(form.diagnostics, isEmpty);

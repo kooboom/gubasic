@@ -254,7 +254,9 @@ class _CodeEditorState extends State<CodeEditor>
     _formRead = true;
     _built = null;
     _program = null;
-    _form = form == null ? null : readFormFile(form, name: '').form;
+    _form = form == null
+        ? null
+        : readFormFile(form, name: _formName(formFile)).form;
     _controller.controls = {
       for (final c in _form?.controls ?? const <ControlDecl>[])
         c.name.toLowerCase(),
@@ -607,9 +609,45 @@ class _CodeEditorState extends State<CodeEditor>
   /// A completion is being put in: that change opens nothing.
   var _accepting = false;
 
+  /// The form named by [formFile] (`Form2.form.yaml` → `Form2`).
+  static String _formName(String formFile) =>
+      formFile.substring(0, formFile.length - '.form.yaml'.length);
+
+  /// The project's forms as this code sees them (D88): read again when a
+  /// form file, or another form's code, changed; this form's own code
+  /// counts as it was then, as its controls and variables are its names
+  /// anyway.
+  Map<String, FormInterface>? _forms;
+  String? _formsKey;
+
+  Map<String, FormInterface>? _projectForms() {
+    if (_form == null) return null;
+    final files = widget.project.files;
+    final names = [
+      for (final f in files.keys)
+        if (f.toLowerCase().endsWith('.form.yaml')) _formName(f),
+    ]..sort();
+    final own = widget.file.toLowerCase();
+    final key = [
+      for (final n in names) ...[
+        files['$n.form.yaml'],
+        if ('$n.gbas'.toLowerCase() != own) files['$n.gbas'],
+      ],
+    ].join('\u0000');
+    if (key == _formsKey) return _forms;
+    _formsKey = key;
+    return _forms = formInterfaces([
+      for (final n in names)
+        (
+          file: readFormFile(files['$n.form.yaml']!, name: n).form,
+          source: files['$n.gbas'] ?? '',
+        ),
+    ]);
+  }
+
   void _compile() {
     if (!mounted) return;
-    _program = compile(_written, form: _form);
+    _program = compile(_written, form: _form, forms: _projectForms());
   }
 
   /// [_program], compiled now if it is not of the code as it is.
@@ -619,7 +657,7 @@ class _CodeEditorState extends State<CodeEditor>
     if (program != null && program.parseResult.source == _written) {
       return program;
     }
-    return _program = compile(_written, form: _form);
+    return _program = compile(_written, form: _form, forms: _projectForms());
   }
 
   bool get _canComplete {

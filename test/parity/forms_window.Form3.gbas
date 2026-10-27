@@ -1,0 +1,8 @@
+' A form shown already comes to the front; it is not shown twice.
+Sub btnBack_Click()
+    Form2.Show
+End Sub
+
+Sub Form_Closed()
+    Debug.Print("Form3 closed")
+End Sub

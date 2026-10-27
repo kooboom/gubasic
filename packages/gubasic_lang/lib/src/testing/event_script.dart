@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import '../analyzer/compile.dart';
+import '../analyzer/forms.dart';
 import '../forms/anchor.dart';
 import '../forms/form_file.dart';
 import '../interpreter/host.dart';
@@ -18,11 +19,15 @@ sealed class ScriptStep {
 /// `btnSave.Click`: the user causes an event. On a CheckBox, `Click` is
 /// the user's click: it changes Checked, and Changed runs (D44).
 class EventStep extends ScriptStep {
-  const EventStep(super.text, this.control, this.event);
+  const EventStep(super.text, this.control, this.event, {this.form});
 
   /// The control's name, or null for `Form`.
   final String? control;
   final String event;
+
+  /// `Form2.btnOK.Click`: the form the user acts on, which must be in
+  /// front (D88); null for the one in front.
+  final String? form;
 }
 
 /// `txtName.Type "Kim"`: the user changes a TextBox's text to "Kim"; its
@@ -72,6 +77,8 @@ class ResizeStep extends ScriptStep {
 }
 
 final _event = RegExp(r'^([A-Za-z][A-Za-z0-9_]*)\.([A-Za-z][A-Za-z0-9_]*)$');
+final _formEvent = RegExp(
+    r'^([A-Za-z][A-Za-z0-9_]*)\.([A-Za-z][A-Za-z0-9_]*)\.([A-Za-z][A-Za-z0-9_]*)$');
 final _type = RegExp(r'^([A-Za-z][A-Za-z0-9_]*)\.Type\s+"((?:[^"]|"")*)"$');
 final _select = RegExp(r'^([A-Za-z][A-Za-z0-9_]*)\.Select\s+(\d+)$');
 final _answer = RegExp(r'^Answer\s+"((?:[^"]|"")*)"$');
@@ -100,6 +107,11 @@ List<ScriptStep> parseEventScript(String text) {
       steps.add(SelectStep(line, m![1]!, int.parse(m[2]!)));
     } else if ((m = _type.firstMatch(line)) != null) {
       steps.add(TypeStep(line, m![1]!, m[2]!.replaceAll('""', '"')));
+    } else if ((m = _formEvent.firstMatch(line)) != null) {
+      final control = m![2]!;
+      steps.add(EventStep(
+          line, control.toLowerCase() == 'form' ? null : control, m[3]!,
+          form: m[1]));
     } else if ((m = _event.firstMatch(line)) != null) {
       final control = m![1]!;
       steps.add(EventStep(
@@ -142,12 +154,19 @@ abstract final class TranscriptLine {
 
   static String saveSettings(String text) => 'Settings: $text';
 
-  static String setProperty(String? control, String property, Object value) =>
-      'Set ${control ?? 'Form'}.$property: '
+  /// [form] is named when the program has several forms (D88).
+  static String setProperty(String? control, String property, Object value,
+          {String? form}) =>
+      'Set ${form == null ? '' : '$form.'}${control ?? 'Form'}.$property: '
       '${value is bool ? (value ? 'True' : 'False') : value}';
+
+  /// The forms shown changed, in a program with several forms (D88): from
+  /// the back to the front.
+  static String forms(List<ShownForm> forms) =>
+      forms.isEmpty ? 'Forms: (none)' : 'Forms: ${forms.join(' > ')}';
 }
 
-/// A [FormHost] for tests: properties start as in the form file, dialogs
+/// A [FormHost] for tests: properties start as in the form files, dialogs
 /// stay open until the script closes them, and everything the program
 /// shows is recorded ([TranscriptLine]):
 ///
@@ -157,19 +176,43 @@ abstract final class TranscriptLine {
 ///     Set <control>.<property>: <value>
 ///     Settings: <the settings as SaveSetting left them>
 ///
+/// A program with several forms (D88) names the form in `Set` lines
+/// (`Set Form2.txtName.Text: Kim`) and records each change of the forms
+/// shown (`Forms: Form1 > Form2 (dialog)`).
+///
 /// The program's settings start as [settings] (a test's NAME.settings),
 /// as if an earlier run had saved them.
 class ScriptedHost implements FormHost {
-  ScriptedHost(FormFile form, {this.settings}) {
+  /// A host for a program with one form.
+  ScriptedHost(FormFile form, {String? settings})
+      : this.forms([form], settings: settings);
+
+  /// A host for a program with [forms] (D88).
+  ScriptedHost.forms(List<FormFile> forms, {this.settings})
+      : _files = {for (final f in forms) f.name.toLowerCase(): f},
+        _several = forms.length > 1 {
+    for (final f in forms) {
+      _start(f);
+    }
+  }
+
+  final Map<String, FormFile> _files;
+  final bool _several;
+
+  /// Gives [form]'s properties the values of its form file.
+  void _start(FormFile form) {
+    final name = form.name;
     for (final p in form.component.properties.values) {
-      _properties[_key(null, p.name)] = form.valueOf(p.name);
+      _properties[_key(name, null, p.name)] = form.valueOf(p.name);
     }
     for (final c in form.controls) {
-      _components[c.name.toLowerCase()] = c.component.name;
+      _components[_key(name, c.name, '')] = c.component.name;
       for (final p in c.component.properties.values.where((p) => p.isStored)) {
-        _properties[_key(c.name, p.name)] = c.valueOf(p.name);
+        _properties[_key(name, c.name, p.name)] = c.valueOf(p.name);
       }
-      if (c.component.properties.values.any((p) => p.anchor)) _rebase(c.name);
+      if (c.component.properties.values.any((p) => p.anchor)) {
+        _rebase(name, c.name);
+      }
     }
   }
 
@@ -179,57 +222,63 @@ class ScriptedHost implements FormHost {
 
   static const _placing = {'left', 'top', 'width', 'height', 'anchor'};
 
-  int _int(String? control, String property) =>
-      _properties[_key(control, property)] as int;
+  int _int(String form, String? control, String property) =>
+      _properties[_key(form, control, property)] as int;
 
-  void _rebase(String control) {
-    _bases[control.toLowerCase()] = (
+  void _rebase(String form, String control) {
+    _bases[_key(form, control, '')] = (
       (
-        left: _int(control, 'Left'),
-        top: _int(control, 'Top'),
-        width: _int(control, 'Width'),
-        height: _int(control, 'Height'),
+        left: _int(form, control, 'Left'),
+        top: _int(form, control, 'Top'),
+        width: _int(form, control, 'Width'),
+        height: _int(form, control, 'Height'),
       ),
-      _int(null, 'Width'),
-      _int(null, 'Height'),
+      _int(form, null, 'Width'),
+      _int(form, null, 'Height'),
     );
   }
 
-  /// Moves the controls as their Anchor says, for the form's size now.
-  void _place() {
-    for (final MapEntry(key: control, value: (base, width, height))
+  /// Moves [form]'s controls as their Anchor says, for its size now.
+  void _place(String form) {
+    final prefix = '${form.toLowerCase()}.';
+    for (final MapEntry(key: key, value: (base, width, height))
         in _bases.entries) {
+      if (!key.startsWith(prefix)) continue;
+      final control = key.substring(prefix.length, key.length - 1);
       final r = anchoredRect(
         base,
-        _properties[_key(control, 'Anchor')] as String,
+        _properties[_key(form, control, 'Anchor')] as String,
         baseWidth: width,
         baseHeight: height,
-        width: _int(null, 'Width'),
-        height: _int(null, 'Height'),
+        width: _int(form, null, 'Width'),
+        height: _int(form, null, 'Height'),
       );
-      _properties[_key(control, 'Left')] = r.left;
-      _properties[_key(control, 'Top')] = r.top;
-      _properties[_key(control, 'Width')] = r.width;
-      _properties[_key(control, 'Height')] = r.height;
+      _properties[_key(form, control, 'Left')] = r.left;
+      _properties[_key(form, control, 'Top')] = r.top;
+      _properties[_key(form, control, 'Width')] = r.width;
+      _properties[_key(form, control, 'Height')] = r.height;
     }
   }
 
-  /// The user makes the inside of the form [width] x [height]. False
-  /// when it already was that size, so that nothing happens.
+  /// The user makes the inside of the form in front [width] x [height].
+  /// False when it already was that size, so that nothing happens.
   bool resize(int width, int height) {
-    if (_int(null, 'Width') == width && _int(null, 'Height') == height) {
+    final form = front;
+    if (_int(form, null, 'Width') == width &&
+        _int(form, null, 'Height') == height) {
       return false;
     }
-    _properties[_key(null, 'Width')] = width;
-    _properties[_key(null, 'Height')] = height;
-    _place();
+    _properties[_key(form, null, 'Width')] = width;
+    _properties[_key(form, null, 'Height')] = height;
+    _place(form);
     return true;
   }
 
   final _components = <String, String>{};
 
-  /// The component of [control] (`CheckBox`), or null if there is none.
-  String? componentOf(String control) => _components[control.toLowerCase()];
+  /// The component of [control] of the form in front (`CheckBox`), or null
+  /// if there is none.
+  String? componentOf(String control) => _components[_key(front, control, '')];
 
   final transcript = <String>[];
 
@@ -237,10 +286,20 @@ class ScriptedHost implements FormHost {
   String? settings;
   final _properties = <String, Object>{};
   final _dialogs = <_Dialog>[];
-  var shown = false;
 
-  static String _key(String? control, String property) =>
-      '${(control ?? 'form').toLowerCase()}.${property.toLowerCase()}';
+  /// The forms shown, from the back to the front.
+  var forms = const <ShownForm>[];
+
+  /// Whether a form has been shown.
+  bool get shown => forms.isNotEmpty;
+
+  /// The form in front, which takes what the user does.
+  String get front =>
+      forms.isEmpty ? _files.values.first.name : forms.last.name;
+
+  static String _key(String form, String? control, String property) =>
+      '${form.toLowerCase()}.${(control ?? 'form').toLowerCase()}.'
+      '${property.toLowerCase()}';
 
   bool get hasOpenDialog => _dialogs.isNotEmpty;
 
@@ -269,20 +328,26 @@ class ScriptedHost implements FormHost {
   Future<void> yieldNow() => Future<void>.delayed(Duration.zero);
 
   @override
-  Object getProperty(String? control, String property) =>
-      _properties[_key(control, property)]!;
+  Object getProperty(String form, String? control, String property) =>
+      _properties[_key(form, control, property)]!;
+
+  /// A property of the form in front.
+  Object frontProperty(String? control, String property) =>
+      getProperty(front, control, property);
 
   @override
-  void setProperty(String? control, String property, Object value) {
-    _properties[_key(control, property)] = value;
-    transcript.add(TranscriptLine.setProperty(control, property, value));
+  void setProperty(
+      String form, String? control, String property, Object value) {
+    _properties[_key(form, control, property)] = value;
+    transcript.add(TranscriptLine.setProperty(control, property, value,
+        form: _several ? form : null));
     final lower = property.toLowerCase();
     if (control == null && (lower == 'width' || lower == 'height')) {
-      _place();
+      _place(form);
     } else if (control != null &&
         _placing.contains(lower) &&
-        _bases.containsKey(control.toLowerCase())) {
-      _rebase(control);
+        _bases.containsKey(_key(form, control, ''))) {
+      _rebase(form, control);
     }
   }
 
@@ -296,7 +361,13 @@ class ScriptedHost implements FormHost {
   }
 
   @override
-  void showForm() => shown = true;
+  void showForms(List<ShownForm> forms) {
+    this.forms = List.unmodifiable(forms);
+    if (_several) transcript.add(TranscriptLine.forms(forms));
+  }
+
+  @override
+  void resetForm(String form) => _start(_files[form.toLowerCase()]!);
 
   @override
   void endProgram() {
@@ -306,10 +377,10 @@ class ScriptedHost implements FormHost {
     _dialogs.clear();
   }
 
-  /// The user changes a property (the text of a TextBox, a CheckBox's
-  /// Checked).
+  /// The user changes a property of the form in front (the text of a
+  /// TextBox, a CheckBox's Checked).
   void userSets(String control, String property, Object value) =>
-      _properties[_key(control, property)] = value;
+      _properties[_key(front, control, property)] = value;
 
   /// Closes the topmost dialog; false if it is not of that kind.
   bool answer({required bool inputBox, Object? value}) {
@@ -336,10 +407,11 @@ abstract interface class ScriptDriver {
   /// Lets the program go on a little: a timer tick, or a frame.
   Future<void> tick();
 
-  /// The user causes [event] of [control] (null: the form). `Click` on a
-  /// CheckBox changes its Checked first, unless the program would ignore
-  /// the Changed that follows.
-  Future<EventOutcome> raise(String? control, String event);
+  /// The user causes [event] of [control] (null: the form) of [form], or
+  /// of the form in front when it is null (D88). `Click` on a CheckBox
+  /// changes its Checked first, unless the program would ignore the
+  /// Changed that follows.
+  Future<EventOutcome> raise(String? control, String event, {String? form});
 
   /// The user changes the text of TextBox [control] to [value]. Null when
   /// it already was [value], so that nothing happens.
@@ -368,6 +440,29 @@ abstract interface class ScriptDriver {
   Future<RunResult> finish();
 }
 
+/// Runs a project's [forms], the first one or [startup] first (D88), and
+/// drives them with [script] on a [ScriptedHost]. See [driveEventScript]
+/// for the transcript.
+Future<List<String>> runProjectScript(List<FormSource> forms, String script,
+    {String? startup,
+    String? settings,
+    List<String> pictures = const []}) async {
+  final steps = parseEventScript(script);
+  final project = compileProject(forms, startup: startup, pictures: pictures);
+  if (project.hasErrors) {
+    return [
+      for (final f in project.forms)
+        for (final d in f.program.diagnostics)
+          if (d.isError) 'Not started: ${d.code.code} @ ${f.codeFile}:${d.line}'
+    ];
+  }
+  final host =
+      ScriptedHost.forms([for (final f in forms) f.file], settings: settings);
+  return driveEventScript(
+      steps, _HostDriver(Interpreter.project(project, host), host),
+      namesFile: forms.length > 1);
+}
+
 /// Runs [source] with [form] and drives it with [script] (an event
 /// script) on a [ScriptedHost]. See [driveEventScript] for the transcript.
 ///
@@ -394,8 +489,12 @@ Future<List<String>> runEventScript(String source, FormFile form, String script,
 ///
 /// A step runs only when the program waits for the user, so the transcript
 /// is the same on every platform.
+///
+/// [namesFile]: a program with several forms names the file an error is
+/// in, `Error R0xx @ Form2.gbas:3` (D88).
 Future<List<String>> driveEventScript(
-    List<ScriptStep> steps, ScriptDriver driver) async {
+    List<ScriptStep> steps, ScriptDriver driver,
+    {bool namesFile = false}) async {
   // Waits until the program waits for the user. Each check comes after a
   // tick, so that everything the last step started (a closed dialog lets
   // its handler go on) has run as far as it can.
@@ -416,8 +515,8 @@ Future<List<String>> driveEventScript(
     }
     out.add('> ${step.text}');
     switch (step) {
-      case EventStep(:final control, :final event):
-        _record(out, step.text, await driver.raise(control, event));
+      case EventStep(:final control, :final event, :final form):
+        _record(out, step.text, await driver.raise(control, event, form: form));
       case TypeStep(:final control, :final value):
         final outcome = await driver.type(control, value);
         if (outcome != null) _record(out, step.text, outcome);
@@ -445,7 +544,9 @@ Future<List<String>> driveEventScript(
     RunCompleted() => 'Closed',
     RunEnded() => 'Ended',
     RunStopped() => 'Stopped',
-    RunFailed(:final error) => 'Error ${error.code.code} @ ${error.line}',
+    RunFailed(:final error, :final file) => file == null || !namesFile
+        ? 'Error ${error.code.code} @ ${error.line}'
+        : 'Error ${error.code.code} @ $file:${error.line}',
     RunNotStarted(:final reason) => 'Not started: ${reason.name}',
   });
   return out;
@@ -476,7 +577,11 @@ class _HostDriver implements ScriptDriver {
   Future<void> tick() => Future<void>.delayed(Duration.zero);
 
   @override
-  Future<EventOutcome> raise(String? control, String event) async {
+  Future<EventOutcome> raise(String? control, String event,
+      {String? form}) async {
+    if (form != null && form.toLowerCase() != host.front.toLowerCase()) {
+      return EventOutcome.blocked;
+    }
     if (control != null &&
         event == 'Click' &&
         host.componentOf(control) == 'CheckBox') {
@@ -484,7 +589,7 @@ class _HostDriver implements ScriptDriver {
       if (interpreter.refusal(control, 'Changed') case final refused?) {
         return refused;
       }
-      final checked = host.getProperty(control, 'Checked') as bool;
+      final checked = host.frontProperty(control, 'Checked') as bool;
       host.userSets(control, 'Checked', !checked);
       return interpreter.raiseEvent(control, 'Changed');
     }
@@ -494,19 +599,19 @@ class _HostDriver implements ScriptDriver {
   @override
   Future<EventOutcome?> type(String control, String value) async {
     if (host.hasOpenDialog) return EventOutcome.blocked;
-    if (host.getProperty(control, 'Text') == value) return null;
+    if (host.frontProperty(control, 'Text') == value) return null;
     host.userSets(control, 'Text', value);
     return interpreter.raiseEvent(control, 'Changed');
   }
 
   @override
   Future<EventOutcome?> select(String control, int index) async {
-    final items = host.getProperty(control, 'Items') as List<String>;
+    final items = host.frontProperty(control, 'Items') as List<String>;
     if (index >= items.length) {
       throw StateError('$control has no item $index');
     }
     if (host.hasOpenDialog) return EventOutcome.blocked;
-    if (host.getProperty(control, 'ListIndex') == index) return null;
+    if (host.frontProperty(control, 'ListIndex') == index) return null;
     // A pick the program would ignore leaves the choice as it was.
     if (interpreter.refusal(control, 'Changed') case final refused?) {
       return refused;

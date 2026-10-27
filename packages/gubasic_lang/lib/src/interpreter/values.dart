@@ -35,11 +35,14 @@ class GbArray {
 /// A control on the form, or the form itself (`btnSave`, `Me`). Its
 /// properties live in the [FormHost]; this only names it.
 class GbControl {
-  GbControl(this.name, this.component);
+  GbControl(this.name, this.component, {this.form = ''});
 
   /// The control's name; null for the form.
   final String? name;
   final ComponentSpec component;
+
+  /// The name of the form it is on, or is (D88).
+  final String form;
 
   @override
   String toString() => name ?? 'Form';

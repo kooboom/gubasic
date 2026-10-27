@@ -7,6 +7,7 @@ import '../analyzer/analysis_result.dart';
 import '../analyzer/builtins.dart';
 import '../analyzer/compile.dart';
 import '../analyzer/conversions.dart';
+import '../analyzer/forms.dart';
 import '../analyzer/members.dart';
 import '../analyzer/symbols.dart';
 import '../analyzer/types.dart';
@@ -74,25 +75,92 @@ enum EventOutcome {
 /// the running one finishes or waits in DoEvents. MsgBox and InputBox keep
 /// the turn, and events while they are open are blocked.
 class Interpreter {
+  /// Runs [program]: code without a form, or the code of one form.
   Interpreter(
-    this.program,
-    this.host, {
-    this.messages = englishMessages,
-    this.callDepthLimit = maxCallDepth,
-  })  : _a = program.analysis,
-        _lines = LineMap(program.parseResult.source) {
-    final form = _a.form;
-    if (form == null) return;
-    _controls[null] = GbControl(null, form.component);
-    for (final c in form.controls) {
-      _controls[c.name.toLowerCase()] = GbControl(c.name, c.component);
+    CompileResult program,
+    Host host, {
+    Map<DiagnosticCode, String> messages = englishMessages,
+    int callDepthLimit = maxCallDepth,
+  }) : this._(
+          program,
+          switch (program.analysis.form) {
+            final form? => ProjectProgram(
+                [FormProgram(form.name, form, program)],
+                FormProgram(form.name, form, program)),
+            null => null,
+          },
+          host,
+          messages,
+          callDepthLimit,
+        );
+
+  /// Runs a project's forms, starting with its startup form (D88).
+  Interpreter.project(
+    ProjectProgram project,
+    Host host, {
+    Map<DiagnosticCode, String> messages = englishMessages,
+    int callDepthLimit = maxCallDepth,
+  }) : this._(project.startup.program, project, host, messages, callDepthLimit);
+
+  Interpreter._(
+      this.program, this.project, this.host, this.messages, this.callDepthLimit)
+      : _a = _merged(program, project) {
+    final project = this.project;
+    if (project == null) {
+      _top = _FormRun(null, LineMap(program.parseResult.source));
+      _frame = _Frame(null, _top);
+      return;
     }
-    for (final MapEntry(key: decl, value: h) in _a.handlers.entries) {
-      _handlers[_eventKey(h.control?.name, h.event.name)] = decl;
+    for (final f in project.forms) {
+      final run = _FormRun(f, LineMap(f.program.parseResult.source));
+      _forms[f.name.toLowerCase()] = run;
+      run.controls[null] = GbControl(null, f.file.component, form: f.name);
+      for (final c in f.file.controls) {
+        run.controls[c.name.toLowerCase()] =
+            GbControl(c.name, c.component, form: f.name);
+      }
+      final analysis = f.program.analysis;
+      for (final MapEntry(key: decl, value: h) in analysis.handlers.entries) {
+        _handlers[_eventKey(f.name, h.control?.name, h.event.name)] = decl;
+      }
+      for (final symbol in analysis.fileScope.symbols.values) {
+        if (symbol.procedure case final p?) _formOf[p] = run;
+      }
     }
+    _top = _forms[project.startup.name.toLowerCase()]!;
+    _frame = _Frame(null, _top);
   }
 
+  /// The analysis of every form together: the interpreter looks nodes up
+  /// in it, and nodes of different files are different keys.
+  static AnalysisResult _merged(CompileResult program, ProjectProgram? p) {
+    if (p == null || p.forms.length == 1) return program.analysis;
+    final a = program.analysis;
+    final merged = AnalysisResult(
+      diagnostics: a.diagnostics,
+      fileScope: a.fileScope,
+      form: a.form,
+      pictures: a.pictures,
+    );
+    for (final f in p.forms) {
+      final b = f.program.analysis;
+      merged.symbols.addAll(b.symbols);
+      merged.types.addAll(b.types);
+      merged.conversions.addAll(b.conversions);
+      merged.invokeKinds.addAll(b.invokeKinds);
+      merged.implicitCalls.addAll(b.implicitCalls);
+      merged.members.addAll(b.members);
+      merged.loopVariables.addAll(b.loopVariables);
+      merged.handlers.addAll(b.handlers);
+    }
+    return merged;
+  }
+
+  /// The startup form's code, or the code without a form.
   final CompileResult program;
+
+  /// The project's forms; null for code without a form.
+  final ProjectProgram? project;
   final Host host;
 
   /// The language of `ex.Message` for run-time errors caught by `Try`.
@@ -100,12 +168,11 @@ class Interpreter {
   final int callDepthLimit;
 
   final AnalysisResult _a;
-  final LineMap _lines;
 
   final _fields = <Symbol, Object?>{};
   final _statics = <Symbol, Object?>{};
   final _random = GbRandom();
-  _Frame _frame = _Frame(null);
+  late _Frame _frame;
   var _depth = 0;
   var _steps = 0;
 
@@ -113,9 +180,19 @@ class Interpreter {
   final _sinceYield = Stopwatch()..start();
   var _stopRequested = false;
 
-  // Forms and events (D28).
-  final _controls = <String?, GbControl>{};
+  // Forms and events (D28, D88).
+  final _forms = <String, _FormRun>{};
+  final _formOf = Map<ProcedureDecl, _FormRun>.identity();
   final _handlers = <String, ProcedureDecl>{};
+
+  /// The startup form, or the code without a form.
+  late final _FormRun _top;
+
+  /// The forms shown, from the back to the front.
+  final _shown = <_FormRun>[];
+
+  /// Those of [_shown] shown by ShowDialog.
+  final _shownAsDialog = Set<_FormRun>.identity();
 
   /// Handlers that are running or waiting for their turn (D5).
   final _running = Set<ProcedureDecl>.identity();
@@ -130,8 +207,18 @@ class Interpreter {
   RunResult? _ended;
   Completer<RunResult>? _formRun;
 
-  static String _eventKey(String? control, String event) =>
-      '${(control ?? 'form').toLowerCase()}.${event.toLowerCase()}';
+  static String _eventKey(String form, String? control, String event) =>
+      '${form.toLowerCase()}.${(control ?? 'form').toLowerCase()}.'
+      '${event.toLowerCase()}';
+
+  ProcedureDecl? _handler(_FormRun form, String? control, String event) =>
+      _handlers[_eventKey(form.name, control, event)];
+
+  /// The form in front: the one that takes what the user does.
+  _FormRun? get _front => _shown.isEmpty ? null : _shown.last;
+
+  /// The form [name] (any case), or null.
+  _FormRun? _formNamed(String name) => _forms[name.toLowerCase()];
 
   FormHost get _formHost => host as FormHost;
 
@@ -142,8 +229,38 @@ class Interpreter {
     if (_formRun != null) _finish(const RunStopped());
   }
 
-  /// The user closed the form: the program ends (RunCompleted).
-  void closeForm() => _finish(const RunCompleted());
+  /// The user closed the window: the program ends (RunCompleted), after
+  /// the Form_Closed of the forms shown, from the front (D88).
+  void closeForm() {
+    if (_formRun == null || _ended != null) return;
+    final closing = [
+      for (final f in _shown.reversed)
+        if (_handler(f, null, 'Closed') != null) f,
+    ];
+    if (closing.isEmpty) {
+      _finish(const RunCompleted());
+      return;
+    }
+    unawaited(_closeAll());
+  }
+
+  Future<void> _closeAll() async {
+    await _takeTurn();
+    try {
+      for (final f in _shown.reversed.toList()) {
+        if (_ended != null) break;
+        f.loaded = false;
+        final closed = _handler(f, null, 'Closed');
+        if (closed == null) continue;
+        _frame = _Frame(null, f);
+        _depth = 0;
+        await _guard(() => _runNow(closed));
+      }
+    } finally {
+      _passTurn();
+    }
+    _finish(const RunCompleted());
+  }
 
   /// Whether the program is waiting for the user: no handler is running
   /// (or the running ones wait in DoEvents), or a dialog is open. A test
@@ -156,9 +273,14 @@ class Interpreter {
 
   /// Runs the handler of [event] of [control] (null: the form), following
   /// D5 and D28. Does not wait for the handler to finish.
-  EventOutcome raiseEvent(String? control, String event) {
-    if (refusal(control, event) case final refused?) return refused;
-    final handler = _handlers[_eventKey(control, event)];
+  ///
+  /// [form] is the form the user acts on; only the one in front takes it
+  /// (D88). Null: the one in front.
+  EventOutcome raiseEvent(String? control, String event, {String? form}) {
+    if (refusal(control, event, form: form) case final refused?) {
+      return refused;
+    }
+    final handler = _handler(_front!, control, event);
     if (handler == null) return EventOutcome.noHandler;
     _runHandler(handler);
     return EventOutcome.started;
@@ -168,10 +290,14 @@ class Interpreter {
   /// is not running, a dialog is open, or its handler is running. Null
   /// when it would. A CheckBox asks before the user's click changes it, so
   /// that a click whose Changed would be ignored changes nothing (D44).
-  EventOutcome? refusal(String? control, String event) {
+  EventOutcome? refusal(String? control, String event, {String? form}) {
     if (_formRun == null || _ended != null) return EventOutcome.notRunning;
     if (_openDialogs > 0) return EventOutcome.blocked;
-    final handler = _handlers[_eventKey(control, event)];
+    final front = _front;
+    if (front == null) return EventOutcome.notRunning;
+    // A form behind the front one, behind a dialog for one.
+    if (form != null && _formNamed(form) != front) return EventOutcome.blocked;
+    final handler = _handler(front, control, event);
     if (handler != null && _running.contains(handler)) {
       return EventOutcome.ignored;
     }
@@ -194,7 +320,7 @@ class Interpreter {
   /// then the form's events, until the form is closed, `End` runs, an
   /// error is not caught or [stop] is called (docs/LANGUAGE.md §9.1).
   Future<RunResult> run() async {
-    if (program.hasErrors) {
+    if (project?.hasErrors ?? program.hasErrors) {
       return const RunNotStarted(NotStartedReason.hasErrors);
     }
     if (_a.form != null) return _runForm();
@@ -212,23 +338,33 @@ class Interpreter {
     } on _Stop {
       return const RunStopped();
     } on _Failure catch (f) {
-      return RunFailed(_diagnostic(f.code, f.node, f.args));
+      return _failed(f.code, f.node, f.args, f.form);
     } on _Thrown catch (t) {
-      return RunFailed(_diagnostic(
-          DiagnosticCode.unhandledException, t.node, [t.exception.message]));
+      return _failed(DiagnosticCode.unhandledException, t.node,
+          [t.exception.message], t.form);
     } finally {
       _passTurn();
     }
   }
 
-  Future<void> _initFields() async {
-    for (final member in program.parseResult.unit.members) {
-      if (member is FieldDecl) {
-        final symbol = _a.symbols[member.declarator.name];
-        if (symbol != null) {
-          _fields[symbol] = await _initialValue(member.declarator, symbol);
+  /// Gives the variables of [form]'s code (outside procedures) their
+  /// initial values, or of the code without a form.
+  Future<void> _initFields([_FormRun? form]) async {
+    final run = form ?? _top;
+    final code = run.program?.program ?? program;
+    final saved = _frame;
+    _frame = _Frame(null, run);
+    try {
+      for (final member in code.parseResult.unit.members) {
+        if (member is FieldDecl) {
+          final symbol = _a.symbols[member.declarator.name];
+          if (symbol != null) {
+            _fields[symbol] = await _initialValue(member.declarator, symbol);
+          }
         }
       }
+    } finally {
+      _frame = saved;
     }
   }
 
@@ -239,17 +375,116 @@ class Interpreter {
     final done = _formRun = Completer<RunResult>();
     await _takeTurn();
     try {
-      await _guard(_initFields);
+      // Every form's variables, the startup form's first, so that the
+      // forms can use one another's from the start (D88).
+      await _guard(() async {
+        await _initFields(_top);
+        for (final f in _forms.values) {
+          if (f != _top) await _initFields(f);
+        }
+      });
+      if (_ended == null) {
+        _frame = _Frame(null, _top);
+        _depth = 0;
+        await _guard(() => _show(_top));
+      }
     } finally {
       _passTurn();
     }
-    final load = _handlers[_eventKey(null, 'Load')];
-    if (load != null && _ended == null) await _runHandler(load);
-    if (_ended == null) _formHost.showForm();
-    // Once when the form is first shown, as in Visual Basic 6 (D58).
-    final resize = _handlers[_eventKey(null, 'Resize')];
-    if (resize != null && _ended == null) await _runHandler(resize);
     return done.future;
+  }
+
+  /// Tells the host which forms are shown.
+  void _showForms() => _formHost.showForms([
+        for (final f in _shown)
+          ShownForm(f.name, dialog: _shownAsDialog.contains(f)),
+      ]);
+
+  /// `Show`: puts [form] in front (D88). A form shown already comes to the
+  /// front; one not loaded starts (again after Close: its variables and
+  /// controls as at the start), runs Form_Load, is shown, then runs
+  /// Form_Resize once, as in Visual Basic 6 (D58).
+  Future<void> _show(_FormRun form, {bool dialog = false}) async {
+    if (_shown.remove(form)) {
+      _shown.add(form);
+      _showForms();
+      return;
+    }
+    final loading = !form.loaded;
+    if (loading) {
+      if (form.started) {
+        _formHost.resetForm(form.name);
+        await _initFields(form);
+      }
+      form
+        ..loaded = true
+        ..started = true;
+      final load = _handler(form, null, 'Load');
+      if (load != null) await _runNow(load);
+      if (_ended != null || !form.loaded) return;
+    }
+    _shown.add(form);
+    if (dialog) _shownAsDialog.add(form);
+    _showForms();
+    final resize = loading ? _handler(form, null, 'Resize') : null;
+    if (resize != null) await _runNow(resize);
+  }
+
+  /// `ShowDialog`: shows [form] in front as a dialog and waits until it
+  /// goes (D88). While it waits, the dialog's handlers run, as in
+  /// DoEvents (D28).
+  Future<void> _showDialog(_FormRun form, Node at) async {
+    if (_shown.contains(form)) {
+      _fail(DiagnosticCode.dialogAlreadyShown, at, [form.name]);
+    }
+    final gone = form.dialog = Completer<void>();
+    await _show(form, dialog: true);
+    if (_shown.contains(form)) {
+      final frame = _frame;
+      final depth = _depth;
+      _passTurn();
+      await gone.future;
+      await _takeTurn();
+      _frame = frame;
+      _depth = depth;
+    }
+    if (_ended != null) throw const _Abandoned();
+    if (_stopRequested) throw const _Stop();
+  }
+
+  /// Takes [form] away from the forms shown; the program ends when none is
+  /// left (D88).
+  void _takeAway(_FormRun form) {
+    if (!_shown.remove(form)) return;
+    _shownAsDialog.remove(form);
+    form.dialog?.complete();
+    form.dialog = null;
+    if (_shown.isNotEmpty) _showForms();
+  }
+
+  /// `Hide`: takes [form] away, keeping its variables and controls.
+  void _hide(_FormRun form) {
+    _takeAway(form);
+    _endIfNoneShown();
+  }
+
+  /// `Close`: takes [form] away and runs its Form_Closed; shown again, it
+  /// starts again. Its variables keep their values until then, so that a
+  /// dialog's answer can be read after it closes.
+  Future<void> _close(_FormRun form) async {
+    if (!form.loaded) return;
+    form.loaded = false;
+    _takeAway(form);
+    final closed = _handler(form, null, 'Closed');
+    if (closed != null) await _runNow(closed);
+    _endIfNoneShown();
+  }
+
+  /// With no form shown, the program has ended: what is running stops.
+  void _endIfNoneShown() {
+    if (_shown.isNotEmpty || _ended != null) return;
+    _finish(const RunCompleted());
+    throw const _Abandoned();
   }
 
   /// Runs [handler] when it gets the turn (D28).
@@ -259,7 +494,7 @@ class Interpreter {
       await _takeTurn();
       try {
         if (_ended != null) return;
-        _frame = _Frame(null);
+        _frame = _Frame(null, _formOf[handler] ?? _top);
         _depth = 0;
         await _guard(() => _callUser(handler, const [], handler));
       } finally {
@@ -280,10 +515,10 @@ class Interpreter {
     } on _Stop {
       _finish(const RunStopped());
     } on _Failure catch (f) {
-      _finish(RunFailed(_diagnostic(f.code, f.node, f.args)));
+      _finish(_failed(f.code, f.node, f.args, f.form));
     } on _Thrown catch (t) {
-      _finish(RunFailed(_diagnostic(
-          DiagnosticCode.unhandledException, t.node, [t.exception.message])));
+      _finish(_failed(DiagnosticCode.unhandledException, t.node,
+          [t.exception.message], t.form));
     } on _Abandoned {
       // The program ended while this handler waited.
     }
@@ -296,6 +531,11 @@ class Interpreter {
     if (done == null || _ended != null) return;
     _ended = result;
     _formHost.endProgram();
+    // Handlers waiting for a dialog form go on, and stop (_Abandoned).
+    for (final f in _forms.values) {
+      f.dialog?.complete();
+      f.dialog = null;
+    }
     done.complete(result);
   }
 
@@ -347,8 +587,9 @@ class Interpreter {
     return answer;
   }
 
-  Diagnostic _diagnostic(DiagnosticCode code, Node node, List<String> args) {
-    final (line, column) = _lines.locate(node.start);
+  Diagnostic _diagnostic(
+      DiagnosticCode code, Node node, List<String> args, _FormRun form) {
+    final (line, column) = form.lines.locate(node.start);
     return Diagnostic(
       code: code,
       line: line,
@@ -360,7 +601,13 @@ class Interpreter {
   }
 
   Never _fail(DiagnosticCode code, Node node, [List<String> args = const []]) =>
-      throw _Failure(code, node, args);
+      throw _Failure(code, node, args, _frame.form);
+
+  /// How an error that nothing caught ends the run: with the file it is in.
+  RunFailed _failed(
+          DiagnosticCode code, Node node, List<String> args, _FormRun form) =>
+      RunFailed(_diagnostic(code, node, args, form),
+          file: form.program?.codeFile);
 
   /// Counts a loop round or a call; true when it is time to yield. Kept
   /// synchronous so that loops do not create a Future every round.
@@ -387,7 +634,10 @@ class Interpreter {
         Storage.field => _fields[symbol],
         Storage.staticLocal => _statics[symbol],
         Storage.local => _frame.vars[symbol],
-        null => _controls[symbol.name.toLowerCase()], // a control
+        // A form of the project, or a control of the form whose code runs.
+        null => symbol.kind == SymbolKind.form
+            ? _formNamed(symbol.name)!.controls[null]
+            : _frame.form.controls[symbol.name.toLowerCase()],
       };
 
   void _write(Symbol symbol, Object? value) {
@@ -450,7 +700,7 @@ class Interpreter {
     }
     if (_tick()) await _yield();
     final saved = _frame;
-    final frame = _Frame(p);
+    final frame = _Frame(p, _formOf[p] ?? _top);
     final symbol = _a.symbols[p.name];
     for (var i = 0; i < p.parameters.length; i++) {
       final param = p.parameters[i];
@@ -524,7 +774,10 @@ class Interpreter {
   bool _methodMayRunEvent(MemberExpr target) {
     final type = _a.types[target.target];
     if (type is ControlType) {
-      return type.component.methods.containsKey(target.name.name.toLowerCase());
+      final name = target.name.name.toLowerCase();
+      // A form's procedure (D88) is user code.
+      return type.component.methods.containsKey(name) ||
+          type.form?.procedures.containsKey(name) == true;
     }
     return type == GbType.object;
   }
@@ -599,7 +852,7 @@ class Interpreter {
       case TryStmt():
         throw StateError('Try is always run with _statementAsync');
       case ThrowStmt():
-        throw _Thrown(_valueSync(s.value)! as GbException, s);
+        throw _Thrown(_valueSync(s.value)! as GbException, s, _frame.form);
       case ReDimStmt():
         _reDim(s, _valueSync(s.bound));
       case EndStmt():
@@ -650,7 +903,7 @@ class Interpreter {
         if (s.value != null) _frame.result = await _value(s.value!);
         return _Flow.exitProcedure;
       case ThrowStmt():
-        throw _Thrown((await _value(s.value))! as GbException, s);
+        throw _Thrown((await _value(s.value))! as GbException, s, _frame.form);
       case ReDimStmt():
         _reDim(s, await _value(s.bound));
       default:
@@ -778,7 +1031,7 @@ class Interpreter {
       if (s.catches.isEmpty) rethrow;
       // A run-time error caught by Try: its message, in the language of
       // the run (I3).
-      final d = _diagnostic(f.code, f.node, f.args);
+      final d = _diagnostic(f.code, f.node, f.args, f.form);
       return _catch(s, GbException(d.formatMessage(messages)));
     } finally {
       if (s.finallyBlock != null) {
@@ -887,7 +1140,7 @@ class Interpreter {
     final spec = _property(c, e);
     final value = spec.readOnly
         ? _computedProperty(c, spec)
-        : _formHost.getProperty(c.name, spec.name);
+        : _formHost.getProperty(c.form, c.name, spec.name);
     if (spec.type == GbType.integer) return GbInt.of(value as int);
     if (spec.type == GbType.double_) return (value as num).toDouble();
     return value;
@@ -896,6 +1149,18 @@ class Interpreter {
   /// Sets a property; returns the handler of its change event if the value
   /// changed and the handler is not already running (D5).
   ProcedureDecl? _setProperty(GbControl c, MemberExpr e, Object? value) {
+    final name = e.name.name.toLowerCase();
+    if (c.name == null && !c.component.properties.containsKey(name)) {
+      // `Form2.Score = 5`: a variable of another form (D88).
+      final symbol = _formSymbol(_formNamed(c.form)!, name);
+      if (symbol == null ||
+          symbol.storage != Storage.field ||
+          symbol.kind == SymbolKind.constant) {
+        _fail(DiagnosticCode.memberNotFound, e, [e.name.name, c.form]);
+      }
+      _fields[symbol] = value;
+      return null;
+    }
     final spec = _property(c, e);
     if (spec.readOnly) {
       // Only through an Object: the analyzer reports it otherwise (A034).
@@ -917,11 +1182,11 @@ class Interpreter {
         _fail(DiagnosticCode.indexOutOfRange, e, ['$v', '$count']);
       }
     }
-    final old = _formHost.getProperty(c.name, spec.name);
-    _formHost.setProperty(c.name, spec.name, v);
+    final old = _formHost.getProperty(c.form, c.name, spec.name);
+    _formHost.setProperty(c.form, c.name, spec.name, v);
     final event = spec.changeEvent;
     if (event == null || old == v) return null;
-    final handler = _handlers[_eventKey(c.name, event)];
+    final handler = _handlers[_eventKey(c.form, c.name, event)];
     return handler == null || _running.contains(handler) ? null : handler;
   }
 
@@ -972,9 +1237,37 @@ class Interpreter {
   ProcedureDecl? _pendingChange;
 
   List<String> _items(GbControl c) =>
-      _formHost.getProperty(c.name, 'Items') as List<String>;
+      _formHost.getProperty(c.form, c.name, 'Items') as List<String>;
   int _listIndex(GbControl c) =>
-      _formHost.getProperty(c.name, 'ListIndex') as int;
+      _formHost.getProperty(c.form, c.name, 'ListIndex') as int;
+
+  /// A member of form [c] that is not its component's (D88): one of its
+  /// controls, a variable or a procedure of its code. A procedure is
+  /// called through [_pendingCall].
+  Object? _formMember(
+      GbControl c, String name, List<Object?> args, Node at, MemberExpr e) {
+    final form = _formNamed(c.form)!;
+    final control = form.controls[name];
+    if (args.isEmpty && control != null) return control;
+    final symbol = _formSymbol(form, name);
+    if (symbol != null && symbol.storage == Storage.field && args.isEmpty) {
+      return _fields[symbol];
+    }
+    if (symbol?.procedure case final p?) {
+      _pendingCall = () => _callUser(p, args, at);
+      return null;
+    }
+    _fail(DiagnosticCode.memberNotFound, at, [e.name.name, c.form]);
+  }
+
+  /// The name [name] (lower case) declared in [form]'s code outside
+  /// procedures, or null.
+  Symbol? _formSymbol(_FormRun form, String name) =>
+      form.program?.program.analysis.fileScope.symbols[name];
+
+  /// A call that has to wait, left by a form's method or a call to a
+  /// procedure of a form (D88); [_afterChange] makes it.
+  Future<Object?> Function()? _pendingCall;
 
   /// Calls a method of a control (docs/DESIGN.md D45). The ListBox's
   /// methods change its items and, when the chosen item moves or goes,
@@ -982,8 +1275,33 @@ class Interpreter {
   Object? _controlMethod(
       GbControl c, MethodSpec method, List<Object?> args, Node at) {
     switch ((c.component.name, method.name)) {
+      // The forms shown one over another (D88).
+      case ('Form', 'Show'):
+        final form = _formNamed(c.form)!;
+        _pendingCall = () async {
+          await _show(form);
+          return null;
+        };
+        return null;
+      case ('Form', 'ShowDialog'):
+        final form = _formNamed(c.form)!;
+        _pendingCall = () async {
+          await _showDialog(form, at);
+          return null;
+        };
+        return null;
+      case ('Form', 'Hide'):
+        _hide(_formNamed(c.form)!);
+        return null;
+      case ('Form', 'Close'):
+        final form = _formNamed(c.form)!;
+        _pendingCall = () async {
+          await _close(form);
+          return null;
+        };
+        return null;
       case ('ListBox', 'AddItem'):
-        _formHost.setProperty(c.name, 'Items',
+        _formHost.setProperty(c.form, c.name, 'Items',
             List<String>.unmodifiable([..._items(c), args[0] as String]));
         return null;
       case ('ListBox', 'RemoveItem'):
@@ -991,7 +1309,7 @@ class Interpreter {
         final i = _itemIndex(items, args[0], at);
         items.removeAt(i);
         _formHost.setProperty(
-            c.name, 'Items', List<String>.unmodifiable(items));
+            c.form, c.name, 'Items', List<String>.unmodifiable(items));
         final chosen = _listIndex(c);
         _changeListIndex(
             c,
@@ -1002,7 +1320,7 @@ class Interpreter {
                     : chosen);
         return null;
       case ('ListBox', 'Clear'):
-        _formHost.setProperty(c.name, 'Items', const <String>[]);
+        _formHost.setProperty(c.form, c.name, 'Items', const <String>[]);
         _changeListIndex(c, -1);
         return null;
       case ('ListBox', 'List'):
@@ -1016,8 +1334,8 @@ class Interpreter {
   /// then left to run ([_pendingChange]).
   void _changeListIndex(GbControl c, int index) {
     if (_listIndex(c) == index) return;
-    _formHost.setProperty(c.name, 'ListIndex', index);
-    final handler = _handlers[_eventKey(c.name, 'Changed')];
+    _formHost.setProperty(c.form, c.name, 'ListIndex', index);
+    final handler = _handlers[_eventKey(c.form, c.name, 'Changed')];
     if (handler != null && !_running.contains(handler)) {
       _pendingChange = handler;
     }
@@ -1025,7 +1343,12 @@ class Interpreter {
 
   /// Runs a change event's handler right away, as part of the statement
   /// that changed the value (docs/LANGUAGE.md §11.1).
-  Future<void> _runChangeEvent(ProcedureDecl handler) async {
+  Future<void> _runChangeEvent(ProcedureDecl handler) => _runNow(handler);
+
+  /// Runs [handler] at once, as part of what the running code does: a
+  /// change event, or a form's Load, Resize or Closed when the code shows
+  /// or closes it (D88).
+  Future<void> _runNow(ProcedureDecl handler) async {
     _running.add(handler);
     try {
       await _callUser(handler, const [], handler);
@@ -1096,7 +1419,7 @@ class Interpreter {
       case ParenExpr():
         return _valueSync(e.inner);
       case MeExpr():
-        return _controls[null];
+        return _frame.form.controls[null];
       case ErrorExpr():
         throw StateError('not runnable: $e'); // analyzer reported it
     }
@@ -1141,6 +1464,11 @@ class Interpreter {
   /// [value], after running the change event a control's method left to
   /// run (ListBox.Clear -> Changed), as part of the call.
   Future<Object?> _afterChange(Object? value) async {
+    final call = _pendingCall;
+    if (call != null) {
+      _pendingCall = null;
+      value = await call();
+    }
     final handler = _pendingChange;
     if (handler != null) {
       _pendingChange = null;
@@ -1152,7 +1480,7 @@ class Interpreter {
   /// [value]; a method that runs a change event is always called through
   /// [_evalAsync] ([_methodMayRunEvent]).
   Object? _noChange(Object? value) {
-    if (_pendingChange != null) {
+    if (_pendingChange != null || _pendingCall != null) {
       throw StateError('a change event is always run asynchronously');
     }
     return value;
@@ -1217,7 +1545,9 @@ class Interpreter {
         GbList() =>
           membersOf(const ListType(GbType.object))?[name]?.isMethod == true,
         String() => membersOf(GbType.string)?[name]?.isMethod == true,
-        GbControl c => c.component.methods.containsKey(name),
+        GbControl c => c.component.methods.containsKey(name) ||
+            (c.name == null &&
+                _formSymbol(_formNamed(c.form)!, name)?.procedure != null),
         _ => false,
       };
 
@@ -1383,6 +1713,9 @@ class Interpreter {
       case GbControl c:
         if (c.component.methods[name] case final method?) {
           return _controlMethod(c, method, args, node);
+        }
+        if (c.name == null && !c.component.properties.containsKey(name)) {
+          return _formMember(c, name, args, node, e);
         }
         if (args.isEmpty) return _getProperty(c, e);
       default:
@@ -1726,9 +2059,12 @@ class Interpreter {
 enum _Flow { normal, exitFor, exitDo, exitProcedure }
 
 class _Frame {
-  _Frame(this.procedure);
+  _Frame(this.procedure, this.form);
 
   final ProcedureDecl? procedure;
+
+  /// The form whose code runs: its controls are the names' and `Me` (D88).
+  final _FormRun form;
   final Map<Symbol, Object?> vars = Map.identity();
   Object? result;
 }
@@ -1739,16 +2075,46 @@ class _BuiltinObject {
 }
 
 class _Failure implements Exception {
-  _Failure(this.code, this.node, this.args);
+  _Failure(this.code, this.node, this.args, this.form);
   final DiagnosticCode code;
   final Node node;
   final List<String> args;
+
+  /// Whose code [node] is in.
+  final _FormRun form;
 }
 
 class _Thrown implements Exception {
-  _Thrown(this.exception, this.node);
+  _Thrown(this.exception, this.node, this.form);
   final GbException exception;
   final Node node;
+  final _FormRun form;
+}
+
+/// A form of the project while the program runs (D88), or the code
+/// without a form ([program] null).
+class _FormRun {
+  _FormRun(this.program, this.lines);
+
+  final FormProgram? program;
+
+  /// To tell an error's line in the form's code.
+  final LineMap lines;
+
+  String get name => program?.name ?? '';
+
+  /// The form itself (null) and its controls, by lower-case name.
+  final controls = <String?, GbControl>{};
+
+  /// Shown since the start or since it was last closed: its Form_Load has
+  /// run.
+  var loaded = false;
+
+  /// Ever loaded: shown again after Close, it starts again.
+  var started = false;
+
+  /// Completes when the form, shown by ShowDialog, goes.
+  Completer<void>? dialog;
 }
 
 class _EndProgram implements Exception {

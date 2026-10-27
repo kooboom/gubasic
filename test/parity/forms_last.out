@@ -1,0 +1,4 @@
+Forms: Form1
+> btnHide.Click
+Debug.Print: hiding
+Closed

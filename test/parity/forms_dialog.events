@@ -1,0 +1,8 @@
+btnAsk.Click
+Form1.btnAsk.Click      ' blocked: the dialog is in front
+txtAnswer.Type "Seoul"
+btnOK.Click
+OK                      ' the MsgBox in the dialog, then Close: Form1 goes on
+btnAsk.Click            ' shown again after Close: starts again
+btnCancel.Click         ' Hide: the answer is ""
+btnTwice.Click

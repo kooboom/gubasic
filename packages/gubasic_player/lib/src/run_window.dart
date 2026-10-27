@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:gubasic_lang/gubasic_lang.dart' show ShownForm;
 import 'package:gubasic_runtime/gubasic_runtime.dart';
 
 import 'fit_view.dart';
@@ -10,6 +11,62 @@ import 'run_session.dart';
 
 /// The key of the run window's close button.
 const runWindowCloseKey = ValueKey('runWindow.close');
+
+/// The key of the view of form [name] in the run window or an app (D88).
+ValueKey<String> runFormKey(String name) =>
+    ValueKey('run.form.${name.toLowerCase()}');
+
+/// Of the forms shown (D88), the one drawn as the window's, or the page's:
+/// the frontmost that is not a dialog; and the dialogs shown over it.
+({ShownForm? base, List<ShownForm> dialogs}) formLayers(List<ShownForm> shown) {
+  final i = shown.lastIndexWhere((f) => !f.dialog);
+  return (
+    base: i < 0 ? null : shown[i],
+    dialogs: shown.sublist(i < 0 ? 0 : i + 1),
+  );
+}
+
+/// The forms shown as dialogs over the window or the page (D88): each
+/// over a dim barrier that takes the clicks meant for what is behind,
+/// centred, shrunk when larger than the area. A dialog has no close
+/// button: its code closes it.
+List<Widget> dialogLayers(BuildContext context, RunSession session) {
+  final scrim = Theme.of(context).colorScheme.scrim.withValues(alpha: 0.32);
+  return [
+    for (final dialog in formLayers(session.host.shown).dialogs) ...[
+      ModalBarrier(color: scrim, dismissible: false),
+      LayoutBuilder(
+        builder: (context, constraints) {
+          final model = session.host.modelOf(dialog.name);
+          return ListenableBuilder(
+            listenable: model.form,
+            builder: (context, _) {
+              final natural = Size(
+                model.form.integer('Width').toDouble(),
+                formTitleHeight + model.form.integer('Height'),
+              );
+              final scale = fitScale(natural, inside(constraints, 16));
+              return Center(
+                child: fitted(
+                  FormWindowFrame(
+                    caption: model.form.text('Caption'),
+                    width: natural.width,
+                    child: GbFormView(
+                      key: runFormKey(dialog.name),
+                      model: model,
+                    ),
+                  ),
+                  natural,
+                  scale,
+                ),
+              );
+            },
+          );
+        },
+      ),
+    ],
+  ];
+}
 
 /// Where a running program is shown: the window with its form, centred
 /// at the top of the area this widget fills. The area has its own
@@ -50,51 +107,61 @@ class _RunWindowState extends State<RunWindow> {
   /// large, and the switch for it.
   Widget _page() {
     final fit = widget.fit;
-    final form = widget.session.host.model.form;
+    final session = widget.session;
     const padding = 24.0;
     return ListenableBuilder(
-      listenable: Listenable.merge([form, ?fit]),
-      builder: (context, _) => LayoutBuilder(
-        builder: (context, constraints) {
-          final natural = Size(
-            form.integer('Width') + _cornerReach,
-            formTitleHeight + form.integer('Height') + _cornerReach,
-          );
-          final scale = fit?.value ?? false
-              ? fitScale(natural, inside(constraints, padding))
-              : 1.0;
-          return Stack(
-            children: [
-              Positioned.fill(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(padding),
-                  child: Align(
-                    alignment: Alignment.topCenter,
-                    child: fitted(
-                      _Window(session: widget.session, scale: scale),
-                      natural,
-                      scale,
+      listenable: Listenable.merge([session, ?fit]),
+      builder: (context, _) => ListenableBuilder(
+        listenable: session.host.windowModel.form,
+        builder: (context, _) => LayoutBuilder(
+          builder: (context, constraints) {
+            final form = session.host.windowModel.form;
+            final natural = Size(
+              form.integer('Width') + _cornerReach,
+              formTitleHeight + form.integer('Height') + _cornerReach,
+            );
+            final scale = fit?.value ?? false
+                ? fitScale(natural, inside(constraints, padding))
+                : 1.0;
+            return Stack(
+              children: [
+                Positioned.fill(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(padding),
+                    child: Align(
+                      alignment: Alignment.topCenter,
+                      child: fitted(
+                        _Window(
+                          // Another form in front: a window of its own.
+                          key: ObjectKey(session.host.windowModel),
+                          session: session,
+                          scale: scale,
+                        ),
+                        natural,
+                        scale,
+                      ),
                     ),
                   ),
                 ),
-              ),
-              if (fit != null)
-                Positioned(
-                  top: 4,
-                  right: 4,
-                  child: IconButton(
-                    key: runWindowFitKey,
-                    tooltip: widget.session.strings.fitTip,
-                    isSelected: fit.value,
-                    icon: const Icon(Icons.fit_screen),
-                    onPressed: () => fit.value = !fit.value,
+                if (fit != null)
+                  Positioned(
+                    top: 4,
+                    right: 4,
+                    child: IconButton(
+                      key: runWindowFitKey,
+                      tooltip: widget.session.strings.fitTip,
+                      isSelected: fit.value,
+                      icon: const Icon(Icons.fit_screen),
+                      onPressed: () => fit.value = !fit.value,
+                    ),
                   ),
-                ),
-              if (scale < 1)
-                Positioned(right: 8, bottom: 8, child: FitPercent(scale)),
-            ],
-          );
-        },
+                if (scale < 1)
+                  Positioned(right: 8, bottom: 8, child: FitPercent(scale)),
+                ...dialogLayers(context, session),
+              ],
+            );
+          },
+        ),
       ),
     );
   }
@@ -113,7 +180,7 @@ const runWindowResizeKey = ValueKey('runWindow.resize');
 const minRunFormSize = (width: 120, height: 24);
 
 class _Window extends StatefulWidget {
-  const _Window({required this.session, this.scale = 1});
+  const _Window({super.key, required this.session, this.scale = 1});
 
   final RunSession session;
 
@@ -126,7 +193,8 @@ class _Window extends StatefulWidget {
 }
 
 class _WindowState extends State<_Window> {
-  GbFormModel get _model => widget.session.host.model;
+  /// The model of the form in front that is not a dialog (D88).
+  GbFormModel get _model => widget.session.host.windowModel;
 
   /// The size the form was drawn at, which a double-click on the title
   /// puts it back to: read when the window opens, before anything resizes
@@ -207,7 +275,12 @@ class _WindowState extends State<_Window> {
                 onPressed: session.closeForm,
               ),
               // The form appears when Form_Load has finished.
-              child: session.formShown ? GbFormView(model: _model) : null,
+              child: session.formShown
+                  ? GbFormView(
+                      key: runFormKey(session.host.windowForm),
+                      model: _model,
+                    )
+                  : null,
             ),
           ),
           // The corner, just outside the window's, resizes the form.

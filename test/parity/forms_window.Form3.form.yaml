@@ -1,0 +1,8 @@
+formatVersion: 1
+properties:
+  Caption: Three
+controls:
+  - name: btnBack
+    type: Button
+    properties:
+      Caption: Back

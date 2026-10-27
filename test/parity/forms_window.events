@@ -1,0 +1,4 @@
+btnGo.Click
+btnGo.Click
+btnBack.Click     ' Form2 comes to the front: Form1 > Form3 > Form2
+Close

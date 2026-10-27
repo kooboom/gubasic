@@ -1,0 +1,9 @@
+' The window's close button ends the program; first each form shown gets
+' its Form_Closed, from the front one back (docs/DESIGN.md D88).
+Sub btnGo_Click()
+    Form2.Show
+End Sub
+
+Sub Form_Closed()
+    Debug.Print("Form1 closed")
+End Sub

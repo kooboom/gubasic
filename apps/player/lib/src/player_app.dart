@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -115,21 +117,41 @@ class _PlayerScreenState extends State<PlayerScreen> {
     super.dispose();
   }
 
+  /// The form drawn as the app's window when it was last fitted.
+  String? _fitted;
+
   /// The program ended: as with F5 (D81), an error is shown first; then
-  /// the app closes, or on the web says the program has ended.
+  /// the app closes, or on the web says the program has ended. While it
+  /// runs, an exported desktop app's window takes the size of the form in
+  /// front (D88).
   Future<void> _changed() async {
     final session = _session!;
+    final host = session.host;
+    if (widget.asApp &&
+        !kIsWeb &&
+        host.shown.isNotEmpty &&
+        host.windowForm != (_fitted ??= _project.startup!.form.name)) {
+      _fitted = host.windowForm;
+      final form = host.windowModel.form;
+      unawaited(
+        fitWindow(
+          _project.name,
+          width: form.integer('Width'),
+          height: form.integer('Height'),
+        ),
+      );
+    }
     final result = session.result;
     if (result == null || _ended) return;
     _ended = true;
-    if (result case RunFailed(:final error)) {
+    if (result case RunFailed(:final error, :final file)) {
       await showDialog<void>(
         context: context,
         barrierDismissible: false,
         builder: (context) => AlertDialog(
           title: Text(_project.name),
           content: Text(
-            widget.strings.problem(session.startup.codeFile, error),
+            widget.strings.problem(file ?? session.startup.codeFile, error),
           ),
           actions: [
             FilledButton(

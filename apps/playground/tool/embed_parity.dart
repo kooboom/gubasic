@@ -13,6 +13,10 @@ void main(List<String> args) {
       .listSync()
       .whereType<File>()
       .where((f) => f.path.endsWith('.gbas'))
+      // NAME.Form2.gbas is a form of NAME's project (D88).
+      .where((f) => !f.uri.pathSegments.last
+          .substring(0, f.uri.pathSegments.last.length - 5)
+          .contains('.'))
       .toList()
     ..sort((a, b) => a.path.compareTo(b.path));
 
@@ -29,9 +33,12 @@ void main(List<String> args) {
         '/// (name, program, InputBox answers, expected output, form file,')
     ..writeln('/// event script, saved settings, pictures); the form file and')
     ..writeln('/// the event script are null without a form, the settings')
-    ..writeln('/// without NAME.settings; the pictures are NAME.pictures.')
+    ..writeln('/// without NAME.settings; the pictures are NAME.pictures;')
+    ..writeln('/// the other forms of a project, (name, form file, code), are')
+    ..writeln('/// NAME.FORM.form.yaml and NAME.FORM.gbas (D88).')
     ..writeln('const parityCases = <(String, String, List<String>, String, '
-        'String?, String?, String?, List<String>)>[');
+        'String?, String?, String?, List<String>, '
+        'List<(String, String, String)>)>[');
   for (final p in programs) {
     final name = p.uri.pathSegments.last.replaceFirst('.gbas', '');
     final input = read(p.path.replaceFirst('.gbas', '.in'));
@@ -52,6 +59,23 @@ void main(List<String> args) {
           '    ${jsonEncode(read(p.path.replaceFirst('.gbas', '.settings'))?.trim())},')
       ..writeln(
           '    ${jsonEncode(const LineSplitter().convert(read(p.path.replaceFirst('.gbas', '.pictures')) ?? '').where((l) => l.isNotEmpty).toList())},')
+      ..writeln('    [');
+    final base = p.path.substring(0, p.path.length - 5);
+    final others = dir
+        .listSync()
+        .whereType<File>()
+        .map((f) => f.path)
+        .where((f) => f.startsWith('$base.') && f.endsWith('.form.yaml'))
+        .where((f) => f != '$base.form.yaml')
+        .toList()
+      ..sort();
+    for (final f in others) {
+      final form = f.substring(base.length + 1, f.length - '.form.yaml'.length);
+      out.writeln('      (${jsonEncode(form)}, ${jsonEncode(read(f))}, '
+          '${jsonEncode(read(f.replaceFirst('.form.yaml', '.gbas')))}),');
+    }
+    out
+      ..writeln('    ],')
       ..writeln('  ),');
   }
   out.writeln('];');

@@ -60,4 +60,19 @@ void main() {
     );
     expect(program.diagnostics, isEmpty);
   });
+
+  test('askname_example is a copy of examples/askname, both forms (D88)', () {
+    for (final (example, parity) in [
+      ('Form1.gbas', 'askname_example.gbas'),
+      ('Form1.form.yaml', 'askname_example.form.yaml'),
+      ('Form2.gbas', 'askname_example.Form2.gbas'),
+      ('Form2.form.yaml', 'askname_example.Form2.form.yaml'),
+    ]) {
+      expect(
+        File('../../test/parity/$parity').readAsStringSync(),
+        File('../../examples/askname/$example').readAsStringSync(),
+        reason: 'copy examples/askname/$example to test/parity/$parity',
+      );
+    }
+  });
 }

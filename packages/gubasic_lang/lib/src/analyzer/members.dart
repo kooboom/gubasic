@@ -1,4 +1,5 @@
 import 'builtins.dart';
+import 'symbols.dart';
 import 'types.dart';
 
 /// A property or method of a built-in type or object.
@@ -74,13 +75,25 @@ Map<String, MemberSpec>? membersOf(GbType type) {
       ];
     case GbType.exception:
       list = [const MemberSpec.property('Message', _s)];
-    case ControlType(:final component):
+    case ControlType(:final component, :final form):
       list = [
         for (final p in component.properties.values)
           if (!p.internal)
             MemberSpec.property(p.name, p.type, readOnly: p.readOnly),
         for (final m in component.methods.values)
           MemberSpec.method(m.name, m.parameters, m.returnType),
+        // A project's form: its controls, Public variables and procedures
+        // (D88).
+        if (form != null) ...[
+          for (final c in form.file.controls)
+            MemberSpec.property(c.name, c.component.type),
+          for (final v in form.variables.values)
+            MemberSpec.property(v.name, v.type,
+                readOnly: v.kind == SymbolKind.constant),
+          for (final p in form.procedures.values)
+            if (p.callable case final c?)
+              MemberSpec.method(c.name, c.parameters, c.returnType),
+        ],
       ];
     case GbType.integer ||
           GbType.double_ ||

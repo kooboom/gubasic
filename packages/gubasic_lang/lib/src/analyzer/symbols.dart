@@ -15,6 +15,10 @@ enum SymbolKind {
 
   /// A control on the form (`btnSave`). Its type is a [ControlType].
   control,
+
+  /// A form of the project (`Form2`, D88). Its type is a [ControlType]
+  /// with its form.
+  form,
 }
 
 /// Where a variable lives.
@@ -74,9 +78,10 @@ class Symbol {
   String toString() => '${kind.name} $name: ${type.displayName}';
 }
 
-/// From the outside in: built-ins, the form's controls (only when the code
-/// belongs to a form), the file's own names, a procedure, a block.
-enum ScopeKind { builtins, form, file, procedure, block }
+/// From the outside in: built-ins, the project's forms, the form's
+/// controls (only when the code belongs to a form), the file's own names,
+/// a procedure, a block.
+enum ScopeKind { builtins, project, form, file, procedure, block }
 
 class Scope {
   Scope(this.kind, this.parent);

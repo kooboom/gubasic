@@ -7,9 +7,11 @@ import '../forms/form_file.dart';
 import '../forms/pictures.dart';
 import '../lexer/keyword.dart';
 import '../parser/parse_result.dart';
+import '../parser/parser.dart' show formStatements;
 import 'analysis_result.dart';
 import 'builtins.dart';
 import 'conversions.dart';
+import 'forms.dart';
 import 'members.dart';
 import 'symbols.dart';
 import 'types.dart';
@@ -27,12 +29,17 @@ import 'types.dart';
 /// [pictures] are the project's pictures: text given to a picture property
 /// that names none of them is reported (A037). Without them it is not
 /// checked.
+///
+/// [forms] are the project's forms, [form] among them, by lower-case name
+/// ([formInterfaces]): the code can then use them by name, `Form2.Show`,
+/// and their controls, `Public` variables and procedures (D88).
 AnalysisResult analyze(
   ParseResult parsed, {
   FormFile? form,
   List<String>? pictures,
+  Map<String, FormInterface>? forms,
 }) =>
-    _Analyzer(parsed, form, pictures).run();
+    _Analyzer(parsed, form, pictures, forms).run();
 
 /// A procedure being analyzed.
 class _ProcedureContext {
@@ -58,7 +65,7 @@ class _ProcedureContext {
 }
 
 class _Analyzer {
-  _Analyzer(this.parsed, this.form, List<String>? pictures)
+  _Analyzer(this.parsed, this.form, List<String>? pictures, this.forms)
       : _lines = LineMap(parsed.source),
         _builtins = Scope(ScopeKind.builtins, null) {
     for (final f in builtinFunctions.values) {
@@ -75,9 +82,19 @@ class _Analyzer {
           type: GbType.builtinObject));
     }
     Scope outer = _builtins;
+    final forms = this.forms;
+    if (forms != null) {
+      outer = Scope(ScopeKind.project, _builtins);
+      for (final f in forms.values) {
+        outer.declare(Symbol(
+            name: f.name,
+            kind: SymbolKind.form,
+            type: ControlType(formComponent, form: f)));
+      }
+    }
     final form = this.form;
     if (form != null) {
-      _controls = outer = Scope(ScopeKind.form, _builtins);
+      _controls = outer = Scope(ScopeKind.form, outer);
       for (final c in form.controls) {
         _controls!.declare(Symbol(
             name: c.name, kind: SymbolKind.control, type: c.component.type));
@@ -96,6 +113,9 @@ class _Analyzer {
 
   final ParseResult parsed;
   final FormFile? form;
+
+  /// The project's forms, by lower-case name (D88).
+  final Map<String, FormInterface>? forms;
 
   /// The form's controls, when there is a form.
   Scope? _controls;
@@ -865,7 +885,13 @@ class _Analyzer {
   }
 
   GbType _me(MeExpr e) {
-    if (form != null) return formComponent.type;
+    final form = this.form;
+    if (form != null) {
+      final own = forms?[form.name.toLowerCase()];
+      return own == null
+          ? formComponent.type
+          : ControlType(formComponent, form: own);
+    }
     _reportAt(e, DiagnosticCode.unknownNameMaybeControl, ['Me']);
     return GbType.unknown;
   }
@@ -987,6 +1013,12 @@ class _Analyzer {
     GbType? indexed;
 
     if (target is NameExpr) {
+      if (_scope.lookup(target.name) == null &&
+          formStatements.contains(target.name.toLowerCase())) {
+        // `Unload Form2`: the parser said what to write (P024, P025).
+        _analyzeArguments(e.arguments);
+        return GbType.void_;
+      }
       final symbol = _lookupName(target);
       if (symbol == null) {
         _analyzeArguments(e.arguments);
@@ -1064,6 +1096,18 @@ class _Analyzer {
   /// Checks a call's arguments and gives the result type.
   GbType _call(InvokeExpr e, Callable callable) {
     final args = e.arguments;
+    final target = e.target;
+    final receiver = target is MemberExpr ? _result.types[target.target] : null;
+    if (args.isNotEmpty &&
+        target is MemberExpr &&
+        callable.name == 'Show' &&
+        receiver is ControlType &&
+        receiver.component == formComponent) {
+      // `Form2.Show vbModal` (Visual Basic 6): a dialog is ShowDialog.
+      _reportAt(e, DiagnosticCode.showWithArgument, [_text(target.target)],
+          ['${_text(target.target)}.ShowDialog']);
+      return GbType.void_;
+    }
     final types = [for (final a in args) _value(a)];
     if (args.length < callable.requiredCount ||
         args.length > callable.parameters.length) {

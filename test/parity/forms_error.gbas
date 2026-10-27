@@ -1,0 +1,5 @@
+' A run-time error in another form's code names that form's file
+' (docs/DESIGN.md D88).
+Sub btnGo_Click()
+    Form2.Show
+End Sub

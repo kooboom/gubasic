@@ -88,6 +88,10 @@ const Map<DiagnosticCode, String> koreanMessages = {
       "지금은 btnSave_Click처럼 '컨트롤이름_이벤트이름'으로 Sub 프로시저를 만들어 주세요.",
   DiagnosticCode.expectedValueAndParen:
       '여기에는 값과 ) 기호가 필요합니다. 값을 쓰고 괄호를 닫아 주세요.',
+  DiagnosticCode.unloadStatement:
+      'GuBASIC에서는 Unload 대신 메서드로 폼을 닫습니다. {0}.Close로 고쳐 주세요.',
+  DiagnosticCode.loadStatement:
+      'GuBASIC에는 Load 문이 없습니다. 폼을 보이려면 {0}.Show로 쓰고, 프로시저를 부르려면 인자를 괄호 안에 넣어 주세요.',
 
   // Analyzer: names
   DiagnosticCode.unknownName: '{0} 이름이 선언되지 않았습니다. 먼저 Dim으로 선언하거나 철자를 확인해 주세요.',
@@ -137,6 +141,8 @@ const Map<DiagnosticCode, String> koreanMessages = {
       '{0} 타입에는 {1} 멤버가 없습니다. 비슷한 멤버로 {2} 멤버가 있으니 철자를 확인해 주세요.',
   DiagnosticCode.unknownPictureInCode:
       '"{0}" 그림은 이 프로젝트에 없어서, 실행하면 여기서 프로그램이 멈춥니다. 그림을 프로젝트에 넣거나 이름을 확인해 주세요.',
+  DiagnosticCode.showWithArgument:
+      'Show에는 인자가 없습니다. 폼을 대화상자로 띄우고 닫힐 때까지 기다리려면 {0}.ShowDialog로 써 주세요.',
   DiagnosticCode.badAnchorInCode:
       '"{0}" 값은 Anchor 값이 아니어서, 실행하면 여기서 프로그램이 멈춥니다. 컨트롤이 거리를 지킬 폼의 가장자리를 "Right Bottom"처럼 Left, Top, Right, Bottom으로 적거나, 없으면 ""로 적어 주세요.',
   DiagnosticCode.memberHasOtherName:
@@ -229,6 +235,8 @@ const Map<DiagnosticCode, String> koreanMessages = {
       '이 프로젝트에 "{0}" 그림이 없습니다. 그림을 프로젝트에 넣거나 이름을 확인해 주세요.',
   DiagnosticCode.badAnchorValue:
       '"{0}" 값은 Anchor 값이 아닙니다. 가장자리를 "Right Bottom"처럼 Left, Top, Right, Bottom으로 적거나, 없으면 ""로 적어 주세요.',
+  DiagnosticCode.dialogAlreadyShown:
+      '{0} 폼은 이미 보이고 있어서 대화상자로 띄울 수 없습니다. 먼저 숨기거나 닫고, 아니면 {0}.Show를 써 주세요.',
   DiagnosticCode.settingsNotSaved: '설정을 저장하지 못했습니다({0}). '
       '설정을 보관하는 곳에 자리가 없을 수 있습니다.',
   DiagnosticCode.unhandledException:

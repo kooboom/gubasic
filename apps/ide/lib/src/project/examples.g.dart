@@ -3,6 +3,13 @@
 
 /// The files of each example project, by folder name.
 const exampleProjects = <String, Map<String, String>>{
+  "askname": {
+    "AskName.gbproj": "formatVersion: 1\nname: AskName\nstartup: Form1\nforms:\n  - Form1\n  - Form2\n",
+    "Form1.form.yaml": "formatVersion: 1\nproperties:\n  Caption: Greeting\n  Width: 320\n  Height: 140\ncontrols:\n  - name: lblGreeting\n    type: Label\n    properties:\n      Caption: Press Next and tell me your name.\n      Left: 16\n      Top: 16\n      Width: 288\n      Height: 40\n  - name: btnNext\n    type: Button\n    properties:\n      Caption: Next\n      Left: 16\n      Top: 72\n      Width: 120\n      Height: 36\n",
+    "Form1.gbas": "' Two forms (docs/DESIGN.md D88): Next shows Form2, which asks for a name\n' and comes back here with it.\n\nSub btnNext_Click()\n    Form2.Show\nEnd Sub\n\n' Form2 calls this before it closes.\nSub Greet(name As String)\n    lblGreeting.Caption = \"Hello, \" & name & \"!\"\nEnd Sub\n",
+    "Form2.form.yaml": "formatVersion: 1\nproperties:\n  Caption: Your name\n  Width: 300\n  Height: 140\ncontrols:\n  - name: lblPrompt\n    type: Label\n    properties:\n      Caption: What is your name?\n      Left: 16\n      Top: 16\n      Width: 268\n      Height: 24\n  - name: txtName\n    type: TextBox\n    properties:\n      Left: 16\n      Top: 44\n      Width: 268\n      Height: 32\n  - name: btnOK\n    type: Button\n    properties:\n      Caption: OK\n      Left: 16\n      Top: 88\n      Width: 120\n      Height: 36\n",
+    "Form2.gbas": "' OK greets on Form1, then closes this form: Form1 is in front again.\n' The next time Form2 is shown, it starts again with an empty name.\n\nSub btnOK_Click()\n    If txtName.Text = \"\" Then\n        MsgBox(\"Please type your name.\")\n    Else\n        Form1.Greet(txtName.Text)\n        Me.Close\n    End If\nEnd Sub\n",
+  },
   "hello": {
     "Form1.form.yaml": "formatVersion: 1\nproperties:\n  Caption: Hello\n  Width: 320\n  Height: 120\ncontrols:\n  - name: lblMessage\n    type: Label\n    properties:\n      Left: 16\n      Top: 16\n      Width: 288\n  - name: btnHello\n    type: Button\n    properties:\n      Caption: Say hello\n      Left: 16\n      Top: 56\n      Width: 120\n",
     "Form1.gbas": "Dim clickCount As Integer\n\nSub Form_Load()\n    lblMessage.Caption = \"Press the button\"\nEnd Sub\n\nSub btnHello_Click()\n    clickCount = clickCount + 1\n    Dim name = InputBox(\"What is your name?\")\n    MsgBox(\"Hello, \" & name & \"! (\" & clickCount & \")\")\nEnd Sub\n",

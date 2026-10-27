@@ -22,9 +22,13 @@ class RunStopped extends RunResult {
 
 /// A run-time error (an R code) that nothing caught.
 class RunFailed extends RunResult {
-  const RunFailed(this.error);
+  const RunFailed(this.error, {this.file});
 
   final Diagnostic error;
+
+  /// The code file the error is in (`Form2.gbas`); null for code without
+  /// a form.
+  final String? file;
 }
 
 /// Why a program did not start.

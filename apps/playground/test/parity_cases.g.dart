@@ -4,7 +4,9 @@
 /// (name, program, InputBox answers, expected output, form file,
 /// event script, saved settings, pictures); the form file and
 /// the event script are null without a form, the settings
-/// without NAME.settings; the pictures are NAME.pictures.
+/// without NAME.settings; the pictures are NAME.pictures;
+/// the other forms of a project, (name, form file, code), are
+/// NAME.FORM.form.yaml and NAME.FORM.gbas (D88).
 const parityCases = <(
   String,
   String,
@@ -13,7 +15,8 @@ const parityCases = <(
   String?,
   String?,
   String?,
-  List<String>
+  List<String>,
+  List<(String, String, String)>
 )>[
   (
     "arithmetic",
@@ -24,6 +27,24 @@ const parityCases = <(
     null,
     null,
     [],
+    [],
+  ),
+  (
+    "askname_example",
+    "' Two forms (docs/DESIGN.md D88): Next shows Form2, which asks for a name\n' and comes back here with it.\n\nSub btnNext_Click()\n    Form2.Show\nEnd Sub\n\n' Form2 calls this before it closes.\nSub Greet(name As String)\n    lblGreeting.Caption = \"Hello, \" & name & \"!\"\nEnd Sub\n",
+    [],
+    "Forms: Form1\n> btnNext.Click\nForms: Form1 > Form2\n> btnOK.Click\nMsgBox: Please type your name.\n> OK\n> txtName.Type \"민준\"\n> btnOK.Click\nSet Form1.lblGreeting.Caption: Hello, 민준!\nForms: Form1\n> btnNext.Click\nForms: Form1 > Form2\n> txtName.Type \"Kim\"\n> btnOK.Click\nSet Form1.lblGreeting.Caption: Hello, Kim!\nForms: Form1\n> Close\nClosed\n",
+    "formatVersion: 1\nproperties:\n  Caption: Greeting\n  Width: 320\n  Height: 140\ncontrols:\n  - name: lblGreeting\n    type: Label\n    properties:\n      Caption: Press Next and tell me your name.\n      Left: 16\n      Top: 16\n      Width: 288\n      Height: 40\n  - name: btnNext\n    type: Button\n    properties:\n      Caption: Next\n      Left: 16\n      Top: 72\n      Width: 120\n      Height: 36\n",
+    "btnNext.Click\nbtnOK.Click         ' no name yet\nOK\ntxtName.Type \"민준\"\nbtnOK.Click         ' back to Form1, greeted\nbtnNext.Click       ' Form2 starts again, its name empty\ntxtName.Type \"Kim\"\nbtnOK.Click\nClose\n",
+    null,
+    [],
+    [
+      (
+        "Form2",
+        "formatVersion: 1\nproperties:\n  Caption: Your name\n  Width: 300\n  Height: 140\ncontrols:\n  - name: lblPrompt\n    type: Label\n    properties:\n      Caption: What is your name?\n      Left: 16\n      Top: 16\n      Width: 268\n      Height: 24\n  - name: txtName\n    type: TextBox\n    properties:\n      Left: 16\n      Top: 44\n      Width: 268\n      Height: 32\n  - name: btnOK\n    type: Button\n    properties:\n      Caption: OK\n      Left: 16\n      Top: 88\n      Width: 120\n      Height: 36\n",
+        "' OK greets on Form1, then closes this form: Form1 is in front again.\n' The next time Form2 is shown, it starts again with an empty name.\n\nSub btnOK_Click()\n    If txtName.Text = \"\" Then\n        MsgBox(\"Please type your name.\")\n    Else\n        Form1.Greet(txtName.Text)\n        Me.Close\n    End If\nEnd Sub\n"
+      ),
+    ],
   ),
   (
     "big_integers",
@@ -33,6 +54,7 @@ const parityCases = <(
     null,
     null,
     null,
+    [],
     [],
   ),
   (
@@ -44,6 +66,7 @@ const parityCases = <(
     null,
     null,
     [],
+    [],
   ),
   (
     "dialogs",
@@ -53,6 +76,7 @@ const parityCases = <(
     null,
     null,
     null,
+    [],
     [],
   ),
   (
@@ -64,6 +88,7 @@ const parityCases = <(
     null,
     null,
     [],
+    [],
   ),
   (
     "end_statement",
@@ -73,6 +98,7 @@ const parityCases = <(
     null,
     null,
     null,
+    [],
     [],
   ),
   (
@@ -84,6 +110,7 @@ const parityCases = <(
     "' Anchor (D57): the form made larger, smaller by an odd amount, back as\n' drawn (every control exactly where it was), changed by the program,\n' and smaller than drawn (stretched controls go down to 0).\nbtnShow.Click\nForm.Resize 400 260\nbtnShow.Click\nForm.Resize 301 199\nbtnShow.Click\nForm.Resize 300 200\nbtnShow.Click\nbtnMove.Click\nbtnShow.Click\nForm.Resize 200 100\nbtnShow.Click\nClose\n",
     null,
     [],
+    [],
   ),
   (
     "events_changed",
@@ -93,6 +120,7 @@ const parityCases = <(
     "formatVersion: 1\ncontrols:\n  - { name: txtName, type: TextBox }\n  - { name: lblEcho, type: Label, properties: { Top: 40 } }\n  - { name: btnObject, type: Button, properties: { Top: 80 } }\n",
     "txtName.Type \"lee\"     ' the user types: Changed runs\ntxtName.Type \"LEE\"     ' no change, no Changed\nbtnObject.Click\nClose\n",
     null,
+    [],
     [],
   ),
   (
@@ -104,6 +132,7 @@ const parityCases = <(
     "chkShow.Click       ' the user unchecks it: Changed runs\nchkOff.Click        ' checks it; its handler unchecks it again\nchkWait.Click       ' Changed waits in DoEvents\nchkWait.Click       ' ignored, and the box stays checked\nbtnGo.Click\nchkLate.Click       ' no handler: it only changes\nbtnObject.Click\nClose\n",
     null,
     [],
+    [],
   ),
   (
     "events_end",
@@ -113,6 +142,7 @@ const parityCases = <(
     "formatVersion: 1\ncontrols:\n  - { name: btnWait, type: Button }\n  - { name: btnEnd, type: Button, properties: { Top: 40 } }\n",
     "btnWait.Click\nbtnEnd.Click\n",
     null,
+    [],
     [],
   ),
   (
@@ -124,6 +154,7 @@ const parityCases = <(
     "btnSize.Click\nbtnBad.Click\nbtnSize.Click     ' not run: the program has stopped\n",
     null,
     [],
+    [],
   ),
   (
     "events_image",
@@ -134,6 +165,7 @@ const parityCases = <(
     "btnNext.Click\nimgShape.Click   ' R013, caught\nbtnNext.Click\nimgShape.Click   ' an Image with no picture still takes clicks\n",
     null,
     ["triangle.png", "circle.png"],
+    [],
   ),
   (
     "events_listbox",
@@ -143,6 +175,7 @@ const parityCases = <(
     "formatVersion: 1\ncontrols:\n  - { name: lstCity, type: ListBox }\n  - { name: btnRemove, type: Button, properties: { Top: 130 } }\n  - { name: btnRefill, type: Button, properties: { Top: 170 } }\n  - { name: btnClear, type: Button, properties: { Top: 210 } }\n  - { name: btnObject, type: Button, properties: { Top: 250 } }\n  - { name: btnBad, type: Button, properties: { Top: 290 } }\n",
     "lstCity.Select 0\nlstCity.Select 0     ' the same item again: no Changed\nlstCity.Select 1\nbtnRemove.Click\nbtnRefill.Click\nbtnClear.Click\nbtnRefill.Click\nbtnObject.Click\nbtnBad.Click         ' List(5): there is no item 5\n",
     null,
+    [],
     [],
   ),
   (
@@ -154,6 +187,7 @@ const parityCases = <(
     "btnSave.Click   ' blocked: Form_Load's MsgBox is still open\nOK\nbtnSave.Click\nClose\n",
     null,
     [],
+    [],
   ),
   (
     "events_modal",
@@ -163,6 +197,7 @@ const parityCases = <(
     "formatVersion: 1\ncontrols:\n  - { name: btnAsk, type: Button }\n  - { name: btnOther, type: Button, properties: { Top: 40 } }\n  - { name: txtName, type: TextBox, properties: { Top: 80 } }\n",
     "btnAsk.Click\nbtnOther.Click      ' blocked by the MsgBox\ntxtName.Type \"x\"    ' blocked too\nClose               ' and so is closing the form\nOK\nbtnOther.Click      ' blocked by the InputBox\nAnswer \"Kim\"\nbtnOther.Click\ntxtName.Type \"Lee\"\nClose\n",
     null,
+    [],
     [],
   ),
   (
@@ -174,6 +209,7 @@ const parityCases = <(
     "btnA.Click\nbtnA.Click      ' ignored: A is still running\nbtnStop.Click\nbtnA.Click      ' runs again: A had finished\nClose\n",
     null,
     [],
+    [],
   ),
   (
     "events_resize",
@@ -183,6 +219,7 @@ const parityCases = <(
     "formatVersion: 1\nproperties: { Width: 300, Height: 200 }\ncontrols:\n  - { name: btnWider, type: Button, properties: { Left: 8, Top: 8, Width: 80, Height: 24 } }\n  - { name: btnAsk, type: Button, properties: { Left: 96, Top: 8, Width: 80, Height: 24 } }\n  - { name: lblCorner, type: Label, properties: { Left: 200, Top: 170, Width: 92, Height: 22 } }\n  - { name: btnOk, type: Button, properties: { Left: 212, Top: 136, Width: 80, Height: 24, Anchor: Right Bottom } }\n",
     "' Form_Resize (D58): after Load; the user resizes; the same size again\n' does nothing; the program sets Width (Resize runs within the\n' assignment); Resize making the form wider is not started again; while\n' a MsgBox is open the form cannot be resized.\nForm.Resize 360 240\nForm.Resize 360 240\nbtnWider.Click\nForm.Resize 150 200\nbtnAsk.Click\nForm.Resize 400 300\nOK\nClose\n",
     null,
+    [],
     [],
   ),
   (
@@ -194,6 +231,7 @@ const parityCases = <(
     "btnWait.Click     ' A starts and waits in DoEvents\nbtnChange.Click   ' B runs while A waits\nClose\n",
     null,
     [],
+    [],
   ),
   (
     "events_static",
@@ -204,6 +242,97 @@ const parityCases = <(
     "btnA.Click\nbtnB.Click\nbtnA.Click\nbtnB.Click\nClose\n",
     null,
     [],
+    [],
+  ),
+  (
+    "forms_dialog",
+    "' ShowDialog (docs/DESIGN.md D88): Form2 in front as a dialog; the handler\n' waits until it goes, then reads its answer from a Public variable.\n' Meanwhile Form1 takes no clicks.\nSub btnAsk_Click()\n    Debug.Print(\"asking\")\n    Form2.ShowDialog\n    Debug.Print(\"answer: [\" & Form2.Answer & \"]\")\nEnd Sub\n\n' A form shown already cannot be shown as a dialog (R015).\nSub btnTwice_Click()\n    Form2.Show\n    Form2.ShowDialog\n    Debug.Print(\"not reached\")\nEnd Sub\n",
+    [],
+    "Forms: Form1\n> btnAsk.Click\nDebug.Print: asking\nForms: Form1 > Form2 (dialog)\n> Form1.btnAsk.Click\nBlocked: Form1.btnAsk.Click\n> txtAnswer.Type \"Seoul\"\n> btnOK.Click\nMsgBox: Thanks\n> OK\nForms: Form1\nDebug.Print: answer: [Seoul]\n> btnAsk.Click\nDebug.Print: asking\nForms: Form1 > Form2 (dialog)\n> btnCancel.Click\nForms: Form1\nDebug.Print: answer: []\n> btnTwice.Click\nForms: Form1 > Form2\nError R015 @ Form1.gbas:13\n",
+    "formatVersion: 1\nproperties:\n  Caption: Main\ncontrols:\n  - name: btnAsk\n    type: Button\n    properties:\n      Caption: Ask\n  - name: btnTwice\n    type: Button\n    properties:\n      Caption: Twice\n      Top: 40\n",
+    "btnAsk.Click\nForm1.btnAsk.Click      ' blocked: the dialog is in front\ntxtAnswer.Type \"Seoul\"\nbtnOK.Click\nOK                      ' the MsgBox in the dialog, then Close: Form1 goes on\nbtnAsk.Click            ' shown again after Close: starts again\nbtnCancel.Click         ' Hide: the answer is \"\"\nbtnTwice.Click\n",
+    null,
+    [],
+    [
+      (
+        "Form2",
+        "formatVersion: 1\nproperties:\n  Caption: Question\n  Width: 240\n  Height: 120\ncontrols:\n  - name: txtAnswer\n    type: TextBox\n    properties:\n      Text: \"\"\n  - name: btnOK\n    type: Button\n    properties:\n      Caption: OK\n      Top: 40\n  - name: btnCancel\n    type: Button\n    properties:\n      Caption: Cancel\n      Top: 80\n",
+        "' The answer stays readable after Close, until Form2 is shown again.\nPublic Answer As String\n\nSub Form_Load()\n    Answer = \"\"\nEnd Sub\n\nSub btnOK_Click()\n    MsgBox(\"Thanks\")\n    Answer = txtAnswer.Text\n    Me.Close\nEnd Sub\n\nSub btnCancel_Click()\n    Me.Hide\nEnd Sub\n"
+      ),
+    ],
+  ),
+  (
+    "forms_error",
+    "' A run-time error in another form's code names that form's file\n' (docs/DESIGN.md D88).\nSub btnGo_Click()\n    Form2.Show\nEnd Sub\n",
+    [],
+    "Forms: Form1\n> btnGo.Click\nError R002 @ Form2.gbas:3\n",
+    "formatVersion: 1\nproperties:\n  Caption: Main\ncontrols:\n  - name: btnGo\n    type: Button\n    properties:\n      Caption: Go\n",
+    "btnGo.Click\n",
+    null,
+    [],
+    [
+      (
+        "Form2",
+        "formatVersion: 1\nproperties:\n  Caption: Broken\n",
+        "Sub Form_Load()\n    Dim zero As Integer\n    Debug.Print(1 \\ zero)\nEnd Sub\n"
+      ),
+    ],
+  ),
+  (
+    "forms_last",
+    "' With no form shown, the program has ended (docs/DESIGN.md D88): hiding\n' the last one ends it at once.\nSub btnHide_Click()\n    Debug.Print(\"hiding\")\n    Me.Hide\n    Debug.Print(\"not reached\")\nEnd Sub\n\nSub Form_Closed()\n    Debug.Print(\"not called: Hide is not Close\")\nEnd Sub\n",
+    [],
+    "Forms: Form1\n> btnHide.Click\nDebug.Print: hiding\nClosed\n",
+    "formatVersion: 1\nproperties:\n  Caption: Only\ncontrols:\n  - name: btnHide\n    type: Button\n    properties:\n      Caption: Hide\n",
+    "btnHide.Click\n",
+    null,
+    [],
+    [
+      (
+        "Form2",
+        "formatVersion: 1\nproperties:\n  Caption: Unused\n",
+        "' Never shown.\n"
+      ),
+    ],
+  ),
+  (
+    "forms_show",
+    "' Two forms (docs/DESIGN.md D88): Form2.Show puts Form2 in front; Form1\n' stays behind with its values. Form2's members are its controls, its\n' Public variables and its procedures that are not Private.\nDim visits As Integer\n\nSub Form_Load()\n    Debug.Print(\"Form1 loaded; Form2's score starts at \" & Form2.Score)\nEnd Sub\n\nSub btnNext_Click()\n    visits = visits + 1\n    Form2.Show\n    Debug.Print(\"after Show: \" & visits)\nEnd Sub\n\n' Form2 calls this when it goes back.\nSub Greet(name As String)\n    lblGreeting.Caption = Form2.Hello(name)\n    Debug.Print(\"greeted, Form2 says \" & Form2.txtName.Text)\nEnd Sub\n",
+    [],
+    "Debug.Print: Form1 loaded; Form2's score starts at 10\nForms: Form1\n> btnNext.Click\nDebug.Print: Form2 loaded 1, score 11\nForms: Form1 > Form2\nDebug.Print: Form2 resized 300x200\nDebug.Print: after Show: 1\n> Form1.btnNext.Click\nBlocked: Form1.btnNext.Click\n> txtName.Type \"Kim\"\n> btnOK.Click\nForms: Form1\nSet Form1.lblGreeting.Caption: Hello, Kim!\nDebug.Print: greeted, Form2 says Kim\n> btnNext.Click\nForms: Form1 > Form2\nDebug.Print: after Show: 2\n> btnClose.Click\nForms: Form1\nDebug.Print: Form2 closed\nDebug.Print: still running after Close\n> btnNext.Click\nDebug.Print: Form2 loaded 1, score 11\nForms: Form1 > Form2\nDebug.Print: Form2 resized 300x200\nDebug.Print: after Show: 3\n> Form2.btnOK.Click\nForms: Form1\nSet Form1.lblGreeting.Caption: Hello, !\nDebug.Print: greeted, Form2 says \n> Close\nClosed\n",
+    "formatVersion: 1\nproperties:\n  Caption: Main\ncontrols:\n  - name: btnNext\n    type: Button\n    properties:\n      Caption: Next\n  - name: lblGreeting\n    type: Label\n    properties:\n      Caption: \"\"\n      Top: 40\n",
+    "btnNext.Click\nForm1.btnNext.Click     ' blocked: Form1 is behind Form2\ntxtName.Type \"Kim\"\nbtnOK.Click             ' Form2 hides: back to Form1, its values kept\nbtnNext.Click           ' Form2 again, as it was: no Form_Load\nbtnClose.Click          ' closed: back to Form1\nbtnNext.Click           ' starts again: Form_Load, Score back to 10 + 1\nForm2.btnOK.Click\nClose\n",
+    null,
+    [],
+    [
+      (
+        "Form2",
+        "formatVersion: 1\nproperties:\n  Caption: Name\n  Width: 300\n  Height: 200\ncontrols:\n  - name: txtName\n    type: TextBox\n    properties:\n      Text: \"\"\n  - name: btnOK\n    type: Button\n    properties:\n      Caption: OK\n      Top: 40\n  - name: btnClose\n    type: Button\n    properties:\n      Caption: Close\n      Top: 80\n",
+        "' Hide takes Form2 away and keeps its values; Close takes it away and runs\n' Form_Closed, and the next Show starts it again: Form_Load, its\n' variables and controls as at the start.\nPublic Score As Integer = 10\nDim loads As Integer\n\nSub Form_Load()\n    loads = loads + 1\n    Score = Score + 1\n    Debug.Print(\"Form2 loaded \" & loads & \", score \" & Score)\nEnd Sub\n\nSub Form_Resize()\n    Debug.Print(\"Form2 resized \" & Me.Width & \"x\" & Me.Height)\nEnd Sub\n\nFunction Hello(name As String) As String\n    Return \"Hello, \" & name & \"!\"\nEnd Function\n\nPrivate Sub Tidy()\n    txtName.Text = \"\"\nEnd Sub\n\nSub btnOK_Click()\n    Me.Hide\n    Form1.Greet(txtName.Text)\nEnd Sub\n\nSub btnClose_Click()\n    Me.Close\n    Debug.Print(\"still running after Close\")\nEnd Sub\n\nSub Form_Closed()\n    Debug.Print(\"Form2 closed\")\nEnd Sub\n"
+      ),
+    ],
+  ),
+  (
+    "forms_window",
+    "' The window's close button ends the program; first each form shown gets\n' its Form_Closed, from the front one back (docs/DESIGN.md D88).\nSub btnGo_Click()\n    Form2.Show\nEnd Sub\n\nSub Form_Closed()\n    Debug.Print(\"Form1 closed\")\nEnd Sub\n",
+    [],
+    "Forms: Form1\n> btnGo.Click\nForms: Form1 > Form2\n> btnGo.Click\nForms: Form1 > Form2 > Form3\n> btnBack.Click\nForms: Form1 > Form3 > Form2\n> Close\nDebug.Print: Form2 closed\nDebug.Print: Form3 closed\nDebug.Print: Form1 closed\nClosed\n",
+    "formatVersion: 1\nproperties:\n  Caption: One\ncontrols:\n  - name: btnGo\n    type: Button\n    properties:\n      Caption: Go\n",
+    "btnGo.Click\nbtnGo.Click\nbtnBack.Click     ' Form2 comes to the front: Form1 > Form3 > Form2\nClose\n",
+    null,
+    [],
+    [
+      (
+        "Form2",
+        "formatVersion: 1\nproperties:\n  Caption: Two\ncontrols:\n  - name: btnGo\n    type: Button\n    properties:\n      Caption: Go\n",
+        "Sub btnGo_Click()\n    Form3.Show\nEnd Sub\n\nSub Form_Closed()\n    Debug.Print(\"Form2 closed\")\nEnd Sub\n"
+      ),
+      (
+        "Form3",
+        "formatVersion: 1\nproperties:\n  Caption: Three\ncontrols:\n  - name: btnBack\n    type: Button\n    properties:\n      Caption: Back\n",
+        "' A form shown already comes to the front; it is not shown twice.\nSub btnBack_Click()\n    Form2.Show\nEnd Sub\n\nSub Form_Closed()\n    Debug.Print(\"Form3 closed\")\nEnd Sub\n"
+      ),
+    ],
   ),
   (
     "integer_overflow",
@@ -213,6 +342,7 @@ const parityCases = <(
     null,
     null,
     null,
+    [],
     [],
   ),
   (
@@ -224,6 +354,7 @@ const parityCases = <(
     null,
     null,
     [],
+    [],
   ),
   (
     "loops",
@@ -233,6 +364,7 @@ const parityCases = <(
     null,
     null,
     null,
+    [],
     [],
   ),
   (
@@ -244,6 +376,7 @@ const parityCases = <(
     null,
     null,
     [],
+    [],
   ),
   (
     "overflow_edges",
@@ -253,6 +386,7 @@ const parityCases = <(
     null,
     null,
     null,
+    [],
     [],
   ),
   (
@@ -264,6 +398,7 @@ const parityCases = <(
     "' examples/quiz played as in quiz_example, after an earlier run saved a\n' best score of 4 (quiz_best.settings), but wrong in the picture\n' questions: 3 points do not beat it, so nothing is saved.\nbtnCheck.Click              ' nothing chosen yet\nOK\nlstChoices.Select 1         ' 서울: right\nbtnCheck.Click\nOK\nlstChoices.Select 0         ' wrong; the answer is not shown\nbtnCheck.Click\nOK\nchkShowAnswer.Click         ' show the answer when wrong\nlstChoices.Select 3\nbtnCheck.Click\nOK\nlstChoices.Select 1         ' 한글: right\nbtnCheck.Click\nOK\nlstChoices.Select 1         ' 56: right\nbtnCheck.Click\nOK\nlstChoices.Select 0         ' 사각형: wrong, the answer shown\nbtnCheck.Click\nOK\nlstChoices.Select 0         ' 4개: wrong, the last question\nbtnCheck.Click\nOK\nOK                          ' the score; it starts again\nClose\n",
     "{\"best\":\"4\"}",
     ["triangle.png", "pentagon.png"],
+    [],
   ),
   (
     "quiz_example",
@@ -274,6 +409,7 @@ const parityCases = <(
     "' examples/quiz played to the end and started again (a test keeps\n' quiz_example.gbas and .form.yaml the same as the example's files).\nbtnCheck.Click              ' nothing chosen yet\nOK\nlstChoices.Select 1         ' 서울: right\nbtnCheck.Click\nOK\nlstChoices.Select 0         ' wrong; the answer is not shown\nbtnCheck.Click\nOK\nchkShowAnswer.Click         ' show the answer when wrong\nlstChoices.Select 3\nbtnCheck.Click\nOK\nlstChoices.Select 1         ' 한글: right\nbtnCheck.Click\nOK\nlstChoices.Select 1         ' 56: right\nbtnCheck.Click\nOK\nlstChoices.Select 2         ' 삼각형 (a picture): right\nbtnCheck.Click\nOK\nlstChoices.Select 1         ' 5개 (a picture): right, the last question\nbtnCheck.Click\nOK\nOK                          ' the score; it starts again\nClose\n",
     null,
     ["triangle.png", "pentagon.png"],
+    [],
   ),
   (
     "random_seeded",
@@ -283,6 +419,7 @@ const parityCases = <(
     null,
     null,
     null,
+    [],
     [],
   ),
   (
@@ -294,6 +431,7 @@ const parityCases = <(
     null,
     null,
     [],
+    [],
   ),
   (
     "rounding",
@@ -303,6 +441,7 @@ const parityCases = <(
     null,
     null,
     null,
+    [],
     [],
   ),
   (
@@ -314,6 +453,7 @@ const parityCases = <(
     null,
     "{\"visits\":\"4\"}",
     [],
+    [],
   ),
   (
     "settings_limit",
@@ -323,6 +463,7 @@ const parityCases = <(
     null,
     null,
     null,
+    [],
     [],
   ),
   (
@@ -334,6 +475,7 @@ const parityCases = <(
     null,
     null,
     [],
+    [],
   ),
   (
     "strings",
@@ -343,6 +485,7 @@ const parityCases = <(
     null,
     null,
     null,
+    [],
     [],
   ),
   (
@@ -354,6 +497,7 @@ const parityCases = <(
     null,
     null,
     [],
+    [],
   ),
   (
     "try_catch",
@@ -363,6 +507,7 @@ const parityCases = <(
     null,
     null,
     null,
+    [],
     [],
   ),
 ];

@@ -25,27 +25,56 @@ abstract interface class Host {
   Future<void> saveSettings(String text);
 }
 
-/// What a program with a form needs besides [Host]: the form and its
+/// A form the program shows (docs/DESIGN.md D88).
+class ShownForm {
+  const ShownForm(this.name, {this.dialog = false});
+
+  final String name;
+
+  /// Shown by ShowDialog: over the form behind it, which is dimmed.
+  final bool dialog;
+
+  @override
+  bool operator ==(Object other) =>
+      other is ShownForm && other.name == name && other.dialog == dialog;
+
+  @override
+  int get hashCode => Object.hash(name, dialog);
+
+  @override
+  String toString() => dialog ? '$name (dialog)' : name;
+}
+
+/// What a program with forms needs besides [Host]: its forms and their
 /// controls (docs/LANGUAGE.md §8, §11). The IDE's run window implements it
 /// with gubasic_runtime; tests use a recording fake (testing.dart).
 ///
-/// Controls are named as in the form file; null is the form itself.
-/// Properties are named as in their component.yaml, and their values are
-/// `int`, `double`, `bool` or `String`.
+/// Forms are named as their files; controls as in the form file, null
+/// being the form itself. Properties are named as in their
+/// component.yaml, and their values are `int`, `double`, `bool` or
+/// `String`. Every form of the project has its properties from the start,
+/// shown or not.
 abstract interface class FormHost implements Host {
   /// The current value of a property: as the program last set it, or as
   /// the user changed it (the text typed in a TextBox).
-  Object getProperty(String? control, String property);
+  Object getProperty(String form, String? control, String property);
 
   /// The program sets a property. The interpreter runs the property's
   /// change event itself (TextBox.Changed); the host runs it only for
   /// changes the user makes.
-  void setProperty(String? control, String property, Object value);
+  void setProperty(String form, String? control, String property, Object value);
 
-  /// Form_Load has finished: show the form.
-  void showForm();
+  /// The forms shown changed (D88): [forms] from the back to the front.
+  /// Only the front one takes what the user does; a dialog is shown over
+  /// the forms behind it. Called first when the startup form's Form_Load
+  /// has finished.
+  void showForms(List<ShownForm> forms);
 
-  /// The program has ended: close the form, and close any open dialog as
+  /// [form] starts again, shown after it was closed (D88): its properties
+  /// are as in its form file again.
+  void resetForm(String form);
+
+  /// The program has ended: close the forms, and close any open dialog as
   /// if it was cancelled.
   void endProgram();
 }
