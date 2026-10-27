@@ -1,16 +1,22 @@
 # Unzips an exported Windows app (D86), opens it as a user would and checks
 # that it runs: the program starts and stays open, its window has the
 # project's name as its title, and the area inside the frame is the startup
-# form's size. Saves a picture of the window. CI runs it on a Windows runner
-# with the app that apps/ide/test/windows/export_hello_test.dart exports.
+# form's size. Saves a picture of the window. With -Ends, checks instead
+# that an app whose program saves a setting and ends closes by itself
+# (D81), and that the setting was kept under its app ID. CI runs it on a
+# Windows runner with the apps apps/ide/test/windows/export_hello_test.dart
+# exports.
 #
 #   pwsh tool/check_windows_app.ps1 -Zip app.zip -Name 안녕 -Width 320 -Height 120 -Shot shot.png
+#   pwsh tool/check_windows_app.ps1 -Zip end.zip -Name Ending -Ends -AppId ciwindowsending1
 param(
   [Parameter(Mandatory)] [string] $Zip,
   [Parameter(Mandatory)] [string] $Name,
-  [Parameter(Mandatory)] [int] $Width,
-  [Parameter(Mandatory)] [int] $Height,
-  [Parameter(Mandatory)] [string] $Shot
+  [int] $Width,
+  [int] $Height,
+  [string] $Shot,
+  [switch] $Ends,
+  [string] $AppId
 )
 $ErrorActionPreference = 'Stop'
 
@@ -38,6 +44,24 @@ foreach ($file in @($program, (Join-Path $app 'project.gbz'), (Join-Path $app 'R
 }
 
 $process = Start-Process -FilePath $program -WorkingDirectory $folder -PassThru
+# Holding the handle keeps the exit code readable once the program ends.
+$null = $process.Handle
+if ($Ends) {
+  try {
+    if (-not $process.WaitForExit(60000)) { throw "$Name.exe did not close when its program ended" }
+    if ($process.ExitCode -ne 0) { throw "$Name.exe ended with code $($process.ExitCode)" }
+    # Where the player's settings are kept: AppData, under the program's
+    # company and product names (KNOWN_ISSUES).
+    $kept = Get-ChildItem -Path $env:APPDATA -Recurse -Filter shared_preferences.json -ErrorAction SilentlyContinue |
+      Where-Object { (Get-Content -Raw -LiteralPath $_.FullName) -match "gubasic\.settings\.$AppId" }
+    if (-not $kept) { throw "No setting kept under gubasic.settings.$AppId" }
+    "$Name.exe closed by itself; its setting is in $($kept.FullName)"
+  } finally {
+    if (-not $process.HasExited) { Stop-Process -Id $process.Id -Force }
+    Remove-Item -Recurse -Force -LiteralPath $folder -ErrorAction SilentlyContinue
+  }
+  exit 0
+}
 try {
   $deadline = (Get-Date).AddSeconds(60)
   do {

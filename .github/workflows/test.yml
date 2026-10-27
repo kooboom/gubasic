@@ -224,6 +224,7 @@ jobs:
         run: |
           $name = [string][char]0xC548 + [char]0xB155
           ./tool/check_windows_app.ps1 -Zip "$env:RUNNER_TEMP/hello-windows.zip" -Name $name -Width 320 -Height 120 -Shot "$env:RUNNER_TEMP/exported-app.png"
+          ./tool/check_windows_app.ps1 -Zip "$env:RUNNER_TEMP/hello-windows-end.zip" -Name Ending -Ends -AppId ciwindowsending1
       - uses: actions/upload-artifact@v4
         if: always()
         with:
