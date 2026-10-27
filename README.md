@@ -7,7 +7,7 @@ Draw your interface, double-click a control, write a few lines of BASIC — and 
 
 [한국어](README.ko.md)
 
-> **Status: stage 1 complete** (v0.1.0, a development build). Draw a form, double-click a control, write BASIC and press F5, all inside the IDE, with no Flutter installed. Building your own apps for each platform (the transpiler) is [stage 2](docs/ROADMAP.md).
+> **Status: stage 2 complete** ([v0.2.0](https://github.com/kooboom/gubasic/releases/tag/v0.2.0), a development build). Draw forms, double-click a control, write BASIC and press F5, all inside the IDE, with no Flutter installed; then export the project as a web, Windows or macOS app. A project can have several forms. What comes next: [ROADMAP](docs/ROADMAP.md).
 >
 > - **Web IDE:** https://kooboom.github.io/gubasic/ide/ (also as an app for macOS and Windows: [apps/ide](apps/ide))
 > - **Playground:** https://kooboom.github.io/gubasic (the language on its own, for development)

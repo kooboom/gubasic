@@ -38,7 +38,9 @@ The core Visual Basic experience, entirely inside the IDE.
 
 **Done when:** a beginner can build a small quiz app and run it without installing Flutter.
 
-## Stage 2 — Build real apps (next)
+## Stage 2 — Build real apps (done, v0.2.0)
+
+Done when one project shipped to the web, macOS and Windows (v0.2.0). The items still open below are planned again with stage 3.
 
 The plan, its steps and decisions: [STAGE2_PLAN.md](STAGE2_PLAN.md) (D79–D91).
 

@@ -7,7 +7,7 @@
 
 [English](README.md)
 
-> **상태: 1단계 완료**(v0.1.0, 개발판). 폼을 그리고, 컨트롤을 더블클릭하고, BASIC을 쓰고, F5를 누르는 일이 모두 IDE 안에서 되며, Flutter를 설치하지 않아도 됩니다. 내 앱을 플랫폼마다 빌드하는 것(트랜스파일러)은 [2단계](docs/ROADMAP.ko.md)입니다.
+> **상태: 2단계 완료**([v0.2.0](https://github.com/kooboom/gubasic/releases/tag/v0.2.0), 개발판). 폼을 그리고, 컨트롤을 더블클릭하고, BASIC을 쓰고, F5를 누르는 일이 모두 IDE 안에서 되며, Flutter를 설치하지 않아도 됩니다. 만든 프로젝트는 웹, Windows, macOS 앱으로 내보냅니다. 한 프로젝트에 폼을 여러 개 둘 수 있습니다. 다음 계획: [로드맵](docs/ROADMAP.ko.md).
 >
 > - **웹 IDE:** https://kooboom.github.io/gubasic/ide/ (macOS·Windows 앱도 있음: [apps/ide](apps/ide))
 > - **놀이터:** https://kooboom.github.io/gubasic (개발용으로 언어만 따로 실행)
