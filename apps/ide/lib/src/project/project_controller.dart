@@ -70,6 +70,7 @@ class ProjectController extends ChangeNotifier {
     this._kept,
     this.pickZip,
     this.fetchTemplate,
+    this.macAppMaker,
     this.autosaveDelay = const Duration(seconds: 2),
     this._settings,
     this.lastProject,
@@ -116,6 +117,16 @@ class ProjectController extends ChangeNotifier {
   /// Fetches a player's template (D84, D86); throws a
   /// [WebTemplateProblem]. Null where apps cannot be exported.
   final Future<Uint8List> Function(AppTemplate template)? fetchTemplate;
+
+  /// Makes a macOS app from the macOS player's template (D87); throws a
+  /// [WebTemplateProblem]. Null where macOS apps cannot be made: anywhere
+  /// but the macOS IDE, since only a Mac can sign the app again.
+  final Future<Uint8List> Function(
+    List<int> template,
+    ProjectBundle bundle,
+    String guide,
+  )?
+  macAppMaker;
 
   /// Where the project open last is remembered, to open it again when the
   /// IDE starts (D62); null: always start with [open].
@@ -842,19 +853,23 @@ class ProjectController extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Whether the File menu offers to export apps (D84, D86).
+  /// Whether the File menu offers to export apps (D84, D86, D87).
   bool get canExportApps =>
       fetchTemplate != null &&
       (browser != null ||
           (folders != null && pickers?.saveZipLocation != null));
 
-  /// File → Export as Web App (D84) or Export as Windows App (D86): gives
-  /// the open project as an app, `NAME-web.zip` or `NAME-windows.zip`,
-  /// made from that player's [template]. A project without an app ID
-  /// (D83) gets one first, written into its `.gbproj` file at once, and
-  /// only there, so that the next export keeps it.
+  /// Whether a macOS app can be made here: in the macOS IDE alone (D87).
+  bool get canExportMacApp => canExportApps && macAppMaker != null;
+
+  /// File → Export as Web App (D84), Windows App (D86) or macOS App (D87):
+  /// gives the open project as an app, `NAME-web.zip`, `NAME-windows.zip`
+  /// or `NAME-macos.zip`, made from that player's [template]. A project
+  /// without an app ID (D83) gets one first, written into its `.gbproj`
+  /// file at once, and only there, so that the next export keeps it.
   Future<void> exportApp(BuildContext context, AppTemplate template) async {
     context = _lasting(context);
+    if (template == AppTemplate.macos && !canExportMacApp) return;
     final project = _current;
     if (!project.project.canRun) {
       await _tell(context, strings.webAppCannotRun);
@@ -874,42 +889,37 @@ class ProjectController extends ChangeNotifier {
       files: project.files,
       pictures: project.pictures,
     );
-    final web = template == AppTemplate.web;
-    final program = '${appFileName(name)}.exe';
+    final file = appFileName(name);
+    final words = _exportWords(template, file);
     if (!context.mounted) return;
-    _snack(
-      context,
-      web ? strings.webAppPreparing : strings.windowsAppPreparing,
-    );
+    _snack(context, words.preparing);
     final Uint8List zip;
     try {
       final bytes = await fetchTemplate!(template);
-      zip = web
-          ? webAppZip(bytes, bundle, strings.webAppGuide)
-          : windowsAppZip(
-              bytes,
-              bundle,
-              strings.windowsAppGuide.replaceAll('{0}', program),
-            );
+      zip = switch (template) {
+        AppTemplate.web => webAppZip(bytes, bundle, words.guide),
+        AppTemplate.windows => windowsAppZip(bytes, bundle, words.guide),
+        AppTemplate.macos => await macAppMaker!(bytes, bundle, words.guide),
+      };
     } on WebTemplateProblem catch (p) {
       if (!context.mounted) return;
       ScaffoldMessenger.maybeOf(context)?.hideCurrentSnackBar();
       await _tell(context, switch (p) {
-        TemplateUnavailable() =>
-          web
-              ? strings.webAppTemplateUnavailable
-              : strings.windowsAppTemplateUnavailable,
-        TemplateNotUsable(:final bundleFormat) =>
-          (web
-                  ? strings.webAppTemplateNotUsable
-                  : strings.windowsAppTemplateNotUsable)
-              .replaceAll('{0}', '${bundleFormat ?? '?'}'),
+        TemplateUnavailable() => words.unavailable,
+        TemplateNotUsable(:final bundleFormat) => words.notUsable.replaceAll(
+          '{0}',
+          '${bundleFormat ?? '?'}',
+        ),
+        MacAppNotMade(:final detail) => strings.macAppNotMade.replaceAll(
+          '{0}',
+          detail,
+        ),
       });
       return;
     }
     if (!context.mounted) return;
     ScaffoldMessenger.maybeOf(context)?.hideCurrentSnackBar();
-    final fileName = '${appFileName(name)}-${web ? 'web' : 'windows'}.zip';
+    final fileName = '$file-${template.name}.zip';
     String where = fileName;
     if (browser case final browser?) {
       browser.download(fileName, zip);
@@ -927,16 +937,42 @@ class ProjectController extends ChangeNotifier {
       where = path;
     }
     if (context.mounted) {
-      await _tell(
-        context,
-        web
-            ? strings.webAppSaved.replaceAll('{0}', where)
-            : strings.windowsAppSaved
-                  .replaceAll('{0}', where)
-                  .replaceAll('{1}', program),
-      );
+      await _tell(context, words.saved.replaceAll('{0}', where));
     }
   }
+
+  /// The messages of an export from [template], for an app whose files
+  /// are named [file].
+  ({
+    String preparing,
+    String unavailable,
+    String notUsable,
+    String saved,
+    String guide,
+  })
+  _exportWords(AppTemplate template, String file) => switch (template) {
+    AppTemplate.web => (
+      preparing: strings.webAppPreparing,
+      unavailable: strings.webAppTemplateUnavailable,
+      notUsable: strings.webAppTemplateNotUsable,
+      saved: strings.webAppSaved,
+      guide: strings.webAppGuide,
+    ),
+    AppTemplate.windows => (
+      preparing: strings.windowsAppPreparing,
+      unavailable: strings.windowsAppTemplateUnavailable,
+      notUsable: strings.windowsAppTemplateNotUsable,
+      saved: strings.windowsAppSaved.replaceAll('{1}', '$file.exe'),
+      guide: strings.windowsAppGuide.replaceAll('{0}', '$file.exe'),
+    ),
+    AppTemplate.macos => (
+      preparing: strings.macAppPreparing,
+      unavailable: strings.macAppTemplateUnavailable,
+      notUsable: strings.macAppTemplateNotUsable,
+      saved: strings.macAppSaved.replaceAll('{1}', '$file.app'),
+      guide: strings.macAppGuide.replaceAll('{0}', '$file.app'),
+    ),
+  };
 
   /// The app ID of [project], made and kept the first time (D83): an
   /// example's comes from its name; a project kept in the browser keeps

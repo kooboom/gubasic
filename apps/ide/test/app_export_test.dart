@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:archive/archive.dart';
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gubasic_ide/main.dart';
 import 'package:gubasic_ide/src/ide_shell.dart';
@@ -420,5 +420,84 @@ void main() {
     reachable = false;
     await export(tester, s, windows: true);
     expect(find.text(s.windowsAppTemplateUnavailable), findsOneWidget);
+  });
+
+  testWidgets('the macOS IDE exports a macOS app with the maker it is given, '
+      'from the macOS template', (tester) async {
+    bigView(tester);
+    final folders = MemoryFolders()..folders.add('/out');
+    final made = <(int, ProjectBundle, String)>[];
+    await tester.pumpWidget(
+      IdeApp(
+        projects: const {'demo': demo},
+        open: 'demo',
+        strings: s,
+        folders: folders,
+        fetchTemplate: (which) async =>
+            which == AppTemplate.macos ? utf8.encode('mac') : template(),
+        macAppMaker: (template, bundle, guide) async {
+          made.add((template.length, bundle, guide));
+          return Uint8List.fromList(utf8.encode('the app'));
+        },
+        pickers: ProjectPickers(
+          openProjectFile: (_) async => null,
+          saveLocation: (_, _) async => null,
+          saveZipLocation: (name, _) async => '/out/$name',
+        ),
+      ),
+    );
+    await tester.tap(find.text(s.fileMenu));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(s.exportMacApp));
+    await tester.pumpAndSettle();
+    final (length, bundle, guide) = made.single;
+    expect(length, 3);
+    expect(bundle.id, 'exampledemo');
+    expect(guide, s.macAppGuide.replaceAll('{0}', 'Demo.app'));
+    expect(folders.written, ['/out/Demo-macos.zip']);
+    expect(
+      find.textContaining('Unzip it and open Demo.app in the folder'),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('elsewhere the macOS item is greyed out and says why (D87)', (
+    tester,
+  ) async {
+    bigView(tester);
+    final browser = FakeBrowser();
+    var fetched = 0;
+    await tester.pumpWidget(
+      IdeApp(
+        projects: const {'demo': demo},
+        open: 'demo',
+        strings: IdeStrings.ko,
+        browser: browser,
+        kept: await BrowserProjects.open(browser.projects, browser.storage),
+        pickZip: () async => null,
+        fetchTemplate: (_) async {
+          fetched++;
+          return template();
+        },
+      ),
+    );
+    await tester.tap(find.text(IdeStrings.ko.fileMenu));
+    await tester.pumpAndSettle();
+    const ko = IdeStrings.ko;
+    final item = find.text('${ko.exportMacApp} (${ko.macAppOnlyOnMac})');
+    expect(item, findsOneWidget);
+    expect(
+      tester
+          .widget<MenuItemButton>(
+            find.byKey(const ValueKey('menu.exportMacApp')),
+          )
+          .onPressed,
+      isNull,
+    );
+    expect(find.byTooltip(ko.macAppOnlyOnMacWhy), findsOneWidget);
+    await tester.tap(item, warnIfMissed: false);
+    await tester.pumpAndSettle();
+    expect(fetched, 0);
+    expect(browser.downloads, isEmpty);
   });
 }

@@ -9,7 +9,8 @@ const _window = MethodChannel('gubasic/window');
 /// first shown (D86): the project's name as its title, the startup form's
 /// size inside its frame (no larger than the screen), centred. Does
 /// nothing where the app's runner has no such channel: on the web, where
-/// the page is the frame, and on macOS until step 2-6.
+/// the page is the frame. The Windows and macOS runners have it (D86,
+/// D87).
 Future<void> fitAppWindow(Project project) async {
   final form = project.startup?.form;
   try {

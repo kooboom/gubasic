@@ -278,3 +278,18 @@ jobs:
       - name: The player's size on macOS (STAGE2_PLAN step 2-2)
         run: du -sh "build/macos/Build/Products/Release/GuBASIC Player.app"
         working-directory: apps/player
+      - name: The macOS template (D87), with every file the app needs
+        run: dart run tool/macos_template.dart
+        working-directory: apps/player
+      # The IDE's own export, from that template, unzipped and checked as a
+      # Mac would: signature, Gatekeeper, running and ending (D87).
+      - name: Export hello and Ending as macOS apps, as the IDE does
+        working-directory: apps/ide
+        run: |
+          mkdir -p "$RUNNER_TEMP/macapps"
+          GUBASIC_MACOS_TEMPLATE="$PWD/../player/build/macos-template.zip" \
+          GUBASIC_MACOS_APPS="$RUNNER_TEMP/macapps" \
+          flutter test test/macos/export_hello_test.dart
+      - name: Check the exported macOS apps
+        working-directory: apps/player
+        run: tool/check_macos_app.sh "$RUNNER_TEMP/macapps"

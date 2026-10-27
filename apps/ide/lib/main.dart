@@ -3,6 +3,7 @@ import 'dart:ui';
 
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
+import 'package:gubasic_player/gubasic_player.dart' show ProjectBundle;
 import 'package:gubasic_runtime/gubasic_runtime.dart';
 
 import 'src/ide_shell.dart';
@@ -11,6 +12,7 @@ import 'src/project/app_export.dart' show AppTemplate;
 import 'src/project/browser.dart';
 import 'src/project/folders.dart';
 import 'src/project/last_project.dart';
+import 'src/project/mac_app_source.dart';
 import 'src/project/platform_browser.dart';
 import 'src/project/platform_folders.dart';
 import 'src/project/project_controller.dart';
@@ -50,6 +52,7 @@ Future<void> main() async {
         ],
       ))?.readAsBytes(),
       fetchTemplate: fetchAppTemplate,
+      macAppMaker: macAppMaker,
       pickers: ProjectPickers(
         openProjectFile: (confirm) async => (await openFile(
           acceptedTypeGroups: const [_gbproj],
@@ -116,6 +119,7 @@ class IdeApp extends StatefulWidget {
     this.lastProject,
     this.pickZip,
     this.fetchTemplate,
+    this.macAppMaker,
     this.settings,
     this.autoRun = false,
   });
@@ -142,6 +146,14 @@ class IdeApp extends StatefulWidget {
 
   /// Fetches a player's template, to export apps (D84, D86).
   final Future<Uint8List> Function(AppTemplate template)? fetchTemplate;
+
+  /// Makes macOS apps, in the macOS IDE alone (D87).
+  final Future<Uint8List> Function(
+    List<int> template,
+    ProjectBundle bundle,
+    String guide,
+  )?
+  macAppMaker;
 
   /// The projects kept in the browser, opened before the IDE starts.
   final BrowserProjects? kept;
@@ -174,6 +186,7 @@ class _IdeAppState extends State<IdeApp> {
     lastProject: widget.lastProject,
     pickZip: widget.pickZip,
     fetchTemplate: widget.fetchTemplate,
+    macAppMaker: widget.macAppMaker,
     settings: widget.settings,
     open: widget.open,
   );

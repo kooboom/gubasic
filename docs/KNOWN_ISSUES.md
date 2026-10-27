@@ -144,7 +144,7 @@ Problems we know about and have **deliberately** left unfixed for now. Each entr
 
 ## The desktop IDE's templates follow main, not its release
 
-- **What:** File → Export as Web App and Export as Windows App on the desktop download the templates that Pages publishes from main (D84, D86), and keep them for their GuBASIC version. An IDE of an older release takes the newest template, which may differ from the player of its own release; only the bundle layout is checked.
+- **What:** File → Export as Web App, Windows App and macOS App on the desktop download the templates that Pages publishes from main (D84, D86, D87), and keep them for their GuBASIC version. An IDE of an older release takes the newest template, which may differ from the player of its own release; only the bundle layout is checked.
 - **Why deferred:** there is one release so far, and the bundle layout has not changed; a template for each release needs the release workflow to build and attach it.
 - **Revisit:** at the next release, or when the bundle layout changes: attach the templates to each GitHub Release and download the ones of the IDE's own version.
 
@@ -153,3 +153,9 @@ Problems we know about and have **deliberately** left unfixed for now. Each entr
 - **What:** the program of an exported Windows app is renamed after the project and its window has the project's name (D86), but the program's file properties, which Task Manager shows as its name, still say "GuBASIC Player", with GuBASIC's version and copyright; and SaveSetting keeps the values of every exported app in one file under the user's AppData folder, named after that same "GuBASIC Player", kept apart by app ID.
 - **Why deferred:** changing them means rewriting the program's version resource, which the IDE does not do yet; the app ID keeps the apps' settings apart as it is.
 - **Revisit:** with choosing an app's icon (STAGE2_PLAN §9), which rewrites the same resources.
+
+## An exported macOS app's program is named GuBASIC Player
+
+- **What:** an exported macOS app is named after the project, in the Finder, the Dock, its menus and Force Quit (D87), but the program inside it (`Contents/MacOS`) keeps the name `GuBASIC Player`, which `ps` and crash reports show; the app also keeps the template's `get-task-allow` entitlement, which lets a debugger attach.
+- **Why deferred:** `codesign` cannot check an app whose program's name is not ASCII; a program named after an English project alone would make Korean projects differ. Removing the entitlement means writing the entitlements anew at each export.
+- **Revisit:** with choosing an app's icon (STAGE2_PLAN §9), when the export writes more of the app's metadata.

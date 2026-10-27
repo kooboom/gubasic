@@ -64,6 +64,15 @@ class IdeStrings {
     required this.windowsAppTemplateNotUsable,
     required this.windowsAppSaved,
     required this.windowsAppGuide,
+    required this.exportMacApp,
+    required this.macAppOnlyOnMac,
+    required this.macAppOnlyOnMacWhy,
+    required this.macAppPreparing,
+    required this.macAppTemplateUnavailable,
+    required this.macAppTemplateNotUsable,
+    required this.macAppNotMade,
+    required this.macAppSaved,
+    required this.macAppGuide,
     required this.openPlayground,
     required this.clearSettings,
     required this.clearSettingsQuestion,
@@ -301,6 +310,30 @@ class IdeStrings {
 
   /// `README.txt` in the Windows app: how to open it. {0}: its program.
   final String windowsAppGuide;
+
+  /// File → Export as macOS App (D87), in the macOS IDE only.
+  final String exportMacApp;
+
+  /// After the menu item where it is greyed out: where it works.
+  final String macAppOnlyOnMac;
+
+  /// The greyed-out menu item's tooltip: why.
+  final String macAppOnlyOnMacWhy;
+  final String macAppPreparing;
+  final String macAppTemplateUnavailable;
+
+  /// {0}: the bundle layout the template reads.
+  final String macAppTemplateNotUsable;
+
+  /// {0}: what the Mac's tool said.
+  final String macAppNotMade;
+
+  /// {0}: the file the macOS app was saved as; {1}: the app, `NAME.app`.
+  final String macAppSaved;
+
+  /// `README.txt` in the macOS app: how to open it the first time. {0}:
+  /// the app.
+  final String macAppGuide;
 
   /// The web IDE's link to the playground next to it (`../`).
   final String openPlayground;
@@ -625,6 +658,47 @@ class IdeStrings {
         'project.gbz holds the program. Export the project again to update it.\n'
         'What the program saves with SaveSetting stays on this PC, kept apart\n'
         'by the app ID, so an updated app finds it again.\n',
+    exportMacApp: 'Export as macOS App…',
+    macAppOnlyOnMac: 'in the IDE for Mac only',
+    macAppOnlyOnMacWhy:
+        'A macOS app has to be signed again once the project is inside it, '
+        'and only a Mac can do that. Open the project in GuBASIC for Mac to '
+        'export it.',
+    macAppPreparing: 'Making the macOS app…',
+    macAppTemplateUnavailable:
+        'Could not download the macOS player (kooboom.github.io). Check the '
+        'internet connection and try again.',
+    macAppTemplateNotUsable:
+        'The macOS player that was downloaded is for another version of '
+        'GuBASIC (bundle layout {0}). Update GuBASIC and export again.',
+    macAppNotMade:
+        'Could not make the macOS app: {0}. Try again; if it fails again, '
+        'please report it with this message.',
+    macAppSaved:
+        'Saved the macOS app as {0}. Unzip it and open {1} in the folder. '
+        'On another Mac, macOS blocks it the first time; README.txt in the '
+        'folder says how to open it.',
+    macAppGuide:
+        'This folder is a GuBASIC app for macOS (macOS 12 or later, Intel and\n'
+        'Apple silicon).\n'
+        '\n'
+        'Open {0}. It needs no installing: move it to the Applications folder\n'
+        'or anywhere you like, and to remove it, move it to the Trash.\n'
+        '\n'
+        'The app is not signed with an Apple Developer ID or notarized, so\n'
+        'when it comes from the internet, a message or a USB stick made on\n'
+        'another Mac, macOS blocks it the first time:\n'
+        '- macOS 14 (Sonoma) and earlier: in the Finder, Control-click\n'
+        '  (right-click) the app, choose "Open", then click "Open".\n'
+        '- macOS 15 (Sequoia) and later: right-click and Open no longer works.\n'
+        '  Try to open the app once, then in "System Settings > Privacy &\n'
+        '  Security", under Security, click "Open Anyway" and enter your\n'
+        '  password. The button shows for about an hour after the attempt.\n'
+        'On the Mac that exported it, the app opens at once.\n'
+        '\n'
+        'The program is inside the app. Export the project again to update it.\n'
+        'What the program saves with SaveSetting stays on this Mac, kept apart\n'
+        'by the app ID, so an updated app finds it again.\n',
     openPlayground: 'Open the Playground',
     clearSettings: 'Clear Saved Settings…',
     clearSettingsQuestion:
@@ -851,6 +925,38 @@ class IdeStrings {
         '\n'
         'project.gbz 파일에 프로그램이 들어 있습니다. 고친 뒤에는 다시 내보냅니다.\n'
         '프로그램이 SaveSetting으로 저장한 값은 이 PC에 앱 ID별로 따로 남아서,\n'
+        '다시 내보낸 앱도 그 값을 그대로 씁니다.\n',
+    exportMacApp: 'macOS 앱으로 내보내기…',
+    macAppOnlyOnMac: 'Mac용 IDE에서만',
+    macAppOnlyOnMacWhy:
+        'macOS 앱은 프로젝트를 넣은 뒤 다시 서명해야 하는데, 이 일은 Mac에서만 할 수 있습니다. '
+        'Mac용 GuBASIC에서 프로젝트를 열어 내보냅니다.',
+    macAppPreparing: 'macOS 앱을 만드는 중…',
+    macAppTemplateUnavailable:
+        'macOS 플레이어(kooboom.github.io)를 내려받지 못했습니다. 인터넷 연결을 확인하고 다시 시도합니다.',
+    macAppTemplateNotUsable: '내려받은 macOS 플레이어는 다른 버전의 GuBASIC용입니다(묶음 형식 {0}). GuBASIC을 업데이트하고 다시 내보냅니다.',
+    macAppNotMade:
+        'macOS 앱을 만들지 못했습니다: {0}. 다시 시도해 보고, 또 안 되면 이 메시지와 함께 알려 주세요.',
+    macAppSaved:
+        'macOS 앱을 {0} 파일로 저장했습니다. 압축을 풀고 폴더 안의 {1} 앱을 엽니다. '
+        '다른 Mac에서는 처음 열 때 macOS가 막습니다. 여는 방법은 폴더 안의 README.txt 파일에 있습니다.',
+    macAppGuide:
+        '이 폴더는 macOS용 GuBASIC 앱입니다(macOS 12 이상, Intel·Apple Silicon).\n'
+        '\n'
+        '{0} 앱을 엽니다. 설치는 필요 없습니다. 응용 프로그램 폴더나 원하는 곳으로\n'
+        '옮겨 쓰고, 지우려면 휴지통으로 옮깁니다.\n'
+        '\n'
+        '이 앱은 Apple 개발자 서명과 공증을 받지 않았으므로, 인터넷이나 메신저,\n'
+        '다른 Mac에서 만든 USB로 받은 경우 처음 열 때 macOS가 막습니다.\n'
+        '- macOS 14(Sonoma) 이하: Finder에서 앱을 Control-클릭(우클릭)하고\n'
+        '  "열기"를 고른 뒤, 다시 "열기"를 누릅니다.\n'
+        '- macOS 15(Sequoia) 이상: 우클릭→열기로는 열리지 않습니다. 한 번 열어 본 뒤\n'
+        '  "시스템 설정 › 개인정보 보호 및 보안"의 보안 항목에서 "그래도 열기"를\n'
+        '  누르고 암호를 입력합니다. 이 단추는 열어 본 뒤 한 시간쯤만 보입니다.\n'
+        '내보낸 Mac에서는 막히지 않고 바로 열립니다.\n'
+        '\n'
+        '프로그램은 앱 안에 들어 있습니다. 고친 뒤에는 다시 내보냅니다.\n'
+        '프로그램이 SaveSetting으로 저장한 값은 이 Mac에 앱 ID별로 따로 남아서,\n'
         '다시 내보낸 앱도 그 값을 그대로 씁니다.\n',
     openPlayground: '놀이터 열기',
     clearSettings: '저장된 설정 지우기…',

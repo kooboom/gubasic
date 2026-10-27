@@ -19,7 +19,10 @@ enum AppTemplate {
   web('template.zip'),
 
   /// The Windows player (D86).
-  windows('windows-template.zip');
+  windows('windows-template.zip'),
+
+  /// The macOS player (D87), made into an app by the macOS IDE alone.
+  macos('macos-template.zip');
 
   const AppTemplate(this.fileName);
 
@@ -35,6 +38,17 @@ enum AppTemplate {
 /// Why an app could not be made from a template.
 sealed class WebTemplateProblem implements Exception {
   const WebTemplateProblem();
+}
+
+/// A tool of the Mac that makes a macOS app failed (D87): [detail] is
+/// what it said.
+class MacAppNotMade extends WebTemplateProblem {
+  const MacAppNotMade(this.detail);
+
+  final String detail;
+
+  @override
+  String toString() => 'MacAppNotMade: $detail';
 }
 
 /// The template could not be downloaded.
@@ -63,6 +77,9 @@ String appFileName(String name) {
   if (safe.isEmpty || device.hasMatch(safe.toLowerCase())) safe = 'App';
   return safe;
 }
+
+/// The bundle ID of an exported macOS app with app ID [id] (D83, D87).
+String macBundleId(String id) => 'io.github.kooboom.gubasic.app.$id';
 
 /// The app ID of an example (D84): examples are not saved, so each export
 /// of one gets the same ID from its name, and keeps its settings.

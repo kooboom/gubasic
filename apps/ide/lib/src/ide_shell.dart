@@ -416,6 +416,24 @@ class _IdeShellState extends State<IdeShell> {
                       widget.controller.exportApp(context, AppTemplate.windows),
             child: Text(s.exportWindowsApp),
           ),
+          // Greyed out, saying why, where macOS apps cannot be made (D87).
+          if (widget.controller.canExportMacApp)
+            MenuItemButton(
+              key: const ValueKey('menu.exportMacApp'),
+              onPressed: _running
+                  ? null
+                  : () =>
+                        widget.controller.exportApp(context, AppTemplate.macos),
+              child: Text(s.exportMacApp),
+            )
+          else
+            Tooltip(
+              message: s.macAppOnlyOnMacWhy,
+              child: MenuItemButton(
+                key: const ValueKey('menu.exportMacApp'),
+                child: Text('${s.exportMacApp} (${s.macAppOnlyOnMac})'),
+              ),
+            ),
         ],
         if (widget.controller.canUseBrowser) ...[
           const Divider(),
