@@ -2,9 +2,12 @@
 #define RUNNER_FLUTTER_WINDOW_H_
 
 #include <flutter/dart_project.h>
+#include <flutter/encodable_value.h>
 #include <flutter/flutter_view_controller.h>
+#include <flutter/method_channel.h>
 
 #include <memory>
+#include <string>
 
 #include "win32_window.h"
 
@@ -28,6 +31,16 @@ class FlutterWindow : public Win32Window {
 
   // The Flutter instance hosted by this window.
   std::unique_ptr<flutter::FlutterViewController> flutter_controller_;
+
+  // "gubasic/window": the exported app's window, fitted to its startup
+  // form before it is first shown (docs/DESIGN.md D86).
+  std::unique_ptr<flutter::MethodChannel<flutter::EncodableValue>>
+      window_channel_;
+
+  // Gives the window |title|, makes the area inside its frame |width| by
+  // |height| logical pixels, no larger than the screen's work area, and
+  // centres it there.
+  void FitClientArea(const std::wstring& title, double width, double height);
 };
 
 #endif  // RUNNER_FLUTTER_WINDOW_H_

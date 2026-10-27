@@ -58,6 +58,12 @@ class IdeStrings {
     required this.webAppTemplateNotUsable,
     required this.webAppSaved,
     required this.webAppGuide,
+    required this.exportWindowsApp,
+    required this.windowsAppPreparing,
+    required this.windowsAppTemplateUnavailable,
+    required this.windowsAppTemplateNotUsable,
+    required this.windowsAppSaved,
+    required this.windowsAppGuide,
     required this.openPlayground,
     required this.clearSettings,
     required this.clearSettingsQuestion,
@@ -280,6 +286,21 @@ class IdeStrings {
 
   /// `HOSTING.txt` in the web app: how to put it on the web.
   final String webAppGuide;
+
+  /// File → Export as Windows App (D86).
+  final String exportWindowsApp;
+  final String windowsAppPreparing;
+  final String windowsAppTemplateUnavailable;
+
+  /// {0}: the bundle layout the template reads.
+  final String windowsAppTemplateNotUsable;
+
+  /// {0}: the file the Windows app was saved as; {1}: its program,
+  /// `NAME.exe`.
+  final String windowsAppSaved;
+
+  /// `README.txt` in the Windows app: how to open it. {0}: its program.
+  final String windowsAppGuide;
 
   /// The web IDE's link to the playground next to it (`../`).
   final String openPlayground;
@@ -578,6 +599,32 @@ class IdeStrings {
         'project.gbz holds the program. Export the project again to update it.\n'
         'What the program saves with SaveSetting stays in each visitor\'s\n'
         'browser, kept apart by the app ID.\n',
+    exportWindowsApp: 'Export as Windows App…',
+    windowsAppPreparing: 'Making the Windows app…',
+    windowsAppTemplateUnavailable:
+        'Could not download the Windows player (kooboom.github.io). Check '
+        'the internet connection and try again.',
+    windowsAppTemplateNotUsable:
+        'The Windows player that was downloaded is for another version of '
+        'GuBASIC (bundle layout {0}). Update GuBASIC and export again.',
+    windowsAppSaved:
+        'Saved the Windows app as {0}. On a Windows PC, unzip it and open {1} '
+        'in the folder; README.txt in it says more.',
+    windowsAppGuide:
+        'This folder is a GuBASIC app for Windows (Windows 10 or later, '
+        '64-bit).\n'
+        '\n'
+        'To run it, open {0}. Keep all the files in the folder together:\n'
+        'the program needs the others next to it. Nothing is installed; to\n'
+        'remove the app, delete the folder. To give it to someone, zip the\n'
+        'whole folder.\n'
+        '\n'
+        'The program is not signed, so Windows may say "Windows protected\n'
+        'your PC". Choose "More info", then "Run anyway".\n'
+        '\n'
+        'project.gbz holds the program. Export the project again to update it.\n'
+        'What the program saves with SaveSetting stays on this PC, kept apart\n'
+        'by the app ID, so an updated app finds it again.\n',
     openPlayground: 'Open the Playground',
     clearSettings: 'Clear Saved Settings…',
     clearSettingsQuestion:
@@ -784,6 +831,27 @@ class IdeStrings {
         'project.gbz 파일에 프로그램이 들어 있습니다. 고친 뒤에는 다시 내보냅니다.\n'
         '프로그램이 SaveSetting으로 저장한 값은 방문자마다 그 사람의 브라우저에,\n'
         '앱 ID별로 따로 남습니다.\n',
+    exportWindowsApp: 'Windows 앱으로 내보내기…',
+    windowsAppPreparing: 'Windows 앱을 만드는 중…',
+    windowsAppTemplateUnavailable:
+        'Windows 플레이어(kooboom.github.io)를 내려받지 못했습니다. 인터넷 연결을 확인하고 다시 시도합니다.',
+    windowsAppTemplateNotUsable: '내려받은 Windows 플레이어는 다른 버전의 GuBASIC용입니다(묶음 형식 {0}). GuBASIC을 업데이트하고 다시 내보냅니다.',
+    windowsAppSaved:
+        'Windows 앱을 {0} 파일로 저장했습니다. Windows PC에서 압축을 풀고 폴더 안의 {1} 파일을 엽니다. '
+        '자세한 내용은 폴더 안의 README.txt 파일에 있습니다.',
+    windowsAppGuide:
+        '이 폴더는 Windows용 GuBASIC 앱입니다(Windows 10 이상, 64비트).\n'
+        '\n'
+        '{0} 파일을 열면 실행됩니다. 폴더 안의 파일은 모두 함께 둡니다.\n'
+        '프로그램은 옆의 다른 파일이 있어야 실행됩니다. 설치하지 않으므로,\n'
+        '지우려면 폴더를 지웁니다. 다른 사람에게 줄 때는 폴더 전체를 압축합니다.\n'
+        '\n'
+        '프로그램에 서명이 없어서 Windows가 "Windows의 PC 보호" 창을 띄울 수\n'
+        '있습니다. "추가 정보"를 누른 뒤 "실행"을 누릅니다.\n'
+        '\n'
+        'project.gbz 파일에 프로그램이 들어 있습니다. 고친 뒤에는 다시 내보냅니다.\n'
+        '프로그램이 SaveSetting으로 저장한 값은 이 PC에 앱 ID별로 따로 남아서,\n'
+        '다시 내보낸 앱도 그 값을 그대로 씁니다.\n',
     openPlayground: '놀이터 열기',
     clearSettings: '저장된 설정 지우기…',
     clearSettingsQuestion:

@@ -2,9 +2,10 @@ name: pages
 
 # Builds the playground and the web IDE and publishes them to GitHub Pages
 # whenever main changes: the playground at https://kooboom.github.io/gubasic/,
-# the IDE at https://kooboom.github.io/gubasic/ide/ and the web player's
-# template, which the IDE's File → Export as Web App takes (D84), at
-# https://kooboom.github.io/gubasic/player/template.zip; one artifact.
+# the IDE at https://kooboom.github.io/gubasic/ide/ and the players'
+# templates, which the IDE's File → Export as Web App and Export as Windows
+# App take (D84, D86), at https://kooboom.github.io/gubasic/player/
+# template.zip and windows-template.zip; one artifact.
 on:
   push:
     branches: [main]
@@ -20,7 +21,36 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # The Windows player is built on Windows, then joins the site.
+  windows-template:
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: apps/player
+    steps:
+      - uses: actions/checkout@v5
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version-file: packages/gubasic_runtime/pubspec.yaml
+          cache: true
+      - run: flutter build windows --release
+      # The Visual C++ runtime next to the program, as in test.yml (D47).
+      - name: Add the Visual C++ runtime
+        shell: pwsh
+        run: |
+          foreach ($dll in 'msvcp140.dll', 'vcruntime140.dll', 'vcruntime140_1.dll') {
+            Copy-Item "$env:WINDIR/System32/$dll" build/windows/x64/runner/Release
+          }
+      - run: dart run tool/windows_template.dart
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows-template
+          path: apps/player/build/windows-template.zip
+          retention-days: 1
+          if-no-files-found: error
+
   build:
+    needs: windows-template
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
@@ -50,6 +80,10 @@ jobs:
           mkdir -p ../playground/build/web/player
           cp build/template.zip ../playground/build/web/player/
         working-directory: apps/player
+      - uses: actions/download-artifact@v4
+        with:
+          name: windows-template
+          path: apps/playground/build/web/player
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v4
         with:

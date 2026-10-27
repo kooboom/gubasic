@@ -1,16 +1,17 @@
-import 'dart:ui';
-
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'package:gubasic_player/gubasic_player.dart';
 
+import 'src/app_window.dart';
 import 'src/bundle_source.dart';
 import 'src/player_app.dart';
 
 /// The player (D79): runs the project bundle the export put next to it
-/// (D83), or, while developing, the project under `project/` in its
-/// assets.
+/// (D83) as an app of its own, the form alone in a window of its size
+/// (D86), or, while developing, the project under `project/` in its
+/// assets, in the run window.
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final strings = playerStringsFor(
@@ -20,12 +21,14 @@ Future<void> main() async {
   if (bytes != null) {
     try {
       final bundle = ProjectBundle.decode(bytes);
+      if (!kIsWeb) await fitAppWindow(Project.read(bundle.files));
       runApp(
         PlayerApp(
           files: bundle.files,
           pictures: bundle.pictures,
           settingsKey: bundle.id,
           strings: strings,
+          asApp: true,
         ),
       );
     } on BundleProblem catch (problem) {

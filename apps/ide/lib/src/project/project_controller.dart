@@ -17,7 +17,7 @@ import 'open_project.dart';
 import 'picture_reduce.dart';
 import 'project_pictures.dart';
 import 'project_zip.dart';
-import 'web_export.dart';
+import 'app_export.dart';
 
 /// A picture file the user chose: its name and its bytes.
 typedef PickedPicture = ({String name, Uint8List bytes});
@@ -113,9 +113,9 @@ class ProjectController extends ChangeNotifier {
   /// Asks for a `.zip` file: its bytes, or null when the user cancels.
   final Future<List<int>?> Function()? pickZip;
 
-  /// Fetches the web player's template (D84); throws a
-  /// [WebTemplateProblem]. Null where web apps cannot be exported.
-  final Future<Uint8List> Function()? fetchTemplate;
+  /// Fetches a player's template (D84, D86); throws a
+  /// [WebTemplateProblem]. Null where apps cannot be exported.
+  final Future<Uint8List> Function(AppTemplate template)? fetchTemplate;
 
   /// Where the project open last is remembered, to open it again when the
   /// IDE starts (D62); null: always start with [open].
@@ -842,17 +842,18 @@ class ProjectController extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Whether the File menu offers to export a web app (D84).
-  bool get canExportWebApp =>
+  /// Whether the File menu offers to export apps (D84, D86).
+  bool get canExportApps =>
       fetchTemplate != null &&
       (browser != null ||
           (folders != null && pickers?.saveZipLocation != null));
 
-  /// File → Export as Web App (D84): gives the open project as a web app,
-  /// `NAME-web.zip`, made from the web player's template. A project
-  /// without an app ID (D83) gets one first, written into its `.gbproj`
-  /// file at once, and only there, so that the next export keeps it.
-  Future<void> exportWebApp(BuildContext context) async {
+  /// File → Export as Web App (D84) or Export as Windows App (D86): gives
+  /// the open project as an app, `NAME-web.zip` or `NAME-windows.zip`,
+  /// made from that player's [template]. A project without an app ID
+  /// (D83) gets one first, written into its `.gbproj` file at once, and
+  /// only there, so that the next export keeps it.
+  Future<void> exportApp(BuildContext context, AppTemplate template) async {
     context = _lasting(context);
     final project = _current;
     if (!project.project.canRun) {
@@ -873,27 +874,42 @@ class ProjectController extends ChangeNotifier {
       files: project.files,
       pictures: project.pictures,
     );
+    final web = template == AppTemplate.web;
+    final program = '${appFileName(name)}.exe';
     if (!context.mounted) return;
-    _snack(context, strings.webAppPreparing);
+    _snack(
+      context,
+      web ? strings.webAppPreparing : strings.windowsAppPreparing,
+    );
     final Uint8List zip;
     try {
-      zip = webAppZip(await fetchTemplate!(), bundle, strings.webAppGuide);
+      final bytes = await fetchTemplate!(template);
+      zip = web
+          ? webAppZip(bytes, bundle, strings.webAppGuide)
+          : windowsAppZip(
+              bytes,
+              bundle,
+              strings.windowsAppGuide.replaceAll('{0}', program),
+            );
     } on WebTemplateProblem catch (p) {
       if (!context.mounted) return;
       ScaffoldMessenger.maybeOf(context)?.hideCurrentSnackBar();
       await _tell(context, switch (p) {
-        TemplateUnavailable() => strings.webAppTemplateUnavailable,
+        TemplateUnavailable() =>
+          web
+              ? strings.webAppTemplateUnavailable
+              : strings.windowsAppTemplateUnavailable,
         TemplateNotUsable(:final bundleFormat) =>
-          strings.webAppTemplateNotUsable.replaceAll(
-            '{0}',
-            '${bundleFormat ?? '?'}',
-          ),
+          (web
+                  ? strings.webAppTemplateNotUsable
+                  : strings.windowsAppTemplateNotUsable)
+              .replaceAll('{0}', '${bundleFormat ?? '?'}'),
       });
       return;
     }
     if (!context.mounted) return;
     ScaffoldMessenger.maybeOf(context)?.hideCurrentSnackBar();
-    final fileName = '$name-web.zip';
+    final fileName = '${appFileName(name)}-${web ? 'web' : 'windows'}.zip';
     String where = fileName;
     if (browser case final browser?) {
       browser.download(fileName, zip);
@@ -911,7 +927,14 @@ class ProjectController extends ChangeNotifier {
       where = path;
     }
     if (context.mounted) {
-      await _tell(context, strings.webAppSaved.replaceAll('{0}', where));
+      await _tell(
+        context,
+        web
+            ? strings.webAppSaved.replaceAll('{0}', where)
+            : strings.windowsAppSaved
+                  .replaceAll('{0}', where)
+                  .replaceAll('{1}', program),
+      );
     }
   }
 

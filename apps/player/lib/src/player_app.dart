@@ -1,3 +1,5 @@
+import 'dart:ui' show AppExitType;
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -34,9 +36,9 @@ class PlayerApp extends StatelessWidget {
     this.asApp = kIsWeb,
   });
 
-  /// Whether the form is shown alone, as an exported app shows it (D84):
-  /// on the web for now; the desktop's own windows come with steps 2-5 and
-  /// 2-6.
+  /// Whether the form is shown alone, as an exported app shows it (D84,
+  /// D86); otherwise in the run window, as the player run while
+  /// developing shows it on the desktop.
   final bool asApp;
 
   /// What the program's settings are kept under: the app ID of an exported
@@ -144,7 +146,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
     if (kIsWeb || _measuring) {
       if (mounted) setState(() {});
     } else {
-      await SystemNavigator.pop();
+      await ServicesBinding.instance.exitApplication(AppExitType.required);
     }
   }
 

@@ -5,18 +5,34 @@ import 'package:archive/archive.dart';
 import 'package:gubasic_lang/gubasic_lang.dart';
 import 'package:gubasic_player/gubasic_player.dart';
 
-/// Where the desktop IDE downloads the web player's template (D84); the
-/// web IDE takes it from beside itself, `../player/template.zip`. A test
-/// build can name another one: `--dart-define GUBASIC_TEMPLATE_URL=…`.
-const webTemplateUrl = String.fromEnvironment(
-  'GUBASIC_TEMPLATE_URL',
-  defaultValue: 'https://kooboom.github.io/gubasic/player/template.zip',
+/// Where the desktop IDE downloads the players' templates (D84, D86); the
+/// web IDE takes them from beside itself, `../player/`. A test build can
+/// name another place: `--dart-define GUBASIC_TEMPLATE_SITE=…`.
+const templateSite = String.fromEnvironment(
+  'GUBASIC_TEMPLATE_SITE',
+  defaultValue: 'https://kooboom.github.io/gubasic/player',
 );
 
-/// The template, relative to the web IDE's page.
-const webTemplatePath = '../player/template.zip';
+/// A player's template, which an app is made from by adding the project.
+enum AppTemplate {
+  /// The web player (D84).
+  web('template.zip'),
 
-/// Why a web app could not be made from the template.
+  /// The Windows player (D86).
+  windows('windows-template.zip');
+
+  const AppTemplate(this.fileName);
+
+  final String fileName;
+
+  /// Where the desktop IDE downloads it.
+  String get url => '$templateSite/$fileName';
+
+  /// Where the web IDE takes it from, relative to its page.
+  String get path => '../player/$fileName';
+}
+
+/// Why an app could not be made from a template.
 sealed class WebTemplateProblem implements Exception {
   const WebTemplateProblem();
 }
@@ -32,6 +48,20 @@ class TemplateNotUsable extends WebTemplateProblem {
   const TemplateNotUsable([this.bundleFormat]);
 
   final int? bundleFormat;
+}
+
+/// [name] as the name of a file or folder on any system (D86): the
+/// characters Windows does not allow in one, and control characters,
+/// become `_`; spaces and dots at the ends, which Windows drops, are
+/// dropped; a name Windows keeps for a device (`CON`, `COM1`) or nothing
+/// left becomes `App`.
+String appFileName(String name) {
+  var safe = name
+      .replaceAll(RegExp(r'[<>:"/\\|?*\x00-\x1F]'), '_')
+      .replaceAll(RegExp(r'^[ .]+|[ .]+$'), '');
+  final device = RegExp(r'^(con|prn|aux|nul|com[0-9]|lpt[0-9])$');
+  if (safe.isEmpty || device.hasMatch(safe.toLowerCase())) safe = 'App';
+  return safe;
 }
 
 /// The app ID of an example (D84): examples are not saved, so each export
@@ -81,7 +111,7 @@ String? projectFileName(Map<String, String> files) => _projectFile(files)?.$1;
   return (names.single, readProjectFile(files[names.single]!));
 }
 
-/// The files of the web player's [template]. Throws [TemplateNotUsable]
+/// The files of a player's [template]. Throws [TemplateNotUsable]
 /// when it is not a template, or one for another bundle layout.
 Archive readTemplate(List<int> template) {
   final Archive files;
@@ -112,7 +142,7 @@ Archive readTemplate(List<int> template) {
 /// Throws [TemplateNotUsable].
 Uint8List webAppZip(List<int> template, ProjectBundle bundle, String guide) {
   final files = readTemplate(template);
-  final folder = '${bundle.name}-web';
+  final folder = '${appFileName(bundle.name)}-web';
   final out = Archive();
   void add(String path, List<int> bytes) =>
       out.add(ArchiveFile.bytes('$folder/$path', bytes));
@@ -136,6 +166,43 @@ Uint8List webAppZip(List<int> template, ProjectBundle bundle, String guide) {
   }
   add(bundleFileName, bundle.encode());
   add('HOSTING.txt', utf8.encode(guide));
+  return Uint8List.fromList(ZipEncoder().encodeBytes(out));
+}
+
+/// The Windows app of [bundle], made from the Windows player's [template]
+/// (D86): a `.zip` with the folder `NAME-windows/`, which holds the
+/// template's files, with the program renamed to `NAME.exe`, the bundle as
+/// `project.gbz` next to it and [guide] as `README.txt`. NAME is the
+/// project's name as a file name ([appFileName]). Throws
+/// [TemplateNotUsable].
+Uint8List windowsAppZip(
+  List<int> template,
+  ProjectBundle bundle,
+  String guide,
+) {
+  final files = readTemplate(template);
+  final Object? program;
+  try {
+    program = (jsonDecode(
+      utf8.decode(files.findFile('template.json')!.content),
+    ) as Map)['program'];
+  } catch (_) {
+    throw const TemplateNotUsable();
+  }
+  if (program is! String || files.findFile(program) == null) {
+    throw const TemplateNotUsable();
+  }
+  final name = appFileName(bundle.name);
+  final folder = '$name-windows';
+  final out = Archive();
+  void add(String path, List<int> bytes) =>
+      out.add(ArchiveFile.bytes('$folder/$path', bytes));
+  for (final file in files.files) {
+    if (!file.isFile || file.name == 'template.json') continue;
+    add(file.name == program ? '$name.exe' : file.name, file.content);
+  }
+  add(bundleFileName, bundle.encode());
+  add('README.txt', utf8.encode(guide));
   return Uint8List.fromList(ZipEncoder().encodeBytes(out));
 }
 

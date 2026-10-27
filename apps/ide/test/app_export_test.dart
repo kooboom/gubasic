@@ -8,7 +8,7 @@ import 'package:gubasic_ide/main.dart';
 import 'package:gubasic_ide/src/ide_shell.dart';
 import 'package:gubasic_ide/src/project/browser.dart';
 import 'package:gubasic_ide/src/project/project_controller.dart';
-import 'package:gubasic_ide/src/project/web_export.dart';
+import 'package:gubasic_ide/src/project/app_export.dart';
 import 'package:gubasic_ide/src/strings.dart';
 import 'package:gubasic_lang/gubasic_lang.dart';
 import 'package:gubasic_player/gubasic_player.dart';
@@ -16,8 +16,9 @@ import 'package:gubasic_player/gubasic_player.dart';
 import 'support/fake_browser.dart';
 import 'support/memory_folders.dart';
 
-/// File → Export as Web App (D84): the web player's template with the
-/// project's bundle in it, under an app ID kept in the `.gbproj` file.
+/// File → Export as Web App (D84) and Export as Windows App (D86): a
+/// player's template with the project's bundle in it, under an app ID kept
+/// in the `.gbproj` file.
 void main() {
   const s = IdeStrings.en;
   const demo = {
@@ -112,10 +113,94 @@ void main() {
     expect(withProjectId({'Demo.gbproj': 'name: [\n'}, 'abcdefgh'), isNull);
   });
 
-  Future<void> export(WidgetTester tester, IdeStrings strings) async {
+  Uint8List windowsTemplate({String? program = 'gubasic_player_app.exe'}) {
+    final archive = Archive();
+    void add(String path, String text) =>
+        archive.add(ArchiveFile.bytes(path, utf8.encode(text)));
+    add('gubasic_player_app.exe', 'MZ the player');
+    add('flutter_windows.dll', 'the engine');
+    add('data/app.so', 'the code');
+    add('index.html', '<html></html>');
+    add(
+      'template.json',
+      jsonEncode({
+        'gubasic': '0.1.0',
+        'bundleFormat': bundleFormatVersion,
+        'program': ?program,
+      }),
+    );
+    return ZipEncoder().encodeBytes(archive);
+  }
+
+  group('windowsAppZip', () {
+    test('puts the template, the program renamed after the project, the '
+        'bundle and the guide in a folder', () {
+      const bundle = ProjectBundle(
+        id: 'abcdefgh12345678',
+        name: '퀴즈',
+        files: demo,
+      );
+      final files = unzip(windowsAppZip(windowsTemplate(), bundle, 'open it'));
+      expect(
+        files.keys,
+        unorderedEquals([
+          '퀴즈-windows/퀴즈.exe',
+          '퀴즈-windows/flutter_windows.dll',
+          '퀴즈-windows/data/app.so',
+          '퀴즈-windows/index.html',
+          '퀴즈-windows/project.gbz',
+          '퀴즈-windows/README.txt',
+        ]),
+      );
+      expect(utf8.decode(files['퀴즈-windows/퀴즈.exe']!), 'MZ the player');
+      final read = ProjectBundle.decode(files['퀴즈-windows/project.gbz']!);
+      expect(read.id, 'abcdefgh12345678');
+      expect(read.files, demo);
+      expect(utf8.decode(files['퀴즈-windows/README.txt']!), 'open it');
+    });
+
+    test('refuses a template that does not name its program, a web '
+        'template, or another bundle layout', () {
+      const bundle = ProjectBundle(id: 'abcdefgh', name: 'Demo', files: demo);
+      expect(
+        () => windowsAppZip(windowsTemplate(program: null), bundle, ''),
+        throwsA(isA<TemplateNotUsable>()),
+      );
+      expect(
+        () => windowsAppZip(windowsTemplate(program: 'other.exe'), bundle, ''),
+        throwsA(isA<TemplateNotUsable>()),
+      );
+      expect(
+        () => windowsAppZip(template(), bundle, ''),
+        throwsA(isA<TemplateNotUsable>()),
+      );
+      expect(
+        () => windowsAppZip(template(bundleFormat: 2), bundle, ''),
+        throwsA(isA<TemplateNotUsable>()),
+      );
+    });
+  });
+
+  test('a project name becomes a name Windows takes for a file', () {
+    expect(appFileName('Quiz'), 'Quiz');
+    expect(appFileName('퀴즈 게임'), '퀴즈 게임');
+    expect(appFileName('a/b:c*d?'), 'a_b_c_d_');
+    expect(appFileName('  dots.. '), 'dots');
+    expect(appFileName('CON'), 'App');
+    expect(appFileName('com1'), 'App');
+    expect(appFileName('...'), 'App');
+  });
+
+  Future<void> export(
+    WidgetTester tester,
+    IdeStrings strings, {
+    bool windows = false,
+  }) async {
     await tester.tap(find.text(strings.fileMenu));
     await tester.pumpAndSettle();
-    await tester.tap(find.text(strings.exportWebApp));
+    await tester.tap(
+      find.text(windows ? strings.exportWindowsApp : strings.exportWebApp),
+    );
     await tester.pumpAndSettle();
   }
 
@@ -137,7 +222,7 @@ void main() {
         open: 'demo',
         strings: s,
         folders: folders,
-        fetchTemplate: () async => template(),
+        fetchTemplate: (_) async => template(),
         pickers: ProjectPickers(
           openProjectFile: (_) async => '/p/Demo/Demo.gbproj',
           saveLocation: (_, _) async => null,
@@ -203,7 +288,7 @@ void main() {
         browser: browser,
         kept: await BrowserProjects.open(browser.projects, browser.storage),
         pickZip: () async => null,
-        fetchTemplate: () async => template(),
+        fetchTemplate: (_) async => template(),
       ),
     );
     await export(tester, IdeStrings.ko);
@@ -233,7 +318,7 @@ void main() {
         browser: browser,
         kept: await BrowserProjects.open(browser.projects, browser.storage),
         pickZip: () async => null,
-        fetchTemplate: () async => template(),
+        fetchTemplate: (_) async => template(),
       ),
     );
     await export(tester, s);
@@ -252,10 +337,85 @@ void main() {
         browser: browser,
         kept: await BrowserProjects.open(browser.projects, browser.storage),
         pickZip: () async => null,
-        fetchTemplate: () async => throw const TemplateUnavailable(),
+        fetchTemplate: (_) async => throw const TemplateUnavailable(),
       ),
     );
     await export(tester, s);
     expect(find.text(s.webAppTemplateUnavailable), findsOneWidget);
+  });
+
+  testWidgets('the web IDE downloads a Windows app, its guide naming the '
+      'program, from the Windows template', (tester) async {
+    bigView(tester);
+    final browser = FakeBrowser();
+    final asked = <AppTemplate>[];
+    await tester.pumpWidget(
+      IdeApp(
+        projects: const {'demo': demo},
+        open: 'demo',
+        strings: IdeStrings.ko,
+        browser: browser,
+        kept: await BrowserProjects.open(browser.projects, browser.storage),
+        pickZip: () async => null,
+        fetchTemplate: (which) async {
+          asked.add(which);
+          return windowsTemplate();
+        },
+      ),
+    );
+    await export(tester, IdeStrings.ko, windows: true);
+    expect(asked, [AppTemplate.windows]);
+    expect(browser.downloads.single.$1, 'Demo-windows.zip');
+    final files = unzip(browser.downloads.single.$2);
+    expect(files.keys, contains('Demo-windows/Demo.exe'));
+    expect(
+      ProjectBundle.decode(files['Demo-windows/project.gbz']!).id,
+      'exampledemo',
+    );
+    expect(
+      utf8.decode(files['Demo-windows/README.txt']!),
+      IdeStrings.ko.windowsAppGuide.replaceAll('{0}', 'Demo.exe'),
+    );
+    expect(find.textContaining('폴더 안의 Demo.exe 파일을 엽니다'), findsOneWidget);
+  });
+
+  testWidgets('a desktop IDE saves a Windows app where the user chooses, and '
+      'says when the Windows player cannot be downloaded', (tester) async {
+    bigView(tester);
+    final folders = MemoryFolders()..folders.add('/out');
+    var reachable = true;
+    await tester.pumpWidget(
+      IdeApp(
+        projects: const {'demo': demo},
+        open: 'demo',
+        strings: s,
+        folders: folders,
+        fetchTemplate: (which) async {
+          if (!reachable) throw const TemplateUnavailable();
+          return which == AppTemplate.windows ? windowsTemplate() : template();
+        },
+        pickers: ProjectPickers(
+          openProjectFile: (_) async => null,
+          saveLocation: (_, _) async => null,
+          saveZipLocation: (name, _) async => '/out/$name',
+        ),
+      ),
+    );
+    await export(tester, s, windows: true);
+    expect(folders.written, ['/out/Demo-windows.zip']);
+    expect(
+      unzip(folders.bytes['/out/Demo-windows.zip']!).keys,
+      contains('Demo-windows/Demo.exe'),
+    );
+    expect(
+      find.textContaining('unzip it and open Demo.exe in the folder'),
+      findsOneWidget,
+    );
+    await tester.tap(find.text(s.runtime.ok));
+    await tester.pumpAndSettle();
+
+    reachable = false;
+    await export(tester, s, windows: true);
+    expect(find.text(s.windowsAppTemplateUnavailable), findsOneWidget);
   });
 }

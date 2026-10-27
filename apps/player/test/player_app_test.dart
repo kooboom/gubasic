@@ -1,8 +1,10 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gubasic_player/gubasic_player.dart';
+import 'package:gubasic_player_app/src/app_window.dart';
 import 'package:gubasic_player_app/src/player_app.dart';
 
 /// The player (D79, D81): the project's form in the run window, filling
@@ -104,5 +106,35 @@ void main() {
     final shown = tester.getRect(find.byKey(appFormKey));
     expect(shown.width, lessThanOrEqualTo(160));
     expect(shown.width / shown.height, closeTo(320 / 120, 0.01));
+  });
+
+  testWidgets("an exported app's window takes the project's name and the "
+      "startup form's size (D86), and is left alone where there is none", (
+    tester,
+  ) async {
+    final calls = <MethodCall>[];
+    const channel = MethodChannel('gubasic/window');
+    final messenger = tester.binding.defaultBinaryMessenger;
+    messenger.setMockMethodCallHandler(channel, (call) async {
+      calls.add(call);
+      return null;
+    });
+    addTearDown(() => messenger.setMockMethodCallHandler(channel, null));
+    await fitAppWindow(Project.read(hello()));
+    expect(calls.single.method, 'fit');
+    expect(calls.single.arguments, {
+      'title': 'Hello',
+      'width': 320.0,
+      'height': 120.0,
+    });
+
+    // A project that cannot start still gets its name.
+    calls.clear();
+    await fitAppWindow(Project.read({...hello(), 'Form1.form.yaml': ':'}));
+    expect(calls.single.arguments, {'title': 'Hello'});
+
+    // With no window to fit, nothing happens, and nothing is thrown.
+    messenger.setMockMethodCallHandler(channel, null);
+    await tester.runAsync(() => fitAppWindow(Project.read(hello())));
   });
 }

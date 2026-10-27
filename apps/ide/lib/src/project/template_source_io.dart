@@ -3,14 +3,14 @@ import 'dart:typed_data';
 
 import 'package:gubasic_player/gubasic_player.dart' show gubasicVersion;
 
-import 'web_export.dart';
+import 'app_export.dart';
 
-/// The web player's template for this GuBASIC (D84): the one kept from
+/// The player's [template] for this GuBASIC (D84, D86): the one kept from
 /// the first export, or else downloaded from the GuBASIC site and kept.
 /// Throws [TemplateUnavailable], or [TemplateNotUsable] for a download
 /// that is not a template for this GuBASIC.
-Future<Uint8List> fetchWebTemplate() async {
-  final kept = _keptTemplate();
+Future<Uint8List> fetchAppTemplate(AppTemplate template) async {
+  final kept = _keptTemplate(template);
   if (kept != null) {
     try {
       final bytes = await kept.readAsBytes();
@@ -20,7 +20,7 @@ Future<Uint8List> fetchWebTemplate() async {
       // Not kept yet, or damaged: downloaded again.
     }
   }
-  final bytes = await _download();
+  final bytes = await _download(template.url);
   readTemplate(bytes);
   if (kept != null) {
     try {
@@ -37,7 +37,7 @@ Future<Uint8List> fetchWebTemplate() async {
 
 /// Where the template is kept: the user's cache folder, one file for each
 /// GuBASIC version, since each reads its own bundle layout.
-File? _keptTemplate() {
+File? _keptTemplate(AppTemplate template) {
   final env = Platform.environment;
   final folder = switch (Platform.operatingSystem) {
     'macos' when env['HOME'] != null =>
@@ -48,14 +48,15 @@ File? _keptTemplate() {
   };
   if (folder == null) return null;
   return File(
-    '$folder${Platform.pathSeparator}web-template-$gubasicVersion.zip',
+    '$folder${Platform.pathSeparator}'
+    '${template.name}-template-$gubasicVersion.zip',
   );
 }
 
-Future<Uint8List> _download() async {
+Future<Uint8List> _download(String url) async {
   final client = HttpClient()..connectionTimeout = const Duration(seconds: 20);
   try {
-    final request = await client.getUrl(Uri.parse(webTemplateUrl));
+    final request = await client.getUrl(Uri.parse(url));
     final response = await request.close();
     if (response.statusCode != HttpStatus.ok) {
       throw const TemplateUnavailable();

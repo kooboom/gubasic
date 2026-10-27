@@ -204,6 +204,33 @@ jobs:
               Copy-Item "$env:WINDIR/System32/$dll" "$dir/build/windows/x64/runner/Release"
             }
           }
+      - name: The Windows template (D86), with every file a PC needs
+        working-directory: apps/player
+        run: dart run tool/windows_template.dart
+      # The IDE's own export, from that template, unzipped and opened as a
+      # user would: it must start, take the project's name and the form's
+      # size. The project is named 안녕 (U+C548 U+B155), for a program with
+      # a Korean name.
+      - name: Export hello as a Windows app, as the IDE does
+        working-directory: apps/ide
+        shell: pwsh
+        run: |
+          $env:GUBASIC_WINDOWS_TEMPLATE = "$PWD/../player/build/windows-template.zip"
+          $env:GUBASIC_WINDOWS_APP = "$env:RUNNER_TEMP/hello-windows.zip"
+          flutter test test/windows/export_hello_test.dart
+      - name: Open the exported app and check its window
+        working-directory: apps/player
+        shell: pwsh
+        run: |
+          $name = [string][char]0xC548 + [char]0xB155
+          ./tool/check_windows_app.ps1 -Zip "$env:RUNNER_TEMP/hello-windows.zip" -Name $name -Width 320 -Height 120 -Shot "$env:RUNNER_TEMP/exported-app.png"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: exported-windows-app
+          path: ${{ runner.temp }}/exported-app.png
+          retention-days: 30
+          if-no-files-found: warn
       - uses: actions/upload-artifact@v4
         with:
           name: gubasic-ide-windows

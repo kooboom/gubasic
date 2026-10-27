@@ -7,6 +7,7 @@ import 'package:gubasic_runtime/gubasic_runtime.dart';
 
 import 'src/ide_shell.dart';
 import 'src/project/examples.g.dart';
+import 'src/project/app_export.dart' show AppTemplate;
 import 'src/project/browser.dart';
 import 'src/project/folders.dart';
 import 'src/project/last_project.dart';
@@ -48,7 +49,7 @@ Future<void> main() async {
           XTypeGroup(label: 'zip', extensions: ['zip']),
         ],
       ))?.readAsBytes(),
-      fetchTemplate: fetchWebTemplate,
+      fetchTemplate: fetchAppTemplate,
       pickers: ProjectPickers(
         openProjectFile: (confirm) async => (await openFile(
           acceptedTypeGroups: const [_gbproj],
@@ -139,8 +140,8 @@ class IdeApp extends StatefulWidget {
   final Browser? browser;
   final Future<List<int>?> Function()? pickZip;
 
-  /// Fetches the web player's template, to export web apps (D84).
-  final Future<Uint8List> Function()? fetchTemplate;
+  /// Fetches a player's template, to export apps (D84, D86).
+  final Future<Uint8List> Function(AppTemplate template)? fetchTemplate;
 
   /// The projects kept in the browser, opened before the IDE starts.
   final BrowserProjects? kept;

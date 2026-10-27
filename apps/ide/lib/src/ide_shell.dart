@@ -8,6 +8,7 @@ import 'code/code_font.dart';
 import 'code/handlers.dart';
 import 'designer/form_designer.dart';
 import 'designer/form_edit.dart';
+import 'project/app_export.dart' show AppTemplate;
 import 'project/open_project.dart';
 import 'project/pictures_dialog.dart';
 
@@ -398,14 +399,22 @@ class _IdeShellState extends State<IdeShell> {
               : () => widget.controller.clearSettings(context),
           child: Text(s.clearSettings),
         ),
-        if (widget.controller.canExportWebApp) ...[
+        if (widget.controller.canExportApps) ...[
           const Divider(),
           MenuItemButton(
             key: const ValueKey('menu.exportWebApp'),
             onPressed: _running
                 ? null
-                : () => widget.controller.exportWebApp(context),
+                : () => widget.controller.exportApp(context, AppTemplate.web),
             child: Text(s.exportWebApp),
+          ),
+          MenuItemButton(
+            key: const ValueKey('menu.exportWindowsApp'),
+            onPressed: _running
+                ? null
+                : () =>
+                      widget.controller.exportApp(context, AppTemplate.windows),
+            child: Text(s.exportWindowsApp),
           ),
         ],
         if (widget.controller.canUseBrowser) ...[
