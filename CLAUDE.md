@@ -85,6 +85,13 @@ The Mac is the author's own computer, in use while you work.
 - **Real mouse and keyboard events** (CGEvent, System Events, `cliclick` and the like) only after the author says the Mac is free to use ("지금 맥 안 쓴다, 해도 된다"). Before starting, say about how many minutes it will take; when done, say that it is done.
 - **Without that permission**, check only in ways that do not use the author's mouse and keyboard: tests that run inside the app (Flutter `integration_test`, widget tests) and Playwright for the web.
 - **Even with permission**, before every event check that the frontmost app is the GuBASIC IDE you started (by its process id), and stop at once if it is not.
+- **Do not end system processes** (CoreServicesUIAgent and the like). If a system window cannot be closed without the mouse or keyboard, leave it open and say so in the report.
+- **Every report comes as one zip file.** Each time you finish a task and report, put the report and the files it shows into one archive:
+  - where and how named: `~/Downloads/gubasic-report-YYYYMMDD-HHMM.zip`;
+  - inside: `REPORT.md`, the same report as in the chat, in Korean; and the screenshots, comparison sheets and other pictures in `shots/`, each with the file name the report uses for it;
+  - never a picture that shows a personal account, an e-mail address or another app's window;
+  - once it is made, run `open -R` on it, so that the Finder shows it selected;
+  - in the chat report, name only that zip file, not paths in temporary folders.
 
 ## Before you finish a task
 
