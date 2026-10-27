@@ -556,7 +556,7 @@ class ProjectController extends ChangeNotifier {
       return;
     }
     context = _lasting(context);
-    // An example opens: the student's own projects may be kept (D74).
+    // An example opens: the user's own projects may be kept (D74).
     if (last == null || last.startsWith('example:')) _offerKept(context);
     if (last == null) return;
     final colon = last.indexOf(':');

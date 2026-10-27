@@ -8,7 +8,7 @@ Ideas worth keeping that no stage has taken on yet. Nothing here is decided or p
 
 ## Adventure game controls
 
-**Goal:** a set of controls for making point-and-click adventure games: a picture of a place, things in it to look at and click, a character who walks there, people to talk to, and a bag of things to use on other things. Visual Basic 6 had nothing like it; with these, a child could make the kind of game that is drawn and clicked rather than typed.
+**Goal:** a set of controls for making point-and-click adventure games: a picture of a place, things in it to look at and click, a character who walks there, people to talk to, and a bag of things to use on other things. Visual Basic 6 had nothing like it; with these, anyone could make the kind of game that is drawn and clicked rather than typed.
 
 **When:** a candidate for after stage 3. It changes neither the stage 2 plan nor the project bundle format (STAGE2_PLAN.md).
 

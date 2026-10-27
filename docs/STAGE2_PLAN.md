@@ -18,14 +18,14 @@ The hard rules themselves stay: one AST for every way of running (rule 2), parit
 
 ## 1. Goal
 
-A student who has made an app in the IDE can turn it into:
+Someone who has made an app in the IDE can turn it into:
 
 - **a web app**: a folder of files that runs in a browser from any web host;
 - **a macOS app** and **a Windows app**: something that opens with a double-click, on a computer with no GuBASIC and no Flutter.
 
 The app looks and behaves exactly as it did when F5 ran it in the IDE, because it draws its forms with the same `gubasic_runtime` widgets (rule 6) and follows the same execution model (one handler at a time, modal dialogs, `DoEvents`; DESIGN §3).
 
-Who it is for: elementary school students and their teachers. That decides most choices below: no developer tools to install, no accounts to create, no command line.
+Who it was planned for: elementary school students and their teachers. The author corrected the audience on 2026-10-27 (DESIGN D92: beginner hobby developers, people who miss Visual Basic, people at work automating their own work); the choices below that rested on it are reviewed against D92. They were: no developer tools to install, no accounts to create, no command line.
 
 ## 2. Three ways to do it
 
@@ -34,7 +34,7 @@ Who it is for: elementary school students and their teachers. That decides most 
 The IDE turns the project's code into Dart, writes a Flutter project around it, and Flutter compiles it.
 
 - **Pros:** the fastest apps (AOT native code; the interpreter's slow long loops, KNOWN_ISSUES, go away); the app carries no interpreter; the long-term design (D3) already describes it; extra pub.dev components (DESIGN §5.1) and the embedded-Dart escape hatch (stage 3) need it.
-- **Cons:** someone must run Flutter, which needs Xcode for macOS apps and Visual Studio with "Desktop development with C++" for Windows apps ([Flutter: macOS setup](https://docs.flutter.dev/platform-integration/macos/setup), [Flutter: Windows setup](https://docs.flutter.dev/platform-integration/windows/setup)): many gigabytes, and not something a school PC or a child installs. The generated code must reproduce the interpreter's behaviour statement by statement: every procedure async, one handler at a time, re-entrancy blocked, `DoEvents`, the run-time errors with their codes and lines.
+- **Cons:** someone must run Flutter, which needs Xcode for macOS apps and Visual Studio with "Desktop development with C++" for Windows apps ([Flutter: macOS setup](https://docs.flutter.dev/platform-integration/macos/setup), [Flutter: Windows setup](https://docs.flutter.dev/platform-integration/windows/setup)): many gigabytes, and not something the people GuBASIC is for should have to install. The generated code must reproduce the interpreter's behaviour statement by statement: every procedure async, one handler at a time, re-entrancy blocked, `DoEvents`, the run-time errors with their codes and lines.
 - **Parity:** run every program in `test/parity/` both ways and compare the transcripts. Programs without forms can run with plain `dart run`; programs with forms need `flutter test` on the generated project in CI.
 - **Error messages and lines:** a Dart exception does not know the `.gbas` line. The generated code must pass line numbers into runtime helpers that raise GuBASIC's own errors (R0xx with English and Korean messages); everything Dart can throw must be caught and translated.
 - **App size:** the smallest of the three.
@@ -42,7 +42,7 @@ The IDE turns the project's code into Dart, writes a Flutter project around it, 
 
 ### (B) Player: the interpreter and the project inside a prebuilt app
 
-A **player** is a Flutter app built once, by GuBASIC's own CI, that contains the interpreter (`gubasic_lang`) and the run window, and runs the project it is given. "Building" a student's app means copying the player and putting the project's files into it: no compiler at all.
+A **player** is a Flutter app built once, by GuBASIC's own CI, that contains the interpreter (`gubasic_lang`) and the run window, and runs the project it is given. "Building" an app means copying the player and putting the project's files into it: no compiler at all.
 
 - **Pros:** works with no Flutter anywhere, from the web IDE too; the same interpreter code and the same run window code as F5, so parity holds by construction; the same player becomes the phone Player of stage 3 (DESIGN §12).
 - **Cons:** the interpreter's speed (a million-round loop takes about 3 s on the web, KNOWN_ISSUES); the app carries the interpreter and the source code (readable by anyone, which DESIGN §11 already assumes of everything in an app); changing a macOS app's files breaks its signature, which Apple silicon requires for any executable to run, an ad-hoc signature being enough ([Apple: macOS Big Sur 11.0.1 universal apps release notes](https://developer.apple.com/documentation/macos-release-notes/macos-big-sur-11_0_1-universal-apps-release-notes), quoted in [The Eclectic Light Company](https://eclecticlight.co/2020/08/22/apple-silicon-macs-will-require-signed-code/)), so the macOS app must be signed again after the project goes in.
@@ -61,7 +61,7 @@ Stage 2 ships apps with the player (B). The transpiler (A) stays the design's lo
 
 The user's computer has no Flutter. The ways that remain:
 
-| Way | Web | macOS | Windows | For children and teachers |
+| Way | Web | macOS | Windows | For the audience first planned (reviewed with D92) |
 |---|---|---|---|---|
 | **Player templates** (B): GuBASIC's CI builds the players for each release; the IDE adds the project | the IDE zips the web player and the project, in the browser too | the macOS IDE adds the project and signs the app again (ad-hoc, with the system's `codesign`) | any IDE adds the project folder next to the program | no tools, no accounts; works offline once the template is there |
 | Flutter downloaded by the IDE (A) | possible | needs Xcode as well | needs Visual Studio as well | too big and too technical |
@@ -70,13 +70,13 @@ The user's computer has no Flutter. The ways that remain:
 
 **Decided:** player templates. The IDE does not carry them (they would make the web IDE much heavier): it downloads the one it needs, for its own version, from GuBASIC's GitHub Release or its Pages site, the first time, and keeps it. A macOS app is exported only from the macOS IDE, which can sign it again; the Windows and web IDEs offer the web and Windows apps.
 
-What the student sees: **File → Export as app…**, a choice of Web, Windows or macOS, a folder or a `.zip`, and a few lines on how to open it (for macOS, the steps of the v0.1.0 release notes).
+What the user sees: **File → Export as app…**, a choice of Web, Windows or macOS, a folder or a `.zip`, and a few lines on how to open it (for macOS, the steps of the v0.1.0 release notes).
 
 ## 4. Several forms: in stage 2, after the export
 
 Several forms (`Form2.Show`, DESIGN §3.3) are a language and runtime feature: they change the interpreter, the run window, the designer, the project file and the parity tests, whether apps are exported or not. The export does not need them: it carries whatever the project has.
 
-**Decided:** keep them in stage 2, as their own block right after the export (steps 2-7 and 2-8). Doing the export first gives students something to take home sooner, and each block stays reviewable on its own.
+**Decided:** keep them in stage 2, as their own block right after the export (steps 2-7 and 2-8). Doing the export first gives users a finished app sooner, and each block stays reviewable on its own.
 
 ## 5. Steps
 
@@ -98,7 +98,7 @@ Each step ends with something the author can look at. Every step keeps the stage
 
 The other stage 2 items of the ROADMAP (`LayoutMode`, `Handles`, `OptionButton`, menus, `Database`, `Http`, `ByRef`) come after these, each planned on its own.
 
-**Timer and key events: in stage 2, after several forms (2-9, 2-10).** They are what turns a form into a small game or an animation, the thing children most want to make next, and both run in the interpreter and the player alike, so they need no transpiler. A Timer is a control like the others (`component.yaml`, rule 7); a tick is an event like a click, so it follows the execution model: it does not re-enter, and a tick that comes while a handler runs waits like any other event (DESIGN §3.1). Key events are for the web and the desktop, where there is a keyboard; on phones (stage 3) they simply do not come.
+**Timer and key events: in stage 2, after several forms (2-9, 2-10).** They are what turns a form into a small game or an animation, the thing many users want to make next, and both run in the interpreter and the player alike, so they need no transpiler. A Timer is a control like the others (`component.yaml`, rule 7); a tick is an event like a click, so it follows the execution model: it does not re-enter, and a tick that comes while a handler runs waits like any other event (DESIGN §3.1). Key events are for the web and the desktop, where there is a keyboard; on phones (stage 3) they simply do not come.
 
 ## 6. Decisions
 
@@ -113,7 +113,7 @@ Decided by the author on 2026-10-26.
 | 5 | macOS export from Windows or the web? | **No**: only the macOS IDE exports macOS apps, since only it can sign them again |
 | 6 | What does an exported app do on a run-time error? | What F5 does: the program ends. The app shows the error (code, message, line) in a dialog and closes when it is dismissed |
 | 7 | The app's name, window and icon | The project's name; the startup form's size; GuBASIC's app icon (D85). Choosing an icon comes later |
-| 8 | How is a web app shared? | A `.zip` to put on any web host, with short steps for GitHub Pages and a school server. A page on GuBASIC's own site that plays a project file comes with stage 3's Publish menu |
+| 8 | How is a web app shared? | A `.zip` to put on any web host, with short steps for GitHub Pages and a school or company server. A page on GuBASIC's own site that plays a project file comes with stage 3's Publish menu |
 | 9 | Several forms: in stage 2? | **Yes**, as their own block after the export (§4); the bundle can hold them from the start (2-3) |
 | 10 | The package and app names | `packages/gubasic_player` and `apps/player`, the same player that becomes the phone Player in stage 3 |
 
@@ -177,7 +177,7 @@ The interpreter needs 2 ms or less of a 16 ms tick, drawing 7 ms or less. **What
 
 1. **the small game's interpreter needs more than 10 ms a round** (a third of a 30 ms tick; now 0.39 to 0.93 ms);
 2. **a step of the typing or quiz example, after the first, takes more than 50 ms** (now at most 26 ms);
-3. **the million-round loop's interpreter part takes more than 6 s** (twice today's 3.0 s on Chrome), or a student's real program is found too slow;
+3. **the million-round loop's interpreter part takes more than 6 s** (twice today's 3.0 s on Chrome), or a user's real program is found too slow;
 
 but only after the interpreter has been made faster as below, and still fails them. The benchmarks are measured again with each change to the interpreter's speed.
 
@@ -203,7 +203,7 @@ If drawing is the slow part, the runtime's widgets are looked at instead (repain
 
 ## 9. Not now
 
-- The transpiler (decision 2), Flutter downloads and GitHub Actions builds of students' apps.
+- The transpiler (decision 2), Flutter downloads and GitHub Actions builds of users' apps.
 - iOS and Android, app stores, Developer ID signing and notarization (paid accounts).
 - Extra pub.dev components and the embedded-Dart escape hatch (stage 3; they need the transpiler).
 - The Publish menu (stage 3).

@@ -52,7 +52,7 @@ The plan, its steps and decisions: [STAGE2_PLAN.md](STAGE2_PLAN.md) (D79–D91).
 - [ ] Layout: `LayoutMode` (Vertical / Horizontal / Grid), `Dock`
 - [ ] `Handles` clause; run-time control creation
 - [ ] `OptionButton`: radio buttons, of which one in a group is chosen, with a way to form groups (in Visual Basic 6 the option buttons on a form are one group and those in each frame another: [Microsoft](https://learn.microsoft.com/en-us/previous-versions/visualstudio/visual-basic-6/aa241737(v=vs.60))). A natural control for a quiz's choices; the stage 1 quiz uses a ListBox
-- [ ] Menus in students' apps: a menu bar and right-click menus (Visual Basic 6's [Menu Editor](https://learn.microsoft.com/en-us/previous-versions/visualstudio/visual-studio-2008/62aawczc(v=vs.90)) and [PopupMenu](https://learn.microsoft.com/en-us/previous-versions/visualstudio/visual-basic-6/aa716251(v=vs.60)); Visual Basic .NET's `ContextMenuStrip`, same source)
+- [ ] Menus in the apps made with GuBASIC: a menu bar and right-click menus (Visual Basic 6's [Menu Editor](https://learn.microsoft.com/en-us/previous-versions/visualstudio/visual-studio-2008/62aawczc(v=vs.90)) and [PopupMenu](https://learn.microsoft.com/en-us/previous-versions/visualstudio/visual-basic-6/aa716251(v=vs.60)); Visual Basic .NET's `ContextMenuStrip`, same source)
 - [ ] `Database` (SQLite) and `Http` + JSON
 - [x] Several forms: `Form2.Show`, `ShowDialog`, `Hide`, `Close`, shown one over another in one window on every platform (2-7, D88–D90); adding, renaming and deleting forms in the IDE (2-8, D91). One form is not saved on its own: Save saves the whole project (D90)
 - [ ] Module files (`Module1.gbas`) and starting at `Sub Main` (after 2-8, D90)

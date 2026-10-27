@@ -762,19 +762,28 @@ class IdeStrings {
     clearSettingsYes: 'Clear',
     settingsCleared: 'The saved settings of {0} were cleared.',
     changedSinceDownloadHint:
-        'Changed since the last download. Download a .zip to keep it safe.',
-    keptStatus: 'Kept in this browser · last download: {0}',
+        'Changed since it was last saved to your computer. Save to my '
+        'computer to keep it safe.',
+    keptStatus: 'Kept in this browser · last saved to the computer: {0}',
     exampleStatus: 'Example · Save keeps a copy in this browser',
     none: 'none',
     keptInBrowser: 'Kept in this browser.',
-    browserNotice: 'This project is kept only in this browser. On a computer whose browser data is cleared, such as a shared school PC, it can be lost, and Safari removes it after 7 days without a visit. Download it as a .zip at the end of each lesson.',
-    storageFailed: 'The project could not be kept in this browser: its storage is full or turned off. Download it as a .zip so that nothing is lost.',
+    browserNotice:
+        'This project is kept only in this browser. On a computer whose '
+        'browser data is cleared, such as a shared PC, it can be lost, and '
+        'Safari removes it after 7 days without a visit. Use Save to my '
+        'computer whenever you finish working.',
+    storageFailed:
+        'The project could not be kept in this browser: its storage is full '
+        'or turned off. Use Save to my computer so that nothing is lost.',
     keptProjectsTitle: 'Projects in this browser',
     noKeptProjects: 'No projects are kept in this browser yet.',
     keptAt: 'kept {0}',
     notDownloaded: 'changes not downloaded',
     deleteProject: 'Delete',
-    confirmDelete: 'Delete the project {0} from this browser? This cannot be undone. If you may need it, download it as a .zip first.',
+    confirmDelete:
+        'Delete the project {0} from this browser? This cannot be undone. If '
+        'you may need it, use Save to my computer first.',
     projectExistsInBrowser: 'A project named {0} is already kept in this browser. Enter another name.',
     notAZip: 'This is not a .zip file, or the file is damaged.',
     zipTooLarge: 'This .zip is too large for a GuBASIC project: at most 12 MB and 100 files; its text files at most 2 MB unpacked, a picture 2 MB and all pictures 10 MB.',
@@ -1050,21 +1059,19 @@ class IdeStrings {
     clearSettingsYes: '지우기',
     settingsCleared: '{0} 프로젝트에 저장된 설정을 지웠습니다.',
     changedSinceDownloadHint:
-        '마지막으로 내려받은 뒤 바뀐 내용이 있습니다. 안전하게 보관하려면 .zip으로 내려받습니다.',
-    keptStatus: '이 브라우저에 보관 중 · 마지막 내려받기: {0}',
+        '마지막으로 내 컴퓨터에 저장한 뒤 바뀐 내용이 있습니다. 안전하게 보관하려면 [내 컴퓨터에 저장]을 누릅니다.',
+    keptStatus: '이 브라우저에 보관 중 · 마지막으로 내 컴퓨터에 저장: {0}',
     exampleStatus: '예제 · 저장하면 이 브라우저에 복사본을 보관합니다',
     none: '없음',
     keptInBrowser: '이 브라우저에 보관했습니다.',
-    browserNotice: '이 프로젝트는 이 브라우저에만 보관됩니다. 학교 공용 PC처럼 브라우저 기록이 지워지는 컴퓨터에서는 사라질 수 있고, Safari는 7일 동안 방문하지 않으면 지웁니다. 수업이 끝날 때마다 .zip으로 내려받습니다.',
-    storageFailed:
-        '이 브라우저에 프로젝트를 보관할 수 없습니다. 저장소가 가득 찼거나 꺼져 있습니다. 잃지 않도록 .zip으로 내려받습니다.',
+    browserNotice: '이 프로젝트는 이 브라우저에만 보관됩니다. 공용 PC처럼 브라우저 기록이 지워지는 컴퓨터에서는 사라질 수 있고, Safari는 7일 동안 방문하지 않으면 지웁니다. 작업을 마칠 때마다 [내 컴퓨터에 저장]을 누릅니다.',
+    storageFailed: '이 브라우저에 프로젝트를 보관할 수 없습니다. 저장소가 가득 찼거나 꺼져 있습니다. 잃지 않도록 [내 컴퓨터에 저장]을 누릅니다.',
     keptProjectsTitle: '이 브라우저의 프로젝트',
     noKeptProjects: '이 브라우저에 보관된 프로젝트가 아직 없습니다.',
     keptAt: '{0} 보관',
     notDownloaded: '내려받지 않은 변경 있음',
     deleteProject: '지우기',
-    confirmDelete:
-        '{0} 프로젝트를 이 브라우저에서 지웁니까? 되돌릴 수 없습니다. 다시 쓸 수도 있다면 먼저 .zip으로 내려받습니다.',
+    confirmDelete: '{0} 프로젝트를 이 브라우저에서 지웁니까? 되돌릴 수 없습니다. 다시 쓸 수도 있다면 먼저 [내 컴퓨터에 저장]을 누릅니다.',
     projectExistsInBrowser: '이 브라우저에 {0} 프로젝트가 이미 있습니다. 다른 이름을 입력합니다.',
     notAZip: '.zip 파일이 아니거나 망가진 파일입니다.',
     zipTooLarge: '이 .zip 파일은 GuBASIC 프로젝트로 보기에 너무 큽니다. 최대 12MB, 파일 100개까지이고, 풀었을 때 텍스트 파일은 2MB, 그림은 하나에 2MB, 모두 합쳐 10MB까지입니다.',

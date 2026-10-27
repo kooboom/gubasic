@@ -69,7 +69,7 @@ const gbControlRadius = BorderRadius.all(Radius.circular(3));
 /// The theme of a form's controls (D49): calm, square and dense, 13 px
 /// text of normal weight, greys with a blue accent. It is the form's own,
 /// apart from the app around it, so that a change of the IDE's look does
-/// not change the forms students draw; only the font (family and features)
+/// not change the forms users draw; only the font (family and features)
 /// comes from [ambient], as the runtime does not choose fonts (§2.3).
 ThemeData gbFormTheme(ThemeData ambient) {
   final font = ambient.textTheme.bodyMedium;
