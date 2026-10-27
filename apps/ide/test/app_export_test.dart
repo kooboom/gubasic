@@ -120,7 +120,6 @@ void main() {
     add('gubasic_player_app.exe', 'MZ the player');
     add('flutter_windows.dll', 'the engine');
     add('data/app.so', 'the code');
-    add('index.html', '<html></html>');
     add(
       'template.json',
       jsonEncode({
@@ -147,7 +146,6 @@ void main() {
           '퀴즈-windows/퀴즈.exe',
           '퀴즈-windows/flutter_windows.dll',
           '퀴즈-windows/data/app.so',
-          '퀴즈-windows/index.html',
           '퀴즈-windows/project.gbz',
           '퀴즈-windows/README.txt',
         ]),
@@ -176,6 +174,11 @@ void main() {
       );
       expect(
         () => windowsAppZip(template(bundleFormat: 2), bundle, ''),
+        throwsA(isA<TemplateNotUsable>()),
+      );
+      // Nor does a web app come from the Windows template.
+      expect(
+        () => webAppZip(windowsTemplate(), bundle, ''),
         throwsA(isA<TemplateNotUsable>()),
       );
     });

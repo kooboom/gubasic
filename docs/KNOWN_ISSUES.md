@@ -142,8 +142,14 @@ Problems we know about and have **deliberately** left unfixed for now. Each entr
 - **Why deferred:** the web already knows its projects; the desktop would need a list of folders kept with the settings, and a way to drop the ones that are gone.
 - **Revisit:** when students use the desktop IDE for more than one project at a time, or with File → Recent in the menu.
 
-## The desktop IDE's web template follows main, not its release
+## The desktop IDE's templates follow main, not its release
 
-- **What:** File → Export as Web App on the desktop downloads the template that Pages publishes from main (D84), and keeps it for its GuBASIC version. An IDE of an older release takes the newest template, which may differ from the player of its own release; only the bundle layout is checked.
+- **What:** File → Export as Web App and Export as Windows App on the desktop download the templates that Pages publishes from main (D84, D86), and keep them for their GuBASIC version. An IDE of an older release takes the newest template, which may differ from the player of its own release; only the bundle layout is checked.
 - **Why deferred:** there is one release so far, and the bundle layout has not changed; a template for each release needs the release workflow to build and attach it.
-- **Revisit:** at the next release, or when the bundle layout changes: attach the template to each GitHub Release and download the one of the IDE's own version.
+- **Revisit:** at the next release, or when the bundle layout changes: attach the templates to each GitHub Release and download the ones of the IDE's own version.
+
+## An exported Windows app's file says GuBASIC Player
+
+- **What:** the program of an exported Windows app is renamed after the project and its window has the project's name (D86), but the program's file properties, which Task Manager shows as its name, still say "GuBASIC Player", with GuBASIC's version and copyright; and SaveSetting keeps the values of every exported app in one file under the user's AppData folder, named after that same "GuBASIC Player", kept apart by app ID.
+- **Why deferred:** changing them means rewriting the program's version resource, which the IDE does not do yet; the app ID keeps the apps' settings apart as it is.
+- **Revisit:** with choosing an app's icon (STAGE2_PLAN §9), which rewrites the same resources.

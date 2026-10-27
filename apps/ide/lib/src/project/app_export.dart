@@ -121,9 +121,7 @@ Archive readTemplate(List<int> template) {
     throw const TemplateNotUsable();
   }
   final about = files.findFile('template.json');
-  if (about == null || files.findFile('index.html') == null) {
-    throw const TemplateNotUsable();
-  }
+  if (about == null) throw const TemplateNotUsable();
   final int? format;
   try {
     format =
@@ -142,6 +140,7 @@ Archive readTemplate(List<int> template) {
 /// Throws [TemplateNotUsable].
 Uint8List webAppZip(List<int> template, ProjectBundle bundle, String guide) {
   final files = readTemplate(template);
+  if (files.findFile('index.html') == null) throw const TemplateNotUsable();
   final folder = '${appFileName(bundle.name)}-web';
   final out = Archive();
   void add(String path, List<int> bytes) =>
