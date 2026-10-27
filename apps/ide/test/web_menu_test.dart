@@ -102,6 +102,8 @@ void main() {
     await tester.tapAt(Offset.zero);
     await tester.pumpAndSettle();
     expect(find.widgetWithText(OutlinedButton, s.downloadZip), findsOneWidget);
+    // Its tooltip says what it does and how to open the .zip again.
+    expect(find.byTooltip(s.downloadZipHint), findsOneWidget);
     expect(find.text(s.exampleStatus), findsOneWidget);
   });
 
@@ -587,7 +589,7 @@ void main() {
 
   testWidgets('Korean words', (tester) async {
     await start(tester, strings: IdeStrings.ko);
-    expect(find.text('.zip으로 내려받기'), findsOneWidget);
+    expect(find.text('내 컴퓨터에 저장'), findsOneWidget);
     expect(find.text(IdeStrings.ko.exampleStatus), findsOneWidget);
     await tester.tap(find.widgetWithText(TextButton, '파일'));
     await tester.pumpAndSettle();

@@ -50,6 +50,7 @@ class IdeStrings {
     required this.saveAsTitle,
     required this.projectName,
     required this.downloadZip,
+    required this.downloadZipHint,
     required this.uploadZip,
     required this.exportWebApp,
     required this.webAppCannotRun,
@@ -293,6 +294,9 @@ class IdeStrings {
   final String saveAsTitle;
   final String projectName;
   final String downloadZip;
+
+  /// The tooltip of the web IDE's save-to-computer button.
+  final String downloadZipHint;
   final String uploadZip;
 
   // File → Export as Web App (D84).
@@ -646,7 +650,10 @@ class IdeStrings {
     edited: 'Edited',
     saveAsTitle: 'Save As',
     projectName: 'Project name',
-    downloadZip: 'Download .zip',
+    downloadZip: 'Save to my computer',
+    downloadZipHint:
+        'Downloads the project as one .zip file. You can open it again '
+        'later with File → Upload .zip….',
     uploadZip: 'Upload .zip…',
     exportWebApp: 'Export as Web App…',
     webAppCannotRun:
@@ -952,7 +959,9 @@ class IdeStrings {
     edited: '편집됨',
     saveAsTitle: '다른 이름으로 저장',
     projectName: '프로젝트 이름',
-    downloadZip: '.zip으로 내려받기',
+    downloadZip: '내 컴퓨터에 저장',
+    downloadZipHint:
+        '프로젝트를 .zip 파일 하나로 내려받습니다. 나중에 [파일 → .zip 올리기…]로 다시 열 수 있습니다.',
     uploadZip: '.zip 올리기…',
     exportWebApp: '웹 앱으로 내보내기…',
     webAppCannotRun: '프로젝트에 오류가 있어서 내보낼 수 없습니다. 오류를 고치고 한 번 실행해 본 뒤 다시 내보냅니다.',

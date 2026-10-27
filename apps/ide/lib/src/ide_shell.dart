@@ -309,7 +309,9 @@ class _IdeShellState extends State<IdeShell> {
     return Padding(
       padding: const EdgeInsets.only(right: 8),
       child: Tooltip(
-        message: changed ? s.changedSinceDownloadHint : '',
+        message: changed
+            ? '${s.downloadZipHint}\n${s.changedSinceDownloadHint}'
+            : s.downloadZipHint,
         child: changed
             ? FilledButton.icon(onPressed: _download, icon: icon, label: label)
             : OutlinedButton.icon(
