@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
+  <!-- 16 px: the G alone, thick; the triangle would be a smudge. -->
+  <rect x="1" y="1" width="14" height="14" rx="3" fill="#2F5A88"/>
+  <g transform="scale(0.015625)">
+    <path d="M760 340 A300 300 0 1 0 812 560 L812 520 L590 520" fill="none" stroke="#FFFFFF" stroke-width="150" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+</svg>

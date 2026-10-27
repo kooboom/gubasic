@@ -1,3 +1,5 @@
+<img src="docs/icons/ide.svg" width="96" alt="The GuBASIC IDE's icon">
+
 # GuBASIC
 
 **A Visual Basic–style RAD tool, built with Flutter™.**

@@ -112,7 +112,7 @@ Decided by the author on 2026-10-26.
 | 4 | Where do the player templates come from? | Not inside the IDE: downloaded once per version from the GitHub Release or Pages, and kept |
 | 5 | macOS export from Windows or the web? | **No**: only the macOS IDE exports macOS apps, since only it can sign them again |
 | 6 | What does an exported app do on a run-time error? | What F5 does: the program ends. The app shows the error (code, message, line) in a dialog and closes when it is dismissed |
-| 7 | The app's name, window and icon | The project's name; the startup form's size; GuBASIC's icon. Choosing an icon comes later |
+| 7 | The app's name, window and icon | The project's name; the startup form's size; GuBASIC's app icon (D85). Choosing an icon comes later |
 | 8 | How is a web app shared? | A `.zip` to put on any web host, with short steps for GitHub Pages and a school server. A page on GuBASIC's own site that plays a project file comes with stage 3's Publish menu |
 | 9 | Several forms: in stage 2? | **Yes**, as their own block after the export (§4); the bundle can hold them from the start (2-3) |
 | 10 | The package and app names | `packages/gubasic_player` and `apps/player`, the same player that becomes the phone Player in stage 3 |

@@ -1,3 +1,5 @@
+<img src="docs/icons/ide.svg" width="96" alt="GuBASIC IDE 아이콘">
+
 # GuBASIC
 
 **Flutter™로 만든 비주얼 베이직 스타일의 RAD 도구.**
