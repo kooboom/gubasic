@@ -69,6 +69,13 @@ bool FlutterWindow::OnCreate() {
       [this](const flutter::MethodCall<flutter::EncodableValue>& call,
              std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>
                  result) {
+        // Closing as the user would, once the handler has returned: the
+        // program has ended (D81).
+        if (call.method_name() == "close") {
+          ::PostMessage(GetHandle(), WM_CLOSE, 0, 0);
+          result->Success();
+          return;
+        }
         const auto* args =
             std::get_if<flutter::EncodableMap>(call.arguments());
         if (call.method_name() != "fit" || args == nullptr) {

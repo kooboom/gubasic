@@ -33,7 +33,8 @@ class FlutterWindow : public Win32Window {
   std::unique_ptr<flutter::FlutterViewController> flutter_controller_;
 
   // "gubasic/window": the exported app's window, fitted to its startup
-  // form before it is first shown (docs/DESIGN.md D86).
+  // form before it is first shown, and closed when its program ends
+  // (docs/DESIGN.md D86).
   std::unique_ptr<flutter::MethodChannel<flutter::EncodableValue>>
       window_channel_;
 

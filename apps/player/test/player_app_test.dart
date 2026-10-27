@@ -133,6 +133,11 @@ void main() {
     await fitAppWindow(Project.read({...hello(), 'Form1.form.yaml': ':'}));
     expect(calls.single.arguments, {'title': 'Hello'});
 
+    // When the program ends, the runner is asked to close the window.
+    calls.clear();
+    await closeAppWindow();
+    expect(calls.single.method, 'close');
+
     // With no window to fit, nothing happens, and nothing is thrown.
     messenger.setMockMethodCallHandler(channel, null);
     await tester.runAsync(() => fitAppWindow(Project.read(hello())));

@@ -1,10 +1,10 @@
-import 'dart:ui' show AppExitType;
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gubasic_lang/gubasic_lang.dart';
 import 'package:gubasic_player/gubasic_player.dart';
+
+import 'app_window.dart';
 
 /// The font the IDE uses, so that an app lays its text out as the IDE
 /// showed it (D30, KNOWN_ISSUES).
@@ -146,7 +146,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
     if (kIsWeb || _measuring) {
       if (mounted) setState(() {});
     } else {
-      await ServicesBinding.instance.exitApplication(AppExitType.required);
+      await closeAppWindow();
     }
   }
 

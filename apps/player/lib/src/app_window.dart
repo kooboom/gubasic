@@ -1,3 +1,5 @@
+import 'dart:ui' show AppExitType;
+
 import 'package:flutter/services.dart';
 import 'package:gubasic_player/gubasic_player.dart';
 
@@ -20,5 +22,16 @@ Future<void> fitAppWindow(Project project) async {
     });
   } on MissingPluginException {
     // No such window to fit.
+  }
+}
+
+/// Closes the app when its program has ended (D81): its window is closed
+/// as the user would close it, by the runner after this call returns.
+/// Where the runner has no such channel, the app is told to exit.
+Future<void> closeAppWindow() async {
+  try {
+    await _window.invokeMethod<void>('close');
+  } on MissingPluginException {
+    await ServicesBinding.instance.exitApplication(AppExitType.required);
   }
 }
