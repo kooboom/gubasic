@@ -204,6 +204,11 @@ jobs:
               Copy-Item "$env:WINDIR/System32/$dll" "$dir/build/windows/x64/runner/Release"
             }
           }
+      # askname clicked through inside the player on Windows: the window
+      # takes each form's size (D88, D89).
+      - name: Several forms in the player's own window
+        working-directory: apps/player
+        run: flutter test integration_test -d windows
       - name: The Windows template (D86), with every file a PC needs
         working-directory: apps/player
         run: dart run tool/windows_template.dart
@@ -282,6 +287,9 @@ jobs:
       - name: The player's size on macOS (STAGE2_PLAN step 2-2)
         run: du -sh "build/macos/Build/Products/Release/GuBASIC Player.app"
         working-directory: apps/player
+      - name: Several forms in the player's own window
+        working-directory: apps/player
+        run: flutter test integration_test -d macos
       - name: The macOS template (D87), with every file the app needs
         run: dart run tool/macos_template.dart
         working-directory: apps/player
