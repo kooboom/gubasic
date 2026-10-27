@@ -1,0 +1,138 @@
+name: release
+
+# Builds a release when its tag (v0.2.0) is pushed, and leaves it as a draft
+# for the author to read and publish (D93): the IDE for macOS and Windows,
+# built to take the players' templates from this release, the three
+# templates the IDE makes apps from (web, Windows, macOS), and SHA256SUMS.txt.
+# Run by hand (workflow_dispatch, with the tag it would be), it builds the
+# files only, to try the workflow before a tag is pushed.
+on:
+  push:
+    tags: ['v*']
+  # A pull request that changes this workflow builds the files too.
+  pull_request:
+    paths: ['.github/workflows/release.yml']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: The release the files are for, as v0.2.0
+        required: true
+
+permissions:
+  contents: write
+
+env:
+  TAG: ${{ github.event.inputs.tag || (github.event_name == 'pull_request' && 'v0.0.0-try') || github.ref_name }}
+
+jobs:
+  web:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/player
+    steps:
+      - uses: actions/checkout@v5
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version-file: packages/gubasic_runtime/pubspec.yaml
+          cache: true
+      - run: flutter pub get
+      - run: flutter build web --release --no-web-resources-cdn
+      - run: dart run tool/web_template.dart
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-web
+          path: apps/player/build/template.zip
+          if-no-files-found: error
+
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version-file: packages/gubasic_runtime/pubspec.yaml
+          cache: true
+      - name: The IDE, taking the templates of this release
+        working-directory: apps/ide
+        run: flutter build windows --release --dart-define=GUBASIC_RELEASE=${{ env.TAG }}
+      - name: The player
+        working-directory: apps/player
+        run: flutter build windows --release
+      # The Visual C++ runtime next to each program (D47).
+      - name: Add the Visual C++ runtime
+        shell: pwsh
+        run: |
+          foreach ($dir in 'apps/ide', 'apps/player') {
+            foreach ($dll in 'msvcp140.dll', 'vcruntime140.dll', 'vcruntime140_1.dll') {
+              Copy-Item "$env:WINDIR/System32/$dll" "$dir/build/windows/x64/runner/Release"
+            }
+          }
+      - name: The Windows template
+        working-directory: apps/player
+        run: dart run tool/windows_template.dart
+      - name: The IDE as a zip, one folder inside
+        shell: pwsh
+        run: |
+          $folder = Join-Path $env:RUNNER_TEMP 'gubasic-ide-windows'
+          Copy-Item -Recurse apps/ide/build/windows/x64/runner/Release $folder
+          Compress-Archive -Path $folder -DestinationPath "gubasic-ide-windows-${{ env.TAG }}.zip"
+          Copy-Item apps/player/build/windows-template.zip .
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-windows
+          path: |
+            gubasic-ide-windows-${{ env.TAG }}.zip
+            windows-template.zip
+          if-no-files-found: error
+
+  macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version-file: packages/gubasic_runtime/pubspec.yaml
+          cache: true
+      - name: The IDE, taking the templates of this release
+        working-directory: apps/ide
+        run: flutter build macos --release --dart-define=GUBASIC_RELEASE=${{ env.TAG }}
+      - name: The player and its template
+        working-directory: apps/player
+        run: |
+          flutter build macos --release
+          dart run tool/macos_template.dart
+      # ditto keeps the app's symbolic links and its signature whole.
+      - name: The IDE as a zip
+        run: |
+          ditto -c -k --keepParent "apps/ide/build/macos/Build/Products/Release/GuBASIC IDE.app" "gubasic-ide-macos-${{ env.TAG }}.zip"
+          cp apps/player/build/macos-template.zip .
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-macos
+          path: |
+            gubasic-ide-macos-${{ env.TAG }}.zip
+            macos-template.zip
+          if-no-files-found: error
+
+  draft:
+    needs: [web, windows, macos]
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: files
+          merge-multiple: true
+      - name: SHA-256 of every file
+        working-directory: files
+        run: sha256sum * | tee SHA256SUMS.txt
+      - name: A draft release with the files
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${{ env.TAG }}" files/* \
+            --repo "${{ github.repository }}" \
+            --draft --verify-tag \
+            --title "GuBASIC ${{ env.TAG }} (개발판)" \
+            --notes "Draft: the notes are written before it is published."

@@ -500,4 +500,14 @@ void main() {
     expect(fetched, 0);
     expect(browser.downloads, isEmpty);
   });
+
+  test('a development build takes the templates from the GuBASIC site; a '
+      'release build (GUBASIC_RELEASE) would take its release\'s (D93)', () {
+    expect(gubasicRelease, '');
+    expect(
+      AppTemplate.windows.url,
+      'https://kooboom.github.io/gubasic/player/windows-template.zip',
+    );
+    expect(AppTemplate.web.path, '../player/template.zip');
+  });
 }

@@ -2,7 +2,7 @@ name: gubasic_runtime
 description: >-
   Controls, forms and dialogs that GuBASIC programs run on: used both by the
   interpreter in the IDE and by generated apps (docs/DESIGN.md §2.3, D11).
-version: 0.1.0
+version: 0.2.0
 publish_to: none
 
 # The one place that names the Flutter version of this repository (D29).

@@ -2,7 +2,7 @@ name: gubasic_ide
 description: >-
   The GuBASIC IDE: opens a project and runs it in a run window, on the
   desktop and on the web (docs/DESIGN.md §2).
-version: 0.1.0
+version: 0.2.0
 publish_to: none
 
 environment:

@@ -5,12 +5,21 @@ import 'package:archive/archive.dart';
 import 'package:gubasic_lang/gubasic_lang.dart';
 import 'package:gubasic_player/gubasic_player.dart';
 
-/// Where the desktop IDE downloads the players' templates (D84, D86); the
-/// web IDE takes them from beside itself, `../player/`. A test build can
-/// name another place: `--dart-define GUBASIC_TEMPLATE_SITE=…`.
+/// The release this IDE was built for, `v0.2.0`, given by the release
+/// workflow (`--dart-define GUBASIC_RELEASE=…`); empty for a development
+/// build of main (D93).
+const gubasicRelease = String.fromEnvironment('GUBASIC_RELEASE');
+
+/// Where the desktop IDE downloads the players' templates (D84, D86, D93):
+/// a release's IDE from that release's files on GitHub, a development
+/// build from the GuBASIC site, which has main's; the web IDE takes them
+/// from beside itself, `../player/`. A test build can name another place:
+/// `--dart-define GUBASIC_TEMPLATE_SITE=…`.
 const templateSite = String.fromEnvironment(
   'GUBASIC_TEMPLATE_SITE',
-  defaultValue: 'https://kooboom.github.io/gubasic/player',
+  defaultValue: gubasicRelease == ''
+      ? 'https://kooboom.github.io/gubasic/player'
+      : 'https://github.com/kooboom/gubasic/releases/download/$gubasicRelease',
 );
 
 /// A player's template, which an app is made from by adding the project.

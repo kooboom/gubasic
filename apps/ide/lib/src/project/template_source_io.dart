@@ -36,7 +36,8 @@ Future<Uint8List> fetchAppTemplate(AppTemplate template) async {
 }
 
 /// Where the template is kept: the user's cache folder, one file for each
-/// GuBASIC version, since each reads its own bundle layout.
+/// GuBASIC version, since each reads its own bundle layout; a development
+/// build keeps main's apart from its release's (D93).
 File? _keptTemplate(AppTemplate template) {
   final env = Platform.environment;
   final folder = switch (Platform.operatingSystem) {
@@ -49,7 +50,8 @@ File? _keptTemplate(AppTemplate template) {
   if (folder == null) return null;
   return File(
     '$folder${Platform.pathSeparator}'
-    '${template.name}-template-$gubasicVersion.zip',
+    '${template.name}-template-$gubasicVersion'
+    '${gubasicRelease.isEmpty ? '-main' : ''}.zip',
   );
 }
 
