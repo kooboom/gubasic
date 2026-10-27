@@ -114,6 +114,18 @@ class OpenProject extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Changes the files to [files]: those it leaves out are taken out of
+  /// the project, as a form deleted or renamed (D88); saving deletes them
+  /// from the disk.
+  void replaceFiles(Map<String, String> files) {
+    if (mapEquals(_files, files)) return;
+    _files
+      ..clear()
+      ..addAll(files);
+    _project = null;
+    notifyListeners();
+  }
+
   /// Records that [file] was saved with [text], alone: the other files'
   /// changes stay unsaved.
   void markFileSaved(String file, String text) {

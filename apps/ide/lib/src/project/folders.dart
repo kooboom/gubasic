@@ -158,7 +158,8 @@ Future<List<String>> changedOnDisk(
   Map<String, Uint8List> savedPictures = const {},
 }) async {
   final changed = <String>[];
-  for (final name in files.keys) {
+  // A form's files taken out of the project are deleted (D88).
+  for (final name in {...files.keys, ..._formFilesGone(files, saved)}) {
     if (files[name] == saved[name]) continue;
     final onDisk = await _io(
       name,
@@ -215,6 +216,10 @@ Future<void> writeChanged(
     if (saved[name] == text) continue;
     await _io(name, writing: true, () => fs.write(fs.join(folder, name), text));
   }
+  // Only the forms' files the project had: the IDE put them there (D88).
+  for (final name in _formFilesGone(files, saved)) {
+    await _io(name, writing: true, () => fs.delete(fs.join(folder, name)));
+  }
   // Only pictures the project had: the IDE put them there.
   for (final name in savedPictures.keys) {
     if (pictures.containsKey(name)) continue;
@@ -224,6 +229,22 @@ Future<void> writeChanged(
       () => fs.delete(picturePath(fs, folder, name)),
     );
   }
+}
+
+/// The forms' files that [saved] has and [files] no longer has, in any
+/// case: a form deleted or renamed (D88). A file renamed only in case is
+/// not one: on a disk that ignores case, deleting the old name would
+/// delete the new file.
+Iterable<String> _formFilesGone(
+  Map<String, String> files,
+  Map<String, String> saved,
+) {
+  final kept = {for (final f in files.keys) f.toLowerCase()};
+  return saved.keys.where(
+    (name) =>
+        !kept.contains(name.toLowerCase()) &&
+        (name.endsWith('.form.yaml') || name.toLowerCase().endsWith('.gbas')),
+  );
 }
 
 /// Writes [bytes] to the file at [path], such as an exported app (D84).

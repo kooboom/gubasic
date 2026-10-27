@@ -119,6 +119,20 @@ class IdeStrings {
     required this.integerRange,
     required this.numberNeeded,
     required this.formNameIsFile,
+    required this.addForm,
+    required this.formActions,
+    required this.startupFormTag,
+    required this.makeStartupForm,
+    required this.renameForm,
+    required this.deleteForm,
+    required this.formNameLabel,
+    required this.formNameNotUsable,
+    required this.formNameTaken,
+    required this.formNameUsedInCode,
+    required this.deleteFormQuestion,
+    required this.deleteFormUses,
+    required this.lastFormKept,
+    required this.formsNeedProjectFile,
     required this.nameUsedInCode,
     required this.deleteUsedControl,
     required this.deleteHandlersStay,
@@ -417,6 +431,40 @@ class IdeStrings {
   /// `{0}` the property.
   final String numberNeeded;
   final String formNameIsFile;
+
+  /// File → Add Form (D88).
+  final String addForm;
+
+  /// The tooltip of a form's ⋮ button in the project list.
+  final String formActions;
+
+  /// After the startup form's file in the project list.
+  final String startupFormTag;
+  final String makeStartupForm;
+  final String renameForm;
+  final String deleteForm;
+  final String formNameLabel;
+
+  /// {0}: the name typed.
+  final String formNameNotUsable;
+
+  /// {0}: the name typed.
+  final String formNameTaken;
+
+  /// {0}: the name typed; {1}: where the code uses it.
+  final String formNameUsedInCode;
+
+  /// {0}: the form.
+  final String deleteFormQuestion;
+
+  /// {0}: the form; {1}: where the code uses it.
+  final String deleteFormUses;
+
+  /// {0}: the form.
+  final String lastFormKept;
+
+  /// The `.gbproj` file has errors, so the forms cannot be changed.
+  final String formsNeedProjectFile;
 
   /// `{0}` the control, `{1}` the code file, `{2}` the lines.
   final String nameUsedInCode;
@@ -748,7 +796,34 @@ class IdeStrings {
     properties: 'Properties',
     integerRange: '{0} takes a whole number from {1} to {2}.',
     numberNeeded: '{0} takes a number, such as 1.5.',
-    formNameIsFile: 'A form is named after its file. Renaming a form comes with several forms in one project (stage 2).',
+    formNameIsFile:
+        'A form is named after its files. To rename it, use ⋮ next to the '
+        'form in the project list.',
+    addForm: 'Add Form',
+    formActions: 'Form',
+    startupFormTag: 'starts',
+    makeStartupForm: 'Start with This Form',
+    renameForm: 'Rename Form…',
+    deleteForm: 'Delete Form…',
+    formNameLabel: 'Form name',
+    formNameNotUsable:
+        '"{0}" cannot name a form. Use English letters, digits and _, '
+        'starting with a letter; not a keyword, and not Form.',
+    formNameTaken: 'The project has a form named {0} already.',
+    formNameUsedInCode:
+        'The code uses the name {0} already ({1}), so a form cannot take '
+        'it: that code would turn into a use of the form. Choose another '
+        'name.',
+    deleteFormQuestion:
+        'Delete {0}? Its design and its code are taken out of the project; '
+        'on the disk, its files are deleted when the project is saved.',
+    deleteFormUses:
+        'The code uses {0} ({1}): those lines will be errors until they are '
+        'changed.',
+    lastFormKept: 'A project needs a form, so {0} cannot be deleted.',
+    formsNeedProjectFile:
+        'The project file has errors, so its forms cannot be changed. Fix '
+        'the .gbproj file first.',
     nameUsedInCode:
         '{0} is used in {1} on lines {2}; a new name changes those lines too.',
     deleteUsedControl:
@@ -1009,7 +1084,23 @@ class IdeStrings {
     properties: '속성',
     integerRange: '{0} 속성에는 정수만 쓸 수 있습니다. 범위: {1} ~ {2}',
     numberNeeded: '{0} 속성에는 1.5 같은 숫자만 쓸 수 있습니다.',
-    formNameIsFile: '폼 이름은 파일 이름입니다. 폼 이름 바꾸기는 한 프로젝트에 폼을 여러 개 두는 2단계에서 합니다.',
+    formNameIsFile: '폼 이름은 파일 이름입니다. 이름을 바꾸려면 프로젝트 목록에서 폼 옆의 ⋮ 단추를 누릅니다.',
+    addForm: '폼 추가',
+    formActions: '폼',
+    startupFormTag: '시작',
+    makeStartupForm: '이 폼으로 시작',
+    renameForm: '폼 이름 바꾸기…',
+    deleteForm: '폼 지우기…',
+    formNameLabel: '폼 이름',
+    formNameNotUsable: '"{0}" 이름은 폼 이름으로 쓸 수 없습니다. 영문자로 시작하는 영문자, 숫자, _만 쓰고, 키워드와 Form은 쓸 수 없습니다.',
+    formNameTaken: '프로젝트에 {0} 폼이 이미 있습니다.',
+    formNameUsedInCode: '코드가 이미 {0} 이름을 씁니다({1}). 그 코드가 폼을 가리키게 되므로 폼 이름으로 쓸 수 없습니다. 다른 이름을 골라 주세요.',
+    deleteFormQuestion:
+        '{0} 폼을 지울까요? 디자인과 코드가 프로젝트에서 빠지고, 디스크의 파일은 프로젝트를 저장할 때 지워집니다.',
+    deleteFormUses: '코드가 {0} 폼을 씁니다({1}). 그 줄은 고칠 때까지 오류가 됩니다.',
+    lastFormKept: '프로젝트에는 폼이 하나는 있어야 해서 {0} 폼을 지울 수 없습니다.',
+    formsNeedProjectFile:
+        '프로젝트 파일에 오류가 있어서 폼을 바꿀 수 없습니다. .gbproj 파일을 먼저 고쳐 주세요.',
     nameUsedInCode: '{0} 이름은 {1} 파일의 {2}번째 줄에서 쓰입니다. 새 이름으로 바꾸면 그 줄도 함께 바뀝니다.',
     deleteUsedControl: '{0} 컨트롤은 {1} 파일의 {2}번째 줄에서 쓰입니다. 지우면 그 줄은 오류가 됩니다.',
     deleteHandlersStay: '이벤트 처리기({0})는 코드에 남지만, 더는 실행되지 않습니다.',

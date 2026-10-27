@@ -122,4 +122,29 @@ End Sub
     expect(none.lines, isEmpty);
     expect(none.handlers, isEmpty);
   });
+
+  group('forms (D88)', () {
+    const source = 'Sub btnGo_Click()\n'
+        '    FORM2.Show\n'
+        '    Debug.Print("Form2") \' Form2\n'
+        '    lblX.Form2 = Form2.txtName.Text\n'
+        '    Form_Load\n'
+        'End Sub\n';
+
+    test('formUses finds the form named, not strings, comments or members', () {
+      expect(formUses(source, 'Form2'), [2, 4]);
+      expect(formUses(source, 'Form3'), isEmpty);
+    });
+
+    test('renameFormInCode renames those uses only', () {
+      expect(
+          renameFormInCode(source, 'form2', 'Settings'),
+          'Sub btnGo_Click()\n'
+          '    Settings.Show\n'
+          '    Debug.Print("Form2") \' Form2\n'
+          '    lblX.Form2 = Settings.txtName.Text\n'
+          '    Form_Load\n'
+          'End Sub\n');
+    });
+  });
 }

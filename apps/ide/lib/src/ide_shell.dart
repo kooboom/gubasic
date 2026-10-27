@@ -357,6 +357,42 @@ class _IdeShellState extends State<IdeShell> {
     builder: (context) => PicturesDialog(controller: widget.controller),
   );
 
+  /// Opens [file], a form or code file, as a click in the list does.
+  void _openFile(String? file) {
+    if (file == null || !mounted) return;
+    setState(() {
+      _file = file;
+      _showRun = false;
+    });
+    _focus.requestFocus();
+  }
+
+  /// File → Add Form (D88): the new form opens in the designer.
+  Future<void> _addForm() async =>
+      _openFile(await widget.controller.addForm(context));
+
+  /// What a form's ⋮ menu in the project list does (D88).
+  Future<void> _formAction(String form, String action) async {
+    final controller = widget.controller;
+    switch (action) {
+      case 'startup':
+        controller.makeStartupForm(form);
+      case 'rename':
+        // The file open before: renaming takes it away.
+        final open = _file;
+        final file = await controller.renameForm(context, form);
+        if (file != null &&
+            open.toLowerCase().startsWith('${form.toLowerCase()}.')) {
+          _openFile(file);
+        }
+      case 'delete':
+        if (await controller.deleteForm(context, form) &&
+            !_project.files.containsKey(_file)) {
+          _openFile('${controller.forms.first}.form.yaml');
+        }
+    }
+  }
+
   void _save() => widget.controller.save(context);
   void _saveAs() => widget.controller.saveAs(context);
 
@@ -386,6 +422,11 @@ class _IdeShellState extends State<IdeShell> {
         item(s.save, _save, LogicalKeyboardKey.keyS),
         item(s.saveAs, _saveAs, LogicalKeyboardKey.keyS, shift: true),
         const Divider(),
+        MenuItemButton(
+          key: const ValueKey('menu.addForm'),
+          onPressed: _running ? null : _addForm,
+          child: Text(s.addForm),
+        ),
         MenuItemButton(
           key: const ValueKey('menu.pictures'),
           onPressed: _running ? null : _pictures,
@@ -477,6 +518,13 @@ class _IdeShellState extends State<IdeShell> {
         ListTile(
           dense: true,
           title: Text(f),
+          // A form's actions, and which one starts (D88).
+          subtitle:
+              f == '${widget.controller.startupForm}.form.yaml' &&
+                  widget.controller.forms.length > 1
+              ? Text(widget.strings.startupFormTag)
+              : null,
+          trailing: _formMenu(f),
           // The open file in the accent colour, not a grey (D68).
           selectedColor: Theme.of(context).colorScheme.primary,
           selectedTileColor: Theme.of(context).colorScheme.primaryContainer,
@@ -513,6 +561,42 @@ class _IdeShellState extends State<IdeShell> {
       ],
     ],
   );
+
+  /// The ⋮ menu of a form's file in the project list (D88); null for
+  /// other files.
+  Widget? _formMenu(String file) {
+    final form = _formOf(file);
+    if (form == null) return null;
+    final s = widget.strings;
+    return PopupMenuButton<String>(
+      key: ValueKey('files.form.$form'),
+      tooltip: s.formActions,
+      enabled: !_running,
+      icon: const Icon(Icons.more_vert, size: 18),
+      onSelected: (action) => _formAction(form, action),
+      itemBuilder: (_) => [
+        PopupMenuItem(
+          value: 'startup',
+          enabled: form != widget.controller.startupForm,
+          child: Text(s.makeStartupForm),
+        ),
+        PopupMenuItem(value: 'rename', child: Text(s.renameForm)),
+        PopupMenuItem(
+          value: 'delete',
+          enabled: widget.controller.forms.length > 1,
+          child: Text(s.deleteForm),
+        ),
+      ],
+    );
+  }
+
+  /// The form [file] is the design of (`Form2.form.yaml` → `Form2`), when
+  /// the project lists it; null for other files.
+  String? _formOf(String file) {
+    if (!file.endsWith('.form.yaml')) return null;
+    final form = file.substring(0, file.length - '.form.yaml'.length);
+    return widget.controller.forms.contains(form) ? form : null;
+  }
 
   /// The last request to the code editor to go to a handler.
   GoTo? _goTo;

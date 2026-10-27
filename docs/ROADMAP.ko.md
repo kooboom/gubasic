@@ -40,7 +40,7 @@ IDE 안에서 완결되는 비주얼 베이직의 핵심 경험입니다.
 
 ## 2단계 — 진짜 앱 만들기 (다음)
 
-계획, 단계, 결정: [STAGE2_PLAN.ko.md](STAGE2_PLAN.ko.md) (D79–D87).
+계획, 단계, 결정: [STAGE2_PLAN.ko.md](STAGE2_PLAN.ko.md) (D79–D91).
 
 - [x] 실행 창을 IDE와 플레이어가 함께 쓰는 패키지로 (2-1)
 - [x] **플레이어**: 프로젝트 하나를 혼자 도는 앱으로. CI가 웹, macOS, Windows로 빌드. 크기와 속도 측정 (2-2)
@@ -52,7 +52,8 @@ IDE 안에서 완결되는 비주얼 베이직의 핵심 경험입니다.
 - [ ] `OptionButton`: 묶음 안에서 하나만 고르는 라디오 버튼과 묶음을 만드는 방법(Visual Basic 6에서는 폼 위의 옵션 버튼이 한 묶음이고, 프레임마다 또 한 묶음: [Microsoft](https://learn.microsoft.com/en-us/previous-versions/visualstudio/visual-basic-6/aa241737(v=vs.60))). 퀴즈의 보기에 자연스러운 컨트롤이며, 1단계의 퀴즈는 ListBox를 씀
 - [ ] 학생 앱의 메뉴: 메뉴 막대와 오른쪽 클릭 메뉴(Visual Basic 6의 [메뉴 편집기](https://learn.microsoft.com/en-us/previous-versions/visualstudio/visual-studio-2008/62aawczc(v=vs.90))와 [PopupMenu](https://learn.microsoft.com/en-us/previous-versions/visualstudio/visual-basic-6/aa716251(v=vs.60)), Visual Basic .NET의 `ContextMenuStrip`(같은 출처)에 해당)
 - [ ] `Database` (SQLite)와 `Http` + JSON
-- [ ] 여러 폼과 플랫폼별 `Form2.Show` 동작 (2-7, 2-8). 이때 폼 하나만 따로 저장하는 기능(Visual Basic 6의 "Form1을 다른 이름으로 저장")을 둘지 정함(그때까지 저장은 프로젝트 전체 저장, D32)
+- [x] 여러 폼: `Form2.Show`, `ShowDialog`, `Hide`, `Close`. 모든 플랫폼에서 창 하나 안에 겹쳐 보임(2-7, D88–D90). IDE에서 폼 추가, 이름 바꾸기, 지우기(2-8, D91). 폼 하나만 따로 저장하지는 않음: 저장은 프로젝트 전체를 저장함(D90)
+- [ ] 모듈 파일(`Module1.gbas`)과 `Sub Main`으로 시작하기(2-8 다음, D90)
 - [ ] `Timer` 컨트롤 (2-9)과 `KeyDown` / `KeyUp` (2-10) (D82)
 - [ ] `ByRef`
 

@@ -96,3 +96,44 @@ String renameInCode(String source, String name, String newName) {
   out.write(source.substring(at));
   return out.toString();
 }
+
+/// The lines of [source] that use form [name] (D88): the name, in any
+/// case, not after a `.` (`Form2.Show`, `Form2.txtName.Text`). Comments,
+/// strings and members of the same name (`lblForm2.Form2`) do not count.
+/// Sorted, each line once. The IDE deletes a form only after saying where
+/// the code uses it, and renames one only to a name the code does not use.
+List<int> formUses(String source, String name) {
+  final lower = name.toLowerCase();
+  final tokens = lex(source).tokens;
+  final lines = <int>{
+    for (var i = 0; i < tokens.length; i++)
+      if (tokens[i].kind == TokenKind.identifier &&
+          tokens[i].text.toLowerCase() == lower &&
+          (i == 0 || tokens[i - 1].kind != TokenKind.dot))
+        tokens[i].line,
+  };
+  return lines.toList()..sort();
+}
+
+/// [source] with form [name] renamed to [newName] (D88): each use
+/// [formUses] finds gets [newName]. Handlers of the form's own events are
+/// named `Form_Load` whatever the form's name, so they stay.
+String renameFormInCode(String source, String name, String newName) {
+  final lower = name.toLowerCase();
+  final tokens = lex(source).tokens;
+  final out = StringBuffer();
+  var at = 0;
+  for (var i = 0; i < tokens.length; i++) {
+    final t = tokens[i];
+    if (t.kind != TokenKind.identifier || t.text.toLowerCase() != lower) {
+      continue;
+    }
+    if (i > 0 && tokens[i - 1].kind == TokenKind.dot) continue;
+    out
+      ..write(source.substring(at, t.offset))
+      ..write(newName);
+    at = t.offset + t.text.length;
+  }
+  out.write(source.substring(at));
+  return out.toString();
+}

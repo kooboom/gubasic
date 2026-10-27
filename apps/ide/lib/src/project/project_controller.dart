@@ -15,6 +15,7 @@ import 'last_project.dart';
 import 'new_project.dart';
 import 'open_project.dart';
 import 'picture_reduce.dart';
+import 'project_forms.dart';
 import 'project_pictures.dart';
 import 'project_zip.dart';
 import 'app_export.dart';
@@ -1454,6 +1455,99 @@ class ProjectController extends ChangeNotifier {
     ),
   );
 
+  // -------------------------------------------------------------------------
+  // The project's forms (D88)
+
+  /// The open project's forms, as its `.gbproj` file lists them.
+  List<String> get forms => projectForms(_current.files);
+
+  /// The form the open project starts with.
+  String? get startupForm => startupFormOf(_current.files);
+
+  /// File → Add Form: a new empty form, `Form2` or the next free name, of
+  /// the startup form's size. Gives its form file, for the IDE to open;
+  /// null when the `.gbproj` file has errors (said).
+  Future<String?> addForm(BuildContext context) async {
+    final project = _current;
+    final added = withFormAdded(project.files, newFormName(project.files));
+    if (added == null) {
+      await _tell(context, strings.formsNeedProjectFile);
+      return null;
+    }
+    final name = projectForms(added).last;
+    project.replaceFiles(added);
+    return '$name.form.yaml';
+  }
+
+  /// Asks for a new name for [form] and renames it, its files and its uses
+  /// in the code. Gives its new form file; null when it was not renamed.
+  Future<String?> renameForm(BuildContext context, String form) async {
+    final project = _current;
+    if (forms.isEmpty) {
+      await _tell(context, strings.formsNeedProjectFile);
+      return null;
+    }
+    final name = await showDialog<String>(
+      context: context,
+      builder: (_) => _FormNameDialog(
+        strings: strings,
+        files: project.files,
+        form: form,
+        describe: _describeFormName,
+      ),
+    );
+    if (name == null || name == form) return null;
+    project.replaceFiles(withFormRenamed(project.files, form, name));
+    return '$name.form.yaml';
+  }
+
+  String _describeFormName(FormNameRefused refused) => switch (refused) {
+    FormNameNotUsable(:final name) => strings.formNameNotUsable.replaceAll(
+      '{0}',
+      name,
+    ),
+    FormNameTaken(:final name) => strings.formNameTaken.replaceAll('{0}', name),
+    FormNameUsedInCode(:final name, :final uses) =>
+      strings.formNameUsedInCode
+          .replaceAll('{0}', name)
+          .replaceAll('{1}', uses.join(', ')),
+  };
+
+  /// Deletes [form] after asking, and saying where the code uses it; the
+  /// last form is kept. True when it was deleted.
+  Future<bool> deleteForm(BuildContext context, String form) async {
+    final project = _current;
+    if (forms.isEmpty) {
+      await _tell(context, strings.formsNeedProjectFile);
+      return false;
+    }
+    if (forms.length == 1) {
+      await _tell(context, strings.lastFormKept.replaceAll('{0}', form));
+      return false;
+    }
+    final uses = formUsesIn(project.files, form);
+    final go = await _confirm(
+      context,
+      [
+        strings.deleteFormQuestion.replaceAll('{0}', form),
+        if (uses.isNotEmpty)
+          strings.deleteFormUses
+              .replaceAll('{0}', form)
+              .replaceAll('{1}', uses.join(', ')),
+      ].join('\n\n'),
+      strings.deleteForm.replaceAll('…', ''),
+    );
+    if (!go) return false;
+    project.replaceFiles(withFormDeleted(project.files, form));
+    return true;
+  }
+
+  /// The project starts with [form].
+  void makeStartupForm(String form) {
+    if (forms.isEmpty) return;
+    _current.replaceFiles(withStartupForm(_current.files, form));
+  }
+
   Future<bool> _confirm(
     BuildContext context,
     String message,
@@ -1476,6 +1570,79 @@ class ProjectController extends ChangeNotifier {
         ),
       ) ??
       false;
+}
+
+/// Asks for a form's new name (D88); the OK button waits for one the form
+/// can take, and the field says why another cannot.
+class _FormNameDialog extends StatefulWidget {
+  const _FormNameDialog({
+    required this.strings,
+    required this.files,
+    required this.form,
+    required this.describe,
+  });
+
+  final IdeStrings strings;
+  final Map<String, String> files;
+  final String form;
+  final String Function(FormNameRefused) describe;
+
+  @override
+  State<_FormNameDialog> createState() => _FormNameDialogState();
+}
+
+class _FormNameDialogState extends State<_FormNameDialog> {
+  late final _field = TextEditingController(
+    text: widget.form,
+  )..selection = TextSelection(baseOffset: 0, extentOffset: widget.form.length);
+
+  @override
+  void dispose() {
+    _field.dispose();
+    super.dispose();
+  }
+
+  FormNameRefused? get _refused =>
+      formNameRefusal(widget.files, _field.text, from: widget.form);
+
+  void _ok() {
+    if (_refused == null) Navigator.pop(context, _field.text);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final s = widget.strings;
+    final refused = _refused;
+    return AlertDialog(
+      title: Text(s.renameForm.replaceAll('…', '')),
+      content: SizedBox(
+        width: 440,
+        child: TextField(
+          key: const ValueKey('formName.field'),
+          controller: _field,
+          autofocus: true,
+          decoration: InputDecoration(
+            labelText: s.formNameLabel,
+            errorText: refused == null ? null : widget.describe(refused),
+            errorMaxLines: 4,
+          ),
+          onChanged: (_) => setState(() {}),
+          onSubmitted: (_) => _ok(),
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text(s.runtime.cancel),
+        ),
+        FilledButton(
+          key: const ValueKey('formName.ok'),
+          onPressed: refused == null ? _ok : null,
+          child: Text(s.runtime.ok),
+        ),
+      ],
+    );
+  }
 }
 
 /// Asks for a project's name; the OK button waits for a usable one.
