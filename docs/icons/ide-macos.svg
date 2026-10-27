@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <!-- B: a bold G whose inner bar is the Run triangle (F5).
+       macOS: shrunk to an 824 px body with a 100 px margin and a shadow, as other macOS app icons (D85). -->
+  <defs>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="125%">
+      <feDropShadow dx="0" dy="10.87" stdDeviation="5.44" flood-color="#000000" flood-opacity="0.3"/>
+    </filter>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#3B6EA5"/>
+      <stop offset="1" stop-color="#24476E"/>
+    </linearGradient>
+  </defs>
+  <g transform="translate(512 512) scale(0.919643) translate(-512 -512)">
+    <rect x="64" y="64" width="896" height="896" rx="201.6" fill="url(#bg)" filter="url(#shadow)"/>
+    <path d="M760 340 A300 300 0 1 0 812 560 L812 520 L560 520" fill="none" stroke="#FFFFFF" stroke-width="120" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M470 420 L470 620 L630 520 Z" fill="#F2C94C" stroke="#F2C94C" stroke-width="30" stroke-linejoin="round"/>
+  </g>
+</svg>
