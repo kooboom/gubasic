@@ -658,6 +658,14 @@ End Sub
     End Sub
     ```
 
+  - **`DialogResult`**(DESIGN.ko.md D103): `Form2.ShowDialog()`는 대화상자가 어떻게 닫혔는지 주고, `DialogResult.OK`, `.Cancel`, `.Yes`, `.No`, `.None`과 비교합니다. `ShowDialog`로 보인 폼에서 `Me.DialogResult`를 정하면 `Close`처럼 그 자리에서 닫힙니다(처리기는 끝까지 실행됨). 이 값 없이 닫히면 `Cancel`을 줍니다. 숨겼다가 다시 보인 대화상자는 `None`으로 시작합니다.
+
+    ```vb
+    If Form2.ShowDialog() = DialogResult.OK Then
+        lblName.Caption = Form2.txtName.Text
+    End If
+    ```
+
   - 다른 폼의 멤버에서 타입을 얻는 변수(`Public n = Form2.Score`)는 다른 폼에서 타입을 모릅니다. `Public n As Integer = Form2.Score`처럼 타입을 적어 주세요.
   - Visual Basic 6의 `Unload Form2`와 `Load Form2`는 `Form2.Close`와 `Form2.Show`이고(P024, P025), `Show vbModal`은 `ShowDialog`입니다(A039). 이미 보이는 폼에 `ShowDialog`를 부르면 프로그램이 멈춥니다(R015).
 - **객체로서의 컨트롤**, 곧 `Control` 타입, `Me.Controls`, `TypeOf`, `CType`, `New`로 만드는 컨트롤은 11.4절에 있습니다.
@@ -666,7 +674,7 @@ End Sub
 
 | 컨트롤 | 속성 | 이벤트 |
 |---|---|---|
-| `Form` | `Caption` (`String`), `Width`, `Height` (`Integer`), `KeyPreview` (`Boolean`), `Controls`(11.4절) | `Load`, `Resize`, `Closed`, `KeyDown(e As KeyEventArgs)`, `KeyUp(e As KeyEventArgs)` |
+| `Form` | `Caption` (`String`), `Width`, `Height` (`Integer`), `KeyPreview` (`Boolean`), `DialogResult` (`Integer`, 코드에서만 정함), `Controls`(11.4절). 메서드: `Show()`, `ShowDialog()`(`DialogResult`를 줌), `Hide()`, `Close()` | `Load`, `Resize`, `Closed`, `KeyDown(e As KeyEventArgs)`, `KeyUp(e As KeyEventArgs)` |
 | `Button` | `Caption` (`String`), `Left`, `Top`, `Width`, `Height` (`Integer`) | `Click` |
 | `Label` | `Caption` (`String`), `Left`, `Top`, `Width`, `Height` (`Integer`) | `Click` |
 | `TextBox` | `Text` (`String`), `Left`, `Top`, `Width`, `Height` (`Integer`) | `Changed` |

@@ -322,6 +322,24 @@ const parityCases = <(
     false,
   ),
   (
+    "forms_dialogresult",
+    "' ShowDialog gives how the dialog was closed (D103): the DialogResult it\n' set, which closes it at once, or Cancel when it closed without one.\nSub btnAsk_Click()\n    Dim answer As Integer = Form2.ShowDialog()\n    Select Case answer\n        Case DialogResult.OK\n            Debug.Print(\"OK: \" & Form2.txtName.Text)\n        Case DialogResult.Cancel\n            Debug.Print(\"Cancelled\")\n        Case Else\n            Debug.Print(\"Answer \" & answer)\n    End Select\nEnd Sub\n",
+    [],
+    "Forms: Form1\n> btnAsk.Click\nForms: Form1 > Form2 (dialog)\n> txtName.Type \"Kim\"\n> btnOK.Click\nSet Form2.Form.DialogResult: 1\nForms: Form1\nDebug.Print: Form2 closed\nDebug.Print: still runs after closing; Form2 was 1\nDebug.Print: OK: Kim\n> btnAsk.Click\nForms: Form1 > Form2 (dialog)\n> btnNo.Click\nSet Form2.Form.DialogResult: 7\nForms: Form1\nDebug.Print: Form2 closed\nDebug.Print: Answer 7\n> btnAsk.Click\nForms: Form1 > Form2 (dialog)\n> btnCancel.Click\nForms: Form1\nDebug.Print: Form2 closed\nDebug.Print: Cancelled\n> Close\nClosed\n",
+    "formatVersion: 1\ncontrols:\n  - { name: btnAsk, type: Button, properties: { Caption: Ask } }\n",
+    "btnAsk.Click\ntxtName.Type \"Kim\"\nbtnOK.Click\nbtnAsk.Click\nbtnNo.Click\nbtnAsk.Click\nbtnCancel.Click\nClose\n",
+    null,
+    [],
+    [
+      (
+        "Form2",
+        "formatVersion: 1\nproperties:\n  Caption: Name\ncontrols:\n  - { name: txtName, type: TextBox }\n  - { name: btnOK, type: Button, properties: { Caption: OK, Top: 40 } }\n  - { name: btnNo, type: Button, properties: { Caption: \"No\", Top: 40, Left: 100 } }\n  - { name: btnCancel, type: Button, properties: { Caption: Cancel, Top: 40, Left: 200 } }\n",
+        "Sub btnOK_Click()\n    Me.DialogResult = DialogResult.OK\n    Debug.Print(\"still runs after closing; Form2 was \" & Me.DialogResult)\nEnd Sub\n\nSub btnNo_Click()\n    Me.DialogResult = DialogResult.No\nEnd Sub\n\nSub btnCancel_Click()\n    Me.Close\nEnd Sub\n\nSub Form_Closed()\n    Debug.Print(\"Form2 closed\")\nEnd Sub\n"
+      ),
+    ],
+    false,
+  ),
+  (
     "forms_error",
     "' A run-time error in another form's code names that form's file\n' (docs/DESIGN.md D88).\nSub btnGo_Click()\n    Form2.Show\nEnd Sub\n",
     [],

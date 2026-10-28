@@ -1,0 +1,25 @@
+Forms: Form1
+> btnAsk.Click
+Forms: Form1 > Form2 (dialog)
+> txtName.Type "Kim"
+> btnOK.Click
+Set Form2.Form.DialogResult: 1
+Forms: Form1
+Debug.Print: Form2 closed
+Debug.Print: still runs after closing; Form2 was 1
+Debug.Print: OK: Kim
+> btnAsk.Click
+Forms: Form1 > Form2 (dialog)
+> btnNo.Click
+Set Form2.Form.DialogResult: 7
+Forms: Form1
+Debug.Print: Form2 closed
+Debug.Print: Answer 7
+> btnAsk.Click
+Forms: Form1 > Form2 (dialog)
+> btnCancel.Click
+Forms: Form1
+Debug.Print: Form2 closed
+Debug.Print: Cancelled
+> Close
+Closed

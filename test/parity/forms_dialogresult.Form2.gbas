@@ -1,0 +1,16 @@
+Sub btnOK_Click()
+    Me.DialogResult = DialogResult.OK
+    Debug.Print("still runs after closing; Form2 was " & Me.DialogResult)
+End Sub
+
+Sub btnNo_Click()
+    Me.DialogResult = DialogResult.No
+End Sub
+
+Sub btnCancel_Click()
+    Me.Close
+End Sub
+
+Sub Form_Closed()
+    Debug.Print("Form2 closed")
+End Sub

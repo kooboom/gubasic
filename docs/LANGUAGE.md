@@ -658,6 +658,14 @@ End Sub
     End Sub
     ```
 
+  - **`DialogResult`** (DESIGN.md D103): `Form2.ShowDialog()` gives how the dialog was closed, compared with `DialogResult.OK`, `.Cancel`, `.Yes`, `.No` or `.None`. Setting `Me.DialogResult` while the form is shown by `ShowDialog` closes it at once, as `Close` does (its handler goes on to its end); closed without one, it gives `Cancel`. A dialog hidden and shown again starts with `None`.
+
+    ```vb
+    If Form2.ShowDialog() = DialogResult.OK Then
+        lblName.Caption = Form2.txtName.Text
+    End If
+    ```
+
   - A variable whose type comes from another form's member is not known to the other forms (`Public n = Form2.Score`): give it a type, `Public n As Integer = Form2.Score`.
   - Visual Basic 6's `Unload Form2` and `Load Form2` are `Form2.Close` and `Form2.Show` (P024, P025), and `Show vbModal` is `ShowDialog` (A039). `ShowDialog` of a form shown already stops the program (R015).
 - **Controls as objects** — the type `Control`, `Me.Controls`, `TypeOf`, `CType` and controls made with `New` — are in §11.4.
@@ -666,7 +674,7 @@ End Sub
 
 | Control | Properties | Events |
 |---|---|---|
-| `Form` | `Caption` (`String`); `Width`, `Height` (`Integer`); `KeyPreview` (`Boolean`); `Controls` (§11.4) | `Load`, `Resize`, `Closed`, `KeyDown(e As KeyEventArgs)`, `KeyUp(e As KeyEventArgs)` |
+| `Form` | `Caption` (`String`); `Width`, `Height` (`Integer`); `KeyPreview` (`Boolean`); `DialogResult` (`Integer`, set only in code); `Controls` (§11.4). Methods: `Show()`, `ShowDialog()` (gives a `DialogResult`), `Hide()`, `Close()` | `Load`, `Resize`, `Closed`, `KeyDown(e As KeyEventArgs)`, `KeyUp(e As KeyEventArgs)` |
 | `Button` | `Caption` (`String`); `Left`, `Top`, `Width`, `Height` (`Integer`) | `Click` |
 | `Label` | `Caption` (`String`); `Left`, `Top`, `Width`, `Height` (`Integer`) | `Click` |
 | `TextBox` | `Text` (`String`); `Left`, `Top`, `Width`, `Height` (`Integer`) | `Changed` |

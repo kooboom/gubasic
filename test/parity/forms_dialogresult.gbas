@@ -1,0 +1,13 @@
+' ShowDialog gives how the dialog was closed (D103): the DialogResult it
+' set, which closes it at once, or Cancel when it closed without one.
+Sub btnAsk_Click()
+    Dim answer As Integer = Form2.ShowDialog()
+    Select Case answer
+        Case DialogResult.OK
+            Debug.Print("OK: " & Form2.txtName.Text)
+        Case DialogResult.Cancel
+            Debug.Print("Cancelled")
+        Case Else
+            Debug.Print("Answer " & answer)
+    End Select
+End Sub

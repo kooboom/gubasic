@@ -21,6 +21,9 @@ properties:
   # Whether KeyDown and KeyUp come also while a TextBox is typed in, before
   # the TextBox gets the key (D101).
   - { name: KeyPreview, type: Boolean, default: false }
+  # How a dialog was closed (D103): DialogResult.OK, .Cancel, .Yes, .No or
+  # .None (0). Set while the form is shown by ShowDialog, it closes it.
+  - { name: DialogResult, type: Integer, min: 0, max: 7, default: 0, designTime: false }
 events:
   - Load()
   - Resize()
@@ -31,7 +34,7 @@ events:
   - KeyUp(e As KeyEventArgs)
 methods:
   - Show()
-  - ShowDialog()
+  - ShowDialog() As Integer
   - Hide()
   - Close()
 # Names other versions of BASIC use, pointed to GuBASIC's (A036,

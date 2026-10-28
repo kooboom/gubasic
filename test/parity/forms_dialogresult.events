@@ -1,0 +1,8 @@
+btnAsk.Click
+txtName.Type "Kim"
+btnOK.Click
+btnAsk.Click
+btnNo.Click
+btnAsk.Click
+btnCancel.Click
+Close

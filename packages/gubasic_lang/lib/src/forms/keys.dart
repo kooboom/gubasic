@@ -26,6 +26,16 @@ final Map<String, int> keyCodes = {
   for (var f = 1; f <= 12; f++) 'F$f': 111 + f,
 };
 
+/// The answers a dialog form gives (docs/DESIGN.md D103), by name, with
+/// Visual Basic .NET's numbers: `DialogResult.OK` is 1.
+const Map<String, int> dialogResults = {
+  'None': 0,
+  'OK': 1,
+  'Cancel': 2,
+  'Yes': 6,
+  'No': 7,
+};
+
 /// [keyCodes] by lower-case name.
 final Map<String, (String, int)> keyCodesByLowerName = {
   for (final MapEntry(:key, :value) in keyCodes.entries)

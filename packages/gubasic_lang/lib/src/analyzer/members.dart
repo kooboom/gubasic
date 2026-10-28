@@ -149,6 +149,11 @@ Map<String, MemberSpec> builtinObjectMembers(String name) => switch (name) {
           'maxvalue': const MemberSpec.property('MaxValue', _i),
           'minvalue': const MemberSpec.property('MinValue', _i),
         },
+      // How a dialog form was closed (D103): DialogResult.OK is 1.
+      'DialogResult' => {
+          for (final name in dialogResults.keys)
+            name.toLowerCase(): MemberSpec.property(name, _i),
+        },
       // The keys KeyDown and KeyUp tell apart (D101): Keys.Left is 37.
       'Keys' => {
           for (final name in keyCodes.keys)

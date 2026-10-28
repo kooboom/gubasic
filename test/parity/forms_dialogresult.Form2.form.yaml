@@ -1,0 +1,8 @@
+formatVersion: 1
+properties:
+  Caption: Name
+controls:
+  - { name: txtName, type: TextBox }
+  - { name: btnOK, type: Button, properties: { Caption: OK, Top: 40 } }
+  - { name: btnNo, type: Button, properties: { Caption: "No", Top: 40, Left: 100 } }
+  - { name: btnCancel, type: Button, properties: { Caption: Cancel, Top: 40, Left: 200 } }

@@ -116,6 +116,7 @@ void main() {
         'Caption',
         'Close',
         'Controls',
+        'DialogResult',
         'Height',
         'Hide',
         'KeyPreview',

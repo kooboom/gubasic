@@ -539,10 +539,16 @@ class Interpreter {
 
   /// `ShowDialog`: shows [form] in front as a dialog and waits until it
   /// goes (D88). While it waits, the dialog's handlers run, as in
-  /// DoEvents (D28).
-  Future<void> _showDialog(_FormRun form, Node at) async {
+  /// DoEvents (D28). Gives its DialogResult then; Cancel when it went
+  /// without one (D103).
+  Future<int> _showDialog(_FormRun form, Node at) async {
     if (_shown.contains(form)) {
       _fail(DiagnosticCode.dialogAlreadyShown, at, [form.name]);
+    }
+    // A form hidden keeps its properties; one closed starts again anyway.
+    if (form.loaded &&
+        _formHost.getProperty(form.name, null, 'DialogResult') != 0) {
+      _formHost.setProperty(form.name, null, 'DialogResult', 0);
     }
     final gone = form.dialog = Completer<void>();
     await _show(form, dialog: true);
@@ -557,6 +563,9 @@ class Interpreter {
     }
     if (_ended != null) throw const _Abandoned();
     if (_stopRequested) throw const _Stop();
+    final result =
+        _formHost.getProperty(form.name, null, 'DialogResult') as int;
+    return result == 0 ? dialogResults['Cancel']! : result;
   }
 
   /// Takes [form] away from the forms shown; the program ends when none is
@@ -909,7 +918,9 @@ class Interpreter {
     final type = _a.types[target.target];
     if (type is ControlType) {
       final p = type.component.properties[target.name.name.toLowerCase()];
-      return p?.changeEvent != null;
+      // A form's DialogResult may close it (D103).
+      return p?.changeEvent != null ||
+          (type.component == formComponent && p?.name == 'DialogResult');
     }
     return type == GbType.object;
   }
@@ -996,6 +1007,11 @@ class Interpreter {
         final index = await _indexAsync(s.target);
         final changed = _assign(s.target, value, (_) => index);
         if (changed != null) await _runNow(changed.handler, changed.control);
+        final call = _pendingCall;
+        if (call != null) {
+          _pendingCall = null;
+          await call();
+        }
       case AddHandlerStmt():
         _addHandler(s, await _value(s.event.target));
       case ExpressionStmt():
@@ -1363,6 +1379,16 @@ class Interpreter {
     }
     final old = _raw(c, spec.name);
     _rawSet(c, spec.name, v);
+    if (c.isForm && spec.name == 'DialogResult' && v != 0) {
+      // Set while it is shown as a dialog, it closes it (D103).
+      final form = _formNamed(c.form)!;
+      if (_shownAsDialog.contains(form)) {
+        _pendingCall = () async {
+          await _close(form);
+          return null;
+        };
+      }
+    }
     final event = spec.changeEvent;
     if (event == null || old == v) return null;
     return _changeOf(c, event);
@@ -1593,10 +1619,7 @@ class Interpreter {
         return null;
       case ('Form', 'ShowDialog'):
         final form = _formNamed(c.form)!;
-        _pendingCall = () async {
-          await _showDialog(form, at);
-          return null;
-        };
+        _pendingCall = () async => GbInt.of(await _showDialog(form, at));
         return null;
       case ('Form', 'Hide'):
         _hide(_formNamed(c.form)!);
@@ -2027,6 +2050,10 @@ class Interpreter {
         return name == 'maxvalue' ? GbInt.maxValue : GbInt.minValue;
       case _BuiltinObject(name: 'Keys'):
         return GbInt.of(keyCodesByLowerName[name]!.$2);
+      case _BuiltinObject(name: 'DialogResult'):
+        return GbInt.of(dialogResults.entries
+            .firstWhere((e) => e.key.toLowerCase() == name)
+            .value);
       case GbKeyEvent k:
         switch (name) {
           case 'keycode':

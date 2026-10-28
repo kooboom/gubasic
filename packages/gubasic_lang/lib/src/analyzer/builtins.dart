@@ -173,4 +173,5 @@ const Map<String, String> builtinObjects = {
   'debug': 'Debug',
   'integer': 'Integer',
   'keys': 'Keys',
+  'dialogresult': 'DialogResult',
 };
