@@ -25,7 +25,7 @@ Someone who has made an app in the IDE can turn it into:
 
 The app looks and behaves exactly as it did when F5 ran it in the IDE, because it draws its forms with the same `gubasic_runtime` widgets (rule 6) and follows the same execution model (one handler at a time, modal dialogs, `DoEvents`; DESIGN §3).
 
-Who it was planned for: elementary school students and their teachers. The author corrected the audience on 2026-10-27 (DESIGN D92: beginner hobby developers, people who miss Visual Basic, people at work automating their own work); the choices below that rested on it are reviewed against D92. They were: no developer tools to install, no accounts to create, no command line.
+Who it was planned for: elementary school students and their teachers. The author corrected the audience on 2026-10-27 (DESIGN D92: beginner hobby developers, people who miss Visual Basic, people at work automating their own work); the choices below that rested on it were reviewed against D92 in D95. They were: no developer tools to install, no accounts to create, no command line.
 
 ## 2. Three ways to do it
 
@@ -61,7 +61,7 @@ Stage 2 ships apps with the player (B). The transpiler (A) stays the design's lo
 
 The user's computer has no Flutter. The ways that remain:
 
-| Way | Web | macOS | Windows | For the audience first planned (reviewed with D92) |
+| Way | Web | macOS | Windows | For the audience first planned (reviewed in D95) |
 |---|---|---|---|---|
 | **Player templates** (B): GuBASIC's CI builds the players for each release; the IDE adds the project | the IDE zips the web player and the project, in the browser too | the macOS IDE adds the project and signs the app again (ad-hoc, with the system's `codesign`) | any IDE adds the project folder next to the program | no tools, no accounts; works offline once the template is there |
 | Flutter downloaded by the IDE (A) | possible | needs Xcode as well | needs Visual Studio as well | too big and too technical |
@@ -107,7 +107,7 @@ Decided by the author on 2026-10-26.
 | # | Question | Decision |
 |---|---|---|
 | 1 | Which way: (A), (B) or (C)? | **(C)**: the player for stage 2, the transpiler planned again later; the hard rules stay, so the way to it stays open |
-| 2 | When does the transpiler come back? | When a benchmark of §7 is slower in the player than the criteria written there after step 2-2, or for extra components and the escape hatch; at the latest at the start of stage 3 |
+| 2 | When does the transpiler come back? | When a benchmark of §7 is slower in the player than the criteria written there after step 2-2, or for extra components and the escape hatch; at the latest at the start of stage 3 (at that start, D96 put it after the debugger) |
 | 3 | Android in stage 2? | **No**: an Android app changed after it is built must be signed again, with Android's own tool (`apksigner`, part of the Android SDK Build Tools: [Android Developers](https://developer.android.com/tools/apksigner)) and a key; it moves to stage 3, with the phone Player. **Stage 2 is done when one project ships to the web, macOS and Windows** |
 | 4 | Where do the player templates come from? | Not inside the IDE: downloaded once per version from the GitHub Release or Pages, and kept |
 | 5 | macOS export from Windows or the web? | **No**: only the macOS IDE exports macOS apps, since only it can sign them again |

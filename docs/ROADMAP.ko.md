@@ -40,7 +40,7 @@ IDE 안에서 완결되는 비주얼 베이직의 핵심 경험입니다.
 
 ## 2단계 — 진짜 앱 만들기 (완료, v0.2.0)
 
-프로젝트 하나를 웹, macOS, Windows에 출시할 수 있게 되어 끝났습니다(v0.2.0). 아래에서 아직 열린 항목은 3단계와 함께 다시 계획합니다.
+프로젝트 하나를 웹, macOS, Windows에 출시할 수 있게 되어 끝났습니다(v0.2.0). 열린 채 남은 항목은 3단계로 옮겼습니다(D96).
 
 계획, 단계, 결정: [STAGE2_PLAN.ko.md](STAGE2_PLAN.ko.md) (D79–D91).
 
@@ -48,30 +48,56 @@ IDE 안에서 완결되는 비주얼 베이직의 핵심 경험입니다.
 - [x] **플레이어**: 프로젝트 하나를 혼자 도는 앱으로. CI가 웹, macOS, Windows로 빌드. 크기와 속도 측정 (2-2)
 - [x] 형식 버전이 있고 여러 폼을 담을 수 있는 프로젝트 묶음, 앱 ID (2-3, D83)
 - [x] 파일 → 앱으로 내보내기: 웹 `.zip` (2-4, D84), Windows `.zip` (2-5, D86), macOS IDE에서 macOS `.zip` (2-6, D87)
-- [ ] 동일성 테스트 프로그램을 플레이어로도 돌리기
-- [ ] 레이아웃: `LayoutMode` (세로 / 가로 / 격자), `Dock`
-- [ ] `Handles` 절; 실행 중 컨트롤 생성
-- [ ] `OptionButton`: 묶음 안에서 하나만 고르는 라디오 버튼과 묶음을 만드는 방법(Visual Basic 6에서는 폼 위의 옵션 버튼이 한 묶음이고, 프레임마다 또 한 묶음: [Microsoft](https://learn.microsoft.com/en-us/previous-versions/visualstudio/visual-basic-6/aa241737(v=vs.60))). 퀴즈의 보기에 자연스러운 컨트롤이며, 1단계의 퀴즈는 ListBox를 씀
-- [ ] GuBASIC으로 만든 앱의 메뉴: 메뉴 막대와 오른쪽 클릭 메뉴(Visual Basic 6의 [메뉴 편집기](https://learn.microsoft.com/en-us/previous-versions/visualstudio/visual-studio-2008/62aawczc(v=vs.90))와 [PopupMenu](https://learn.microsoft.com/en-us/previous-versions/visualstudio/visual-basic-6/aa716251(v=vs.60)), Visual Basic .NET의 `ContextMenuStrip`(같은 출처)에 해당)
-- [ ] `Database` (SQLite)와 `Http` + JSON
 - [x] 여러 폼: `Form2.Show`, `ShowDialog`, `Hide`, `Close`. 모든 플랫폼에서 창 하나 안에 겹쳐 보임(2-7, D88–D90). IDE에서 폼 추가, 이름 바꾸기, 지우기(2-8, D91). 폼 하나만 따로 저장하지는 않음: 저장은 프로젝트 전체를 저장함(D90)
-- [ ] 모듈 파일(`Module1.gbas`)과 `Sub Main`으로 시작하기(2-8 다음, D90)
-- [ ] `Timer` 컨트롤 (2-9)과 `KeyDown` / `KeyUp` (2-10) (D82)
-- [ ] `ByRef`
 
 **완료 기준:** 프로젝트 하나를 웹, macOS, Windows에 출시할 수 있다.
 
-## 3단계 — 생태계
+## 3단계 — VB처럼, 업무에, 실제 도구로, 그리고 생태계
 
-- [ ] 트랜스파일러: GuBASIC → Dart → Flutter 프로젝트. CI에서 변환된 Dart로 동일성 테스트 묶음을 돌림. STAGE2_PLAN §7의 기준이 요구하면 더 일찍 (D79)
-- [ ] 트랜스파일러와 함께, 네이티브 빌드를 위한 Flutter SDK 내려받기와 GitHub Actions 템플릿
+릴리스 셋, 그다음 나머지(D94–D96). 순서는 GuBASIC의 대상(D92)을 따릅니다. 먼저 Visual Basic다운 작업 방식, 그다음 파일과 데이터로 하는 업무, 그다음 실제 개발 환경의 도구입니다.
+
+### v0.3 — VB처럼 쓰기
+
+- [ ] Visual Basic .NET처럼 컨트롤 배열을 대신하는 것(D95): 여러 컨트롤에 `Handles`, 이벤트를 낸 컨트롤 알기, 폼의 컨트롤을 반복문으로 돌기, 실행 중에 컨트롤 만들기
+- [ ] 컨트롤 배열이나 `On Error`를 쓰면 이 가운데 무엇으로 바꿀지 알려 주는 진단(D95)
+- [ ] `Timer` 컨트롤과 `KeyDown` / `KeyUp` (D82)
+- [ ] 모듈 파일(`Module1.gbas`)과 `Sub Main`으로 시작하기(D90)
+- [ ] 디자이너에서 여러 컨트롤 고르기, 복사하고 붙여넣기
+- [ ] 메뉴 편집기와 GuBASIC으로 만든 앱의 메뉴: 메뉴 막대와 오른쪽 클릭 메뉴(Visual Basic 6의 [메뉴 편집기](https://learn.microsoft.com/en-us/previous-versions/visualstudio/visual-studio-2008/62aawczc(v=vs.90))와 [PopupMenu](https://learn.microsoft.com/en-us/previous-versions/visualstudio/visual-basic-6/aa716251(v=vs.60)), Visual Basic .NET의 `ContextMenuStrip`(같은 출처)에 해당)
+- [ ] `DialogResult`
+- [ ] `OptionButton`: 묶음 안에서 하나만 고르는 라디오 버튼과 묶음을 만드는 방법(Visual Basic 6에서는 폼 위의 옵션 버튼이 한 묶음이고, 프레임마다 또 한 묶음: [Microsoft](https://learn.microsoft.com/en-us/previous-versions/visualstudio/visual-basic-6/aa241737(v=vs.60))). `Frame`, `ComboBox`
+- [ ] 프로젝트 탐색기: 폼으로 보기, 또는 디스크의 파일로 보기(D94)
+
+### v0.4 — 업무에 쓰기
+
+- [ ] 파일 열기·저장 대화상자, 텍스트 파일 읽고 쓰기
+- [ ] CSV 파일
+- [ ] 날짜·형식 함수(`DateAdd`, `DateDiff`, `Format`)
+- [ ] 표 컨트롤(DataGrid)
+- [ ] PDF 내보내기
+- [ ] 업무 자동화 예제: CSV 파일을 읽어 합계 내기(D95)
+
+### v0.5 — 실제 개발 도구
+
+- [ ] 디버거: 중단점, 그다음 한 줄씩 실행, 그다음 변수 보기, 그다음 직접 실행 창
+- [ ] `Database` (SQLite)와 `Http` + JSON
+
+### v0.5 다음
+
+- [ ] 트랜스파일러: GuBASIC → Dart → Flutter 프로젝트. CI에서 변환된 Dart로 동일성 테스트 묶음을 돌림. 디버거 다음이고, pub.dev 컴포넌트가 필요해지거나 STAGE2_PLAN §7의 기준을 넘는 프로그램이 생기면 앞당김(D79, D96)
+- [ ] 트랜스파일러와 함께, 네이티브 빌드를 위한 Flutter SDK 내려받기와 GitHub Actions 템플릿. 고르는 사람을 위해(D95)
+- [ ] 엑셀 파일을 데이터로(D92)
+- [ ] 인쇄
+- [ ] 소리, 그림 여러 장으로 하는 애니메이션
+- [ ] 레이아웃: `LayoutMode` (세로 / 가로 / 격자), `Dock`, 화면 크기별 레이아웃 덮어쓰기
+- [ ] `ByRef`
+- [ ] 동일성 테스트 프로그램을 플레이어로도 돌리기
 - [ ] 폰용 Player와 함께 Android 빌드 (D80)
 - [ ] iOS 빌드
 - [ ] 폰용 **GuBASIC Player**
 - [ ] `component.yaml` 어댑터를 통한 pub.dev 추가 컴포넌트
 - [ ] `Supabase`, `Firebase` 컴포넌트; 비밀 키 경고
 - [ ] 게시 메뉴: Vercel, Firebase Hosting, GitHub Pages, 개인 서버
-- [ ] 화면 크기별 레이아웃 덮어쓰기
 - [ ] 타입을 아는 자동완성
 - [ ] Dart 코드 삽입(비상구)
 
@@ -79,7 +105,6 @@ IDE 안에서 완결되는 비주얼 베이직의 핵심 경험입니다.
 
 아직 계획하지 않은 아이디어는 [IDEAS.ko.md](IDEAS.ko.md)에 따로 둡니다. 그 가운데 [어드벤처 게임 컨트롤](IDEAS.ko.md#어드벤처-게임-컨트롤)이 있습니다.
 
-- 디버거 (중단점, 한 줄씩 실행, 변수 감시)
 - 데이터 바인딩 (VB의 Data 컨트롤)
 - 패키지 API를 읽어 컴포넌트 어댑터 자동 생성
 - 사용자 정의 클래스
@@ -93,7 +118,6 @@ IDE 안에서 완결되는 비주얼 베이직의 핵심 경험입니다.
 
 - 클래스 상속, 사용자 정의 클래스 없음
 - 데이터 바인딩 / Data 컨트롤 없음
-- 오류 줄 강조 이상의 디버거 없음
 - `On Error`, `GoTo` 없음
 - 컨트롤 배열 없음
 - `Variant` 없음

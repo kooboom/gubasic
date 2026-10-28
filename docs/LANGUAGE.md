@@ -36,7 +36,7 @@ These Visual Basic keywords are **reserved but not supported**, so that the edit
 
 | Keyword | Status | Use instead |
 |---|---|---|
-| `ByRef` | planned for stage 2 | see §7.2 |
+| `ByRef` | planned (D96) | see §7.2 |
 | `On` (`On Error`) | not supported | `Try … Catch` |
 | `GoTo`, `GoSub` | not supported | loops, `Exit`, procedures |
 | `Variant` | not supported | `Object` |
@@ -100,8 +100,8 @@ How the parser recovers:
 | P018 | `While … Wend` / `While … End While` | Reads it as `Do While … Loop` |
 | P019 | `Call` | Reads the call without it |
 | P020 | `Set`, `Let` | Reads a plain assignment |
-| P021 | `ByRef` (not available yet; stage 2) | Reads it normally; the message suggests a `Function` with `Return` |
-| P022 | `Handles` (not available yet; stage 2) | Reads it normally; the message suggests a `ControlName_EventName` Sub |
+| P021 | `ByRef` (not available yet) | Reads it normally; the message suggests a `Function` with `Return` |
+| P022 | `Handles` (not available yet; v0.3) | Reads it normally; the message suggests a `ControlName_EventName` Sub |
 | P023 | A line ends inside an open parenthesis with a value missing (`(1 +`, `f(1,`) | One diagnostic for both the value and `)` |
 | P024 | `Unload Form2` (Visual Basic 6) | GuBASIC closes a form with `Form2.Close` (§11) |
 | P025 | `Load Form2` (Visual Basic 6) | GuBASIC shows a form with `Form2.Show` (§11) |
@@ -144,7 +144,7 @@ The analyzer checks names and types (§2.1, §3.2, §5.2). It runs even when the
 | A030 | A form-level variable or procedure with the name of a control (§11) |
 | A031 | **Warning.** A local with the name of a control, which it hides |
 | A032 | An event handler not written as its event expects (§8) |
-| A033 | `New` with a control type: controls cannot be created by code yet (stage 2) |
+| A033 | `New` with a control type: controls cannot be created by code yet (v0.3) |
 | A034 | A value given to a property the program can only read (`lstNames.ListCount = 3`, `names.Count = 0`) |
 | A035 | A member the type does not have, and a similar member it has (`lstCity.ListIndx`: "did you mean ListIndex") |
 | A036 | A member the type does not have, under the name other versions of BASIC use for a member GuBASIC calls differently (`btnOK.Text`: use `Caption`; DESIGN.md D50) |
@@ -468,7 +468,7 @@ Sub Form_Load()
 End Sub
 ```
 
-### 7.2 `ByRef` (stage 2)
+### 7.2 `ByRef` (planned)
 
 `ByRef` lets a procedure assign to the caller's variable. It is not available yet; the keyword is reserved so that the editor can say so. Planned implementation:
 
@@ -483,7 +483,7 @@ End Sub
 - A procedure is a handler only when the control (or `Form`) has an event of that name; `btnSave_Clicked` is an ordinary procedure. A handler must be a `Sub` with exactly the event's parameters (the events of §11.1 have none). Anything else is reported (A032) instead of being quietly treated as an ordinary procedure that never runs.
 - Double-clicking a control in the designer creates the handler for its default event.
 - Renaming a control renames its handlers.
-- Stage 2: `Handles` lets one procedure handle several events.
+- v0.3 (DESIGN.md D95): `Handles` lets one procedure handle several events.
 
   ```vb
   Sub SaveData() Handles btnSave.Click, mnuSave.Click
@@ -621,7 +621,7 @@ End Sub
 
   - A variable whose type comes from another form's member is not known to the other forms (`Public n = Form2.Score`): give it a type, `Public n As Integer = Form2.Score`.
   - Visual Basic 6's `Unload Form2` and `Load Form2` are `Form2.Close` and `Form2.Show` (P024, P025), and `Show vbModal` is `ShowDialog` (A039). `ShowDialog` of a form shown already stops the program (R015).
-- Stage 2: controls can be created at run time.
+- v0.3 (DESIGN.md D95): controls can be created at run time.
 
   ```vb
   Dim b As New Button

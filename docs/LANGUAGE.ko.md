@@ -36,7 +36,7 @@ Handles ReDim Preserve Optional Of ByVal
 
 | 키워드 | 상태 | 대신 쓸 것 |
 |---|---|---|
-| `ByRef` | 2단계 예정 | 7.2절 참고 |
+| `ByRef` | 예정(D96) | 7.2절 참고 |
 | `On` (`On Error`) | 지원하지 않음 | `Try … Catch` |
 | `GoTo`, `GoSub` | 지원하지 않음 | 반복문, `Exit`, 프로시저 |
 | `Variant` | 지원하지 않음 | `Object` |
@@ -100,8 +100,8 @@ Handles ReDim Preserve Optional Of ByVal
 | P018 | `While … Wend` / `While … End While` | `Do While … Loop`로 읽음 |
 | P019 | `Call` | `Call` 없이 호출로 읽음 |
 | P020 | `Set`, `Let` | 그냥 대입으로 읽음 |
-| P021 | `ByRef` (아직 준비 중, 2단계) | 정상으로 읽음. 메시지는 `Return`을 쓰는 `Function`을 안내 |
-| P022 | `Handles` (아직 준비 중, 2단계) | 정상으로 읽음. 메시지는 `컨트롤이름_이벤트이름` 형태의 Sub 프로시저를 안내 |
+| P021 | `ByRef` (아직 준비 중) | 정상으로 읽음. 메시지는 `Return`을 쓰는 `Function`을 안내 |
+| P022 | `Handles` (아직 준비 중, v0.3) | 정상으로 읽음. 메시지는 `컨트롤이름_이벤트이름` 형태의 Sub 프로시저를 안내 |
 | P023 | 열린 괄호 안에서 값이 빠진 채 줄이 끝남 (`(1 +`, `f(1,`) | 값과 `)` 누락을 진단 하나로 알림 |
 | P024 | `Unload Form2`(Visual Basic 6) | GuBASIC에서는 `Form2.Close`로 폼을 닫음(11절) |
 | P025 | `Load Form2`(Visual Basic 6) | GuBASIC에서는 `Form2.Show`로 폼을 보임(11절) |
@@ -144,7 +144,7 @@ Handles ReDim Preserve Optional Of ByVal
 | A030 | 컨트롤과 같은 이름의 폼 변수나 프로시저(11절) |
 | A031 | **경고.** 컨트롤과 같은 이름이라서 그 컨트롤을 가리는 지역 변수 |
 | A032 | 이벤트가 정한 형태와 다르게 쓴 이벤트 처리기(8절) |
-| A033 | 컨트롤 타입에 쓴 `New`: 컨트롤은 아직 코드로 만들 수 없음(2단계) |
+| A033 | 컨트롤 타입에 쓴 `New`: 컨트롤은 아직 코드로 만들 수 없음(v0.3) |
 | A034 | 프로그램이 읽기만 할 수 있는 속성에 값을 넣음(`lstNames.ListCount = 3`, `names.Count = 0`) |
 | A035 | 타입에 없는 멤버. 철자가 비슷한 멤버가 있음(`lstCity.ListIndx`: "혹시 ListIndex인가요") |
 | A036 | 타입에 없는 멤버. 다른 버전의 BASIC에서 쓰는 이름이고, GuBASIC에서는 이름이 다름(`btnOK.Text`: `Caption`을 씀. DESIGN.ko.md D50) |
@@ -468,7 +468,7 @@ Sub Form_Load()
 End Sub
 ```
 
-### 7.2 `ByRef` (2단계)
+### 7.2 `ByRef` (예정)
 
 `ByRef`를 쓰면 프로시저가 호출한 쪽의 변수에 값을 넣을 수 있습니다. 아직은 쓸 수 없지만, 편집기가 그렇게 안내할 수 있도록 키워드는 예약해 두었습니다. 구현 방침:
 
@@ -483,7 +483,7 @@ End Sub
 - 그 컨트롤(또는 `Form`)에 그 이름의 이벤트가 있을 때만 처리기입니다. `btnSave_Clicked`는 보통 프로시저입니다. 처리기는 이벤트의 매개변수와 똑같은 매개변수를 가진 `Sub`여야 합니다(11.1절의 이벤트에는 매개변수가 없습니다). 그렇지 않으면 실행되지 않는 보통 프로시저로 조용히 넘기지 않고 알립니다(A032).
 - 디자이너에서 컨트롤을 더블클릭하면 기본 이벤트의 처리기가 생깁니다.
 - 컨트롤 이름을 바꾸면 처리기 이름도 바뀝니다.
-- 2단계: `Handles`로 프로시저 하나가 여러 이벤트를 처리할 수 있습니다.
+- v0.3(DESIGN.ko.md D95): `Handles`로 프로시저 하나가 여러 이벤트를 처리할 수 있습니다.
 
   ```vb
   Sub SaveData() Handles btnSave.Click, mnuSave.Click
@@ -621,7 +621,7 @@ End Sub
 
   - 다른 폼의 멤버에서 타입을 얻는 변수(`Public n = Form2.Score`)는 다른 폼에서 타입을 모릅니다. `Public n As Integer = Form2.Score`처럼 타입을 적어 주세요.
   - Visual Basic 6의 `Unload Form2`와 `Load Form2`는 `Form2.Close`와 `Form2.Show`이고(P024, P025), `Show vbModal`은 `ShowDialog`입니다(A039). 이미 보이는 폼에 `ShowDialog`를 부르면 프로그램이 멈춥니다(R015).
-- 2단계: 실행 중에 컨트롤을 만들 수 있습니다.
+- v0.3(DESIGN.ko.md D95): 실행 중에 컨트롤을 만들 수 있습니다.
 
   ```vb
   Dim b As New Button
