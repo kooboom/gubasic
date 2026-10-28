@@ -434,6 +434,19 @@ class _Analyzer {
         return ok;
       }
     }
+    if (byName &&
+        event.parameters.isEmpty &&
+        params.length == 1 &&
+        decl.parameters.single.name.name.toLowerCase() == 'index' &&
+        params.single.type == GbType.integer) {
+      // A Visual Basic 6 control array's handler (D99).
+      _reportAt(decl.name, DiagnosticCode.controlArrayHandler, [
+        decl.name.name,
+        '$owner.${event.name}',
+        senders.first.$1.displayName,
+      ]);
+      return false;
+    }
     final ok = !decl.isFunction &&
         params.length == event.parameters.length &&
         [
@@ -1326,6 +1339,11 @@ class _Analyzer {
         _result.invokeKinds[e] = InvokeKind.item;
       case GbType.object || GbType.unknown || null:
         // Not known: decided at run time, and nothing more to report.
+        _analyzeArguments(e.arguments);
+        return GbType.unknown;
+      case ControlType() when isControlType(indexed):
+        // `Command1(0)`: a Visual Basic 6 control array (D99).
+        _reportAt(target, DiagnosticCode.controlArrayItem, [_text(target)]);
         _analyzeArguments(e.arguments);
         return GbType.unknown;
       default:

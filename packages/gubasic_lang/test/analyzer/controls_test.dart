@@ -321,4 +321,55 @@ void main() {
           'Debug.Print: False\nDebug.Print: True\n> Close\nClosed');
     });
   });
+
+  group('from control arrays and On Error (D99)', () {
+    test('a control array\'s handler (A049)', () {
+      final r =
+          compile('Sub btnA_Click(Index As Integer)\nEnd Sub\n', form: _form);
+      expect(r.diagnostics.map((d) => d.code.code), ['A049']);
+      expect(r.diagnostics.single.args, ['btnA_Click', 'btnA.Click', 'Button']);
+      expect(
+          r.diagnostics.single.message,
+          'GuBASIC has no control arrays, so a handler gets no Index. To '
+          'handle several controls with btnA_Click, list them after Handles '
+          'and take the one clicked as sender: Sub Pressed(sender As Button) '
+          'Handles btnA.Click, … A Tag can number them.');
+    });
+
+    test('a control as an array (A050); Index is Tag (A036)', () {
+      expect(_inSub('btnA(0).Caption = "x"'), ['A050']);
+      expect(_inSub('Dim b As Button = btnA\nDebug.Print(b(1).Caption)'),
+          ['A050']);
+      final d = compile(
+              'Sub P(sender As Button) Handles btnA.Click\n'
+              'Debug.Print(sender.Index)\nEnd Sub\n',
+              form: _form)
+          .diagnostics
+          .single;
+      expect(d.code.code, 'A036');
+      expect(d.replacements, ['Tag']);
+    });
+
+    test(
+        'Load and Unload of an element (P027, P028), of a form (P025, '
+        'P024)', () {
+      List<String> parsed(String line) => [
+            for (final d in parse('Sub P()\n$line\nEnd Sub\n').diagnostics)
+              d.code.code
+          ];
+      expect(parsed('Load btnA(1)'), ['P027']);
+      expect(parsed('Unload btnA(1)'), ['P028']);
+      expect(parsed('Load Form2'), ['P025']);
+      expect(parsed('Unload Form2'), ['P024']);
+    });
+
+    test('On Error says how to write Try … Catch (P013)', () {
+      final d =
+          parse('Sub P()\nOn Error Resume Next\nEnd Sub\n').diagnostics.single;
+      expect(d.code.code, 'P013');
+      expect(d.message, contains('Catch ex As Exception'));
+      expect(
+          d.formatMessage(koreanMessages), contains('Catch ex As Exception'));
+    });
+  });
 }

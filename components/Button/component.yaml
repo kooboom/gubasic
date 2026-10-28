@@ -19,4 +19,6 @@ methods: []
 # Names other versions of BASIC use, pointed to GuBASIC's (A036,
 # docs/DESIGN.md D50).
 otherNames:
+  # Visual Basic 6's control arrays numbered controls; a Tag can (D99).
+  Index: Tag
   Text: Caption

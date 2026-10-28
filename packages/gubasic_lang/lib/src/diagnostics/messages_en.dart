@@ -70,7 +70,8 @@ const Map<DiagnosticCode, String> englishMessages = {
 
   // Parser: Visual Basic features GuBASIC does not support
   DiagnosticCode.unsupportedOnError: 'GuBASIC does not support On Error. '
-      'Use Try ... Catch ... End Try around the code that can fail.',
+      'Put the code that can fail between Try and Catch ex As Exception, and '
+      'what to do instead (ex.Message says what went wrong) before End Try.',
   DiagnosticCode.unsupportedGoTo: 'GuBASIC does not support {0}. '
       'Use a loop, Exit, or a separate Sub or Function instead.',
   DiagnosticCode.unsupportedVariant: 'GuBASIC has no Variant type. '
@@ -93,6 +94,12 @@ const Map<DiagnosticCode, String> englishMessages = {
       'back with Return.',
   DiagnosticCode.otherCast: 'GuBASIC turns a control into another type '
       'with CType: write CType(value, Type) instead of {0}(value, Type).',
+  DiagnosticCode.loadControl: 'GuBASIC has no control arrays, so there is '
+      'no Load for a control. Make one with Dim b As New Button, then put it '
+      'on the form with Me.Controls.Add(b).',
+  DiagnosticCode.unloadControl: 'GuBASIC has no control arrays, so there is '
+      'no Unload for a control. Take one off the form with '
+      'Me.Controls.Remove(control).',
   DiagnosticCode.expectedValueAndParen:
       'A value and the symbol ")" are missing here. Write the value, then '
           'close the parenthesis.',
@@ -225,6 +232,13 @@ const Map<DiagnosticCode, String> englishMessages = {
   DiagnosticCode.newForm: '{0} is not made with New: a project\'s forms '
       'are used by their names, as in Form2.Show, and Control is the type '
       'of any control. Make a particular control, such as New Button.',
+  DiagnosticCode.controlArrayHandler: 'GuBASIC has no control arrays, so '
+      'a handler gets no Index. To handle several controls with {0}, list '
+      'them after Handles and take the one clicked as sender: Sub '
+      'Pressed(sender As {2}) Handles {1}, … A Tag can number them.',
+  DiagnosticCode.controlArrayItem: '{0} is one control: GuBASIC has no '
+      'control arrays. Give each control its own name, or go through them '
+      'with For Each c As Control In Me.Controls; a Tag can number them.',
   DiagnosticCode.notAProcedure: '"{0}" is not a Sub of this code, so it '
       'cannot handle an event. Name a Sub after AddressOf.',
   DiagnosticCode.readOnlyProperty:

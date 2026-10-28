@@ -107,6 +107,8 @@ How the parser recovers:
 | P024 | `Unload Form2` (Visual Basic 6) | GuBASIC closes a form with `Form2.Close` (§11) |
 | P025 | `Load Form2` (Visual Basic 6) | GuBASIC shows a form with `Form2.Show` (§11) |
 | P026 | `DirectCast`, `TryCast` (Visual Basic .NET) | Reads it as `CType` (§11.4) |
+| P027 | `Load Command1(1)` (Visual Basic 6's control array) | Make a control with `New` and `Me.Controls.Add` (§11.4) |
+| P028 | `Unload Command1(1)` | Take a control off with `Me.Controls.Remove` (§11.4) |
 
 **Analyzer**
 
@@ -162,6 +164,8 @@ The analyzer checks names and types (§2.1, §3.2, §5.2). It runs even when the
 | A046 | A `Control` where a particular control type is expected: write `CType` (§11.4) |
 | A047 | `New` with a form, or with `Control` (§11.4) |
 | A048 | `AddressOf` names something that is not a `Sub` of this code (§8) |
+| A049 | `Sub Command1_Click(Index As Integer)`: a control array's handler; list the controls after `Handles` and take a `sender` (§8) |
+| A050 | `Command1(0)`: a control used as a control array; give each control its name, or go through `Me.Controls` (§11.4) |
 
 **Form and project files**
 
@@ -738,7 +742,8 @@ GuBASIC has no control arrays (DESIGN.md D95); what Visual Basic 6 did with them
 
 - **`Control`** is the type of any control on a form. Any control can be stored in it; its members are what every control has: `Name`, `Left`, `Top`, `Width`, `Height`, `Anchor` and `Tag`. A `Control` is a particular control again only through `CType` (A046). A form is not a `Control`.
 - **`Name`** gives a control's name, or a form's. It can be set only on a control made with `New` that is on no form yet (A034, R019); it starts with an English letter, then letters, digits or `_` (R020).
-- **`Tag`**, a `String` every control and form has, keeps any text the program wants with it, such as a number in place of a control array's index. GuBASIC does nothing with it.
+- **`Tag`**, a `String` every control and form has, keeps any text the program wants with it, such as a number in place of a control array's index. GuBASIC does nothing with it. Written `Index`, as in Visual Basic 6, it is pointed to (A036).
+- **Code written for control arrays** is told what to write instead (DESIGN.md D99): a handler taking `Index As Integer` (A049), `Command1(0)` (A050), `Load Command1(1)` and `Unload Command1(1)` (P027, P028). `On Error` says how to write `Try … Catch` (P013).
 - **`Me.Controls`** (or `Form2.Controls`) are the controls on the form: in the form file's order, then in the order they were added. `Me.Controls.Count` counts them, `Me.Controls(0)` is the first, and `For Each c As Control In Me.Controls` goes through them (a snapshot: adding or removing in the loop does not disturb it).
 - **`TypeOf value Is Type`** tells whether a value is a control of that type; `Nothing` is not. **`CType(value, Type)`** gives the same control as that type, and stops the program when it is another (R022); `Nothing` stays `Nothing`. Both take a control type (A045). Visual Basic .NET's `DirectCast` and `TryCast` are read as `CType` (P026).
 

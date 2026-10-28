@@ -107,6 +107,8 @@ TypeOf CType AddHandler AddressOf
 | P024 | `Unload Form2`(Visual Basic 6) | GuBASIC에서는 `Form2.Close`로 폼을 닫음(11절) |
 | P025 | `Load Form2`(Visual Basic 6) | GuBASIC에서는 `Form2.Show`로 폼을 보임(11절) |
 | P026 | `DirectCast`, `TryCast`(Visual Basic .NET) | `CType`으로 읽음(11.4절) |
+| P027 | `Load Command1(1)`(Visual Basic 6의 컨트롤 배열) | `New`와 `Me.Controls.Add`로 컨트롤을 만듦(11.4절) |
+| P028 | `Unload Command1(1)` | `Me.Controls.Remove`로 컨트롤을 뺌(11.4절) |
 
 **분석기**
 
@@ -162,6 +164,8 @@ TypeOf CType AddHandler AddressOf
 | A046 | 특정한 컨트롤 타입이 와야 할 곳에 온 `Control`: `CType`을 씀(11.4절) |
 | A047 | 폼이나 `Control`에 쓴 `New`(11.4절) |
 | A048 | `AddressOf` 뒤의 이름이 이 코드의 `Sub` 프로시저가 아님(8절) |
+| A049 | `Sub Command1_Click(Index As Integer)`: 컨트롤 배열의 처리기. `Handles` 뒤에 컨트롤을 적고 `sender`를 받음(8절) |
+| A050 | `Command1(0)`: 컨트롤을 컨트롤 배열처럼 씀. 컨트롤마다 이름을 주거나 `Me.Controls`를 돎(11.4절) |
 
 **폼·프로젝트 파일**
 
@@ -738,7 +742,8 @@ GuBASIC에는 컨트롤 배열이 없습니다(DESIGN.ko.md D95). Visual Basic 6
 
 - **`Control`**은 폼에 있는 어떤 컨트롤이든 담는 타입입니다. 멤버는 모든 컨트롤이 가진 `Name`, `Left`, `Top`, `Width`, `Height`, `Anchor`, `Tag`입니다. `Control`을 다시 특정한 컨트롤로 쓰려면 `CType`을 씁니다(A046). 폼은 `Control`이 아닙니다.
 - **`Name`**은 컨트롤이나 폼의 이름입니다. `New`로 만들어 아직 폼에 넣지 않은 컨트롤만 이름을 정할 수 있습니다(A034, R019). 이름은 영어 글자로 시작하고, 그다음에 글자, 숫자, `_`만 씁니다(R020).
-- **`Tag`**는 모든 컨트롤과 폼에 있는 `String` 속성으로, 프로그램이 원하는 글을 담아 둡니다. 컨트롤 배열의 번호 대신 숫자를 담는 데 씁니다. GuBASIC은 이 값으로 아무것도 하지 않습니다.
+- **`Tag`**는 모든 컨트롤과 폼에 있는 `String` 속성으로, 프로그램이 원하는 글을 담아 둡니다. 컨트롤 배열의 번호 대신 숫자를 담는 데 씁니다. GuBASIC은 이 값으로 아무것도 하지 않습니다. Visual Basic 6처럼 `Index`라고 쓰면 `Tag`를 알려 줍니다(A036).
+- **컨트롤 배열로 쓴 코드**에는 대신 쓸 것을 알려 줍니다(DESIGN.ko.md D99): `Index As Integer`를 받는 처리기(A049), `Command1(0)`(A050), `Load Command1(1)`과 `Unload Command1(1)`(P027, P028). `On Error`는 `Try … Catch`를 쓰는 방법을 알려 줍니다(P013).
 - **`Me.Controls`**(또는 `Form2.Controls`)는 그 폼에 있는 컨트롤입니다. 순서는 폼 파일의 순서, 그다음 넣은 순서입니다. `Me.Controls.Count`는 개수, `Me.Controls(0)`은 첫 컨트롤이고, `For Each c As Control In Me.Controls`로 차례로 돕니다(그때의 목록을 돌므로, 도는 동안 넣거나 빼도 흐트러지지 않습니다).
 - **`TypeOf 값 Is 타입`**은 값이 그 타입의 컨트롤인지 알려 줍니다. `Nothing`은 아닙니다. **`CType(값, 타입)`**은 같은 컨트롤을 그 타입으로 주고, 다른 타입이면 프로그램이 멈춥니다(R022). `Nothing`은 `Nothing` 그대로입니다. 둘 다 컨트롤 타입에 씁니다(A045). Visual Basic .NET의 `DirectCast`와 `TryCast`는 `CType`으로 읽습니다(P026).
 

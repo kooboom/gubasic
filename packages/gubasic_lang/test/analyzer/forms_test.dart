@@ -92,7 +92,8 @@ void main() {
 
     test('a control itself cannot be assigned, called or used as a value', () {
       expect(inSub('btnSave = Nothing'), ['A020']);
-      expect(inSub('btnSave()'), ['A018']);
+      // As a Visual Basic 6 control array (D99).
+      expect(inSub('btnSave()'), ['A050']);
       expect(inSub('Debug.Print(btnSave.Caption & lblMessage)'), ['A013']);
     });
 

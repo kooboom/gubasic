@@ -876,12 +876,18 @@ class _Parser {
         _startsExpression(_tok)) {
       final statement = target is NameExpr ? target.name.toLowerCase() : null;
       if (statement != null && formStatements.contains(statement)) {
-        // VB6's `Unload Form2`: a method in GuBASIC (P024, P025).
+        // VB6's `Unload Form2`: a method in GuBASIC (P024, P025); with
+        // `(index)`, a control array's element (P027, P028).
+        final element = _tok.kind == TokenKind.identifier &&
+            _peek(1).kind == TokenKind.leftParen;
         _errorAt(
             _tok,
-            statement == 'unload'
-                ? DiagnosticCode.unloadStatement
-                : DiagnosticCode.loadStatement,
+            switch ((statement == 'unload', element)) {
+              (true, false) => DiagnosticCode.unloadStatement,
+              (false, false) => DiagnosticCode.loadStatement,
+              (true, true) => DiagnosticCode.unloadControl,
+              (false, true) => DiagnosticCode.loadControl,
+            },
             [_tok.text]);
       } else if (target is! MemberExpr ||
           target.name.name.toLowerCase() != 'show') {

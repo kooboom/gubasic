@@ -66,7 +66,7 @@ const Map<DiagnosticCode, String> koreanMessages = {
 
   // Parser: Visual Basic features GuBASIC does not support
   DiagnosticCode.unsupportedOnError:
-      'GuBASIC은 On Error를 지원하지 않습니다. 오류가 날 수 있는 코드를 Try ... Catch ... End Try로 감싸 주세요.',
+      'GuBASIC은 On Error를 지원하지 않습니다. 오류가 날 수 있는 코드는 Try와 Catch ex As Exception 사이에, 대신 할 일은 그 뒤 End Try 앞에 써 주세요(무엇이 잘못됐는지는 ex.Message에 있습니다).',
   DiagnosticCode.unsupportedGoTo:
       'GuBASIC은 {0} 문을 지원하지 않습니다. 반복문이나 Exit, 또는 별도의 Sub 또는 Function을 써 주세요.',
   DiagnosticCode.unsupportedVariant:
@@ -86,6 +86,10 @@ const Map<DiagnosticCode, String> koreanMessages = {
       '바뀐 값을 돌려받으려면 Function을 만들어 Return으로 돌려주세요.',
   DiagnosticCode.otherCast:
       'GuBASIC에서는 컨트롤을 다른 타입으로 바꿀 때 CType을 씁니다. {0}(값, 타입) 대신 CType(값, 타입)으로 써 주세요.',
+  DiagnosticCode.loadControl:
+      'GuBASIC에는 컨트롤 배열이 없어서 컨트롤에 쓰는 Load도 없습니다. Dim b As New Button으로 컨트롤을 만들고 Me.Controls.Add(b)로 폼에 넣어 주세요.',
+  DiagnosticCode.unloadControl:
+      'GuBASIC에는 컨트롤 배열이 없어서 컨트롤에 쓰는 Unload도 없습니다. Me.Controls.Remove(컨트롤)로 폼에서 빼 주세요.',
   DiagnosticCode.expectedValueAndParen:
       '여기에는 값과 ) 기호가 필요합니다. 값을 쓰고 괄호를 닫아 주세요.',
   DiagnosticCode.unloadStatement:
@@ -187,6 +191,10 @@ const Map<DiagnosticCode, String> koreanMessages = {
       '{0} 타입에는 {1} 컨트롤만이 아니라 어떤 컨트롤이든 들어 있을 수 있습니다. CType(값, {1}) 형태로 쓰고, 다른 컨트롤일 수도 있으면 먼저 TypeOf 값 Is {1} 형태로 확인해 주세요.',
   DiagnosticCode.newForm:
       '{0} 타입은 New로 만들지 않습니다. 프로젝트의 폼은 Form2.Show처럼 이름으로 쓰고, Control은 어떤 컨트롤이든 담는 타입입니다. New Button처럼 특정한 컨트롤을 만들어 주세요.',
+  DiagnosticCode.controlArrayHandler:
+      'GuBASIC에는 컨트롤 배열이 없어서 처리기는 Index를 받지 않습니다. {0} 프로시저로 여러 컨트롤을 처리하려면 Handles 뒤에 컨트롤을 적고 누른 컨트롤을 sender로 받아 주세요: Sub Pressed(sender As {2}) Handles {1}, … 번호는 Tag에 담을 수 있습니다.',
+  DiagnosticCode.controlArrayItem:
+      '{0} 이름은 컨트롤 하나입니다. GuBASIC에는 컨트롤 배열이 없습니다. 컨트롤마다 이름을 따로 주거나, For Each c As Control In Me.Controls로 차례로 돌아 주세요. 번호는 Tag에 담을 수 있습니다.',
   DiagnosticCode.notAProcedure:
       '"{0}" 이름은 이 코드의 Sub 프로시저가 아니어서 이벤트를 처리할 수 없습니다. AddressOf 뒤에는 Sub 프로시저의 이름을 써 주세요.',
   DiagnosticCode.readOnlyProperty:

@@ -157,6 +157,7 @@ void main() {
       's': ['Go', 'P'],
     });
     expect(builtinComponents['button']!.otherNames, {
+      'index': ['Tag'],
       'text': ['Caption'],
     });
     String yaml(String others) => 'name: X\nversion: 1\ndefaultEvent: A\n'

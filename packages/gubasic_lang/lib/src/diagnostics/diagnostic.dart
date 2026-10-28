@@ -130,6 +130,14 @@ enum DiagnosticCode {
   /// is GuBASIC's (D98). Args: the word as written.
   otherCast('P026'),
 
+  /// `Load Command1(1)` (Visual Basic 6): a control array's new element.
+  /// GuBASIC makes a control with New and Controls.Add (D99).
+  loadControl('P027'),
+
+  /// `Unload Command1(1)` (Visual Basic 6): GuBASIC takes a control off
+  /// its form with Controls.Remove (D99).
+  unloadControl('P028'),
+
   // Analyzer: names
 
   /// A name that is not declared. Args: the name.
@@ -321,6 +329,15 @@ enum DiagnosticCode {
   /// `AddressOf` names something that is not a procedure of this code.
   /// Args: the name.
   notAProcedure('A048'),
+
+  /// `Sub Command1_Click(Index As Integer)` (Visual Basic 6): a control
+  /// array's handler. Args: the procedure, the event (`Command1.Click`),
+  /// the control's type (D99).
+  controlArrayHandler('A049'),
+
+  /// `Command1(0)`: a control used as a control array. Args: the control
+  /// as written (D99).
+  controlArrayItem('A050'),
 
   // Form and project files (.form.yaml, .gbproj)
 
