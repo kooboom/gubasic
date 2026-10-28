@@ -170,5 +170,7 @@ IconData componentIcon(ComponentSpec type) => switch (type.name.toLowerCase()) {
   'listbox' => Icons.list_alt,
   'image' => Icons.image_outlined,
   'timer' => Icons.timer_outlined,
+  'optionbutton' => Icons.radio_button_checked,
+  'combobox' => Icons.arrow_drop_down_circle_outlined,
   _ => Icons.widgets_outlined,
 };

@@ -450,6 +450,17 @@ class ScriptedHost implements FormHost {
     _dialogs.clear();
   }
 
+  /// The user checks OptionButton [control] of the form in front: the
+  /// others of its form are unchecked (D104).
+  void checkOption(String control) {
+    final prefix = '${front.toLowerCase()}.';
+    for (final MapEntry(:key, :value) in _components.entries) {
+      if (value != 'OptionButton' || !key.startsWith(prefix)) continue;
+      _properties['${key}checked'] = false;
+    }
+    userSets(control, 'Checked', true);
+  }
+
   /// The user changes a property of the form in front (the text of a
   /// TextBox, a CheckBox's Checked).
   void userSets(String control, String property, Object value) =>
@@ -676,6 +687,20 @@ class _HostDriver implements ScriptDriver {
     }
     if (form != null && form.toLowerCase() != host.front.toLowerCase()) {
       return EventOutcome.blocked;
+    }
+    if (control != null &&
+        event == 'Click' &&
+        host.componentOf(control) == 'OptionButton') {
+      // Checks it and unchecks the others; Changed only when it was not
+      // checked (D104).
+      if (host.frontProperty(control, 'Checked') == true) {
+        return EventOutcome.noHandler;
+      }
+      if (interpreter.refusal(control, 'Changed') case final refused?) {
+        return refused;
+      }
+      host.checkOption(control);
+      return interpreter.raiseEvent(control, 'Changed');
     }
     if (control != null &&
         event == 'Click' &&

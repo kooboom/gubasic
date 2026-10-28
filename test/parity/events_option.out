@@ -1,0 +1,14 @@
+> optMedium.Click
+Debug.Print: Medium chosen; Small False, Medium True, Large False
+> optMedium.Click
+> btnLarge.Click
+Set optLarge.Checked: True
+Set optMedium.Checked: False
+Debug.Print: Large chosen; Small False, Medium False, Large True
+> btnNone.Click
+Set optLarge.Checked: False
+Debug.Print: None chosen: True
+> optSmall.Click
+Debug.Print: Small chosen; Small True, Medium False, Large False
+> Close
+Closed

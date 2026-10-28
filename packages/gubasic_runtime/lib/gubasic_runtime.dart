@@ -5,6 +5,7 @@ library;
 
 export 'src/anchor.dart';
 export 'src/check_box.dart';
+export 'src/combo_box.dart';
 export 'src/composing.dart';
 export 'src/dialogs.dart';
 export 'src/form_model.dart';
@@ -12,5 +13,6 @@ export 'src/keys.dart';
 export 'src/form_view.dart';
 export 'src/image.dart';
 export 'src/list_box.dart';
+export 'src/option_button.dart';
 export 'src/settings.dart';
 export 'src/text_box.dart';

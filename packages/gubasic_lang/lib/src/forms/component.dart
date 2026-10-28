@@ -125,6 +125,7 @@ class ComponentSpec {
     this.otherNames = const {},
     this.otherEvents = const {},
     this.visual = true,
+    this.aliases = const [],
   })  : properties = {for (final p in properties) p.name.toLowerCase(): p},
         events = {for (final e in events) e.name.toLowerCase(): e},
         methods = {for (final m in methods) m.name.toLowerCase(): m};
@@ -160,6 +161,11 @@ class ComponentSpec {
   /// a size. A Timer is not: the designer keeps it in a tray (D100).
   final bool visual;
 
+  /// Names other versions of BASIC give this type (`RadioButton` for an
+  /// OptionButton): the analyzer and the form file point to this one
+  /// (A056, F020, D104).
+  final List<String> aliases;
+
   /// The properties the form file and the Properties window can set.
   Iterable<PropertySpec> get designProperties =>
       properties.values.where((p) => p.designTime);
@@ -178,6 +184,16 @@ final Map<String, ComponentSpec> builtinComponents = {
 
 /// The form's own component.
 ComponentSpec get formComponent => builtinComponents['form']!;
+
+/// The built-in component another version of BASIC calls [name] (any
+/// case), or null (D104).
+ComponentSpec? componentAliased(String name) {
+  final lower = name.toLowerCase();
+  for (final c in builtinComponents.values) {
+    if (c.aliases.any((a) => a.toLowerCase() == lower)) return c;
+  }
+  return null;
+}
 
 /// `Control`, the type of any control on a form (docs/DESIGN.md D98): a
 /// handler's `sender` for controls of different types, the items of
@@ -352,6 +368,10 @@ ComponentSpec readComponentFile(String text) {
   }
   final visual = doc['visual'] ?? true;
   if (visual is! bool) throw const FormatException('visual is true or false');
+  final aliases = doc['aliases'] ?? YamlList();
+  if (aliases is! List || aliases.any((a) => a is! String)) {
+    throw const FormatException('aliases is a list of names');
+  }
 
   final spec = ComponentSpec(
     name: field<String>(doc, 'name'),
@@ -364,6 +384,7 @@ ComponentSpec readComponentFile(String text) {
     otherNames: otherNames,
     otherEvents: otherEvents,
     visual: visual,
+    aliases: List.unmodifiable(aliases.cast<String>()),
   );
   for (final MapEntry(:key, :value) in spec.otherEvents.entries) {
     if (spec.events.containsKey(key) ||

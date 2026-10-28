@@ -1,0 +1,37 @@
+# One of a group of choices, of which one is checked (docs/DESIGN.md
+# D104): the OptionButtons of a form are one group. Checking one, by a
+# click or in code, unchecks the others. Changed runs when it becomes
+# checked, as Visual Basic 6's Click did; the ones it unchecks raise
+# nothing, so one handler for the whole group runs once.
+name: OptionButton
+version: 1
+visual: true
+defaultEvent: Changed
+properties:
+  - { name: Caption, type: String, default: "" }
+  - { name: Checked, type: Boolean, default: false, changeEvent: Changed }
+  - { name: Left, type: Integer, default: 0 }
+  - { name: Top, type: Integer, default: 0 }
+  - { name: Width, type: Integer, min: 0, default: 120 }
+  - { name: Height, type: Integer, min: 0, default: 32 }
+  # The edges of the form whose distance it keeps (D57).
+  - { name: Anchor, type: String, default: "Left Top", anchor: true }
+  # Any text the program keeps with it, as in Visual Basic; GuBASIC does
+  # nothing with it (D98).
+  - { name: Tag, type: String, default: "" }
+events:
+  - Changed()
+methods: []
+# Names other versions of BASIC use, pointed to GuBASIC's (A036,
+# docs/DESIGN.md D50).
+otherNames:
+  # Visual Basic 6's control arrays numbered controls; a Tag can (D99).
+  Index: Tag
+  Text: Caption
+  Value: Checked
+# Events other versions of BASIC name differently (A051, D100).
+otherEvents:
+  CheckedChanged: Changed
+  Click: Changed
+# The type's name in Visual Basic .NET (A056, F020, D104).
+aliases: [RadioButton]

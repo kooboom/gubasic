@@ -28,6 +28,8 @@ List<ComponentSpec> get toolboxComponents => [
     'textbox',
     'checkbox',
     'listbox',
+    'combobox',
+    'optionbutton',
     'image',
     'timer',
   ])

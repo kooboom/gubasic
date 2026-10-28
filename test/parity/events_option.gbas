@@ -1,0 +1,15 @@
+' The OptionButtons of a form are one group (D104): checking one, by a
+' click or in code, unchecks the others. Changed runs for the one that
+' becomes checked, so one handler for the group runs once.
+Sub Size_Changed(sender As OptionButton) Handles optSmall.Changed, optMedium.Changed, optLarge.Changed
+    Debug.Print(sender.Caption & " chosen; Small " & optSmall.Checked & ", Medium " & optMedium.Checked & ", Large " & optLarge.Checked)
+End Sub
+
+Sub btnLarge_Click()
+    optLarge.Checked = True
+End Sub
+
+Sub btnNone_Click()
+    optLarge.Checked = False
+    Debug.Print("None chosen: " & (Not optSmall.Checked And Not optMedium.Checked And Not optLarge.Checked))
+End Sub

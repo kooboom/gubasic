@@ -1,0 +1,16 @@
+' A ComboBox is filled and read as a ListBox (D104); the user opens it and
+' picks an item.
+Sub Form_Load()
+    cmbCity.AddItem("Seoul")
+    cmbCity.AddItem("Busan")
+    cmbCity.AddItem("Daegu")
+    cmbCity.ListIndex = 0
+End Sub
+
+Sub cmbCity_Changed()
+    Debug.Print("City: " & cmbCity.Text & " (" & cmbCity.ListIndex & " of " & cmbCity.ListCount & ")")
+End Sub
+
+Sub btnClear_Click()
+    cmbCity.Clear
+End Sub

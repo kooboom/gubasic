@@ -31,3 +31,5 @@ otherNames:
   Index: Tag
   Image: Picture
   SizeMode: Stretch
+# The type's name in other versions of BASIC (A056, F020, D104).
+aliases: [PictureBox]

@@ -3,10 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'check_box.dart';
+import 'combo_box.dart';
 import 'form_model.dart';
 import 'keys.dart';
 import 'image.dart';
 import 'list_box.dart';
+import 'option_button.dart';
 import 'text_box.dart';
 
 /// Shows a form: its inside area (`Width` x `Height` logical pixels) with
@@ -140,6 +142,8 @@ class _GbPlaced extends StatelessWidget {
       GbControlKind.checkBox => GbCheckBox(model: model, state: state),
       GbControlKind.listBox => GbListBox(model: model, state: state),
       GbControlKind.image => GbImage(model: model, state: state),
+      GbControlKind.optionButton => GbOptionButton(model: model, state: state),
+      GbControlKind.comboBox => GbComboBox(model: model, state: state),
       GbControlKind.form => throw ArgumentError('a form inside a form'),
     },
   );

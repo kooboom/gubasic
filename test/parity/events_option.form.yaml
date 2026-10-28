@@ -1,0 +1,7 @@
+formatVersion: 1
+controls:
+  - { name: optSmall, type: OptionButton, properties: { Caption: Small, Checked: true } }
+  - { name: optMedium, type: OptionButton, properties: { Caption: Medium, Top: 32 } }
+  - { name: optLarge, type: OptionButton, properties: { Caption: Large, Top: 64 } }
+  - { name: btnLarge, type: Button, properties: { Caption: Large, Top: 100 } }
+  - { name: btnNone, type: Button, properties: { Caption: None, Top: 100, Left: 100 } }

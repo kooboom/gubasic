@@ -22,3 +22,5 @@ otherNames:
   # Visual Basic 6's control arrays numbered controls; a Tag can (D99).
   Index: Tag
   Text: Caption
+# The type's name in other versions of BASIC (A056, F020, D104).
+aliases: [CommandButton]

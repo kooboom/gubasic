@@ -251,6 +251,8 @@ const Map<DiagnosticCode, String> englishMessages = {
       'which is meant here. Write it with its module\'s name, as in {2}.',
   DiagnosticCode.mainTwice: '{0} has a Sub Main too, and a program starts '
       'with one. Keep Sub Main in one module, and rename the other.',
+  DiagnosticCode.typeHasOtherName: 'GuBASIC calls the {0} type {1}: write '
+      '{1}.',
   DiagnosticCode.notAProcedure: '"{0}" is not a Sub of this code, so it '
       'cannot handle an event. Name a Sub after AddressOf.',
   DiagnosticCode.readOnlyProperty:
@@ -294,6 +296,8 @@ const Map<DiagnosticCode, String> englishMessages = {
       'to the project\'s pictures, or choose another.',
   DiagnosticCode.noSubMain: 'The project starts with Sub Main, but no '
       'module has a Sub Main(). Add one to a module, or start with a form.',
+  DiagnosticCode.controlTypeHasOtherName: 'GuBASIC calls the {0} control '
+      '{1}: write type: {1}.',
   DiagnosticCode.badProjectId: '"{0}" is not an app ID, so it is ignored '
       'and the next export of the app makes a new one. An app ID is 8 to 32 '
       'lowercase letters and digits.',

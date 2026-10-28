@@ -1371,7 +1371,7 @@ class Interpreter {
       v = _a.pictures?[pictureKey(v)] ??
           _fail(DiagnosticCode.pictureNotFound, e, [v]);
     }
-    if (c.component.name == 'ListBox' && spec.name == 'ListIndex') {
+    if (_isList(c) && spec.name == 'ListIndex') {
       final count = _items(c).length;
       if ((v as int) >= count) {
         _fail(DiagnosticCode.indexOutOfRange, e, ['$v', '$count']);
@@ -1379,6 +1379,16 @@ class Interpreter {
     }
     final old = _raw(c, spec.name);
     _rawSet(c, spec.name, v);
+    if (c.component.name == 'OptionButton' && spec.name == 'Checked') {
+      // One of a group is checked; Changed runs only for the one that
+      // becomes checked (D104).
+      if (v != true) return null;
+      for (final other in _optionGroup(c)) {
+        if (other != c && _raw(other, 'Checked') == true) {
+          _rawSet(other, 'Checked', false);
+        }
+      }
+    }
     if (c.isForm && spec.name == 'DialogResult' && v != 0) {
       // Set while it is shown as a dialog, it closes it (D103).
       final form = _formNamed(c.form)!;
@@ -1402,6 +1412,14 @@ class Interpreter {
         ? null
         : (handler: handler, control: c);
   }
+
+  /// The OptionButtons of [c]'s group: those on its form (D104); none for
+  /// one on no form.
+  Iterable<GbControl> _optionGroup(GbControl c) => !c.attached
+      ? const []
+      : _formNamed(c.form)!
+          .order
+          .where((o) => o.component.name == 'OptionButton');
 
   /// `c.Name = value`: only a control made with New that is on no form
   /// yet takes a Name (D98).
@@ -1544,7 +1562,7 @@ class Interpreter {
   /// A [PropertySpec.readOnly] property, worked out by the component's
   /// code: ListBox's ListCount and Text.
   Object _computedProperty(GbControl c, PropertySpec spec) =>
-      switch ((c.component.name, spec.name)) {
+      switch ((_isList(c) ? 'ListBox' : c.component.name, spec.name)) {
         ('ListBox', 'ListCount') => _items(c).length,
         ('ListBox', 'Text') => switch (_listIndex(c)) {
             -1 => '',
@@ -1552,6 +1570,10 @@ class Interpreter {
           },
         _ => throw StateError('no code for ${c.component.name}.${spec.name}'),
       };
+
+  /// Whether [c] is a list of items: a ListBox, or a ComboBox (D104).
+  static bool _isList(GbControl c) =>
+      c.component.name == 'ListBox' || c.component.name == 'ComboBox';
 
   /// The change event a control's method left to run, if any.
   _Change? _pendingChange;
@@ -1608,7 +1630,8 @@ class Interpreter {
   /// ListIndex, whose Changed then runs as part of the call (D46).
   Object? _controlMethod(
       GbControl c, MethodSpec method, List<Object?> args, Node at) {
-    switch ((c.component.name, method.name)) {
+    // A ComboBox's items are a ListBox's (D104).
+    switch ((_isList(c) ? 'ListBox' : c.component.name, method.name)) {
       // The forms shown one over another (D88).
       case ('Form', 'Show'):
         final form = _formNamed(c.form)!;

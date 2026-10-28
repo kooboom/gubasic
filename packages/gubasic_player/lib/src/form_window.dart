@@ -55,6 +55,8 @@ GbControlKind _kind(String component) => switch (component.toLowerCase()) {
   'checkbox' => GbControlKind.checkBox,
   'listbox' => GbControlKind.listBox,
   'image' => GbControlKind.image,
+  'optionbutton' => GbControlKind.optionButton,
+  'combobox' => GbControlKind.comboBox,
   _ => throw ArgumentError('no widget for component $component'),
 };
 

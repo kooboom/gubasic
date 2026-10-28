@@ -171,6 +171,7 @@ The analyzer checks names and types (§2.1, §3.2, §5.2). It runs even when the
 | A053 | `Sub Form_KeyDown(KeyCode As Integer, Shift As Integer)` (Visual Basic 6): GuBASIC's key events take `e As KeyEventArgs` (§11.1) |
 | A054 | A name two modules make `Public`, written without its module's name (§11.5) |
 | A055 | `Sub Main` in two modules (§11.5) |
+| A056 | A type under another version of BASIC's name: `RadioButton` for `OptionButton` (§11.1) |
 
 **Form and project files**
 
@@ -197,6 +198,7 @@ Form files and project files (§11.2, §11.3) are checked the same way: a proble
 | F017 | `Anchor` in a form file with a word that is not an edge (§11.1) |
 | F018 | **Warning.** A project file's `id` that is not an app ID (§11.3); it is ignored |
 | F019 | `startup: Sub Main`, but no module has a `Sub Main()` (§11.5) |
+| F020 | A control type under another version of BASIC's name: `type: RadioButton` (§11.1) |
 
 **Run time**
 
@@ -680,6 +682,8 @@ End Sub
 | `TextBox` | `Text` (`String`); `Left`, `Top`, `Width`, `Height` (`Integer`) | `Changed` |
 | `CheckBox` | `Caption` (`String`); `Checked` (`Boolean`); `Left`, `Top`, `Width`, `Height` (`Integer`) | `Changed` |
 | `Image` | `Picture` (`String`, the name of one of the project's pictures); `Stretch` (`Boolean`); `Left`, `Top`, `Width`, `Height` (`Integer`) | `Click` |
+| `OptionButton` | `Caption` (`String`); `Checked` (`Boolean`); `Left`, `Top`, `Width`, `Height` (`Integer`) | `Changed` |
+| `ComboBox` | as a `ListBox`: `ListIndex`, `ListCount`, `Text`; `AddItem(item)`, `RemoveItem(index)`, `Clear()`, `List(index)` | `Changed` |
 | `Timer` | `Interval` (`Integer`, milliseconds, at least 1; 100 at first); `Enabled` (`Boolean`, `False` at first). Methods: `Start()`, `Stop()`. Not seen on the form (below) | `Tick` |
 | `ListBox` | `ListIndex` (`Integer`, set only in code); `ListCount` (`Integer`), `Text` (`String`), both read only; `Left`, `Top`, `Width`, `Height` (`Integer`). Methods: `AddItem(item)`, `RemoveItem(index)`, `Clear()`, `List(index)` | `Changed` |
 
@@ -690,6 +694,9 @@ End Sub
 - **`TextBox.Changed`** runs after `Text` changes, whether the user typed or the program set `Text`. When the program sets `Text`, the handler runs right away, as part of that assignment, so the next line already sees what it did. Setting the same text again does not run it. A handler that sets `Text` of its own TextBox is not started again by that change (§8.1).
 - **Typing with an input method (IME).** `Text` holds only the characters the input method has **committed**, and `Changed` runs each time it commits one. What is on the screen may not be committed yet: in Korean, a final consonant can still move to the next syllable. Typing 갈가 shows 갈, then 갉, then 갈가: 갈 is committed only when ㅏ is typed and the ㄱ moves on. A handler therefore never changes the text in the middle of a syllable, which is known to break typing in Flutter on Windows ([flutter/flutter#121376](https://github.com/flutter/flutter/issues/121376)). The cost: code that follows every keystroke, such as a character counter, sees the syllable being typed only once the input method commits it. Where the platform does not say which characters are still being composed (the macOS app; D37), the runtime tells it from how the text changes, with the same result.
 - **`CheckBox.Changed`** runs after `Checked` changes: when the user clicks the box or its `Caption`, or when the program sets `Checked`. As with `TextBox.Changed`, a change by the program runs the handler right away, setting the same value again does not run it, and a handler that sets its own `Checked` is not started again by that. While a CheckBox's `Changed` is running, a click on that CheckBox is ignored and leaves it as it was, so the box shows what the handler is dealing with (§8.1). A CheckBox has two states; Visual Basic 6's third, grayed state is left out (DESIGN.md D44).
+- **An OptionButton** (DESIGN.md D104) is one of a group of choices: the OptionButtons of a form are one group, of which one is checked. Checking one, by a click or by setting `Checked = True`, unchecks the others; a click on the checked one does nothing; `Checked = False` leaves none checked. `Changed` runs for the one that becomes checked, as Visual Basic 6's Click did, and not for the ones it unchecks, so one handler for the group runs once. In the designer, checking one in the Properties window unchecks the others. Visual Basic .NET calls it RadioButton (A056, F020).
+- **A ComboBox** (D104) is a closed box showing the chosen item, which a click opens as a list to pick one; the user picks and does not type (Visual Basic 6's Style 2). The program fills it and reads it exactly as a ListBox: `AddItem`, `RemoveItem`, `Clear`, `List`, `ListCount`, `ListIndex`, `Text`, and `Changed` when `ListIndex` changes. A ComboBox the user types in is left for later.
+- **Other names of control types**, as other versions of BASIC give them (D104): `RadioButton` is `OptionButton`, `CommandButton` is `Button`, `PictureBox` is `Image`, in code (A056) and in form files (F020).
 - **The form's keys** (DESIGN.md D101). `Form_KeyDown(e As KeyEventArgs)` runs when a key is pressed, and again while it is held; `Form_KeyUp(e As KeyEventArgs)` when it is let go. `e.KeyCode` is the key's number, compared with `Keys`: `Keys.Left`, `Keys.Right`, `Keys.Up`, `Keys.Down`, `Keys.Space`, `Keys.Enter`, `Keys.Escape`, `Keys.Back`, `Keys.Tab`, `Keys.Delete`, `Keys.Insert`, `Keys.Home`, `Keys.End`, `Keys.PageUp`, `Keys.PageDown`, `Keys.A` to `Keys.Z`, `Keys.D0` to `Keys.D9`, `Keys.NumPad0` to `Keys.NumPad9`, `Keys.F1` to `Keys.F12`, with Visual Basic .NET's numbers ([Microsoft](https://learn.microsoft.com/en-us/dotnet/api/system.windows.forms.keys)). `e.Shift`, `e.Control` and `e.Alt` say which modifiers are held; they raise no event alone. Letters and digits are told by where they are on the keyboard, whatever the input method types. The form in front gets the keys while it or a control other than a TextBox has the focus, from when it is shown; while a TextBox is typed in, only when its **`KeyPreview`** is `True` (`False` at first, as in Visual Basic .NET: [Microsoft](https://learn.microsoft.com/en-us/dotnet/api/system.windows.forms.form.keypreview)), and the TextBox still gets the key. A key event waits for the running handler, does not re-enter, and is blocked while a dialog is open. Visual Basic 6's `(KeyCode As Integer, Shift As Integer)` is A053. On phones (stage 3) key events do not come.
 
   ```vb

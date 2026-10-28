@@ -1,0 +1,14 @@
+Set cmbCity.Items: [Seoul]
+Set cmbCity.Items: [Seoul, Busan]
+Set cmbCity.Items: [Seoul, Busan, Daegu]
+Set cmbCity.ListIndex: 0
+Debug.Print: City: Seoul (0 of 3)
+> cmbCity.Select 2
+Debug.Print: City: Daegu (2 of 3)
+> cmbCity.Select 2
+> btnClear.Click
+Set cmbCity.Items: []
+Set cmbCity.ListIndex: -1
+Debug.Print: City:  (-1 of 0)
+> Close
+Closed

@@ -575,6 +575,12 @@ class _Analyzer {
     }
     final named = lookupNamedType(lower);
     if (named != null) return named;
+    if (componentAliased(name) case final c?) {
+      // `RadioButton` (Visual Basic .NET) for OptionButton (D104).
+      _reportAt(
+          ref.name, DiagnosticCode.typeHasOtherName, [name, c.name], [c.name]);
+      return c.type;
+    }
     _reportAt(ref.name, DiagnosticCode.unknownType, [name]);
     return GbType.unknown;
   }

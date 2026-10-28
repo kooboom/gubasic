@@ -1,0 +1,4 @@
+cmbCity.Select 2
+cmbCity.Select 2    ' chosen already: nothing
+btnClear.Click
+Close

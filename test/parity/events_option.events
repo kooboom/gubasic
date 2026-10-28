@@ -1,0 +1,6 @@
+optMedium.Click
+optMedium.Click    ' checked already: nothing
+btnLarge.Click
+btnNone.Click
+optSmall.Click
+Close

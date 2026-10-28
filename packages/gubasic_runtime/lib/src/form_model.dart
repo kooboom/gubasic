@@ -3,7 +3,17 @@ import 'package:flutter/foundation.dart';
 import 'anchor.dart';
 
 /// The kinds of built-in controls (components/NAME/component.yaml).
-enum GbControlKind { form, button, label, textBox, checkBox, listBox, image }
+enum GbControlKind {
+  form,
+  button,
+  label,
+  textBox,
+  checkBox,
+  listBox,
+  image,
+  optionButton,
+  comboBox,
+}
 
 /// The layer a control is drawn in, its component.yaml's `layer`
 /// (docs/DESIGN.md D41): [graphic] controls (Label) under all the others,

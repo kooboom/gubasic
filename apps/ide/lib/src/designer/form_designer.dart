@@ -1086,7 +1086,20 @@ class _FormDesignerState extends State<FormDesigner> {
   ) {
     if (!_canEdit) return;
     final before = _text;
-    final text = writeFormFile(withProperty(_form, control, property, value));
+    var form = withProperty(_form, control, property, value);
+    if (value == true &&
+        property == 'Checked' &&
+        form.control(control ?? '')?.component.name == 'OptionButton') {
+      // One OptionButton of the form is checked (D104).
+      for (final c in form.controls) {
+        if (c.component.name == 'OptionButton' &&
+            c.name.toLowerCase() != control!.toLowerCase() &&
+            c.valueOf('Checked') == true) {
+          form = withProperty(form, c.name, 'Checked', false);
+        }
+      }
+    }
+    final text = writeFormFile(form);
     widget.history.record(before, text, group: group);
     setState(() {});
     widget.project.setFile(widget.file, text);

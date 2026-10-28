@@ -362,6 +362,11 @@ enum DiagnosticCode {
   /// `Sub Main` in two modules. Args: the other module (D102).
   mainTwice('A055'),
 
+  /// A type under the name another version of BASIC gives it
+  /// (`RadioButton` for OptionButton). Args: the type as written,
+  /// GuBASIC's (D104).
+  typeHasOtherName('A056'),
+
   // Form and project files (.form.yaml, .gbproj)
 
   /// The file is not in the expected layout (YAML syntax).
@@ -432,6 +437,10 @@ enum DiagnosticCode {
 
   /// `startup: Sub Main`, but no module has a `Sub Main()` (D102).
   noSubMain('F019'),
+
+  /// A control type in a form file under the name another version of BASIC
+  /// gives it. Args: the type as written, GuBASIC's (D104).
+  controlTypeHasOtherName('F020'),
 
   // Run time (the interpreter)
 

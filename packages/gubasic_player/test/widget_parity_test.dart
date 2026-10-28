@@ -266,6 +266,8 @@ class _WidgetDriver implements ScriptDriver {
         GbTextBox(:final state) ||
         GbCheckBox(:final state) ||
         GbListBox(:final state) ||
+        GbOptionButton(:final state) ||
+        GbComboBox(:final state) ||
         GbImage(
           :final state,
         ) => state.name?.toLowerCase() == name.toLowerCase(),
@@ -336,6 +338,21 @@ class _WidgetDriver implements ScriptDriver {
   @override
   Future<EventOutcome?> select(String control, int index) async {
     if (!session.formShown) return EventOutcome.blocked;
+    if (tester.widget(_control(control)) case GbComboBox(:final state)) {
+      // A ComboBox opens, then its item is picked (D104).
+      if (index >= (state['Items'] as List<String>).length) {
+        throw StateError('$control has no item $index');
+      }
+      if (!await _tap(_control(control))) return EventOutcome.blocked;
+      await tester.pumpAndSettle();
+      final item = find.byKey(gbListItemKey(state.name!, index));
+      host.lastOutcome = null;
+      final before = state['ListIndex'];
+      await tester.tap(item);
+      await tester.pumpAndSettle();
+      if (before == index) return null;
+      return host.lastOutcome;
+    }
     final box = tester.widget<GbListBox>(_control(control)).state;
     if (index >= (box['Items'] as List<String>).length) {
       throw StateError('$control has no item $index');

@@ -1,0 +1,4 @@
+formatVersion: 1
+controls:
+  - { name: cmbCity, type: ComboBox }
+  - { name: btnClear, type: Button, properties: { Caption: Clear, Top: 40 } }

@@ -148,8 +148,11 @@ controls:
         name: 'F');
     expect(r.diagnostics.map((d) => '${d.code.code}@${d.line}'),
         ['F008@3', 'F008@4']);
-    expect(r.diagnostics.first.args,
-        ['Buton', 'Button, CheckBox, Image, Label, ListBox, TextBox, Timer']);
+    expect(r.diagnostics.first.args, [
+      'Buton',
+      'Button, CheckBox, ComboBox, Image, Label, ListBox, OptionButton, '
+          'TextBox, Timer',
+    ]);
     expect(r.form.controls, isEmpty);
   });
 

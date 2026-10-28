@@ -147,8 +147,14 @@ FormFileResult readFormFile(
         component = builtinComponents[typeName.toLowerCase()];
         if (component == null || component == formComponent) {
           component = null;
-          r.report(typeNode.span, DiagnosticCode.unknownControlType,
-              [typeName, _controlTypeNames()]);
+          if (componentAliased(typeName) case final c?) {
+            // `RadioButton` (Visual Basic .NET) for OptionButton (D104).
+            r.report(typeNode.span, DiagnosticCode.controlTypeHasOtherName,
+                [typeName, c.name]);
+          } else {
+            r.report(typeNode.span, DiagnosticCode.unknownControlType,
+                [typeName, _controlTypeNames()]);
+          }
         }
       }
     }
