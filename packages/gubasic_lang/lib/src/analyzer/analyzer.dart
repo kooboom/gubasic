@@ -280,13 +280,48 @@ class _Analyzer {
     return null;
   }
 
+  /// Reports a procedure named for an event under another version of
+  /// BASIC's name, `Timer1_Timer` (A051).
+  void _otherEventName(ProcedureDecl decl) {
+    final name = decl.name.name.toLowerCase();
+    for (final c in form!.controls) {
+      if (!name.startsWith('${c.name.toLowerCase()}_')) continue;
+      final written = decl.name.name.substring(c.name.length + 1);
+      final right = c.component.otherEvents[written.toLowerCase()];
+      if (right == null) continue;
+      _reportAt(decl.name, DiagnosticCode.eventHasOtherName,
+          ['${c.name}.$written', right, '${c.name}_$right']);
+      return;
+    }
+  }
+
+  /// Reports [event], which [component] does not have: under another
+  /// version of BASIC's name (A051), or not at all (A040).
+  void _unknownEvent(
+      Expr target, Identifier event, ComponentSpec component, String typeName) {
+    final right = component.otherEvents[event.name.toLowerCase()];
+    if (right != null) {
+      _reportAt(event, DiagnosticCode.eventHasOtherName, [
+        '${_text(target)}.${event.name}',
+        right,
+        '${_text(target)}.$right',
+      ]);
+    } else {
+      _reportAt(event, DiagnosticCode.unknownEvent,
+          [_text(target), typeName, event.name]);
+    }
+  }
+
   /// Records [decl] as an event handler if its name is `Control_Event`
   /// (or `Form_Event`) for an event that exists, and checks that it is
   /// written as the event expects (A032).
   void _handler(ProcedureDecl decl, Map<String, ProcedureDecl> handled) {
     final (control, owner, event) =
         _eventNamed(decl.name.name) ?? (null, '', null);
-    if (event == null) return;
+    if (event == null) {
+      _otherEventName(decl);
+      return;
+    }
     final type = control?.component.type ?? _formType;
     if (_handlerFits(
             decl, event, owner, [(type, '$owner.${event.name}', decl.name)],
@@ -340,8 +375,7 @@ class _Analyzer {
       if (e.name.name.isEmpty) continue;
       final event = component.events[e.name.name.toLowerCase()];
       if (event == null) {
-        _reportAt(e.name, DiagnosticCode.unknownEvent,
-            [_text(target), component.name, e.name.name]);
+        _unknownEvent(target, e.name, component, component.name);
         continue;
       }
       final handler = EventHandler(control, event);
@@ -679,8 +713,8 @@ class _Analyzer {
     if (name.isEmpty) return;
     final event = type.component.events[name.toLowerCase()];
     if (event == null) {
-      _reportAt(s.event.name, DiagnosticCode.unknownEvent,
-          [_text(s.event.target), type.displayName, name]);
+      _unknownEvent(
+          s.event.target, s.event.name, type.component, type.displayName);
       return;
     }
     final decl = symbol?.procedure;
@@ -1448,8 +1482,11 @@ class _Analyzer {
   void _newArguments(GbType type, List<Expr> args, Node at) {
     if (type is ControlType) {
       // A control made at run time (D98); forms are used by their names,
-      // and Control is the type of any control.
-      if (!isControlType(type) || type.component == controlComponent) {
+      // and Control is the type of any control; a Timer is put on the form
+      // in the designer (D100).
+      if (!type.component.visual) {
+        _reportAt(at, DiagnosticCode.placedInDesigner, [type.displayName]);
+      } else if (!isControlType(type) || type.component == controlComponent) {
         _reportAt(at, DiagnosticCode.newForm, [type.displayName]);
       } else if (args.isNotEmpty) {
         _reportAt(at, DiagnosticCode.wrongArgumentCount,

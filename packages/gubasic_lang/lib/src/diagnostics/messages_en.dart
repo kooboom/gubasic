@@ -239,6 +239,11 @@ const Map<DiagnosticCode, String> englishMessages = {
   DiagnosticCode.controlArrayItem: '{0} is one control: GuBASIC has no '
       'control arrays. Give each control its own name, or go through them '
       'with For Each c As Control In Me.Controls; a Tag can number them.',
+  DiagnosticCode.eventHasOtherName: 'GuBASIC calls the event {0} '
+      'differently: it is {1}. Write {2}.',
+  DiagnosticCode.placedInDesigner: 'A {0} is put on the form in the '
+      'designer, not made with New. Add one from the toolbox, and set its '
+      'properties in code.',
   DiagnosticCode.notAProcedure: '"{0}" is not a Sub of this code, so it '
       'cannot handle an event. Name a Sub after AddressOf.',
   DiagnosticCode.readOnlyProperty:

@@ -1,0 +1,24 @@
+' A Timer (D100): off at first; Start (or Enabled = True) makes it tick
+' every Interval milliseconds, Stop (or Enabled = False) stops it. It is
+' not one of the controls on the form. The script makes each tick.
+Dim ticks As Integer
+
+Sub Form_Load()
+    Debug.Print("Enabled: " & tmrClock.Enabled & ", every " & tmrClock.Interval & " ms; " & Me.Controls.Count & " controls")
+End Sub
+
+Sub btnStart_Click()
+    tmrClock.Interval = 500
+    tmrClock.Start
+    Debug.Print("Started: " & tmrClock.Enabled & ", every " & tmrClock.Interval & " ms")
+End Sub
+
+Sub tmrClock_Tick()
+    ticks = ticks + 1
+    lblTime.Caption = ticks & " ticks"
+    If ticks = 3 Then tmrClock.Enabled = False
+End Sub
+
+Sub btnStop_Click()
+    tmrClock.Stop
+End Sub

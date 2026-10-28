@@ -1,0 +1,5 @@
+formatVersion: 1
+controls:
+  - { name: btnGo, type: Button, properties: { Caption: Go } }
+  - { name: tmrWait, type: Timer, properties: { Enabled: true } }
+  - { name: tmrSay, type: Timer, properties: { Enabled: true } }

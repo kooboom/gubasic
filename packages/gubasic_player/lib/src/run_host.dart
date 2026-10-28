@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/widgets.dart';
 import 'package:gubasic_lang/gubasic_lang.dart';
 import 'package:gubasic_runtime/gubasic_runtime.dart';
@@ -25,8 +27,68 @@ class RunHost implements FormHost {
     for (final f in [form, ...others]) {
       _files[f.name.toLowerCase()] = f;
       _models[f.name.toLowerCase()] = _modelOf(f);
+      _timers[f.name.toLowerCase()] = _timersOf(f);
     }
   }
+
+  /// Each form's Timers (D100), by lower-case form and Timer name: the
+  /// Timer's name and its properties. They have no widget.
+  final _timers = <String, Map<String, (String, Map<String, Object>)>>{};
+
+  /// The clock of each Timer that is Enabled while the program runs, by
+  /// lower-case `form.timer`.
+  final _clocks = <String, Timer>{};
+
+  /// Whether the clocks run: from the first form shown until the end.
+  var _ticking = false;
+
+  static Map<String, (String, Map<String, Object>)> _timersOf(FormFile f) => {
+    for (final c in f.controls)
+      if (!c.component.visual)
+        c.name.toLowerCase(): (
+          c.name,
+          {
+            for (final p in c.component.properties.values)
+              if (p.isStored) p.name: c.valueOf(p.name),
+          },
+        ),
+  };
+
+  /// Starts, restarts or stops [timer]'s clock on [form], for its Enabled
+  /// and Interval now.
+  void _clock(String form, String timer) {
+    final key = '${form.toLowerCase()}.${timer.toLowerCase()}';
+    _clocks.remove(key)?.cancel();
+    final (name, properties) =
+        _timers[form.toLowerCase()]![timer.toLowerCase()]!;
+    if (!_ticking || properties['Enabled'] != true) return;
+    _clocks[key] = Timer.periodic(
+      Duration(milliseconds: properties['Interval'] as int),
+      (_) => tick(form, name),
+    );
+  }
+
+  /// Starts the clocks of every form's Timers that are Enabled.
+  void _startClocks() {
+    for (final MapEntry(key: form, value: timers) in _timers.entries) {
+      for (final timer in timers.keys) {
+        if (!_clocks.containsKey('$form.$timer')) _clock(form, timer);
+      }
+    }
+  }
+
+  void _stopClocks({String? form}) {
+    final prefix = form == null ? '' : '${form.toLowerCase()}.';
+    for (final key
+        in _clocks.keys.where((k) => k.startsWith(prefix)).toList()) {
+      _clocks.remove(key)!.cancel();
+    }
+  }
+
+  /// [timer] of [form] ticks (D100): what its clock does, and what a test
+  /// does in its place.
+  EventOutcome tick(String form, String timer) =>
+      interpreter.raiseTick(timer, form: form);
 
   final _files = <String, FormFile>{};
   final _models = <String, GbFormModel>{};
@@ -139,8 +201,11 @@ class RunHost implements FormHost {
   }
 
   @override
-  Object getProperty(String form, String? control, String property) =>
-      modelOf(form).control(control)![property];
+  Object getProperty(String form, String? control, String property) {
+    final timer = _timers[form.toLowerCase()]?[control?.toLowerCase()];
+    if (timer != null) return timer.$2[property]!;
+    return modelOf(form).control(control)![property];
+  }
 
   @override
   void setProperty(
@@ -148,7 +213,17 @@ class RunHost implements FormHost {
     String? control,
     String property,
     Object value,
-  ) => modelOf(form).setProperty(control, property, value);
+  ) {
+    final timer = _timers[form.toLowerCase()]?[control?.toLowerCase()];
+    if (timer == null) {
+      modelOf(form).setProperty(control, property, value);
+      return;
+    }
+    timer.$2[property] = value;
+    if (property == 'Enabled' || property == 'Interval') {
+      _clock(form, timer.$1);
+    }
+  }
 
   @override
   Future<String?> loadSettings() => settings.load(settingsKey);
@@ -159,6 +234,10 @@ class RunHost implements FormHost {
   @override
   void showForms(List<ShownForm> forms) {
     final first = shown.isEmpty;
+    if (first) {
+      _ticking = true;
+      _startClocks();
+    }
     shown = List.unmodifiable(forms);
     if (first) onShowForm?.call();
     onFormsChanged?.call();
@@ -168,6 +247,9 @@ class RunHost implements FormHost {
   void resetForm(String form) {
     final file = _files[form.toLowerCase()]!;
     _models[form.toLowerCase()] = _modelOf(file);
+    _stopClocks(form: form);
+    _timers[form.toLowerCase()] = _timersOf(file);
+    _startClocks();
   }
 
   @override
@@ -189,5 +271,9 @@ class RunHost implements FormHost {
       modelOf(form).removeControl(control);
 
   @override
-  void endProgram() => dialogs.closeAll();
+  void endProgram() {
+    _ticking = false;
+    _stopClocks();
+    dialogs.closeAll();
+  }
 }

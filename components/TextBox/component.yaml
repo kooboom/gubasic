@@ -25,3 +25,7 @@ methods: []
 otherNames:
   # Visual Basic 6's control arrays numbered controls; a Tag can (D99).
   Index: Tag
+# Events other versions of BASIC name differently (A051, D100).
+otherEvents:
+  TextChanged: Changed
+  Change: Changed

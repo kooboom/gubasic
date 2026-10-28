@@ -1,0 +1,28 @@
+Debug.Print: Enabled: False, every 1000 ms; 3 controls
+> tmrClock.Tick
+Disabled: tmrClock.Tick
+> btnStart.Click
+Set tmrClock.Interval: 500
+Set tmrClock.Enabled: True
+Debug.Print: Started: True, every 500 ms
+> tmrClock.Tick
+Set lblTime.Caption: 1 ticks
+> tmrClock.Tick
+Set lblTime.Caption: 2 ticks
+> tmrClock.Tick
+Set lblTime.Caption: 3 ticks
+Set tmrClock.Enabled: False
+> tmrClock.Tick
+Disabled: tmrClock.Tick
+> btnStart.Click
+Set tmrClock.Interval: 500
+Set tmrClock.Enabled: True
+Debug.Print: Started: True, every 500 ms
+> tmrClock.Tick
+Set lblTime.Caption: 4 ticks
+> btnStop.Click
+Set tmrClock.Enabled: False
+> tmrClock.Tick
+Disabled: tmrClock.Tick
+> Close
+Closed

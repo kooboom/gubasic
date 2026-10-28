@@ -28,16 +28,6 @@ class Toolbox extends StatelessWidget {
   final void Function(ComponentSpec? tool) onChoose;
   final void Function(ComponentSpec type) onPlace;
 
-  static IconData _icon(String type) => switch (type.toLowerCase()) {
-    'button' => Icons.smart_button_outlined,
-    'label' => Icons.title,
-    'textbox' => Icons.text_fields,
-    'checkbox' => Icons.check_box_outlined,
-    'listbox' => Icons.list_alt,
-    'image' => Icons.image_outlined,
-    _ => Icons.widgets_outlined,
-  };
-
   @override
   Widget build(BuildContext context) => SizedBox(
     width: 128,
@@ -58,7 +48,7 @@ class Toolbox extends StatelessWidget {
           _item(
             context,
             key: ValueKey('toolbox.${type.name}'),
-            icon: _icon(type.name),
+            icon: componentIcon(type),
             label: type.name,
             tip: strings.placeTip.replaceAll('{0}', type.name),
             selected: tool == type,
@@ -170,3 +160,15 @@ class _DragFeedback extends StatelessWidget {
     );
   }
 }
+
+/// The icon of controls of [type], in the toolbox and the tray.
+IconData componentIcon(ComponentSpec type) => switch (type.name.toLowerCase()) {
+  'button' => Icons.smart_button_outlined,
+  'label' => Icons.title,
+  'textbox' => Icons.text_fields,
+  'checkbox' => Icons.check_box_outlined,
+  'listbox' => Icons.list_alt,
+  'image' => Icons.image_outlined,
+  'timer' => Icons.timer_outlined,
+  _ => Icons.widgets_outlined,
+};

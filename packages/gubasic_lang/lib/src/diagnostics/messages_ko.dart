@@ -195,6 +195,10 @@ const Map<DiagnosticCode, String> koreanMessages = {
       'GuBASIC에는 컨트롤 배열이 없어서 처리기는 Index를 받지 않습니다. {0} 프로시저로 여러 컨트롤을 처리하려면 Handles 뒤에 컨트롤을 적고 누른 컨트롤을 sender로 받아 주세요: Sub Pressed(sender As {2}) Handles {1}, … 번호는 Tag에 담을 수 있습니다.',
   DiagnosticCode.controlArrayItem:
       '{0} 이름은 컨트롤 하나입니다. GuBASIC에는 컨트롤 배열이 없습니다. 컨트롤마다 이름을 따로 주거나, For Each c As Control In Me.Controls로 차례로 돌아 주세요. 번호는 Tag에 담을 수 있습니다.',
+  DiagnosticCode.eventHasOtherName:
+      'GuBASIC에서는 {0} 이벤트의 이름이 다릅니다. 이벤트 이름은 {1} 이벤트이니 {2} 형태로 써 주세요.',
+  DiagnosticCode.placedInDesigner:
+      '{0} 컨트롤은 New로 만들지 않고 디자이너에서 폼에 놓습니다. 도구 상자에서 넣고, 속성은 코드에서 정해 주세요.',
   DiagnosticCode.notAProcedure:
       '"{0}" 이름은 이 코드의 Sub 프로시저가 아니어서 이벤트를 처리할 수 없습니다. AddressOf 뒤에는 Sub 프로시저의 이름을 써 주세요.',
   DiagnosticCode.readOnlyProperty:

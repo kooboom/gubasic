@@ -83,7 +83,7 @@ void main() {
     expect(box.properties['left']!.changeEvent, isNull);
     expect([box.properties['left']!.min, box.properties['left']!.max],
         [integerPropertyMin, integerPropertyMax]);
-    for (final c in builtinComponents.values) {
+    for (final c in builtinComponents.values.where((c) => c.visual)) {
       expect(c.properties['width']!.min, 0, reason: c.name);
       expect(c.properties['height']!.min, 0, reason: c.name);
     }

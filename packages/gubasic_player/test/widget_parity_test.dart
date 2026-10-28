@@ -268,6 +268,10 @@ class _WidgetDriver implements ScriptDriver {
     String event, {
     String? form,
   }) async {
+    if (control != null && event == 'Tick') {
+      // A Timer's tick, as its clock would make it (D100).
+      return host.tick(form ?? host.front?.name ?? host.windowForm, control);
+    }
     if (control == null || event != 'Click') {
       throw UnsupportedError('no widget for $control.$event');
     }

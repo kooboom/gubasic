@@ -597,6 +597,7 @@ class _PropertyFieldState extends State<PropertyField> {
       return Align(
         alignment: Alignment.centerLeft,
         child: Checkbox(
+          key: propertyFieldKey(widget.spec.name),
           value: widget.value as bool,
           onChanged: widget.editable
               ? (v) {

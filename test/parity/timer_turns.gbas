@@ -1,0 +1,22 @@
+' A tick is an event like a click (D82, D100): while its handler runs
+' (here waiting in DoEvents) another tick of it is ignored; another
+' Timer's tick runs in the DoEvents; while a MsgBox is open, ticks are
+' blocked.
+Dim waiting As Boolean
+
+Sub tmrWait_Tick()
+    Debug.Print("waiting")
+    waiting = True
+    Do While waiting
+        DoEvents
+    Loop
+    Debug.Print("done waiting")
+End Sub
+
+Sub tmrSay_Tick()
+    MsgBox("tick")
+End Sub
+
+Sub btnGo_Click()
+    waiting = False
+End Sub

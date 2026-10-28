@@ -27,3 +27,6 @@ otherNames:
   Index: Tag
   Text: Caption
   Value: Checked
+# Events other versions of BASIC name differently (A051, D100).
+otherEvents:
+  CheckedChanged: Changed

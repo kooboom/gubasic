@@ -61,6 +61,9 @@ enum EventOutcome {
 
   /// The program is not running.
   notRunning,
+
+  /// A Timer that is not Enabled does not tick (D100).
+  disabled,
 }
 
 /// Runs an analyzed program (docs/DESIGN.md §3.1).
@@ -137,7 +140,8 @@ class Interpreter {
       final control = GbControl(c.name, c.component, form: f.name);
       run.controls[c.name.toLowerCase()] = control;
       run.designed[c.name.toLowerCase()] = control;
-      run.order.add(control);
+      // A Timer is not one of the controls seen on the form (D100).
+      if (c.component.visual) run.order.add(control);
     }
     for (final MapEntry(key: decl, value: events)
         in f.program.analysis.handlers.entries) {
@@ -326,6 +330,30 @@ class Interpreter {
       return EventOutcome.ignored;
     }
     return null;
+  }
+
+  /// A Timer's tick (D100), as the host's clock or a test script makes it:
+  /// [timer] of [form], shown or hidden, any time from its Form_Load until
+  /// its Close, while Enabled. Like a click it waits for the running
+  /// handler and does not re-enter (D5, D28), and is dropped while a
+  /// MsgBox or InputBox is open; unlike a click, it reaches a form behind
+  /// the one in front.
+  EventOutcome raiseTick(String timer, {required String form}) {
+    if (_formRun == null || _ended != null) return EventOutcome.notRunning;
+    final run = _formNamed(form);
+    final control = run?.controls[timer.toLowerCase()];
+    if (run == null || control == null || !run.loaded) {
+      return EventOutcome.notRunning;
+    }
+    if (_openDialogs > 0) return EventOutcome.blocked;
+    if (_formHost.getProperty(run.name, control.name, 'Enabled') != true) {
+      return EventOutcome.disabled;
+    }
+    final handler = control.handlers['tick'] as ProcedureDecl?;
+    if (handler == null) return EventOutcome.noHandler;
+    if (_running.contains(handler)) return EventOutcome.ignored;
+    _runHandler(handler, control);
+    return EventOutcome.started;
   }
 
   /// The procedure a run starts with: `Sub Main()`, or else
@@ -1484,6 +1512,12 @@ class Interpreter {
           await _close(form);
           return null;
         };
+        return null;
+      case ('Timer', 'Start'):
+        _rawSet(c, 'Enabled', true);
+        return null;
+      case ('Timer', 'Stop'):
+        _rawSet(c, 'Enabled', false);
         return null;
       case ('ListBox', 'AddItem'):
         _rawSet(c, 'Items',

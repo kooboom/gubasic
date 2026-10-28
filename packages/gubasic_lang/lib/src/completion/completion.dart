@@ -229,6 +229,8 @@ final List<Completion> _typeNames = [
   const Completion('List', CompletionKind.type, detail: 'List(Of T)'),
   for (final c in builtinComponents.values)
     Completion(c.name, CompletionKind.type),
+  // The type of any control (D98).
+  Completion(controlComponent.name, CompletionKind.type),
 ];
 
 /// The names visible at a line of the code, from the last compilation.

@@ -1,0 +1,11 @@
+tmrClock.Tick     ' off: no tick
+btnStart.Click
+tmrClock.Tick
+tmrClock.Tick
+tmrClock.Tick     ' the third tick turns it off
+tmrClock.Tick
+btnStart.Click
+tmrClock.Tick
+btnStop.Click
+tmrClock.Tick
+Close

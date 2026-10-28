@@ -1,0 +1,7 @@
+tmrWait.Tick
+tmrWait.Tick      ' its handler is running
+tmrSay.Tick       ' runs in the DoEvents, and opens a MsgBox
+tmrWait.Tick      ' blocked by the MsgBox
+OK
+btnGo.Click
+Close

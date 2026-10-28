@@ -151,4 +151,6 @@ GbType? lookupNamedType(String name) =>
 /// Whether [type] is a control's: a component's other than the form's, or
 /// Control (D98).
 bool isControlType(GbType type) =>
-    type is ControlType && type.component != formComponent;
+    type is ControlType &&
+    type.component != formComponent &&
+    type.component.visual;

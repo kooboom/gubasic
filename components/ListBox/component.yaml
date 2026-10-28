@@ -41,3 +41,7 @@ otherNames:
   Index: Tag
   SelectedIndex: ListIndex
   Items: [AddItem, List, ListCount]
+# Events other versions of BASIC name differently (A051, D100).
+otherEvents:
+  SelectedIndexChanged: Changed
+  Click: Changed

@@ -339,6 +339,16 @@ enum DiagnosticCode {
   /// as written (D99).
   controlArrayItem('A050'),
 
+  /// An event under a name other versions of BASIC use, listed as
+  /// `otherEvents` in the component.yaml (`Timer1_Timer` for Tick). Args:
+  /// the event as written (`Timer1.Timer`), GuBASIC's event (`Tick`), how
+  /// to write it (`Timer1_Tick`) (D100).
+  eventHasOtherName('A051'),
+
+  /// `New Timer`: a control not seen on the form is put on it in the
+  /// designer. Args: the type (D100).
+  placedInDesigner('A052'),
+
   // Form and project files (.form.yaml, .gbproj)
 
   /// The file is not in the expected layout (YAML syntax).

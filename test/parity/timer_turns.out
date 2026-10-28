@@ -1,0 +1,13 @@
+> tmrWait.Tick
+Debug.Print: waiting
+> tmrWait.Tick
+Ignored: tmrWait.Tick
+> tmrSay.Tick
+MsgBox: tick
+> tmrWait.Tick
+Blocked: tmrWait.Tick
+> OK
+> btnGo.Click
+Debug.Print: done waiting
+> Close
+Closed

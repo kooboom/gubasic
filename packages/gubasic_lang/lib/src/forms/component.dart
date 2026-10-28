@@ -123,6 +123,8 @@ class ComponentSpec {
     List<MethodSpec> methods = const [],
     this.layer = ComponentLayer.control,
     this.otherNames = const {},
+    this.otherEvents = const {},
+    this.visual = true,
   })  : properties = {for (final p in properties) p.name.toLowerCase(): p},
         events = {for (final e in events) e.name.toLowerCase(): e},
         methods = {for (final m in methods) m.name.toLowerCase(): m};
@@ -147,6 +149,16 @@ class ComponentSpec {
   /// differently, by lower-case name: `text` → `[Caption]` for a Button.
   /// The analyzer points to GuBASIC's member(s) (A036).
   final Map<String, List<String>> otherNames;
+
+  /// Names other versions of BASIC give an event GuBASIC calls
+  /// differently, by lower-case name: `timer` → `Tick` for a Timer
+  /// (`Timer1_Timer` in Visual Basic 6). The analyzer points to GuBASIC's
+  /// event (A051).
+  final Map<String, String> otherEvents;
+
+  /// Whether controls of this kind are seen on the form, with a place and
+  /// a size. A Timer is not: the designer keeps it in a tray (D100).
+  final bool visual;
 
   /// The properties the form file and the Properties window can set.
   Iterable<PropertySpec> get designProperties =>
@@ -329,6 +341,18 @@ ComponentSpec readComponentFile(String text) {
     otherNames[key.toLowerCase()] = List.unmodifiable(names.cast<String>());
   }
 
+  final otherEvents = <String, String>{};
+  final eventNames = doc['otherEvents'] ?? YamlMap();
+  if (eventNames is! YamlMap) throw const FormatException('bad otherEvents');
+  for (final MapEntry(:key, :value) in eventNames.entries) {
+    if (key is! String || value is! String) {
+      throw FormatException('bad otherEvents: $key');
+    }
+    otherEvents[key.toLowerCase()] = value;
+  }
+  final visual = doc['visual'] ?? true;
+  if (visual is! bool) throw const FormatException('visual is true or false');
+
   final spec = ComponentSpec(
     name: field<String>(doc, 'name'),
     version: field<int>(doc, 'version'),
@@ -338,7 +362,16 @@ ComponentSpec readComponentFile(String text) {
     methods: methods,
     layer: layer,
     otherNames: otherNames,
+    otherEvents: otherEvents,
+    visual: visual,
   );
+  for (final MapEntry(:key, :value) in spec.otherEvents.entries) {
+    if (spec.events.containsKey(key) ||
+        !spec.events.containsKey(value.toLowerCase())) {
+      throw FormatException('${spec.name}: otherEvents $key must name an '
+          'event GuBASIC calls $value');
+    }
+  }
   if (!spec.events.containsKey(spec.defaultEvent.toLowerCase())) {
     throw FormatException('${spec.name}: defaultEvent is not an event');
   }

@@ -33,6 +33,9 @@ const designerFormKey = ValueKey('designer.form');
 const designerOutsideKey = ValueKey('designer.outside');
 const designerFitInsideKey = ValueKey('designer.outside.fit');
 
+/// The tray under the form for the controls not seen on it (D100).
+const designerTrayKey = ValueKey('designer.tray');
+
 /// The status line's words while a drag is stopped at the form's edge.
 const designerEdgeHintKey = ValueKey('designer.edgeHint');
 
@@ -107,6 +110,19 @@ class _FormDesignerState extends State<FormDesigner> {
     for (final c in _form.controls)
       if (_isChosen(c.name)) c,
   ];
+
+  /// Those of them seen on the form, with a place: not its Timers (D100).
+  List<ControlDecl> get _chosenPlaced => [
+    for (final c in _chosenControls)
+      if (c.component.visual) c,
+  ];
+
+  /// The one chosen control if it is seen on the form, for its frame and
+  /// handles.
+  ControlDecl? get _selectedPlaced => switch (_selectedControl) {
+    final c? when c.component.visual => c,
+    _ => null,
+  };
 
   /// Several controls being moved with the mouse: their boxes when the
   /// drag started, and where it started; and where they are now, null
@@ -358,7 +374,7 @@ class _FormDesignerState extends State<FormDesigner> {
     ControlBox Function(ControlBox) change, {
     required bool together,
   }) {
-    final chosen = _chosenControls;
+    final chosen = _chosenPlaced;
     if (!_canEdit || chosen.isEmpty || _change != null) return;
     if (_groupChange != null) return;
     final boxes = {for (final c in chosen) c.name: boxOf(c)};
@@ -385,11 +401,23 @@ class _FormDesignerState extends State<FormDesigner> {
     final form = _form;
     final name = newControlName(form, type);
     _tool = null;
+    if (!type.visual) return _placeInTray(type);
     _apply(
       withControl(form, type, name, centredBox(form, type, grid: _grid)),
       select: name,
     );
   }
+
+  /// A control not seen on the form, a Timer (D100): it goes into the tray
+  /// under the form, chosen; one step of undo.
+  void _placeInTray(ComponentSpec type) {
+    final form = _form;
+    final name = newControlName(form, type);
+    setState(() => _tool = null);
+    _apply(withControl(form, type, name, _noBox), select: name);
+  }
+
+  static const ControlBox _noBox = (left: 0, top: 0, width: 0, height: 0);
 
   /// The form's area, where a tool dragged from the toolbox is dropped.
   final _dropArea = GlobalKey();
@@ -407,6 +435,7 @@ class _FormDesignerState extends State<FormDesigner> {
     final at = Point(p.dx, p.dy);
     final form = _form;
     final type = details.data;
+    if (!type.visual) return _placeInTray(type);
     final name = newControlName(form, type);
     setState(() => _tool = null);
     _apply(
@@ -453,7 +482,9 @@ class _FormDesignerState extends State<FormDesigner> {
       target: _controlAt(e.localPosition)?.name ?? '',
       at: e.localPosition,
     );
-    if (_tool != null && _canEdit) {
+    if (_tool case final tool? when _canEdit) {
+      // A Timer goes into the tray wherever the form is clicked (D100).
+      if (!tool.visual) return _placeInTray(tool);
       setState(() => _dragStart = _dragEnd = _point(e));
       return;
     }
@@ -494,7 +525,7 @@ class _FormDesignerState extends State<FormDesigner> {
       });
       return;
     }
-    final selected = _selectedControl;
+    final selected = _selectedPlaced;
     final handle = selected == null ? null : _handleAt(p, boxOf(selected));
     if (handle != null && _canEdit) {
       setState(
@@ -512,7 +543,7 @@ class _FormDesignerState extends State<FormDesigner> {
       // without a drag chooses that one alone.
       setState(() {
         _groupChange = (
-          start: {for (final x in _chosenControls) x.name: boxOf(x)},
+          start: {for (final x in _chosenPlaced) x.name: boxOf(x)},
           from: p,
           clicked: c.name,
         );
@@ -562,7 +593,7 @@ class _FormDesignerState extends State<FormDesigner> {
         _chosen = [
           ...band.before,
           if (!small)
-            for (final c in _form.controls)
+            for (final c in placedControls(_form))
               if (!before.contains(c.name.toLowerCase()) &&
                   touches(boxOf(c), band.from, to))
                 c.name,
@@ -704,7 +735,7 @@ class _FormDesignerState extends State<FormDesigner> {
 
   /// Sets the cursor for the mouse at [p] on the form.
   void _hover(Offset p) {
-    final selected = _selectedControl;
+    final selected = _selectedPlaced;
     final handle = selected == null ? null : _handleAt(p, boxOf(selected));
     final cursor = !_canEdit
         ? MouseCursor.defer
@@ -1170,7 +1201,15 @@ class _FormDesignerState extends State<FormDesigner> {
               onPlace: _placeInMiddle,
             ),
             const VerticalDivider(width: 1),
-            Expanded(child: _canvas(context, form, editable)),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Expanded(child: _canvas(context, form, editable)),
+                  ?_tray(context, form),
+                ],
+              ),
+            ),
           ],
         ),
       ),
@@ -1484,7 +1523,7 @@ class _FormDesignerState extends State<FormDesigner> {
     final width = size.width.toDouble();
     final height = size.height.toDouble();
     final scheme = Theme.of(context).colorScheme;
-    final selected = _selectedControl;
+    final selected = _selectedPlaced;
     // While the form's size is dragged, the controls are where their
     // Anchor puts them.
     final live = _liveForm == null
@@ -1551,13 +1590,13 @@ class _FormDesignerState extends State<FormDesigner> {
                         ],
                         edgeColor: scheme.outline,
                         outside: [
-                          for (final c in form.controls)
+                          for (final c in placedControls(form))
                             if (isOutside(boxNow(c), size)) boxNow(c),
                         ],
                         outsideColor: scheme.error,
                         selected: selected == null ? null : boxNow(selected),
                         chosen: _chosen.length > 1
-                            ? [for (final c in _chosenControls) boxNow(c)]
+                            ? [for (final c in _chosenPlaced) boxNow(c)]
                             : const [],
                         band: _band == null
                             ? null
@@ -1702,6 +1741,44 @@ class _FormDesignerState extends State<FormDesigner> {
     );
   }
 
+  /// The tray under the form (D100): the controls not seen on it, its
+  /// Timers, each a chip that a click chooses and a double-click opens the
+  /// handler of; null when there are none.
+  Widget? _tray(BuildContext context, FormFile form) {
+    final hidden = [
+      for (final c in form.controls)
+        if (!c.component.visual) c,
+    ];
+    if (hidden.isEmpty) return null;
+    final scheme = Theme.of(context).colorScheme;
+    return Container(
+      key: designerTrayKey,
+      decoration: BoxDecoration(
+        color: scheme.surfaceContainerLow,
+        border: Border(top: BorderSide(color: scheme.outlineVariant)),
+      ),
+      padding: const EdgeInsets.all(8),
+      child: Wrap(
+        spacing: 8,
+        runSpacing: 8,
+        children: [
+          for (final c in hidden)
+            _TrayChip(
+              key: ValueKey('designer.tray.${c.name}'),
+              name: c.name,
+              icon: componentIcon(c.component),
+              chosen: _isChosen(c.name),
+              onTap: () {
+                _focus.requestFocus();
+                setState(() => _selected = c.name);
+              },
+              onDoubleTap: () => widget.onOpenHandler?.call(c.name),
+            ),
+        ],
+      ),
+    );
+  }
+
   /// The selected control, the control being drawn, or else the form:
   /// its name, type, place and size.
   Widget _status(BuildContext context, FormFile form) {
@@ -1718,6 +1795,8 @@ class _FormDesignerState extends State<FormDesigner> {
             '{0}',
             '${_chosenControls.length}',
           )
+        : selected != null && !selected.component.visual
+        ? '${selected.name} (${selected.component.name})'
         : selected != null
         ? describe(
             selected.name,
@@ -2012,4 +2091,49 @@ class ShortcutAt extends ShortcutActivator {
   @override
   String debugDescribeKeys() =>
       '${_isApple ? 'Meta' : 'Control'}+${key.debugName}';
+}
+
+/// A control in the designer's tray (D100): its icon and name.
+class _TrayChip extends StatelessWidget {
+  const _TrayChip({
+    super.key,
+    required this.name,
+    required this.icon,
+    required this.chosen,
+    required this.onTap,
+    required this.onDoubleTap,
+  });
+
+  final String name;
+  final IconData icon;
+  final bool chosen;
+  final VoidCallback onTap;
+  final VoidCallback onDoubleTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Material(
+      color: chosen ? scheme.primaryContainer : scheme.surface,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(4),
+        side: BorderSide(color: chosen ? scheme.primary : scheme.outline),
+      ),
+      child: InkWell(
+        onTap: onTap,
+        onDoubleTap: onDoubleTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, size: 16),
+              const SizedBox(width: 6),
+              Text(name),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }

@@ -284,9 +284,10 @@ class ScriptedHost implements FormHost {
 
   final _components = <String, String>{};
 
-  /// The component of [control] of the form in front (`CheckBox`), or null
-  /// if there is none.
-  String? componentOf(String control) => _components[_key(front, control, '')];
+  /// The component of [control] of [form], or of the form in front
+  /// (`CheckBox`); null if there is none.
+  String? componentOf(String control, {String? form}) =>
+      _components[_key(form ?? front, control, '')];
 
   final transcript = <String>[];
 
@@ -615,6 +616,12 @@ class _HostDriver implements ScriptDriver {
   @override
   Future<EventOutcome> raise(String? control, String event,
       {String? form}) async {
+    if (control != null &&
+        event == 'Tick' &&
+        host.componentOf(control, form: form) == 'Timer') {
+      // A Timer's tick, as its clock would make it (D100).
+      return interpreter.raiseTick(control, form: form ?? host.front);
+    }
     if (form != null && form.toLowerCase() != host.front.toLowerCase()) {
       return EventOutcome.blocked;
     }
@@ -690,6 +697,8 @@ void _record(List<String> out, String step, EventOutcome outcome) {
       out.add('Ignored: $step');
     case EventOutcome.blocked:
       out.add('Blocked: $step');
+    case EventOutcome.disabled:
+      out.add('Disabled: $step');
     case EventOutcome.started ||
           EventOutcome.noHandler ||
           EventOutcome.notRunning:

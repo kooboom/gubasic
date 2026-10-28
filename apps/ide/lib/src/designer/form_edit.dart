@@ -29,6 +29,7 @@ List<ComponentSpec> get toolboxComponents => [
     'checkbox',
     'listbox',
     'image',
+    'timer',
   ])
     builtinComponents[name]!,
 ];
@@ -43,7 +44,12 @@ String newControlName(FormFile form, ComponentSpec type) {
   }
 }
 
-/// The box of [control] on its form.
+/// The controls of [form] seen on it, with a place and a size: all but its
+/// Timers, which the designer keeps in a tray (D100).
+Iterable<ControlDecl> placedControls(FormFile form) =>
+    form.controls.where((c) => c.component.visual);
+
+/// The box of [control] on its form; a control seen on it.
 ControlBox boxOf(ControlDecl control) => (
   left: control.valueOf('Left') as int,
   top: control.valueOf('Top') as int,
@@ -114,7 +120,7 @@ ControlBox centredBox(FormFile form, ComponentSpec type, {required bool grid}) {
   var top = snap(max(0, (size.height - d.height) / 2), grid: grid);
   // Where a control is already, the next goes below it, then at the top
   // of the next column, so that captions never sit over each other (D68).
-  bool taken(int l, int t) => form.controls.any((c) {
+  bool taken(int l, int t) => placedControls(form).any((c) {
     final b = boxOf(c);
     return l < b.left + b.width &&
         b.left < l + d.width &&
@@ -145,7 +151,7 @@ ControlBox _cascade(
   int top,
   ({int width, int height}) d,
 ) {
-  bool taken(int l, int t) => form.controls.any((c) {
+  bool taken(int l, int t) => placedControls(form).any((c) {
     final b = boxOf(c);
     return b.left == l && b.top == t;
   });
@@ -176,10 +182,13 @@ FormFile withControl(
 ) {
   final properties = <String, Object>{
     if (type.properties.containsKey('caption')) 'Caption': name,
-    'Left': box.left,
-    'Top': box.top,
-    'Width': box.width,
-    'Height': box.height,
+    // A Timer has no place (D100).
+    if (type.visual) ...{
+      'Left': box.left,
+      'Top': box.top,
+      'Width': box.width,
+      'Height': box.height,
+    },
   };
   return _copy(form, [
     ...form.controls,
@@ -531,7 +540,7 @@ bool isOutside(ControlBox box, ({int width, int height}) size) =>
 List<ControlDecl> controlsOutside(FormFile form) {
   final size = formSizeOf(form);
   return [
-    for (final c in form.controls)
+    for (final c in placedControls(form))
       if (isOutside(boxOf(c), size)) c,
   ];
 }
@@ -674,7 +683,7 @@ typedef AnchorBase = ({
 
 /// [form]'s controls and size as they are, to move controls from.
 AnchorBase anchorBaseOf(FormFile form) => (
-  boxes: {for (final c in form.controls) c.name.toLowerCase(): boxOf(c)},
+  boxes: {for (final c in placedControls(form)) c.name.toLowerCase(): boxOf(c)},
   size: formSizeOf(form),
 );
 
@@ -686,7 +695,7 @@ Map<String, ControlBox> anchoredBoxes(
   ({int width, int height}) size,
   AnchorBase base,
 ) => {
-  for (final c in form.controls)
+  for (final c in placedControls(form))
     c.name.toLowerCase(): switch (base.boxes[c.name.toLowerCase()]) {
       final from? => anchoredRect(
         from,
@@ -709,7 +718,7 @@ FormFile withAnchoredSize(
 ) {
   final boxes = anchoredBoxes(form, size, base);
   var sized = withFormSize(form, size);
-  for (final c in form.controls) {
+  for (final c in placedControls(form)) {
     sized = withBox(sized, c.name, boxes[c.name.toLowerCase()]!);
   }
   return sized;
@@ -830,31 +839,43 @@ Pasted withPasted(
   List<ControlDecl> controls, {
   required bool Function(String picture) hasPicture,
 }) {
-  final starts = {for (final c in form.controls) (boxOf(c).left, boxOf(c).top)};
+  final starts = {
+    for (final c in placedControls(form)) (boxOf(c).left, boxOf(c).top),
+  };
+  // A Timer has no place (D100): it is pasted without one.
+  final placed = {
+    for (final (i, c) in controls.indexed)
+      if (c.component.visual) '$i': c,
+  };
   var shift = 0;
   while (shift < 40 * gridStep &&
-      controls.any(
+      placed.values.any(
         (c) => starts.contains((boxOf(c).left + shift, boxOf(c).top + shift)),
       )) {
     shift += gridStep;
   }
   final size = formSizeOf(form);
-  final boxes = movedTogether(
-    {for (final (i, c) in controls.indexed) '$i': boxOf(c)},
-    (bounds) => _inside((
-      left: bounds.left + shift,
-      top: bounds.top + shift,
-      width: bounds.width,
-      height: bounds.height,
-    ), size),
-  );
+  final boxes = placed.isEmpty
+      ? const <String, ControlBox>{}
+      : movedTogether(
+          {
+            for (final MapEntry(:key, :value) in placed.entries)
+              key: boxOf(value),
+          },
+          (bounds) => _inside((
+            left: bounds.left + shift,
+            top: bounds.top + shift,
+            width: bounds.width,
+            height: bounds.height,
+          ), size),
+        );
   var result = form;
   final names = <String>[];
   for (final (i, c) in controls.indexed) {
     final name = result.control(c.name) == null
         ? c.name
         : newControlName(result, c.component);
-    final box = boxes['$i']!;
+    final box = boxes['$i'];
     result = _copy(result, [
       ...result.controls,
       ControlDecl(
@@ -871,10 +892,12 @@ Pasted withPasted(
               c.component.properties.containsKey('caption') &&
               c.valueOf('Caption') == c.name)
             'Caption': name,
-          'Left': box.left,
-          'Top': box.top,
-          'Width': box.width,
-          'Height': box.height,
+          if (box != null) ...{
+            'Left': box.left,
+            'Top': box.top,
+            'Width': box.width,
+            'Height': box.height,
+          },
         },
         line: 0,
       ),

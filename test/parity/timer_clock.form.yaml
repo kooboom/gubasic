@@ -1,0 +1,6 @@
+formatVersion: 1
+controls:
+  - { name: lblTime, type: Label }
+  - { name: btnStart, type: Button, properties: { Caption: Start, Top: 40 } }
+  - { name: btnStop, type: Button, properties: { Caption: Stop, Top: 40, Left: 120 } }
+  - { name: tmrClock, type: Timer, properties: { Interval: 1000 } }

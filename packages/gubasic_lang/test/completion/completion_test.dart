@@ -196,6 +196,7 @@ void main() {
         'Boolean',
         'Button',
         'CheckBox',
+        'Control',
         'Date',
         'Double',
         'Exception',
@@ -208,6 +209,7 @@ void main() {
         'Object',
         'String',
         'TextBox',
+        'Timer',
       ]);
       expect(_names('Sub W()\n    Dim n As New Li|\nEnd Sub\n'),
           ['List', 'ListBox']);

@@ -1,0 +1,28 @@
+# A Timer runs its Tick every Interval milliseconds while Enabled
+# (docs/DESIGN.md D82, D100). It is not seen on the form: the designer
+# keeps it in a tray under the form, so it has no place or size. A tick
+# is an event like a click: it does not re-enter, and waits while another
+# handler runs. Start and Stop set Enabled.
+name: Timer
+version: 1
+visual: false
+defaultEvent: Tick
+properties:
+  # How often Tick runs, in milliseconds; at least 1.
+  - { name: Interval, type: Integer, min: 1, default: 100 }
+  # Off at first, as in Visual Basic .NET, so that no tick comes before
+  # Form_Load has set things up.
+  - { name: Enabled, type: Boolean, default: false }
+  # Any text the program keeps with it, as in Visual Basic; GuBASIC does
+  # nothing with it (D98).
+  - { name: Tag, type: String, default: "" }
+events:
+  - Tick()
+methods:
+  - Start()
+  - Stop()
+# Names other versions of BASIC use, pointed to GuBASIC's (A036, A051,
+# docs/DESIGN.md D50).
+otherEvents:
+  # Visual Basic 6 called the event Timer: Timer1_Timer.
+  Timer: Tick
