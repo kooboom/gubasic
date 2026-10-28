@@ -1,0 +1,119 @@
+' 계산기: 숫자 단추 10개를 처리기 하나로 처리합니다. Handles 뒤에 단추를
+' 모두 적고, 어느 단추가 눌렸는지는 sender로 압니다(DESIGN.md D98).
+' Visual Basic 6에서 컨트롤 배열로 하던 일입니다. 연산 단추 넷도 처리기
+' 하나입니다. 키보드의 숫자 키, Esc(지우기), Backspace도 됩니다: 폼의
+' KeyPreview가 True여서 폼이 키를 먼저 받습니다(D101).
+Dim shown As String      ' 화면에 보이는 수
+Dim stored As Double     ' 앞서 넣은 수
+Dim pending As String    ' 기다리는 연산: "+", "-", "×", "÷", 없으면 ""
+Dim startNew As Boolean  ' 다음 숫자가 새 수를 시작하는지
+
+Sub Form_Load()
+    ClearAll()
+End Sub
+
+Sub Digit_Click(sender As Button) Handles btn0.Click, btn1.Click, btn2.Click, _
+        btn3.Click, btn4.Click, btn5.Click, btn6.Click, btn7.Click, btn8.Click, btn9.Click
+    TypeDigit(sender.Caption)
+End Sub
+
+Sub Operator_Click(sender As Button) Handles btnAdd.Click, btnSub.Click, btnMul.Click, btnDiv.Click
+    If Calculate() Then
+        pending = sender.Caption
+        lblOperator.Caption = CStr(stored) & " " & pending
+    End If
+End Sub
+
+Sub btnEquals_Click()
+    If Calculate() Then
+        pending = ""
+        lblOperator.Caption = ""
+    End If
+End Sub
+
+Sub btnDot_Click()
+    If startNew Then
+        shown = "0"
+        startNew = False
+    End If
+    If InStr(shown, ".") = 0 Then shown = shown & "."
+    lblDisplay.Caption = shown
+End Sub
+
+Sub btnClear_Click()
+    ClearAll()
+End Sub
+
+Sub btnBack_Click()
+    If startNew Then Exit Sub
+    If Len(shown) > 1 Then
+        shown = Left(shown, Len(shown) - 1)
+    Else
+        shown = "0"
+    End If
+    lblDisplay.Caption = shown
+End Sub
+
+Sub Form_KeyDown(e As KeyEventArgs)
+    If e.KeyCode >= Keys.D0 And e.KeyCode <= Keys.D9 Then
+        TypeDigit(CStr(e.KeyCode - Keys.D0))
+    ElseIf e.KeyCode >= Keys.NumPad0 And e.KeyCode <= Keys.NumPad9 Then
+        TypeDigit(CStr(e.KeyCode - Keys.NumPad0))
+    ElseIf e.KeyCode = Keys.Escape Then
+        ClearAll()
+    ElseIf e.KeyCode = Keys.Back Then
+        btnBack_Click()
+    End If
+End Sub
+
+' 숫자 하나를 화면의 수 뒤에 붙입니다. 연산 뒤에는 새 수를 시작합니다.
+Sub TypeDigit(digit As String)
+    If startNew Or shown = "0" Then
+        shown = digit
+        startNew = False
+    ElseIf Len(shown) < 12 Then
+        shown = shown & digit
+    End If
+    lblDisplay.Caption = shown
+End Sub
+
+' 기다리던 연산을 해서 결과를 보여 주고, 그 결과에서 다음 수를 받습니다.
+' 0으로 나누려 하면 알리고 False를 줍니다.
+Function Calculate() As Boolean
+    If startNew And pending <> "" Then
+        ' 연산 단추를 잇달아 누르면 마지막 것만 씁니다.
+        Return True
+    End If
+    Dim value As Double = Val(shown)
+    Select Case pending
+        Case "+"
+            stored = stored + value
+        Case "-"
+            stored = stored - value
+        Case "×"
+            stored = stored * value
+        Case "÷"
+            If value = 0 Then
+                MsgBox("0으로 나눌 수 없습니다.")
+                Return False
+            End If
+            stored = stored / value
+        Case Else
+            stored = value
+    End Select
+    ' 0.1 + 0.2처럼 소수가 2진수로 딱 떨어지지 않아 생기는 끝자리를 버립니다.
+    stored = Round(stored, 10)
+    shown = CStr(stored)
+    lblDisplay.Caption = shown
+    startNew = True
+    Return True
+End Function
+
+Sub ClearAll()
+    shown = "0"
+    stored = 0
+    pending = ""
+    startNew = False
+    lblDisplay.Caption = shown
+    lblOperator.Caption = ""
+End Sub

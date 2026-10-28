@@ -1,0 +1,59 @@
+Set lblDisplay.Caption: 0
+Set lblOperator.Caption: 
+> btn1.Click
+Set lblDisplay.Caption: 1
+> btn2.Click
+Set lblDisplay.Caption: 12
+> btnAdd.Click
+Set lblDisplay.Caption: 12
+Set lblOperator.Caption: 12 +
+> btn3.Click
+Set lblDisplay.Caption: 3
+> btnEquals.Click
+Set lblDisplay.Caption: 15
+Set lblOperator.Caption: 
+> btnMul.Click
+Set lblDisplay.Caption: 15
+Set lblOperator.Caption: 15 ×
+> btn2.Click
+Set lblDisplay.Caption: 2
+> btnSub.Click
+Set lblDisplay.Caption: 30
+Set lblOperator.Caption: 30 -
+> btnDiv.Click
+Set lblOperator.Caption: 30 ÷
+> btn0.Click
+Set lblDisplay.Caption: 0
+> btnEquals.Click
+MsgBox: 0으로 나눌 수 없습니다.
+> OK
+> btnClear.Click
+Set lblDisplay.Caption: 0
+Set lblOperator.Caption: 
+> btnDot.Click
+Set lblDisplay.Caption: 0.
+> btn1.Click
+Set lblDisplay.Caption: 0.1
+> btnAdd.Click
+Set lblDisplay.Caption: 0.1
+Set lblOperator.Caption: 0.1 +
+> btnDot.Click
+Set lblDisplay.Caption: 0.
+> btn2.Click
+Set lblDisplay.Caption: 0.2
+> btnEquals.Click
+Set lblDisplay.Caption: 0.3
+Set lblOperator.Caption: 
+> Form.KeyDown D7
+Set lblDisplay.Caption: 7
+> Form.KeyDown D8
+Set lblDisplay.Caption: 78
+> Form.KeyDown Back
+Set lblDisplay.Caption: 7
+> Form.KeyDown NumPad4
+Set lblDisplay.Caption: 74
+> Form.KeyDown Escape
+Set lblDisplay.Caption: 0
+Set lblOperator.Caption: 
+> Close
+Closed

@@ -1,0 +1,27 @@
+' examples/calculator, its ten digit buttons in one handler (a test keeps
+' calculator_example.gbas and .form.yaml the same as the example's files).
+btn1.Click
+btn2.Click
+btnAdd.Click        ' 12 +
+btn3.Click
+btnEquals.Click     ' 15
+btnMul.Click
+btn2.Click
+btnSub.Click        ' 30, then -
+btnDiv.Click        ' the last operator counts: ÷
+btn0.Click
+btnEquals.Click     ' cannot divide by 0
+OK
+btnClear.Click
+btnDot.Click
+btn1.Click
+btnAdd.Click
+btnDot.Click
+btn2.Click
+btnEquals.Click     ' 0.3, not 0.30000000000000004
+Form.KeyDown D7     ' keys reach the form first (KeyPreview)
+Form.KeyDown D8
+Form.KeyDown Back
+Form.KeyDown NumPad4
+Form.KeyDown Escape
+Close

@@ -418,6 +418,11 @@ class _WidgetDriver implements ScriptDriver {
     'Space': LogicalKeyboardKey.space,
     'Enter': LogicalKeyboardKey.enter,
     'Escape': LogicalKeyboardKey.escape,
+    'Back': LogicalKeyboardKey.backspace,
+    for (var d = 0; d <= 9; d++) ...{
+      'D$d': LogicalKeyboardKey(LogicalKeyboardKey.digit0.keyId + d),
+      'NumPad$d': LogicalKeyboardKey(LogicalKeyboardKey.numpad0.keyId + d),
+    },
     for (var c = 0; c < 26; c++)
       String.fromCharCode(65 + c): LogicalKeyboardKey(
         LogicalKeyboardKey.keyA.keyId + c,
