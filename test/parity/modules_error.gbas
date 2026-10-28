@@ -1,0 +1,4 @@
+' An error in a module's code names its file (D102).
+Sub btnGo_Click()
+    Debug.Print(Ratio(1, 0))
+End Sub

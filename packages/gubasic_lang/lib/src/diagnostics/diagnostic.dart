@@ -354,6 +354,14 @@ enum DiagnosticCode {
   /// procedure, the line to write (D101).
   vb6KeyHandler('A053'),
 
+  /// A name two modules make Public, written without its module's name.
+  /// Args: the name, the modules, the name with the first module's
+  /// (D102).
+  ambiguousName('A054'),
+
+  /// `Sub Main` in two modules. Args: the other module (D102).
+  mainTwice('A055'),
+
   // Form and project files (.form.yaml, .gbproj)
 
   /// The file is not in the expected layout (YAML syntax).
@@ -421,6 +429,9 @@ enum DiagnosticCode {
   /// digits, 8 to 32): it is ignored, and the next export makes a new one.
   /// Args: the value.
   badProjectId('F018', DiagnosticSeverity.warning),
+
+  /// `startup: Sub Main`, but no module has a `Sub Main()` (D102).
+  noSubMain('F019'),
 
   // Run time (the interpreter)
 

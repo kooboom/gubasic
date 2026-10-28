@@ -123,6 +123,16 @@ class Interpreter {
         if (symbol.procedure case final p?) _formOf[p] = run;
       }
     }
+    // The modules (D102): code without a form, whose procedures run with
+    // no controls and no Me.
+    for (final m in project.modules) {
+      final run =
+          _FormRun(null, LineMap(m.program.parseResult.source), module: m);
+      _modules[m.name.toLowerCase()] = run;
+      for (final symbol in m.program.analysis.fileScope.symbols.values) {
+        if (symbol.procedure case final p?) _formOf[p] = run;
+      }
+    }
     _top = _forms[project.startup.name.toLowerCase()]!;
     _frame = _Frame(null, _top);
   }
@@ -159,7 +169,9 @@ class Interpreter {
   /// The analysis of every form together: the interpreter looks nodes up
   /// in it, and nodes of different files are different keys.
   static AnalysisResult _merged(CompileResult program, ProjectProgram? p) {
-    if (p == null || p.forms.length == 1) return program.analysis;
+    if (p == null || (p.forms.length == 1 && p.modules.isEmpty)) {
+      return program.analysis;
+    }
     final a = program.analysis;
     final merged = AnalysisResult(
       diagnostics: a.diagnostics,
@@ -167,8 +179,10 @@ class Interpreter {
       form: a.form,
       pictures: a.pictures,
     );
-    for (final f in p.forms) {
-      final b = f.program.analysis;
+    for (final b in [
+      for (final f in p.forms) f.program.analysis,
+      for (final m in p.modules) m.program.analysis,
+    ]) {
       merged.symbols.addAll(b.symbols);
       merged.types.addAll(b.types);
       merged.conversions.addAll(b.conversions);
@@ -208,6 +222,13 @@ class Interpreter {
 
   // Forms and events (D28, D88).
   final _forms = <String, _FormRun>{};
+
+  /// The project's modules, by lower-case name (D102).
+  final _modules = <String, _FormRun>{};
+
+  /// The symbol of a module's own code for one another file knew it by
+  /// (D102); [symbol] itself otherwise.
+  Symbol _canon(Symbol symbol) => project?.canonical[symbol] ?? symbol;
   final _formOf = Map<ProcedureDecl, _FormRun>.identity();
 
   /// The startup form, or the code without a form.
@@ -423,7 +444,7 @@ class Interpreter {
   /// initial values, or of the code without a form.
   Future<void> _initFields([_FormRun? form]) async {
     final run = form ?? _top;
-    final code = run.program?.program ?? program;
+    final code = run.code ?? program;
     final saved = _frame;
     _frame = _Frame(null, run);
     try {
@@ -447,15 +468,28 @@ class Interpreter {
     final done = _formRun = Completer<RunResult>();
     await _takeTurn();
     try {
-      // Every form's variables, the startup form's first, so that the
-      // forms can use one another's from the start (D88).
+      // Every module's variables (D102), then every form's, the startup
+      // form's first, so that each can use the others' from the start
+      // (D88).
       await _guard(() async {
+        for (final m in _modules.values) {
+          await _initFields(m);
+        }
         await _initFields(_top);
         for (final f in _forms.values) {
           if (f != _top) await _initFields(f);
         }
       });
-      if (_ended == null) {
+      final main = project?.startsWithMain == true ? project!.main : null;
+      if (_ended == null && main != null) {
+        // Sub Main shows the forms it wants; when it ends with none shown,
+        // so does the program (D102).
+        final (module, procedure) = main;
+        _frame = _Frame(null, _modules[module.name.toLowerCase()]!);
+        _depth = 0;
+        await _guard(() => _callUser(procedure, const [], procedure));
+        if (_ended == null && _shown.isEmpty) _finish(const RunCompleted());
+      } else if (_ended == null) {
         _frame = _Frame(null, _top);
         _depth = 0;
         await _guard(() => _show(_top));
@@ -682,8 +716,7 @@ class Interpreter {
   /// How an error that nothing caught ends the run: with the file it is in.
   RunFailed _failed(
           DiagnosticCode code, Node node, List<String> args, _FormRun form) =>
-      RunFailed(_diagnostic(code, node, args, form),
-          file: form.program?.codeFile);
+      RunFailed(_diagnostic(code, node, args, form), file: form.codeFile);
 
   /// Counts a loop round or a call; true when it is time to yield. Kept
   /// synchronous so that loops do not create a Future every round.
@@ -706,17 +739,21 @@ class Interpreter {
   // -------------------------------------------------------------------------
   // Variables
 
-  Object? _read(Symbol symbol) => switch (symbol.storage) {
-        Storage.field => _fields[symbol],
-        Storage.staticLocal => _statics[symbol],
-        Storage.local => _frame.vars[symbol],
-        // A form of the project, or a control of the form whose code runs.
-        null => symbol.kind == SymbolKind.form
-            ? _formNamed(symbol.name)!.controls[null]
-            : _frame.form.designed[symbol.name.toLowerCase()],
+  Object? _read(Symbol symbol) => switch (_canon(symbol)) {
+        final s when s.storage == Storage.field => _fields[s],
+        final s when s.storage == Storage.staticLocal => _statics[s],
+        final s when s.storage == Storage.local => _frame.vars[s],
+        // A form or a module of the project, or a control of the form
+        // whose code runs.
+        final s => switch (s.kind) {
+            SymbolKind.form => _formNamed(s.name)!.controls[null],
+            SymbolKind.module => GbModule(s.name),
+            _ => _frame.form.designed[s.name.toLowerCase()],
+          },
       };
 
-  void _write(Symbol symbol, Object? value) {
+  void _write(Symbol written, Object? value) {
+    final symbol = _canon(written);
     switch (symbol.storage) {
       case Storage.field:
         _fields[symbol] = value;
@@ -852,6 +889,10 @@ class Interpreter {
   /// methods never wait.
   bool _methodMayRunEvent(MemberExpr target) {
     final type = _a.types[target.target];
+    // A module's procedure (D102) is user code.
+    if (type is ModuleType) {
+      return type.module.procedures.containsKey(target.name.name.toLowerCase());
+    }
     if (type is ControlType) {
       final name = target.name.name.toLowerCase();
       // A form's procedure (D88) is user code.
@@ -1195,7 +1236,7 @@ class Interpreter {
           [s.event.name.name, typeNameOf(target)]);
     }
     final event = target.component.events[s.event.name.name.toLowerCase()]!;
-    final handler = _a.symbols[s.procedure]!.procedure!;
+    final handler = _canon(_a.symbols[s.procedure]!).procedure!;
     final key = event.name.toLowerCase();
     final existing = target.handlers[key] as ProcedureDecl?;
     if (existing != null && existing != handler) {
@@ -1218,6 +1259,22 @@ class Interpreter {
         final receiver = _evalSync(target.target);
         if (receiver is GbControl) {
           return _setProperty(receiver, target, value);
+        }
+        if (receiver is GbModule) {
+          // `Module1.Total = 5` (D102).
+          final symbol = _modules[receiver.name.toLowerCase()]!
+              .code!
+              .analysis
+              .fileScope
+              .symbols[target.name.name.toLowerCase()];
+          if (symbol == null ||
+              symbol.storage != Storage.field ||
+              symbol.kind == SymbolKind.constant) {
+            _fail(DiagnosticCode.memberNotFound, target,
+                [target.name.name, receiver.name]);
+          }
+          _fields[symbol] = value;
+          return null;
         }
         _fail(
             receiver == null
@@ -1495,6 +1552,22 @@ class Interpreter {
     _fail(DiagnosticCode.memberNotFound, at, [e.name.name, c.form]);
   }
 
+  /// `Module1.Total`, `Module1.Start()` (D102): a variable of the module,
+  /// or a procedure, called through [_pendingCall].
+  Object? _moduleMember(
+      GbModule m, String name, List<Object?> args, Node at, MemberExpr e) {
+    final symbol =
+        _modules[m.name.toLowerCase()]!.code!.analysis.fileScope.symbols[name];
+    if (symbol != null && symbol.storage == Storage.field && args.isEmpty) {
+      return _fields[symbol];
+    }
+    if (symbol?.procedure case final p?) {
+      _pendingCall = () => _callUser(p, args, at);
+      return null;
+    }
+    _fail(DiagnosticCode.memberNotFound, at, [e.name.name, m.name]);
+  }
+
   /// The name [name] (lower case) declared in [form]'s code outside
   /// procedures, or null.
   Symbol? _formSymbol(_FormRun form, String name) =>
@@ -1729,7 +1802,8 @@ class Interpreter {
   }
 
   /// Calls a user procedure or built-in function by its symbol.
-  Future<Object?> _callNamed(Symbol symbol, List<Object?> args, Node at) {
+  Future<Object?> _callNamed(Symbol named, List<Object?> args, Node at) {
+    final symbol = _canon(named);
     if (symbol.kind == SymbolKind.procedure) {
       return _callUser(symbol.procedure!, args, at);
     }
@@ -1791,6 +1865,13 @@ class Interpreter {
             (c.isForm &&
                 _formSymbol(_formNamed(c.form)!, name)?.procedure != null),
         GbControls() => name == 'add' || name == 'remove',
+        GbModule m => _modules[m.name.toLowerCase()]!
+                .code!
+                .analysis
+                .fileScope
+                .symbols[name]
+                ?.procedure !=
+            null,
         _ => false,
       };
 
@@ -1984,6 +2065,8 @@ class Interpreter {
         if (args.isEmpty) return _getProperty(c, e);
       case GbControls cs:
         return _controlsMember(cs, name, args, node, e);
+      case GbModule m:
+        return _moduleMember(m, name, args, node, e);
       default:
     }
     _fail(DiagnosticCode.memberNotFound, node,
@@ -2363,14 +2446,23 @@ class _Thrown implements Exception {
 /// A form of the project while the program runs (D88), or the code
 /// without a form ([program] null).
 class _FormRun {
-  _FormRun(this.program, this.lines);
+  _FormRun(this.program, this.lines, {this.module});
 
   final FormProgram? program;
+
+  /// The module this is, for a module's code (D102).
+  final ModuleProgram? module;
 
   /// To tell an error's line in the form's code.
   final LineMap lines;
 
-  String get name => program?.name ?? '';
+  String get name => program?.name ?? module?.name ?? '';
+
+  /// The code: the form's, or the module's.
+  CompileResult? get code => program?.program ?? module?.program;
+
+  /// The file the code is in, for errors.
+  String? get codeFile => program?.codeFile ?? module?.codeFile;
 
   /// The form itself (null) and the controls on it, by lower-case name.
   final controls = <String?, GbControl>{};

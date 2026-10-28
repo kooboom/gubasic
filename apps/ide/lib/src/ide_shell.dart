@@ -18,6 +18,7 @@ import 'project/pictures_dialog.dart';
 import 'package:gubasic_player/gubasic_player.dart';
 
 import 'project/project_controller.dart';
+import 'project/project_forms.dart' show moduleHasMain;
 import 'strings.dart';
 import 'theme.dart';
 
@@ -383,6 +384,31 @@ class _IdeShellState extends State<IdeShell> {
   Future<void> _addForm() async =>
       _openFile(await widget.controller.addForm(context));
 
+  /// File → Add Module (D102): the new module's code opens.
+  Future<void> _addModule() async =>
+      _openFile(await widget.controller.addModule(context));
+
+  /// What a module's ⋮ menu in the project explorer does (D102).
+  Future<void> _moduleAction(String module, String action) async {
+    final controller = widget.controller;
+    switch (action) {
+      case 'main':
+        controller.startWithMain();
+      case 'rename':
+        final open = _file;
+        final file = await controller.renameModule(context, module);
+        if (file != null &&
+            open.toLowerCase() == '${module.toLowerCase()}.gbas') {
+          _openFile(file);
+        }
+      case 'delete':
+        if (await controller.deleteModule(context, module) &&
+            !_project.files.containsKey(_file)) {
+          _openFile('${controller.forms.first}.form.yaml');
+        }
+    }
+  }
+
   /// What a form's ⋮ menu in the project list does (D88).
   Future<void> _formAction(String form, String action) async {
     final controller = widget.controller;
@@ -438,6 +464,11 @@ class _IdeShellState extends State<IdeShell> {
           key: const ValueKey('menu.addForm'),
           onPressed: _running ? null : _addForm,
           child: Text(s.addForm),
+        ),
+        MenuItemButton(
+          key: const ValueKey('menu.addModule'),
+          onPressed: _running ? null : _addModule,
+          child: Text(s.addModule),
         ),
         MenuItemButton(
           key: const ValueKey('menu.pictures'),
@@ -647,15 +678,66 @@ class _IdeShellState extends State<IdeShell> {
   List<Widget> _formTiles(BuildContext context) {
     final files = _project.files;
     final forms = widget.controller.forms;
-    final ofForms = {
+    final modules = widget.controller.modules;
+    final listed = {
       for (final form in forms) ...['$form.form.yaml', '$form.gbas'],
+      for (final module in modules) '$module.gbas',
     };
     return [
       for (final form in forms) _formTile(context, form),
+      // The modules (D102), a group of their own.
+      if (modules.isNotEmpty) ...[
+        ListTile(
+          key: const ValueKey('explorer.modules'),
+          dense: true,
+          leading: const Icon(Icons.data_object, size: 18),
+          title: Text(widget.strings.modulesGroup),
+        ),
+        for (final module in modules) _moduleTile(context, module),
+      ],
       for (final f in files.keys)
-        if (!ofForms.contains(f) && !f.toLowerCase().endsWith('.gbproj'))
+        if (!listed.contains(f) && !f.toLowerCase().endsWith('.gbproj'))
           _fileTile(context, f),
     ];
+  }
+
+  /// A module's line (D102): a click opens its code; it says when the
+  /// project starts with its Sub Main.
+  Widget _moduleTile(BuildContext context, String module) {
+    final s = widget.strings;
+    final file = '$module.gbas';
+    final scheme = Theme.of(context).colorScheme;
+    final controller = widget.controller;
+    final hasMain = moduleHasMain(_project.files, module);
+    return ListTile(
+      key: ValueKey('explorer.module.$module'),
+      dense: true,
+      contentPadding: const EdgeInsets.only(left: 36, right: 4),
+      title: Text(module, overflow: TextOverflow.ellipsis),
+      subtitle: controller.startsWithMain && hasMain
+          ? Text(s.startupFormTag)
+          : null,
+      trailing: PopupMenuButton<String>(
+        key: ValueKey('files.module.$module'),
+        tooltip: s.moduleActions,
+        enabled: !_running,
+        icon: const Icon(Icons.more_vert, size: 18),
+        onSelected: (action) => _moduleAction(module, action),
+        itemBuilder: (_) => [
+          PopupMenuItem(
+            value: 'main',
+            enabled: hasMain && !controller.startsWithMain,
+            child: Text(s.startWithMain),
+          ),
+          PopupMenuItem(value: 'rename', child: Text(s.renameModule)),
+          PopupMenuItem(value: 'delete', child: Text(s.deleteModule)),
+        ],
+      ),
+      selectedColor: scheme.primary,
+      selectedTileColor: scheme.primaryContainer,
+      selected: file == _file && !(_running && _showRun),
+      onTap: () => _show(file),
+    );
   }
 
   /// The form clicked in the explorer within the last double-click time:

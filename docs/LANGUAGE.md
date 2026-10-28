@@ -169,6 +169,8 @@ The analyzer checks names and types (§2.1, §3.2, §5.2). It runs even when the
 | A051 | An event under another version of BASIC's name, as `otherEvents` in its component.yaml lists them: `Timer1_Timer` for `Tick`, `txtName_TextChanged` for `Changed` (§8, §11.1) |
 | A052 | `New Timer`: a control not seen on the form is put on it in the designer (§11.1) |
 | A053 | `Sub Form_KeyDown(KeyCode As Integer, Shift As Integer)` (Visual Basic 6): GuBASIC's key events take `e As KeyEventArgs` (§11.1) |
+| A054 | A name two modules make `Public`, written without its module's name (§11.5) |
+| A055 | `Sub Main` in two modules (§11.5) |
 
 **Form and project files**
 
@@ -194,6 +196,7 @@ Form files and project files (§11.2, §11.3) are checked the same way: a proble
 | F016 | A picture property in a form file naming a picture the project does not have (§11.1) |
 | F017 | `Anchor` in a form file with a word that is not an edge (§11.1) |
 | F018 | **Warning.** A project file's `id` that is not an app ID (§11.3); it is ignored |
+| F019 | `startup: Sub Main`, but no module has a `Sub Main()` (§11.5) |
 
 **Run time**
 
@@ -575,7 +578,7 @@ End Try
 ### 9.1 Running a program
 
 - Code without a form starts at `Sub Main()`, or at `Sub Form_Load()` if there is no `Main`, and ends when that procedure returns. Form-level variables get their initial values first.
-- A program with a form starts with its form: form-level variables get their initial values, `Form_Load` runs, and then the form is shown and waits for events (§8.1). `Sub Main` is then an ordinary procedure. With several forms, every form's variables get their initial values first, the startup form's first, and the startup form starts (§11). The program ends when no form is shown any more, the window is closed, `End` runs, an error is not caught, or the Stop button is pressed.
+- A program with a form starts with its form: form-level variables get their initial values, `Form_Load` runs, and then the form is shown and waits for events (§8.1). `Sub Main` of a form is then an ordinary procedure. With several forms, every form's variables get their initial values first, the startup form's first, and the startup form starts (§11). A project that starts with `Sub Main` of a module runs it instead, after every module's and form's variables got their initial values; it shows the forms it wants, and when it returns with no form shown the program ends (§11.5). The program ends when no form is shown any more, the window is closed, `End` runs, an error is not caught, or the Stop button is pressed.
 - A program with errors does not run; one with only warnings does (D23).
 - Calls may nest 10,000 deep; one more is R009. The limit is the same on every platform. It catches endless recursion within a fraction of a second; the interpreter itself was measured to stay safe beyond a million calls on the VM and in Chrome.
 - While a program runs, the interpreter lets the screen update once about 10 ms have passed since it last did, looking at the clock every 256 loop rounds or calls, so that the Stop button works. This never changes what the program computes and never lets another handler run. `DoEvents` updates the screen on request and also lets other handlers run (§8.1).
@@ -744,7 +747,8 @@ pictures:
 ```
 
 - `forms` lists the forms, each a pair of files as in §11.2. At least one is needed.
-- `startup` is the form the program starts with; without it, the first form in `forms`.
+- `startup` is the form the program starts with; without it, the first form in `forms`. `startup: Sub Main` starts with `Sub Main` of a module (§11.5); a module cannot be `startup` (F011).
+- `modules` lists the modules (§11.5), each a file `MODULE.gbas`. A name is a form's or a module's, not both (F007). A project with modules, or starting with `Sub Main`, is written as `formatVersion: 3`, which an older GuBASIC refuses to open rather than lose its modules (DESIGN.md D102).
 - `pictures` lists the project's pictures, which are files in its `pictures/` folder: `pictures/triangle.png`. Only PNG, JPEG and GIF pictures are taken (`.png`, `.jpg`, `.jpeg`, `.gif`), and a name cannot have `/ \ : * ? " < > |` (F014). Names are compared without the case of English letters, and Hangul as syllables, the same on every platform: so a project cannot have two pictures whose names differ only in case (F015), as Windows and macOS could not keep both in one folder. A project with pictures is written as `formatVersion: 2`, which an older GuBASIC refuses to open rather than lose its pictures; one without is still version 1 (DESIGN.md D51).
 - `id` is the app ID (DESIGN.md D83): 8 to 32 lowercase letters and digits, made the first time the project is exported as an app and kept, so that the app exported again is the same app and keeps its settings. A copy of the project made with a new name gets a new one. One that is not an app ID is ignored (F018), and the next export makes a new one. Older GuBASICs ignore the key with F004 and drop it when they save the project.
 - [examples/hello](../examples/hello) is the README example as a project.
@@ -777,6 +781,29 @@ GuBASIC has no control arrays (DESIGN.md D95); what Visual Basic 6 did with them
   b.Top = 40 * count
   Me.Controls.Add(b)
   AddHandler b.Click, AddressOf Added_Click
+  ```
+
+### 11.5 Modules and `Sub Main`
+
+A **module** (DESIGN.md D102) is code without a form, shared by the project: the file `Module1.gbas`, listed under `modules` in the project file (§11.3). File → Add Module adds one; the project explorer lists them under Modules.
+
+- Its `Public` variables and constants, and its `Sub`s and `Function`s that are not `Private`, can be used in every form and module by their names, `Total`, or with the module's, `Module1.Total`. A name two modules make `Public` is written with its module's name (A054). A form's or module's own name of that spelling comes first.
+- What it declares with `Dim` or `Private` stays its own.
+- Its code cannot use `Me` or controls by themselves; it uses forms by their names: `Form1.Show`, `Form1.lblTotal.Caption`.
+- Its variables get their initial values when the program starts, before the forms'.
+- **`Sub Main`**: with `startup: Sub Main` (in the IDE: ⋮ next to the module, Start with Sub Main), the program starts with `Sub Main()` of a module instead of a form. It shows the forms it wants (`Form1.Show`, or `Form1.ShowDialog` to wait); when it returns, the program goes on while a form is shown, and ends when none is. `Sub Main` is in one module only (A055), and a project starting with it needs one (F019). A form's `Sub Main` is an ordinary procedure.
+
+  ```vb
+  ' Module1.gbas
+  Public UserName As String
+
+  Sub Main()
+      UserName = GetSetting("user", "")
+      If UserName = "" Then
+          frmLogin.ShowDialog
+      End If
+      frmMain.Show
+  End Sub
   ```
 
 ## 12. Open questions

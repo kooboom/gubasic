@@ -5,9 +5,13 @@ import 'yaml_text.dart';
 /// layout as form files are (D31): [readProjectFile] reads back the same
 /// project.
 String writeProjectFile(ProjectFile project) {
-  // Version 1 while there are no pictures, so that older GuBASICs still
-  // open the project (D51).
-  final version = project.pictures.isEmpty ? 1 : projectFileVersion;
+  // The oldest version that holds the project, so that older GuBASICs
+  // still open it (D51, D102).
+  final version = project.modules.isNotEmpty || project.startsWithMain
+      ? 3
+      : project.pictures.isNotEmpty
+          ? 2
+          : 1;
   final out = StringBuffer('formatVersion: $version\n');
   if (project.id case final id?) out.writeln('id: $id');
   out.writeln('name: ${yamlString(project.name)}');
@@ -20,6 +24,12 @@ String writeProjectFile(ProjectFile project) {
     out.writeln('forms:');
     for (final f in project.forms) {
       out.writeln('  - ${yamlString(f)}');
+    }
+  }
+  if (project.modules.isNotEmpty) {
+    out.writeln('modules:');
+    for (final m in project.modules) {
+      out.writeln('  - ${yamlString(m)}');
     }
   }
   if (project.pictures.isNotEmpty) {

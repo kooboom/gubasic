@@ -302,6 +302,7 @@ class _Names {
     final seen = <String>{};
     for (final s in [...locals.values, ...analysis.fileScope.visible]) {
       if (!seen.add(s.name.toLowerCase())) continue;
+      if (s.kind == SymbolKind.ambiguous) continue;
       if (s.kind == SymbolKind.procedure && handlers.contains(s.name)) {
         continue;
       }
@@ -327,6 +328,11 @@ Completion _ofSymbol(Symbol s) => switch (s.kind) {
       // A form of the project (D88).
       SymbolKind.form =>
         Completion(s.name, CompletionKind.object, detail: 'Form'),
+      // A module of the project (D102); a name two modules make Public
+      // is left out.
+      SymbolKind.module =>
+        Completion(s.name, CompletionKind.object, detail: 'Module'),
+      SymbolKind.ambiguous => Completion(s.name, CompletionKind.object),
     };
 
 String _typeName(GbType t) => t == GbType.unknown ? '' : t.displayName;

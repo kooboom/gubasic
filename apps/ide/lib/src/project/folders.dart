@@ -129,6 +129,10 @@ Future<ProjectOnDisk> readProject(ProjectFolders fs, String projectFile) async {
     await add('$form.form.yaml');
     await add('$form.gbas');
   }
+  // Its modules (D102).
+  for (final module in project.modules) {
+    await add('$module.gbas');
+  }
   final pictures = <String, Uint8List>{};
   for (final name in project.pictures) {
     final file = '$picturesFolder/$name';
@@ -295,6 +299,7 @@ Map<String, String> renameProject(Map<String, String> files, String name) {
               startup: read.project.startup,
               pictures: read.project.pictures,
               id: read.project.id == null ? null : newProjectId(),
+              modules: read.project.modules,
             ),
           );
   }

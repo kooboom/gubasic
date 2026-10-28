@@ -6,7 +6,9 @@
 /// the event script are null without a form, the settings
 /// without NAME.settings; the pictures are NAME.pictures;
 /// the other forms of a project, (name, form file, code), are
-/// NAME.FORM.form.yaml and NAME.FORM.gbas (D88).
+/// NAME.FORM.form.yaml and NAME.FORM.gbas (D88), its modules
+/// (name, null, code) NAME.MODULE.gbas (D102); the last is
+/// whether NAME.startup says it starts with Sub Main.
 const parityCases = <(
   String,
   String,
@@ -16,7 +18,8 @@ const parityCases = <(
   String?,
   String?,
   List<String>,
-  List<(String, String, String)>
+  List<(String, String?, String)>,
+  bool
 )>[
   (
     "arithmetic",
@@ -28,6 +31,7 @@ const parityCases = <(
     null,
     [],
     [],
+    false,
   ),
   (
     "askname_example",
@@ -45,6 +49,7 @@ const parityCases = <(
         "' OK greets on Form1, then closes this form: Form1 is in front again.\n' The next time Form2 is shown, it starts again with an empty name.\n\nSub btnOK_Click()\n    If txtName.Text = \"\" Then\n        MsgBox(\"Please type your name.\")\n    Else\n        Form1.Greet(txtName.Text)\n        Me.Close\n    End If\nEnd Sub\n"
       ),
     ],
+    false,
   ),
   (
     "big_integers",
@@ -56,6 +61,7 @@ const parityCases = <(
     null,
     [],
     [],
+    false,
   ),
   (
     "conditions",
@@ -67,6 +73,7 @@ const parityCases = <(
     null,
     [],
     [],
+    false,
   ),
   (
     "controls_cast_error",
@@ -78,6 +85,7 @@ const parityCases = <(
     null,
     [],
     [],
+    false,
   ),
   (
     "controls_loop",
@@ -89,6 +97,7 @@ const parityCases = <(
     null,
     [],
     [],
+    false,
   ),
   (
     "controls_new",
@@ -100,6 +109,7 @@ const parityCases = <(
     null,
     [],
     [],
+    false,
   ),
   (
     "dialogs",
@@ -111,6 +121,7 @@ const parityCases = <(
     null,
     [],
     [],
+    false,
   ),
   (
     "divide_by_zero",
@@ -122,6 +133,7 @@ const parityCases = <(
     null,
     [],
     [],
+    false,
   ),
   (
     "end_statement",
@@ -133,6 +145,7 @@ const parityCases = <(
     null,
     [],
     [],
+    false,
   ),
   (
     "events_anchor",
@@ -144,6 +157,7 @@ const parityCases = <(
     null,
     [],
     [],
+    false,
   ),
   (
     "events_changed",
@@ -155,6 +169,7 @@ const parityCases = <(
     null,
     [],
     [],
+    false,
   ),
   (
     "events_checkbox",
@@ -166,6 +181,7 @@ const parityCases = <(
     null,
     [],
     [],
+    false,
   ),
   (
     "events_end",
@@ -177,6 +193,7 @@ const parityCases = <(
     null,
     [],
     [],
+    false,
   ),
   (
     "events_error",
@@ -188,6 +205,7 @@ const parityCases = <(
     null,
     [],
     [],
+    false,
   ),
   (
     "events_image",
@@ -199,6 +217,7 @@ const parityCases = <(
     null,
     ["triangle.png", "circle.png"],
     [],
+    false,
   ),
   (
     "events_listbox",
@@ -210,6 +229,7 @@ const parityCases = <(
     null,
     [],
     [],
+    false,
   ),
   (
     "events_load",
@@ -221,6 +241,7 @@ const parityCases = <(
     null,
     [],
     [],
+    false,
   ),
   (
     "events_modal",
@@ -232,6 +253,7 @@ const parityCases = <(
     null,
     [],
     [],
+    false,
   ),
   (
     "events_reentry",
@@ -243,6 +265,7 @@ const parityCases = <(
     null,
     [],
     [],
+    false,
   ),
   (
     "events_resize",
@@ -254,6 +277,7 @@ const parityCases = <(
     null,
     [],
     [],
+    false,
   ),
   (
     "events_shared",
@@ -265,6 +289,7 @@ const parityCases = <(
     null,
     [],
     [],
+    false,
   ),
   (
     "events_static",
@@ -276,6 +301,7 @@ const parityCases = <(
     null,
     [],
     [],
+    false,
   ),
   (
     "forms_dialog",
@@ -293,6 +319,7 @@ const parityCases = <(
         "' The answer stays readable after Close, until Form2 is shown again.\nPublic Answer As String\n\nSub Form_Load()\n    Answer = \"\"\nEnd Sub\n\nSub btnOK_Click()\n    MsgBox(\"Thanks\")\n    Answer = txtAnswer.Text\n    Me.Close\nEnd Sub\n\nSub btnCancel_Click()\n    Me.Hide\nEnd Sub\n"
       ),
     ],
+    false,
   ),
   (
     "forms_error",
@@ -310,6 +337,7 @@ const parityCases = <(
         "Sub Form_Load()\n    Dim zero As Integer\n    Debug.Print(1 \\ zero)\nEnd Sub\n"
       ),
     ],
+    false,
   ),
   (
     "forms_last",
@@ -327,6 +355,7 @@ const parityCases = <(
         "' Never shown.\n"
       ),
     ],
+    false,
   ),
   (
     "forms_show",
@@ -344,6 +373,7 @@ const parityCases = <(
         "' Hide takes Form2 away and keeps its values; Close takes it away and runs\n' Form_Closed, and the next Show starts it again: Form_Load, its\n' variables and controls as at the start.\nPublic Score As Integer = 10\nDim loads As Integer\n\nSub Form_Load()\n    loads = loads + 1\n    Score = Score + 1\n    Debug.Print(\"Form2 loaded \" & loads & \", score \" & Score)\nEnd Sub\n\nSub Form_Resize()\n    Debug.Print(\"Form2 resized \" & Me.Width & \"x\" & Me.Height)\nEnd Sub\n\nFunction Hello(name As String) As String\n    Return \"Hello, \" & name & \"!\"\nEnd Function\n\nPrivate Sub Tidy()\n    txtName.Text = \"\"\nEnd Sub\n\nSub btnOK_Click()\n    Me.Hide\n    Form1.Greet(txtName.Text)\nEnd Sub\n\nSub btnClose_Click()\n    Me.Close\n    Debug.Print(\"still running after Close\")\nEnd Sub\n\nSub Form_Closed()\n    Debug.Print(\"Form2 closed\")\nEnd Sub\n"
       ),
     ],
+    false,
   ),
   (
     "forms_window",
@@ -366,6 +396,7 @@ const parityCases = <(
         "' A form shown already comes to the front; it is not shown twice.\nSub btnBack_Click()\n    Form2.Show\nEnd Sub\n\nSub Form_Closed()\n    Debug.Print(\"Form3 closed\")\nEnd Sub\n"
       ),
     ],
+    false,
   ),
   (
     "handles_shared",
@@ -377,6 +408,7 @@ const parityCases = <(
     null,
     [],
     [],
+    false,
   ),
   (
     "integer_overflow",
@@ -388,6 +420,7 @@ const parityCases = <(
     null,
     [],
     [],
+    false,
   ),
   (
     "keys_move",
@@ -399,6 +432,7 @@ const parityCases = <(
     null,
     [],
     [],
+    false,
   ),
   (
     "keys_preview",
@@ -410,6 +444,7 @@ const parityCases = <(
     null,
     [],
     [],
+    false,
   ),
   (
     "lists_arrays",
@@ -421,6 +456,7 @@ const parityCases = <(
     null,
     [],
     [],
+    false,
   ),
   (
     "loops",
@@ -432,6 +468,84 @@ const parityCases = <(
     null,
     [],
     [],
+    false,
+  ),
+  (
+    "modules_error",
+    "' An error in a module's code names its file (D102).\nSub btnGo_Click()\n    Debug.Print(Ratio(1, 0))\nEnd Sub\n",
+    [],
+    "> btnGo.Click\nError R002 @ Module1.gbas:2\n",
+    "formatVersion: 1\ncontrols:\n  - { name: btnGo, type: Button }\n",
+    "btnGo.Click\n",
+    null,
+    [],
+    [
+      (
+        "Module1",
+        null,
+        "Function Ratio(a As Integer, b As Integer) As Integer\n    Return a \\ b\nEnd Function\n"
+      ),
+    ],
+    false,
+  ),
+  (
+    "modules_main",
+    "' Shown by Sub Main of Module1 (modules_main.startup says Sub Main, D102).\nSub Form_Load()\n    lblHello.Caption = \"Hello, \" & UserName\nEnd Sub\n",
+    [],
+    "Debug.Print: Main starts\nMsgBox: Welcome\n> OK\nSet lblHello.Caption: Hello, Kim\nDebug.Print: Main ends; Form1 stays\n> Close\nClosed\n",
+    "formatVersion: 1\nproperties:\n  Caption: Main\ncontrols:\n  - { name: lblHello, type: Label }\n",
+    "OK\nClose\n",
+    null,
+    [],
+    [
+      (
+        "Module1",
+        null,
+        "' The program starts here, not with Form1: Sub Main chooses what to show.\nPublic UserName As String = \"Kim\"\n\nSub Main()\n    Debug.Print(\"Main starts\")\n    MsgBox(\"Welcome\")\n    Form1.Show\n    Debug.Print(\"Main ends; Form1 stays\")\nEnd Sub\n"
+      ),
+    ],
+    true,
+  ),
+  (
+    "modules_main_ends",
+    "' Never shown: Sub Main ends with no form shown, and so does the program\n' (D102).\nSub Form_Load()\n    Debug.Print(\"not reached\")\nEnd Sub\n",
+    [],
+    "Debug.Print: Nothing to show\nClosed\n",
+    "formatVersion: 1\n",
+    "",
+    null,
+    [],
+    [
+      (
+        "Module1",
+        null,
+        "Sub Main()\n    Debug.Print(\"Nothing to show\")\nEnd Sub\n"
+      ),
+    ],
+    true,
+  ),
+  (
+    "modules_shared",
+    "' A module's Public variables and procedures are used by their names, or\n' with the module's name (D102). A module's Dim stays its own.\nSub btnAdd_Click()\n    AddUp(5)\n    lblTotal.Caption = \"Total: \" & Total\n    Module1.Total = Module1.Total + 100\n    Debug.Print(Total & \", twice: \" & Module1.Twice(Total) & \", \" & Calls())\n    ShowTotal()\nEnd Sub\n",
+    [],
+    "> btnAdd.Click\nSet lblTotal.Caption: Total: 5\nDebug.Print: 105, twice: 210, 1 calls\nSet lblTotal.Caption: Total is now 105\nDebug.Print: 1 calls\n> btnAdd.Click\nSet lblTotal.Caption: Total: 110\nDebug.Print: 210, twice: 420, 2 calls\nSet lblTotal.Caption: Total is now 210\nDebug.Print: 2 calls\n> Close\nClosed\n",
+    "formatVersion: 1\ncontrols:\n  - { name: lblTotal, type: Label }\n  - { name: btnAdd, type: Button, properties: { Caption: Add, Top: 40 } }\n",
+    "btnAdd.Click\nbtnAdd.Click\nClose\n",
+    null,
+    [],
+    [
+      (
+        "Module1",
+        null,
+        "' Shared by every form of the project.\nPublic Total As Integer\nDim count As Integer\n\nSub AddUp(n As Integer)\n    Total = Total + n\n    count = count + 1\nEnd Sub\n\nFunction Twice(n As Integer) As Integer\n    Return n * 2\nEnd Function\n\nFunction Calls() As String\n    Return count & \" calls\"\nEnd Function\n"
+      ),
+      (
+        "Tools",
+        null,
+        "' A second module uses the first's names, and the form's controls.\nSub ShowTotal()\n    Form1.lblTotal.Caption = \"Total is now \" & Total\n    Debug.Print(Module1.Calls())\nEnd Sub\n"
+      ),
+    ],
+    false,
   ),
   (
     "overflow_caught",
@@ -443,6 +557,7 @@ const parityCases = <(
     null,
     [],
     [],
+    false,
   ),
   (
     "overflow_edges",
@@ -454,6 +569,7 @@ const parityCases = <(
     null,
     [],
     [],
+    false,
   ),
   (
     "quiz_best",
@@ -465,6 +581,7 @@ const parityCases = <(
     "{\"best\":\"4\"}",
     ["triangle.png", "pentagon.png"],
     [],
+    false,
   ),
   (
     "quiz_example",
@@ -476,6 +593,7 @@ const parityCases = <(
     null,
     ["triangle.png", "pentagon.png"],
     [],
+    false,
   ),
   (
     "random_seeded",
@@ -487,6 +605,7 @@ const parityCases = <(
     null,
     [],
     [],
+    false,
   ),
   (
     "recursion",
@@ -498,6 +617,7 @@ const parityCases = <(
     null,
     [],
     [],
+    false,
   ),
   (
     "rounding",
@@ -509,6 +629,7 @@ const parityCases = <(
     null,
     [],
     [],
+    false,
   ),
   (
     "settings",
@@ -520,6 +641,7 @@ const parityCases = <(
     "{\"visits\":\"4\"}",
     [],
     [],
+    false,
   ),
   (
     "settings_limit",
@@ -531,6 +653,7 @@ const parityCases = <(
     null,
     [],
     [],
+    false,
   ),
   (
     "static_and_scope",
@@ -542,6 +665,7 @@ const parityCases = <(
     null,
     [],
     [],
+    false,
   ),
   (
     "strings",
@@ -553,6 +677,7 @@ const parityCases = <(
     null,
     [],
     [],
+    false,
   ),
   (
     "text_form",
@@ -564,6 +689,7 @@ const parityCases = <(
     null,
     [],
     [],
+    false,
   ),
   (
     "timer_clock",
@@ -575,6 +701,7 @@ const parityCases = <(
     null,
     [],
     [],
+    false,
   ),
   (
     "timer_turns",
@@ -586,6 +713,7 @@ const parityCases = <(
     null,
     [],
     [],
+    false,
   ),
   (
     "try_catch",
@@ -597,5 +725,6 @@ const parityCases = <(
     null,
     [],
     [],
+    false,
   ),
 ];

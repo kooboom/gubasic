@@ -1,0 +1,16 @@
+' Shared by every form of the project.
+Public Total As Integer
+Dim count As Integer
+
+Sub AddUp(n As Integer)
+    Total = Total + n
+    count = count + 1
+End Sub
+
+Function Twice(n As Integer) As Integer
+    Return n * 2
+End Function
+
+Function Calls() As String
+    Return count & " calls"
+End Function

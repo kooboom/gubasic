@@ -59,7 +59,35 @@ void main() {
                 .readAsStringSync(),
           ),
       ];
-      final project = compileProject(sources, pictures: pictures);
+      // Its modules (D102): NAME.Module1.gbas, without a form file.
+      final modules = <ModuleSource>[
+        for (final p
+            in dir
+                .listSync()
+                .whereType<File>()
+                .map((f) => f.path)
+                .where((p) => p.startsWith('$base.') && p.endsWith('.gbas'))
+                .where((p) => p != '$base.gbas')
+                .where(
+                  (p) =>
+                      !File(p.replaceFirst('.gbas', '.form.yaml')).existsSync(),
+                )
+                .toList()
+              ..sort())
+          (
+            name: p.substring(base.length + 1, p.length - '.gbas'.length),
+            source: File(p).readAsStringSync(),
+          ),
+      ];
+      final startupFile = File('$base.startup');
+      final project = compileProject(
+        sources,
+        pictures: pictures,
+        modules: modules,
+        startsWithMain:
+            startupFile.existsSync() &&
+            startupFile.readAsStringSync().trim() == startupSubMain,
+      );
       final startup = project.startup;
       final several = sources.length > 1;
       final expected = File('$base.out').readAsStringSync().trimRight();
@@ -72,7 +100,7 @@ void main() {
           startup.file,
           startup.codeFile,
           startup.program,
-          several ? project : null,
+          several || modules.isNotEmpty ? project : null,
         ),
         strings: PlayerStrings.en,
         host: host,
@@ -87,7 +115,7 @@ void main() {
       final transcript = await driveEventScript(
         parseEventScript(script.readAsStringSync()),
         _WidgetDriver(tester, session, host),
-        namesFile: several,
+        namesFile: several || modules.isNotEmpty,
       );
       expect(transcript.join('\n'), expected);
       session.dispose();

@@ -119,6 +119,7 @@ Map<String, String> withPictureList(
         startup: p.startup,
         pictures: pictures,
         id: p.id,
+        modules: p.modules,
       ),
     ),
   };

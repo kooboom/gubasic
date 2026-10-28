@@ -1,0 +1,9 @@
+' A module's Public variables and procedures are used by their names, or
+' with the module's name (D102). A module's Dim stays its own.
+Sub btnAdd_Click()
+    AddUp(5)
+    lblTotal.Caption = "Total: " & Total
+    Module1.Total = Module1.Total + 100
+    Debug.Print(Total & ", twice: " & Module1.Twice(Total) & ", " & Calls())
+    ShowTotal()
+End Sub

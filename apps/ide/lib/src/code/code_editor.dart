@@ -9,6 +9,7 @@ import 'package:gubasic_runtime/gubasic_runtime.dart'
     show ComposingTracker, committedText;
 
 import '../project/open_project.dart';
+import '../project/project_forms.dart' show projectModules;
 import '../strings.dart';
 import '../theme.dart';
 import 'code_controller.dart';
@@ -621,8 +622,9 @@ class _CodeEditorState extends State<CodeEditor>
   String? _formsKey;
 
   Map<String, FormInterface>? _projectForms() {
-    if (_form == null) return null;
     final files = widget.project.files;
+    // A form's code, or a module's (D102), sees the project's forms.
+    if (_form == null && !_isModule) return null;
     final names = [
       for (final f in files.keys)
         if (f.toLowerCase().endsWith('.form.yaml')) _formName(f),
@@ -645,9 +647,42 @@ class _CodeEditorState extends State<CodeEditor>
     ]);
   }
 
+  /// Whether this code is a module's (D102).
+  bool get _isModule =>
+      projectModules(widget.project.files)
+          .any((m) => '$m.gbas'.toLowerCase() == widget.file.toLowerCase());
+
+  /// The project's modules as this code sees them (D102), but its own:
+  /// read again when another module's code changed.
+  Map<String, ModuleInterface>? _modules;
+  String? _modulesKey;
+
+  Map<String, ModuleInterface>? _projectModules() {
+    final files = widget.project.files;
+    final own = widget.file.toLowerCase();
+    final names = [
+      for (final m in projectModules(files))
+        if ('$m.gbas'.toLowerCase() != own) m,
+    ];
+    final key = [for (final n in names) '$n\u0001${files['$n.gbas']}']
+        .join('\u0000');
+    if (key == _modulesKey) return _modules;
+    _modulesKey = key;
+    return _modules = moduleInterfaces([
+      for (final n in names) (name: n, source: files['$n.gbas'] ?? ''),
+    ]);
+  }
+
+  CompileResult _compileNow() => compile(
+    _written,
+    form: _form,
+    forms: _projectForms(),
+    modules: _projectModules(),
+  );
+
   void _compile() {
     if (!mounted) return;
-    _program = compile(_written, form: _form, forms: _projectForms());
+    _program = _compileNow();
   }
 
   /// [_program], compiled now if it is not of the code as it is.
@@ -657,7 +692,7 @@ class _CodeEditorState extends State<CodeEditor>
     if (program != null && program.parseResult.source == _written) {
       return program;
     }
-    return _program = compile(_written, form: _form, forms: _projectForms());
+    return _program = _compileNow();
   }
 
   bool get _canComplete {

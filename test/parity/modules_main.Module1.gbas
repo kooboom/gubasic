@@ -1,0 +1,9 @@
+' The program starts here, not with Form1: Sub Main chooses what to show.
+Public UserName As String = "Kim"
+
+Sub Main()
+    Debug.Print("Main starts")
+    MsgBox("Welcome")
+    Form1.Show
+    Debug.Print("Main ends; Form1 stays")
+End Sub

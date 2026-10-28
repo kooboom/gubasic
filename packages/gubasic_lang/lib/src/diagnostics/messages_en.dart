@@ -247,6 +247,10 @@ const Map<DiagnosticCode, String> englishMessages = {
   DiagnosticCode.vb6KeyHandler: 'GuBASIC tells a key event its key in one '
       'parameter: write {1}, then read e.KeyCode (as in e.KeyCode = '
       'Keys.Left) and e.Shift, e.Control and e.Alt.',
+  DiagnosticCode.ambiguousName: '{0} is Public in {1}, so it is not clear '
+      'which is meant here. Write it with its module\'s name, as in {2}.',
+  DiagnosticCode.mainTwice: '{0} has a Sub Main too, and a program starts '
+      'with one. Keep Sub Main in one module, and rename the other.',
   DiagnosticCode.notAProcedure: '"{0}" is not a Sub of this code, so it '
       'cannot handle an event. Name a Sub after AddressOf.',
   DiagnosticCode.readOnlyProperty:
@@ -288,6 +292,8 @@ const Map<DiagnosticCode, String> englishMessages = {
       'Windows and macOS, so a project cannot have both; rename one.',
   DiagnosticCode.unknownPicture: 'The project has no picture "{0}". Add it '
       'to the project\'s pictures, or choose another.',
+  DiagnosticCode.noSubMain: 'The project starts with Sub Main, but no '
+      'module has a Sub Main(). Add one to a module, or start with a form.',
   DiagnosticCode.badProjectId: '"{0}" is not an app ID, so it is ignored '
       'and the next export of the app makes a new one. An app ID is 8 to 32 '
       'lowercase letters and digits.',

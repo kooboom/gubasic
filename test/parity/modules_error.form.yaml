@@ -1,0 +1,3 @@
+formatVersion: 1
+controls:
+  - { name: btnGo, type: Button }

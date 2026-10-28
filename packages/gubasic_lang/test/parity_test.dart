@@ -31,7 +31,8 @@ import 'interpreter/fake_host.dart';
 ///
 /// A program with several forms (docs/DESIGN.md D88) has, for each form
 /// besides Form1, NAME.FORM.form.yaml and NAME.FORM.gbas (FORM: `Form2`);
-/// Form1 starts.
+/// Form1 starts. Each module (D102) is NAME.MODULE.gbas, without a form
+/// file; with NAME.startup holding `Sub Main`, the program starts with it.
 ///
 /// Today the programs run in the interpreter; when the transpiler exists,
 /// the same files run through it too and must give the same output. The
@@ -79,7 +80,27 @@ void main() {
           .where((p) => p != '$base.form.yaml')
           .toList()
         ..sort();
-      if (otherForms.isNotEmpty) {
+      final modules = <ModuleSource>[
+        for (final p
+            in Directory('../../test/parity')
+                .listSync()
+                .whereType<File>()
+                .map((f) => f.path)
+                .where((p) => p.startsWith('$base.') && p.endsWith('.gbas'))
+                .where((p) => p != '$base.gbas')
+                .where((p) =>
+                    !File(p.replaceFirst('.gbas', '.form.yaml')).existsSync())
+                .toList()
+              ..sort())
+          (
+            name: p.substring(base.length + 1, p.length - '.gbas'.length),
+            source: File(p).readAsStringSync(),
+          ),
+      ];
+      final startupFile = File('$base.startup');
+      final startsWithMain = startupFile.existsSync() &&
+          startupFile.readAsStringSync().trim() == startupSubMain;
+      if (otherForms.isNotEmpty || modules.isNotEmpty) {
         final forms = <FormSource>[];
         for (final (name, formPath, codePath) in [
           ('Form1', formFile.path, program.path),
@@ -101,7 +122,9 @@ void main() {
             File(program.path.replaceFirst('.gbas', '.events'))
                 .readAsStringSync(),
             settings: settings,
-            pictures: pictures);
+            pictures: pictures,
+            modules: modules,
+            startsWithMain: startsWithMain);
       } else if (formFile.existsSync()) {
         final form = readFormFile(formFile.readAsStringSync(),
             name: 'Form1', pictures: pictures);

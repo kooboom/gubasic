@@ -1548,6 +1548,79 @@ class ProjectController extends ChangeNotifier {
     _current.replaceFiles(withStartupForm(_current.files, form));
   }
 
+  // -------------------------------------------------------------------------
+  // The project's modules (D102)
+
+  /// The open project's modules, as its `.gbproj` file lists them.
+  List<String> get modules => projectModules(_current.files);
+
+  /// Whether the open project starts with Sub Main.
+  bool get startsWithMain => startsWithMainOf(_current.files);
+
+  /// File → Add Module: a new module, `Module1` or the next free name.
+  /// Gives its code file, for the IDE to open; null when the `.gbproj`
+  /// file has errors (said).
+  Future<String?> addModule(BuildContext context) async {
+    final project = _current;
+    final name = newModuleName(project.files);
+    final added = withModuleAdded(
+      project.files,
+      name,
+      comment: strings.moduleComment,
+    );
+    if (added == null) {
+      await _tell(context, strings.formsNeedProjectFile);
+      return null;
+    }
+    project.replaceFiles(added);
+    return '$name.gbas';
+  }
+
+  /// Asks for a new name for [module] and renames it, its file and its
+  /// uses in the code. Gives its new file; null when it was not renamed.
+  Future<String?> renameModule(BuildContext context, String module) async {
+    final project = _current;
+    final name = await showDialog<String>(
+      context: context,
+      builder: (_) => _FormNameDialog(
+        strings: strings,
+        files: project.files,
+        form: module,
+        describe: _describeFormName,
+        title: strings.renameModule,
+        label: strings.moduleNameLabel,
+      ),
+    );
+    if (name == null || name == module) return null;
+    project.replaceFiles(withModuleRenamed(project.files, module, name));
+    return '$name.gbas';
+  }
+
+  /// Deletes [module] after asking, and saying where the code uses it.
+  /// True when it was deleted.
+  Future<bool> deleteModule(BuildContext context, String module) async {
+    final project = _current;
+    final uses = formUsesIn(project.files, module);
+    final go = await _confirm(
+      context,
+      [
+        strings.deleteModuleQuestion.replaceAll('{0}', module),
+        if (uses.isNotEmpty)
+          strings.deleteModuleUses
+              .replaceAll('{0}', module)
+              .replaceAll('{1}', uses.join(', ')),
+      ].join('\n\n'),
+      strings.deleteModule.replaceAll('…', ''),
+    );
+    if (!go) return false;
+    project.replaceFiles(withModuleDeleted(project.files, module));
+    return true;
+  }
+
+  /// The project starts with Sub Main of a module.
+  void startWithMain() =>
+      _current.replaceFiles(withStartupMain(_current.files));
+
   Future<bool> _confirm(
     BuildContext context,
     String message,
@@ -1580,12 +1653,18 @@ class _FormNameDialog extends StatefulWidget {
     required this.files,
     required this.form,
     required this.describe,
+    this.title,
+    this.label,
   });
 
   final IdeStrings strings;
   final Map<String, String> files;
   final String form;
   final String Function(FormNameRefused) describe;
+
+  /// For a module (D102): the dialog's title and the field's label.
+  final String? title;
+  final String? label;
 
   @override
   State<_FormNameDialog> createState() => _FormNameDialogState();
@@ -1614,7 +1693,7 @@ class _FormNameDialogState extends State<_FormNameDialog> {
     final s = widget.strings;
     final refused = _refused;
     return AlertDialog(
-      title: Text(s.renameForm.replaceAll('…', '')),
+      title: Text((widget.title ?? s.renameForm).replaceAll('…', '')),
       content: SizedBox(
         width: 440,
         child: TextField(
@@ -1622,7 +1701,7 @@ class _FormNameDialogState extends State<_FormNameDialog> {
           controller: _field,
           autofocus: true,
           decoration: InputDecoration(
-            labelText: s.formNameLabel,
+            labelText: widget.label ?? s.formNameLabel,
             errorText: refused == null ? null : widget.describe(refused),
             errorMaxLines: 4,
           ),

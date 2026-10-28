@@ -7,11 +7,16 @@ import 'pictures.dart';
 import 'yaml_reader.dart';
 
 /// The newest project file layout this GuBASIC reads
-/// (docs/LANGUAGE.md §11.3). Version 2 added `pictures`; a project
-/// without pictures is still written as version 1, which older GuBASICs
-/// read, and one with pictures as 2, which they refuse (F003) rather than
-/// drop its pictures when saving (D51).
-const projectFileVersion = 2;
+/// (docs/LANGUAGE.md §11.3). Version 2 added `pictures`, version 3
+/// `modules` and `startup: Sub Main` (D102). A project is written in the
+/// oldest version that holds it, so that older GuBASICs open it, and
+/// refuse (F003) one whose pictures or modules they would drop when
+/// saving (D51).
+const projectFileVersion = 3;
+
+/// The `startup` of a project that starts with `Sub Main` of a module
+/// (D102).
+const startupSubMain = 'Sub Main';
 
 /// A project (`App.gbproj`): its name, its forms and the one it starts
 /// with, and its pictures. Form `F` lives in `F.form.yaml` and `F.gbas`
@@ -23,6 +28,7 @@ class ProjectFile {
     this.startup,
     this.pictures = const [],
     this.id,
+    this.modules = const [],
   });
 
   final String name;
@@ -34,15 +40,24 @@ class ProjectFile {
   final String? id;
   final List<String> forms;
 
+  /// The modules (D102): module `M` lives in `M.gbas`.
+  final List<String> modules;
+
   /// The pictures' file names, as written, with Hangul as syllables.
   final List<String> pictures;
 
-  /// The startup form as written, or null for the first form.
+  /// The startup form as written, [startupSubMain], or null for the first
+  /// form.
   final String? startup;
 
-  /// The form the program starts with, or null if there are no forms.
+  /// Whether the program starts with `Sub Main` of a module (D102).
+  bool get startsWithMain => startup == startupSubMain;
+
+  /// The form the program starts with, or null if there are no forms. A
+  /// program that starts with Sub Main has its first form here, which it
+  /// does not show by itself.
   String? get startupForm {
-    if (startup != null) {
+    if (startup != null && !startsWithMain) {
       for (final f in forms) {
         if (f.toLowerCase() == startup!.toLowerCase()) return f;
       }
@@ -65,6 +80,7 @@ class ProjectFileResult {
 ProjectFileResult readProjectFile(String text) {
   final r = YamlReader();
   final forms = <String>[];
+  final modules = <String>[];
   final pictures = <String>[];
   var name = '';
   String? startup;
@@ -75,13 +91,21 @@ ProjectFileResult readProjectFile(String text) {
           forms: forms,
           startup: startup,
           pictures: pictures,
-          id: id),
+          id: id,
+          modules: modules),
       r.diagnostics);
 
   final doc = r.load(text);
   if (doc == null) return result();
-  final top = r.entries(
-      doc, {'formatversion', 'id', 'name', 'startup', 'forms', 'pictures'});
+  final top = r.entries(doc, {
+    'formatversion',
+    'id',
+    'name',
+    'startup',
+    'forms',
+    'modules',
+    'pictures',
+  });
   if (!r.checkVersion(doc, top, projectFileVersion)) return result();
 
   if (top['name'] != null) {
@@ -118,6 +142,21 @@ ProjectFileResult readProjectFile(String text) {
         ['forms', '- Form1']);
   }
 
+  // Modules (D102): a name no form or other module has.
+  final moduleList = top['modules'] == null
+      ? null
+      : r.list(top['modules']!, 'modules', '- Module1');
+  for (final node in moduleList?.nodes ?? const <YamlNode>[]) {
+    final module = r.name(node);
+    if (module == null) continue;
+    if (!seen.add(module.toLowerCase())) {
+      r.report(node.span, DiagnosticCode.duplicateControlName,
+          [module, '${node.span.start.line + 1}']);
+      continue;
+    }
+    modules.add(module);
+  }
+
   final pictureList = top['pictures'] == null
       ? null
       : r.list(top['pictures']!, 'pictures', '- triangle.png');
@@ -143,9 +182,17 @@ ProjectFileResult readProjectFile(String text) {
 
   final startupNode = top['startup'];
   if (startupNode != null) {
-    startup = r.name(startupNode);
-    if (startup != null && !seen.contains(startup.toLowerCase())) {
-      r.report(startupNode.span, DiagnosticCode.unknownStartupForm, [startup]);
+    final written = startupNode is YamlScalar ? '${startupNode.value}' : '';
+    if (written.toLowerCase() == startupSubMain.toLowerCase()) {
+      startup = startupSubMain;
+    } else {
+      startup = r.name(startupNode);
+      if (startup != null &&
+          (!seen.contains(startup.toLowerCase()) ||
+              modules.any((m) => m.toLowerCase() == startup!.toLowerCase()))) {
+        r.report(
+            startupNode.span, DiagnosticCode.unknownStartupForm, [startup]);
+      }
     }
   }
   return result();

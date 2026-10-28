@@ -62,7 +62,7 @@ Three releases, then the rest (D94–D96). The order follows who GuBASIC is for 
 - [x] Diagnostics for a control array or `On Error`, saying which of these to write instead (D95, D99)
 - [x] `Timer` control (D82, D100)
 - [x] `KeyDown` / `KeyUp` and `KeyPreview` (D82, D101)
-- [ ] Module files (`Module1.gbas`) and starting at `Sub Main` (D90)
+- [x] Module files (`Module1.gbas`) and starting at `Sub Main` (D90, D102)
 - [x] Choosing several controls in the designer; copying and pasting them (D97)
 - [ ] Menus in the apps made with GuBASIC, with a menu editor: a menu bar and right-click menus (Visual Basic 6's [Menu Editor](https://learn.microsoft.com/en-us/previous-versions/visualstudio/visual-studio-2008/62aawczc(v=vs.90)) and [PopupMenu](https://learn.microsoft.com/en-us/previous-versions/visualstudio/visual-basic-6/aa716251(v=vs.60)); Visual Basic .NET's `ContextMenuStrip`, same source)
 - [ ] `DialogResult`

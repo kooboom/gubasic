@@ -1,0 +1,4 @@
+' Shown by Sub Main of Module1 (modules_main.startup says Sub Main, D102).
+Sub Form_Load()
+    lblHello.Caption = "Hello, " & UserName
+End Sub

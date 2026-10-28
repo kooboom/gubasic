@@ -35,10 +35,12 @@ void main(List<String> args) {
     ..writeln('/// the event script are null without a form, the settings')
     ..writeln('/// without NAME.settings; the pictures are NAME.pictures;')
     ..writeln('/// the other forms of a project, (name, form file, code), are')
-    ..writeln('/// NAME.FORM.form.yaml and NAME.FORM.gbas (D88).')
+    ..writeln('/// NAME.FORM.form.yaml and NAME.FORM.gbas (D88), its modules')
+    ..writeln('/// (name, null, code) NAME.MODULE.gbas (D102); the last is')
+    ..writeln('/// whether NAME.startup says it starts with Sub Main.')
     ..writeln('const parityCases = <(String, String, List<String>, String, '
         'String?, String?, String?, List<String>, '
-        'List<(String, String, String)>)>[');
+        'List<(String, String?, String)>, bool)>[');
   for (final p in programs) {
     final name = p.uri.pathSegments.last.replaceFirst('.gbas', '');
     final input = read(p.path.replaceFirst('.gbas', '.in'));
@@ -74,8 +76,23 @@ void main(List<String> args) {
       out.writeln('      (${jsonEncode(form)}, ${jsonEncode(read(f))}, '
           '${jsonEncode(read(f.replaceFirst('.form.yaml', '.gbas')))}),');
     }
+    final modules = dir
+        .listSync()
+        .whereType<File>()
+        .map((f) => f.path)
+        .where((f) => f.startsWith('$base.') && f.endsWith('.gbas'))
+        .where((f) => f != '$base.gbas')
+        .where((f) => !File(f.replaceFirst('.gbas', '.form.yaml')).existsSync())
+        .toList()
+      ..sort();
+    for (final f in modules) {
+      final module = f.substring(base.length + 1, f.length - '.gbas'.length);
+      out.writeln(
+          '      (${jsonEncode(module)}, null, ${jsonEncode(read(f))}),');
+    }
     out
       ..writeln('    ],')
+      ..writeln('    ${read('$base.startup')?.trim() == 'Sub Main'},')
       ..writeln('  ),');
   }
   out.writeln('];');

@@ -1,0 +1,5 @@
+' A second module uses the first's names, and the form's controls.
+Sub ShowTotal()
+    Form1.lblTotal.Caption = "Total is now " & Total
+    Debug.Print(Module1.Calls())
+End Sub

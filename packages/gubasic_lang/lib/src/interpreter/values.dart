@@ -82,6 +82,14 @@ class GbControls {
   final List<GbControl> items;
 }
 
+/// A module of the project, `Module1` (D102): what `Module1.Total` reads
+/// through.
+class GbModule {
+  const GbModule(this.name);
+
+  final String name;
+}
+
 /// What a form's KeyDown and KeyUp are told (D101): the key's number, as
 /// in Keys, and the modifiers held.
 class GbKeyEvent {
@@ -125,6 +133,7 @@ String formatValue(Object? value) {
     GbException e => e.message,
     GbControls() => 'Controls',
     GbKeyEvent() => 'KeyEventArgs',
+    GbModule m => m.name,
     _ => '$value',
   };
 }
@@ -144,6 +153,7 @@ String typeNameOf(Object? value) {
     GbControl c => c.component.name,
     GbControls() => 'Controls',
     GbKeyEvent() => 'KeyEventArgs',
+    GbModule m => m.name,
     _ => 'Object',
   };
 }

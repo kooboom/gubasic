@@ -19,6 +19,14 @@ enum SymbolKind {
   /// A form of the project (`Form2`, D88). Its type is a [ControlType]
   /// with its form.
   form,
+
+  /// A module of the project (`Module1`, D102). Its type is a
+  /// [ModuleType].
+  module,
+
+  /// A name two modules make `Public` (D102): it must be written with its
+  /// module's name (A054).
+  ambiguous,
 }
 
 /// Where a variable lives.
@@ -78,10 +86,11 @@ class Symbol {
   String toString() => '${kind.name} $name: ${type.displayName}';
 }
 
-/// From the outside in: built-ins, the project's forms, the form's
-/// controls (only when the code belongs to a form), the file's own names,
-/// a procedure, a block.
-enum ScopeKind { builtins, project, form, file, procedure, block }
+/// From the outside in: built-ins, the `Public` names of the project's
+/// modules, the project's forms and modules, the form's controls (only
+/// when the code belongs to a form), the file's own names, a procedure, a
+/// block.
+enum ScopeKind { builtins, modules, project, form, file, procedure, block }
 
 class Scope {
   Scope(this.kind, this.parent);

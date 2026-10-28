@@ -1,0 +1,5 @@
+' Never shown: Sub Main ends with no form shown, and so does the program
+' (D102).
+Sub Form_Load()
+    Debug.Print("not reached")
+End Sub

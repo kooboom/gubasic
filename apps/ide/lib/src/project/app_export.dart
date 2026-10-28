@@ -120,6 +120,7 @@ Map<String, String>? withProjectId(Map<String, String> files, String id) {
         startup: p.startup,
         pictures: p.pictures,
         id: id,
+        modules: p.modules,
       ),
     ),
   };

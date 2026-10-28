@@ -52,22 +52,35 @@ void main() {
         events,
         settings,
         pictures,
-        others
+        others,
+        startsWithMain
       ) in parityCases) {
     if (others.isNotEmpty) {
-      // A project with several forms (D88).
+      // A project with several forms (D88), or modules (D102).
       test(name, () async {
-        final lines = await runProjectScript([
-          (
-            file: readFormFile(form!, name: 'Form1', pictures: pictures).form,
-            source: source
-          ),
-          for (final (formName, file, code) in others)
-            (
-              file: readFormFile(file, name: formName, pictures: pictures).form,
-              source: code
-            ),
-        ], events!, settings: settings, pictures: pictures);
+        final lines = await runProjectScript(
+            [
+              (
+                file:
+                    readFormFile(form!, name: 'Form1', pictures: pictures).form,
+                source: source
+              ),
+              for (final (formName, file, code) in others)
+                if (file != null)
+                  (
+                    file: readFormFile(file, name: formName, pictures: pictures)
+                        .form,
+                    source: code
+                  ),
+            ],
+            events!,
+            settings: settings,
+            pictures: pictures,
+            modules: [
+              for (final (moduleName, file, code) in others)
+                if (file == null) (name: moduleName, source: code),
+            ],
+            startsWithMain: startsWithMain);
         expect('${lines.join('\n')}\n', expected);
       });
       continue;

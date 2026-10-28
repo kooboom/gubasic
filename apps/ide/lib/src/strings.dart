@@ -121,6 +121,16 @@ class IdeStrings {
     required this.numberNeeded,
     required this.formNameIsFile,
     required this.addForm,
+    required this.addModule,
+    required this.modulesGroup,
+    required this.moduleActions,
+    required this.startWithMain,
+    required this.renameModule,
+    required this.deleteModule,
+    required this.moduleNameLabel,
+    required this.moduleComment,
+    required this.deleteModuleQuestion,
+    required this.deleteModuleUses,
     required this.formActions,
     required this.startupFormTag,
     required this.makeStartupForm,
@@ -450,6 +460,25 @@ class IdeStrings {
 
   /// File → Add Form (D88).
   final String addForm;
+
+  // The project's modules (D102): File → Add Module, their group in the
+  // project explorer and its ⋮ menu.
+  final String addModule;
+  final String modulesGroup;
+  final String moduleActions;
+  final String startWithMain;
+  final String renameModule;
+  final String deleteModule;
+  final String moduleNameLabel;
+
+  /// The comment a new module's code starts with.
+  final String moduleComment;
+
+  /// `{0}` the module.
+  final String deleteModuleQuestion;
+
+  /// `{0}` the module, `{1}` where the code uses it.
+  final String deleteModuleUses;
 
   /// The tooltip of a form's ⋮ button in the project list.
   final String formActions;
@@ -855,6 +884,21 @@ class IdeStrings {
         'A form is named after its files. To rename it, use ⋮ next to the '
         'form in the project list.',
     addForm: 'Add Form',
+    addModule: 'Add Module',
+    modulesGroup: 'Modules',
+    moduleActions: 'Module',
+    startWithMain: 'Start with Sub Main',
+    renameModule: 'Rename Module…',
+    deleteModule: 'Delete Module…',
+    moduleNameLabel: 'Module name',
+    moduleComment:
+        'Public variables, Subs and Functions here can be used in every form.',
+    deleteModuleQuestion:
+        'Delete {0}? Its code is taken out of the project; on the disk, its '
+        'file is deleted when the project is saved.',
+    deleteModuleUses:
+        'The code uses {0} ({1}): those lines will be errors until they are '
+        'changed.',
     formActions: 'Form',
     startupFormTag: 'starts',
     makeStartupForm: 'Start with This Form',
@@ -862,13 +906,12 @@ class IdeStrings {
     deleteForm: 'Delete Form…',
     formNameLabel: 'Form name',
     formNameNotUsable:
-        '"{0}" cannot name a form. Use English letters, digits and _, '
-        'starting with a letter; not a keyword, and not Form.',
-    formNameTaken: 'The project has a form named {0} already.',
+        '"{0}" cannot name a form or a module. Use English letters, digits '
+        'and _, starting with a letter; not a keyword, and not Form.',
+    formNameTaken: 'The project has a form or a module named {0} already.',
     formNameUsedInCode:
-        'The code uses the name {0} already ({1}), so a form cannot take '
-        'it: that code would turn into a use of the form. Choose another '
-        'name.',
+        'The code uses the name {0} already ({1}), so it cannot be taken: '
+        'that code would turn into a use of this one. Choose another name.',
     deleteFormQuestion:
         'Delete {0}? Its design and its code are taken out of the project; '
         'on the disk, its files are deleted when the project is saved.',
@@ -1153,15 +1196,26 @@ class IdeStrings {
     numberNeeded: '{0} 속성에는 1.5 같은 숫자만 쓸 수 있습니다.',
     formNameIsFile: '폼 이름은 파일 이름입니다. 이름을 바꾸려면 프로젝트 목록에서 폼 옆의 ⋮ 단추를 누릅니다.',
     addForm: '폼 추가',
+    addModule: '모듈 추가',
+    modulesGroup: '모듈',
+    moduleActions: '모듈',
+    startWithMain: 'Sub Main으로 시작',
+    renameModule: '모듈 이름 바꾸기…',
+    deleteModule: '모듈 지우기…',
+    moduleNameLabel: '모듈 이름',
+    moduleComment: '여기의 Public 변수와 Sub, Function은 모든 폼에서 쓸 수 있습니다.',
+    deleteModuleQuestion:
+        '{0} 모듈을 지울까요? 코드가 프로젝트에서 빠지고, 디스크의 파일은 프로젝트를 저장할 때 지워집니다.',
+    deleteModuleUses: '코드가 {0} 모듈을 씁니다({1}). 그 줄은 고칠 때까지 오류가 됩니다.',
     formActions: '폼',
     startupFormTag: '시작',
     makeStartupForm: '이 폼으로 시작',
     renameForm: '폼 이름 바꾸기…',
     deleteForm: '폼 지우기…',
     formNameLabel: '폼 이름',
-    formNameNotUsable: '"{0}" 이름은 폼 이름으로 쓸 수 없습니다. 영문자로 시작하는 영문자, 숫자, _만 쓰고, 키워드와 Form은 쓸 수 없습니다.',
-    formNameTaken: '프로젝트에 {0} 폼이 이미 있습니다.',
-    formNameUsedInCode: '코드가 이미 {0} 이름을 씁니다({1}). 그 코드가 폼을 가리키게 되므로 폼 이름으로 쓸 수 없습니다. 다른 이름을 골라 주세요.',
+    formNameNotUsable: '"{0}" 이름은 폼이나 모듈의 이름으로 쓸 수 없습니다. 영문자로 시작하는 영문자, 숫자, _만 쓰고, 키워드와 Form은 쓸 수 없습니다.',
+    formNameTaken: '프로젝트에 {0} 이름의 폼이나 모듈이 이미 있습니다.',
+    formNameUsedInCode: '코드가 이미 {0} 이름을 씁니다({1}). 그 코드가 이것을 가리키게 되므로 이 이름을 쓸 수 없습니다. 다른 이름을 골라 주세요.',
     deleteFormQuestion:
         '{0} 폼을 지울까요? 디자인과 코드가 프로젝트에서 빠지고, 디스크의 파일은 프로젝트를 저장할 때 지워집니다.',
     deleteFormUses: '코드가 {0} 폼을 씁니다({1}). 그 줄은 고칠 때까지 오류가 됩니다.',

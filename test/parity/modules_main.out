@@ -1,0 +1,7 @@
+Debug.Print: Main starts
+MsgBox: Welcome
+> OK
+Set lblHello.Caption: Hello, Kim
+Debug.Print: Main ends; Form1 stays
+> Close
+Closed

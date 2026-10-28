@@ -123,6 +123,18 @@ final class ControlType extends GbType {
   String get displayName => form?.name ?? component.name;
 }
 
+/// A module of the project, `Module1` (docs/DESIGN.md D102): its members
+/// are its `Public` variables and constants and its procedures that are
+/// not `Private`.
+final class ModuleType extends GbType {
+  const ModuleType(this.module);
+
+  final ModuleInterface module;
+
+  @override
+  String get displayName => module.name;
+}
+
 /// The controls on a form, `Me.Controls` (docs/DESIGN.md D98): counted,
 /// numbered from 0, gone through with For Each, added to and removed from.
 final class ControlsType extends GbType {

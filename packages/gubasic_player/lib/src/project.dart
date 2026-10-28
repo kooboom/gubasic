@@ -8,8 +8,9 @@ class FileDiagnostic {
   final Diagnostic diagnostic;
 }
 
-/// A project read from its files: `NAME.gbproj`, and for each form
-/// `FORM.form.yaml` and `FORM.gbas` next to it (docs/LANGUAGE.md §11.3).
+/// A project read from its files: `NAME.gbproj`, for each form
+/// `FORM.form.yaml` and `FORM.gbas` next to it, and for each module
+/// `MODULE.gbas` (docs/LANGUAGE.md §11.3).
 /// Reading never throws: problems are in [diagnostics].
 class Project {
   Project._(this.name, this.files, this._compile);
@@ -48,16 +49,50 @@ class Project {
           readable &= !form.hasErrors && files.containsKey(formFile);
           sources.add((file: form.form, source: files['$name.gbas'] ?? ''));
         }
+        // Its modules (D102): MODULE.gbas each.
+        final modules = <ModuleSource>[
+          for (final name in read.project.modules)
+            (name: name, source: files['$name.gbas'] ?? ''),
+        ];
+        for (final name in read.project.modules) {
+          if (!files.containsKey('$name.gbas')) readable = false;
+        }
         final compiled = compileProject(
           sources,
           startup: read.project.startupForm,
           pictures: pictures,
+          modules: modules,
+          startsWithMain: read.project.startsWithMain,
         );
         for (final f in compiled.forms) {
           diagnostics.addAll([
             for (final d in f.program.diagnostics)
               FileDiagnostic(f.codeFile, d),
           ]);
+        }
+        for (final m in compiled.modules) {
+          diagnostics.addAll([
+            for (final d in m.program.diagnostics)
+              FileDiagnostic(m.codeFile, d),
+          ]);
+        }
+        if (compiled.startsWithMain && compiled.main == null) {
+          // `startup: Sub Main` with no Sub Main() in a module (F019).
+          final text = files[projectName]!;
+          final at = RegExp(r'^startup:', multiLine: true).firstMatch(text);
+          final offset = at?.start ?? 0;
+          diagnostics.add(
+            FileDiagnostic(
+              projectName,
+              Diagnostic(
+                code: DiagnosticCode.noSubMain,
+                line: '\n'.allMatches(text.substring(0, offset)).length + 1,
+                column: 1,
+                offset: offset,
+                length: at == null ? 0 : at.end - at.start,
+              ),
+            ),
+          );
         }
         if (readable) {
           final s = compiled.startup;
@@ -98,7 +133,8 @@ class StartupForm {
   final String codeFile;
   final CompileResult program;
 
-  /// All the project's forms, compiled (D88); null for a form on its own.
+  /// All the project's forms and modules, compiled (D88, D102); null for a
+  /// form on its own.
   final ProjectProgram? project;
 
   /// The project's forms' files, this one first.

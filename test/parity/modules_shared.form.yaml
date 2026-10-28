@@ -1,0 +1,4 @@
+formatVersion: 1
+controls:
+  - { name: lblTotal, type: Label }
+  - { name: btnAdd, type: Button, properties: { Caption: Add, Top: 40 } }

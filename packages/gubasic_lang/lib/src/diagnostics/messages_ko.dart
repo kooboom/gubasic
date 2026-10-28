@@ -201,6 +201,10 @@ const Map<DiagnosticCode, String> koreanMessages = {
       '{0} 컨트롤은 New로 만들지 않고 디자이너에서 폼에 놓습니다. 도구 상자에서 넣고, 속성은 코드에서 정해 주세요.',
   DiagnosticCode.vb6KeyHandler:
       'GuBASIC에서는 키 이벤트가 매개변수 하나로 키를 알려 줍니다. {1} 형태로 쓰고, e.KeyCode(e.KeyCode = Keys.Left처럼)와 e.Shift, e.Control, e.Alt를 읽어 주세요.',
+  DiagnosticCode.ambiguousName:
+      '{0} 이름은 {1} 모듈에서 모두 Public이라 여기서 어느 것인지 알 수 없습니다. {2} 형태처럼 모듈 이름과 함께 써 주세요.',
+  DiagnosticCode.mainTwice:
+      '{0} 모듈에도 Sub Main이 있는데, 프로그램은 하나로 시작합니다. Sub Main은 한 모듈에만 두고 다른 것의 이름을 바꿔 주세요.',
   DiagnosticCode.notAProcedure:
       '"{0}" 이름은 이 코드의 Sub 프로시저가 아니어서 이벤트를 처리할 수 없습니다. AddressOf 뒤에는 Sub 프로시저의 이름을 써 주세요.',
   DiagnosticCode.readOnlyProperty:
@@ -235,6 +239,8 @@ const Map<DiagnosticCode, String> koreanMessages = {
       'GuBASIC은 Windows, macOS처럼 둘을 같은 이름으로 보므로 한 프로젝트에 함께 둘 수 없습니다. 하나의 이름을 바꿔 주세요.',
   DiagnosticCode.unknownPicture:
       '프로젝트에 "{0}" 그림이 없습니다. 프로젝트의 그림에 넣거나 다른 그림을 골라 주세요.',
+  DiagnosticCode.noSubMain:
+      '프로젝트가 Sub Main으로 시작하는데, Sub Main()이 있는 모듈이 없습니다. 모듈에 Sub Main을 넣거나 폼으로 시작해 주세요.',
   DiagnosticCode.badProjectId:
       '"{0}" 값은 앱 ID가 아니어서 무시하고, 앱을 다음에 내보낼 때 새 ID를 만듭니다. 앱 ID는 영어 소문자와 숫자 8~32자입니다.',
   DiagnosticCode.badAnchor:

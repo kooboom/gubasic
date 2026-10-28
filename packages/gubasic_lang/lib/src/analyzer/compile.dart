@@ -26,15 +26,18 @@ class CompileResult {
 }
 
 /// Lexes, parses and analyzes [source]; [form] is the form the code
-/// belongs to, if any, [pictures] the project's pictures and [forms] the
-/// project's forms (see [analyze]).
+/// belongs to, if any, [pictures] the project's pictures, [forms] the
+/// project's forms and [modules] its modules (see [analyze]).
 CompileResult compile(
   String source, {
   FormFile? form,
   List<String>? pictures,
   Map<String, FormInterface>? forms,
+  Map<String, ModuleInterface>? modules,
 }) {
   final parsed = parse(source);
   return CompileResult(
-      parsed, analyze(parsed, form: form, pictures: pictures, forms: forms));
+      parsed,
+      analyze(parsed,
+          form: form, pictures: pictures, forms: forms, modules: modules));
 }

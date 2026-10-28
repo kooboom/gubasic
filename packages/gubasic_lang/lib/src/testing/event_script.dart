@@ -516,27 +516,38 @@ abstract interface class ScriptDriver {
   Future<RunResult> finish();
 }
 
-/// Runs a project's [forms], the first one or [startup] first (D88), and
-/// drives them with [script] on a [ScriptedHost]. See [driveEventScript]
-/// for the transcript.
+/// Runs a project's [forms] and [modules], the first form or [startup]
+/// first, or `Sub Main` when [startsWithMain] (D88, D102), and drives them
+/// with [script] on a [ScriptedHost]. See [driveEventScript] for the
+/// transcript.
 Future<List<String>> runProjectScript(List<FormSource> forms, String script,
     {String? startup,
     String? settings,
-    List<String> pictures = const []}) async {
+    List<String> pictures = const [],
+    List<ModuleSource> modules = const [],
+    bool startsWithMain = false}) async {
   final steps = parseEventScript(script);
-  final project = compileProject(forms, startup: startup, pictures: pictures);
+  final project = compileProject(forms,
+      startup: startup,
+      pictures: pictures,
+      modules: modules,
+      startsWithMain: startsWithMain);
   if (project.hasErrors) {
     return [
-      for (final f in project.forms)
-        for (final d in f.program.diagnostics)
-          if (d.isError) 'Not started: ${d.code.code} @ ${f.codeFile}:${d.line}'
+      for (final (file, program) in [
+        for (final f in project.forms) (f.codeFile, f.program),
+        for (final m in project.modules) (m.codeFile, m.program),
+      ])
+        for (final d in program.diagnostics)
+          if (d.isError) 'Not started: ${d.code.code} @ $file:${d.line}',
+      if (startsWithMain && project.main == null) 'Not started: F019',
     ];
   }
   final host =
       ScriptedHost.forms([for (final f in forms) f.file], settings: settings);
   return driveEventScript(
       steps, _HostDriver(Interpreter.project(project, host), host),
-      namesFile: forms.length > 1);
+      namesFile: forms.length > 1 || modules.isNotEmpty);
 }
 
 /// Runs [source] with [form] and drives it with [script] (an event

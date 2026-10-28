@@ -33,13 +33,17 @@ import 'types.dart';
 /// [forms] are the project's forms, [form] among them, by lower-case name
 /// ([formInterfaces]): the code can then use them by name, `Form2.Show`,
 /// and their controls, `Public` variables and procedures (D88).
+///
+/// [modules] are the project's modules, by lower-case name (D102): their
+/// `Public` names can be used anywhere, also with the module's name.
 AnalysisResult analyze(
   ParseResult parsed, {
   FormFile? form,
   List<String>? pictures,
   Map<String, FormInterface>? forms,
+  Map<String, ModuleInterface>? modules,
 }) =>
-    _Analyzer(parsed, form, pictures, forms).run();
+    _Analyzer(parsed, form, pictures, forms, modules).run();
 
 /// A procedure being analyzed.
 class _ProcedureContext {
@@ -65,7 +69,8 @@ class _ProcedureContext {
 }
 
 class _Analyzer {
-  _Analyzer(this.parsed, this.form, List<String>? pictures, this.forms)
+  _Analyzer(
+      this.parsed, this.form, List<String>? pictures, this.forms, this.modules)
       : _lines = LineMap(parsed.source),
         _builtins = Scope(ScopeKind.builtins, null) {
     for (final f in builtinFunctions.values) {
@@ -82,14 +87,41 @@ class _Analyzer {
           type: GbType.builtinObject));
     }
     Scope outer = _builtins;
+    final modules = this.modules ?? const {};
+    if (modules.isNotEmpty) {
+      // The modules' Public names (D102); a name two of them have is
+      // written with its module's name.
+      outer = Scope(ScopeKind.modules, _builtins);
+      for (final m in modules.values) {
+        for (final s in [...m.variables.values, ...m.procedures.values]) {
+          final key = s.name.toLowerCase();
+          if (outer.symbols[key] case final other?) {
+            _ambiguous.putIfAbsent(key, () => [_moduleOf[other]!]).add(m.name);
+            if (other.kind != SymbolKind.ambiguous) {
+              outer.declare(Symbol(
+                  name: s.name,
+                  kind: SymbolKind.ambiguous,
+                  type: GbType.unknown));
+            }
+          } else {
+            outer.declare(s);
+            _moduleOf[s] = m.name;
+          }
+        }
+      }
+    }
     final forms = this.forms;
-    if (forms != null) {
-      outer = Scope(ScopeKind.project, _builtins);
-      for (final f in forms.values) {
+    if (forms != null || modules.isNotEmpty) {
+      outer = Scope(ScopeKind.project, outer);
+      for (final f in forms?.values ?? const <FormInterface>[]) {
         outer.declare(Symbol(
             name: f.name,
             kind: SymbolKind.form,
             type: ControlType(formComponent, form: f)));
+      }
+      for (final m in modules.values) {
+        outer.declare(
+            Symbol(name: m.name, kind: SymbolKind.module, type: ModuleType(m)));
       }
     }
     final form = this.form;
@@ -116,6 +148,15 @@ class _Analyzer {
 
   /// The project's forms, by lower-case name (D88).
   final Map<String, FormInterface>? forms;
+
+  /// The project's modules, by lower-case name (D102).
+  final Map<String, ModuleInterface>? modules;
+
+  /// The module each Public name of [modules] is from.
+  final _moduleOf = Map<Symbol, String>.identity();
+
+  /// The names two or more modules make Public, and those modules.
+  final _ambiguous = <String, List<String>>{};
 
   /// The form's controls, when there is a form.
   Scope? _controls;
@@ -1215,6 +1256,16 @@ class _Analyzer {
   /// Resolves a name, reporting it if it is not declared. Marks it used.
   Symbol? _lookupName(NameExpr e, {bool beforeDot = false}) {
     final symbol = _scope.lookup(e.name);
+    if (symbol?.kind == SymbolKind.ambiguous) {
+      // A Public name of two modules (D102).
+      final modules = _ambiguous[e.name.toLowerCase()]!;
+      _reportAt(e, DiagnosticCode.ambiguousName, [
+        e.name,
+        modules.join(', '),
+        '${modules.first}.${symbol!.name}',
+      ]);
+      return null;
+    }
     if (symbol != null) {
       symbol.used = true;
       _result.symbols[e] = symbol;

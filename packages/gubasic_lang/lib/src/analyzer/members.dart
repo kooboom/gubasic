@@ -85,6 +85,15 @@ Map<String, MemberSpec>? membersOf(GbType type) {
         MemberSpec.property('Control', _b),
         MemberSpec.property('Alt', _b),
       ];
+    case ModuleType(:final module):
+      list = [
+        for (final v in module.variables.values)
+          MemberSpec.property(v.name, v.type,
+              readOnly: v.kind == SymbolKind.constant),
+        for (final p in module.procedures.values)
+          if (p.callable case final c?)
+            MemberSpec.method(c.name, c.parameters, c.returnType),
+      ];
     case ControlsType():
       final control = controlComponent.type;
       list = [

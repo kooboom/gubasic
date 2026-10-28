@@ -1,0 +1,12 @@
+> btnAdd.Click
+Set lblTotal.Caption: Total: 5
+Debug.Print: 105, twice: 210, 1 calls
+Set lblTotal.Caption: Total is now 105
+Debug.Print: 1 calls
+> btnAdd.Click
+Set lblTotal.Caption: Total: 110
+Debug.Print: 210, twice: 420, 2 calls
+Set lblTotal.Caption: Total is now 210
+Debug.Print: 2 calls
+> Close
+Closed
