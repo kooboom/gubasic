@@ -1,0 +1,27 @@
+' The form's keys (D101): KeyDown, again while a key is held, and KeyUp,
+' told the key as e.KeyCode, compared with Keys, and Shift, Control and
+' Alt. Arrow keys move the box, by 10 with Shift; a button with the focus
+' does not take the keys away from the form.
+Sub Form_KeyDown(e As KeyEventArgs)
+    Dim stepSize As Integer = 1
+    If e.Shift Then stepSize = 10
+    Select Case e.KeyCode
+        Case Keys.Left
+            lblBox.Left = lblBox.Left - stepSize
+        Case Keys.Right
+            lblBox.Left = lblBox.Left + stepSize
+        Case Keys.Up
+            lblBox.Top = lblBox.Top - stepSize
+        Case Else
+            Debug.Print("Key " & e.KeyCode & ", Control: " & e.Control & ", Alt: " & e.Alt)
+    End Select
+End Sub
+
+Sub Form_KeyUp(e As KeyEventArgs)
+    If e.KeyCode = Keys.Space Then Debug.Print("Space let go at " & lblBox.Left & ", " & lblBox.Top)
+End Sub
+
+Sub btnReset_Click()
+    lblBox.Left = 100
+    lblBox.Top = 100
+End Sub

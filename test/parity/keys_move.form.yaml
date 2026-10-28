@@ -1,0 +1,7 @@
+formatVersion: 1
+properties:
+  Width: 400
+  Height: 300
+controls:
+  - { name: lblBox, type: Label, properties: { Caption: "[]", Left: 100, Top: 100, Width: 24 } }
+  - { name: btnReset, type: Button, properties: { Caption: Reset, Top: 240 } }

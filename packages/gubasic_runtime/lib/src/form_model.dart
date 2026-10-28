@@ -56,6 +56,19 @@ typedef GbEventSink = void Function(String? control, String event);
 /// changes nothing (docs/DESIGN.md D44).
 typedef GbEventFilter = bool Function(String? control, String event);
 
+/// Receives the keys the user presses and lets go on a form (D101):
+/// [event] is `KeyDown` (also again while a key is held) or `KeyUp`,
+/// [keyCode] its number (gbKeyCode). [inTextBox]: while a TextBox is typed
+/// in.
+typedef GbKeySink = void Function(
+  String event,
+  int keyCode, {
+  required bool shift,
+  required bool control,
+  required bool alt,
+  required bool inTextBox,
+});
+
 /// The bytes of the project's picture [name] (PNG, JPEG or GIF), or null
 /// when there is none. The IDE looks it up as the language does, in any
 /// case (docs/DESIGN.md D51); a generated app from its assets.
@@ -72,6 +85,7 @@ class GbFormModel {
     GbEventFilter? accepts,
     this.designing = false,
     GbPictureSource? pictures,
+    this.onKey,
   }) : pictures = pictures ?? _noPictures,
        accepts = accepts ?? _acceptAll,
        form = GbControlState(null, GbControlKind.form, form),
@@ -94,6 +108,13 @@ class GbFormModel {
   final _layout = _Signal();
   final GbEventSink onEvent;
   final GbEventFilter accepts;
+
+  /// Where the form's keys go (D101); null: nowhere.
+  final GbKeySink? onKey;
+
+  /// Gives the form the keyboard's focus, set by its view: so that its
+  /// keys come to [onKey].
+  VoidCallback? requestFocus;
 
   /// Whether the form is shown in a designer rather than run: an empty
   /// ListBox then shows its name, so that it can be seen.

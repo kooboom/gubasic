@@ -199,6 +199,8 @@ const Map<DiagnosticCode, String> koreanMessages = {
       'GuBASIC에서는 {0} 이벤트의 이름이 다릅니다. 이벤트 이름은 {1} 이벤트이니 {2} 형태로 써 주세요.',
   DiagnosticCode.placedInDesigner:
       '{0} 컨트롤은 New로 만들지 않고 디자이너에서 폼에 놓습니다. 도구 상자에서 넣고, 속성은 코드에서 정해 주세요.',
+  DiagnosticCode.vb6KeyHandler:
+      'GuBASIC에서는 키 이벤트가 매개변수 하나로 키를 알려 줍니다. {1} 형태로 쓰고, e.KeyCode(e.KeyCode = Keys.Left처럼)와 e.Shift, e.Control, e.Alt를 읽어 주세요.',
   DiagnosticCode.notAProcedure:
       '"{0}" 이름은 이 코드의 Sub 프로시저가 아니어서 이벤트를 처리할 수 없습니다. AddressOf 뒤에는 Sub 프로시저의 이름을 써 주세요.',
   DiagnosticCode.readOnlyProperty:

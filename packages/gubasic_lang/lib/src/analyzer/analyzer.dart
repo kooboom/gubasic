@@ -468,6 +468,16 @@ class _Analyzer {
         return ok;
       }
     }
+    if (event.parameters.length == 1 &&
+        event.parameters.single.type == GbType.keyEventArgs &&
+        params.length == 2 &&
+        params.every((p) => p.type == GbType.integer)) {
+      // Visual Basic 6's (KeyCode As Integer, Shift As Integer) (D101).
+      final head = byName ? '${owner}_${event.name}' : decl.name.name;
+      _reportAt(decl.name, DiagnosticCode.vb6KeyHandler,
+          [decl.name.name, 'Sub $head(e As KeyEventArgs)']);
+      return false;
+    }
     if (byName &&
         event.parameters.isEmpty &&
         params.length == 1 &&

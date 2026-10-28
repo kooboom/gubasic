@@ -159,7 +159,7 @@ controls:
         '  - { name: t, type: TextBox, properties: { Caption: Hi } }\n',
         name: 'F');
     expect(r.diagnostics.map((d) => '${d.code.code}@${d.line} ${d.args}'), [
-      'F009@2 [Left, Form, Caption, Width, Height, Tag]',
+      'F009@2 [Left, Form, Caption, Width, Height, Tag, KeyPreview]',
       'F009@4 [Caption, TextBox, Text, Left, Top, Width, Height, Anchor, Tag]',
     ]);
     expect(r.form.controls.single.properties, isEmpty,

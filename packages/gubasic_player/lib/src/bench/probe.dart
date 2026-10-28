@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:gubasic_lang/gubasic_lang.dart' show GbKeyEvent, keyCodes;
 import 'package:gubasic_lang/testing.dart';
 
 import '../run_session.dart';
@@ -124,6 +125,8 @@ class BenchProbe {
           host.dialogs.answerTop(value);
         case CloseStep():
           interpreter.closeForm();
+        case KeyStep(:final event, :final key):
+          interpreter.raiseKey(event, GbKeyEvent(keyCodes[key]!));
         case ResizeStep():
           break;
       }

@@ -18,10 +18,17 @@ properties:
   # Any text the program keeps with it, as in Visual Basic; GuBASIC does
   # nothing with it (D98).
   - { name: Tag, type: String, default: "" }
+  # Whether KeyDown and KeyUp come also while a TextBox is typed in, before
+  # the TextBox gets the key (D101).
+  - { name: KeyPreview, type: Boolean, default: false }
 events:
   - Load()
   - Resize()
   - Closed()
+  # A key pressed (again while held) and let go, while the form is in
+  # front (D101).
+  - KeyDown(e As KeyEventArgs)
+  - KeyUp(e As KeyEventArgs)
 methods:
   - Show()
   - ShowDialog()

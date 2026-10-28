@@ -27,6 +27,7 @@ export 'src/editing/after_enter.dart';
 export 'src/forms/anchor.dart';
 export 'src/forms/component.dart';
 export 'src/forms/form_file.dart';
+export 'src/forms/keys.dart';
 export 'src/forms/form_writer.dart';
 export 'src/forms/names.dart';
 export 'src/forms/pictures.dart';

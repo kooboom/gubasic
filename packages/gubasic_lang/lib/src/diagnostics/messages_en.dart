@@ -244,6 +244,9 @@ const Map<DiagnosticCode, String> englishMessages = {
   DiagnosticCode.placedInDesigner: 'A {0} is put on the form in the '
       'designer, not made with New. Add one from the toolbox, and set its '
       'properties in code.',
+  DiagnosticCode.vb6KeyHandler: 'GuBASIC tells a key event its key in one '
+      'parameter: write {1}, then read e.KeyCode (as in e.KeyCode = '
+      'Keys.Left) and e.Shift, e.Control and e.Alt.',
   DiagnosticCode.notAProcedure: '"{0}" is not a Sub of this code, so it '
       'cannot handle an event. Name a Sub after AddressOf.',
   DiagnosticCode.readOnlyProperty:

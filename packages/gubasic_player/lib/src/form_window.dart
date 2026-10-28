@@ -11,6 +11,7 @@ GbFormModel formModelOf(
   GbEventFilter? accepts,
   bool designing = false,
   GbPictureSource? pictures,
+  GbKeySink? onKey,
 }) => GbFormModel(
   form: {
     for (final p in form.component.properties.values)
@@ -28,6 +29,7 @@ GbFormModel formModelOf(
   accepts: accepts,
   designing: designing,
   pictures: pictures,
+  onKey: onKey,
 );
 
 /// The state of control [name], a [component], with [properties]: one of a

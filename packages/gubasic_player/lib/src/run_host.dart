@@ -100,6 +100,20 @@ class RunHost implements FormHost {
     onEvent: (control, event) => _onEvent(form.name, control, event),
     accepts: (control, event) => _accepts(form.name, control, event),
     pictures: _pictures,
+    onKey:
+        (
+          event,
+          keyCode, {
+          required shift,
+          required control,
+          required alt,
+          required inTextBox,
+        }) => lastOutcome = interpreter.raiseKey(
+          event,
+          GbKeyEvent(keyCode, shift: shift, control: control, alt: alt),
+          form: form.name,
+          inTextBox: inTextBox,
+        ),
   );
 
   /// The model of [form], shown or not.

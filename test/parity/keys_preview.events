@@ -1,0 +1,8 @@
+txtName.KeyDown B       ' typing: the TextBox takes it
+txtName.KeyUp B
+Form.KeyDown B          ' the form has the focus
+Form.KeyUp B
+btnPreview.Click
+txtName.KeyDown B       ' with KeyPreview, the form gets it first
+txtName.KeyUp B
+Close

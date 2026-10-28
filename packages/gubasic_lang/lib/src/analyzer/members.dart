@@ -1,4 +1,5 @@
 import '../forms/component.dart';
+import '../forms/keys.dart';
 import 'builtins.dart';
 import 'symbols.dart';
 import 'types.dart';
@@ -76,6 +77,14 @@ Map<String, MemberSpec>? membersOf(GbType type) {
       ];
     case GbType.exception:
       list = [const MemberSpec.property('Message', _s)];
+    case GbType.keyEventArgs:
+      // The key, as a number of Keys (D101), and the modifiers held.
+      list = const [
+        MemberSpec.property('KeyCode', _i),
+        MemberSpec.property('Shift', _b),
+        MemberSpec.property('Control', _b),
+        MemberSpec.property('Alt', _b),
+      ];
     case ControlsType():
       final control = controlComponent.type;
       list = [
@@ -130,6 +139,11 @@ Map<String, MemberSpec> builtinObjectMembers(String name) => switch (name) {
       'Integer' => {
           'maxvalue': const MemberSpec.property('MaxValue', _i),
           'minvalue': const MemberSpec.property('MinValue', _i),
+        },
+      // The keys KeyDown and KeyUp tell apart (D101): Keys.Left is 37.
+      'Keys' => {
+          for (final name in keyCodes.keys)
+            name.toLowerCase(): MemberSpec.property(name, _i),
         },
       _ => const {},
     };

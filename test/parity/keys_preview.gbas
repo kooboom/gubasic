@@ -1,0 +1,9 @@
+' While a TextBox is typed in, the form's KeyDown does not come, unless
+' the form's KeyPreview is True (D101).
+Sub Form_KeyDown(e As KeyEventArgs)
+    Debug.Print("Form got " & e.KeyCode & " (KeyPreview " & Me.KeyPreview & ")")
+End Sub
+
+Sub btnPreview_Click()
+    Me.KeyPreview = True
+End Sub

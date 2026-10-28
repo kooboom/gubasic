@@ -1,0 +1,26 @@
+> Form.KeyDown Left
+Set lblBox.Left: 99
+> Form.KeyUp Left
+> Form.KeyDown Right
+Set lblBox.Left: 100
+> Form.KeyDown Right
+Set lblBox.Left: 101
+> Form.KeyUp Right
+> Form.KeyDown Shift+Up
+Set lblBox.Top: 90
+> Form.KeyUp Up
+> Form.KeyDown Ctrl+A
+Debug.Print: Key 65, Control: True, Alt: False
+> Form.KeyUp A
+> Form.KeyDown Space
+Debug.Print: Key 32, Control: False, Alt: False
+> Form.KeyUp Space
+Debug.Print: Space let go at 101, 90
+> btnReset.Click
+Set lblBox.Left: 100
+Set lblBox.Top: 100
+> Form.KeyDown Left
+Set lblBox.Left: 99
+> Form.KeyUp Left
+> Close
+Closed

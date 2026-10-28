@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gubasic_player/gubasic_player.dart';
 import 'package:gubasic_lang/gubasic_lang.dart';
@@ -319,6 +320,79 @@ class _WidgetDriver implements ScriptDriver {
     await tester.tap(item);
     await tester.pump();
     return host.lastOutcome;
+  }
+
+  /// The keys of a script's names (D101).
+  static final _keys = <String, LogicalKeyboardKey>{
+    'Left': LogicalKeyboardKey.arrowLeft,
+    'Right': LogicalKeyboardKey.arrowRight,
+    'Up': LogicalKeyboardKey.arrowUp,
+    'Down': LogicalKeyboardKey.arrowDown,
+    'Space': LogicalKeyboardKey.space,
+    'Enter': LogicalKeyboardKey.enter,
+    'Escape': LogicalKeyboardKey.escape,
+    for (var c = 0; c < 26; c++)
+      String.fromCharCode(65 + c): LogicalKeyboardKey(
+        LogicalKeyboardKey.keyA.keyId + c,
+      ),
+  };
+
+  /// The keys held down since their KeyDown step: a KeyDown of one again
+  /// repeats it, its KeyUp lets it go.
+  final _held = <LogicalKeyboardKey>{};
+
+  @override
+  Future<EventOutcome> key(KeyStep step) async {
+    if (!session.formShown) return EventOutcome.blocked;
+    // Where the keys go: the form in front, or the TextBox typed in.
+    if (step.control case final control?) {
+      final field = find.descendant(
+        of: _control(control),
+        matching: find.byType(EditableText),
+      );
+      if (field.hitTestable().evaluate().isEmpty) return EventOutcome.blocked;
+      await tester.tap(field);
+    } else {
+      // The form takes the keys while it or one of its controls other than
+      // a TextBox has the focus (a Button clicked keeps it).
+      final focus = FocusManager.instance.primaryFocus?.context;
+      if (focus == null ||
+          focus.findAncestorWidgetOfExactType<GbFormView>() == null ||
+          focus.findAncestorWidgetOfExactType<GbTextBox>() != null) {
+        host.modelOf(host.front!.name).requestFocus?.call();
+      }
+    }
+    await tester.pump();
+    host.lastOutcome = null;
+    final modifiers = [
+      if (step.shift) LogicalKeyboardKey.shiftLeft,
+      if (step.ctrl) LogicalKeyboardKey.controlLeft,
+      if (step.alt) LogicalKeyboardKey.altLeft,
+    ];
+    for (final m in modifiers) {
+      await tester.sendKeyDownEvent(m);
+    }
+    // What the modifiers' own KeyDown did is not the step's.
+    host.lastOutcome = null;
+    final key = _keys[step.key]!;
+    if (step.event == 'KeyDown') {
+      if (_held.add(key)) {
+        await tester.sendKeyDownEvent(key);
+      } else {
+        await tester.sendKeyRepeatEvent(key);
+      }
+    } else {
+      if (!_held.remove(key)) {
+        throw StateError('${step.text}: the key was not pressed');
+      }
+      await tester.sendKeyUpEvent(key);
+    }
+    final outcome = host.lastOutcome;
+    for (final m in modifiers.reversed) {
+      await tester.sendKeyUpEvent(m);
+    }
+    await tester.pump();
+    return outcome ?? EventOutcome.noHandler;
   }
 
   @override

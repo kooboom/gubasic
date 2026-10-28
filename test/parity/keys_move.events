@@ -1,0 +1,15 @@
+Form.KeyDown Left
+Form.KeyUp Left
+Form.KeyDown Right
+Form.KeyDown Right     ' held: KeyDown again
+Form.KeyUp Right
+Form.KeyDown Shift+Up
+Form.KeyUp Up
+Form.KeyDown Ctrl+A
+Form.KeyUp A
+Form.KeyDown Space
+Form.KeyUp Space
+btnReset.Click
+Form.KeyDown Left      ' the button has the focus now; the form still gets it
+Form.KeyUp Left
+Close

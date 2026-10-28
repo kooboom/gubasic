@@ -4,9 +4,11 @@ import '../analyzer/compile.dart';
 import '../analyzer/forms.dart';
 import '../forms/anchor.dart';
 import '../forms/form_file.dart';
+import '../forms/keys.dart';
 import '../interpreter/host.dart';
 import '../interpreter/interpreter.dart';
 import '../interpreter/run_result.dart';
+import '../interpreter/values.dart';
 
 /// One step of an event script (`NAME.events`, docs/DESIGN.md §9.1).
 sealed class ScriptStep {
@@ -48,6 +50,26 @@ class SelectStep extends ScriptStep {
   final int index;
 }
 
+/// `Form.KeyDown Left`, `Form.KeyUp Shift+A`, `txtName.KeyDown A`: the
+/// user presses or lets go a key (D101), with the form in front focused,
+/// or while typing in TextBox [control].
+class KeyStep extends ScriptStep {
+  const KeyStep(super.text, this.event, this.key,
+      {this.control, this.shift = false, this.ctrl = false, this.alt = false});
+
+  /// `KeyDown` or `KeyUp`.
+  final String event;
+
+  /// The key's name in Keys (`Left`, `A`, `D1`).
+  final String key;
+
+  /// The TextBox typed in; null for the form.
+  final String? control;
+  final bool shift;
+  final bool ctrl;
+  final bool alt;
+}
+
 /// `OK`: closes the open MsgBox.
 class OkStep extends ScriptStep {
   const OkStep(super.text);
@@ -82,6 +104,8 @@ final _formEvent = RegExp(
 final _type = RegExp(r'^([A-Za-z][A-Za-z0-9_]*)\.Type\s+"((?:[^"]|"")*)"$');
 final _select = RegExp(r'^([A-Za-z][A-Za-z0-9_]*)\.Select\s+(\d+)$');
 final _answer = RegExp(r'^Answer\s+"((?:[^"]|"")*)"$');
+final _key = RegExp(
+    r'^([A-Za-z][A-Za-z0-9_]*)\.(KeyDown|KeyUp)\s+((?:(?:Shift|Ctrl|Alt)\+)*)([A-Za-z0-9]+)$');
 final _resize = RegExp(r'^Form\.Resize\s+(\d+)\s+(\d+)$', caseSensitive: false);
 
 /// Reads an event script. Each line is one step; `'` starts a comment.
@@ -101,6 +125,18 @@ List<ScriptStep> parseEventScript(String text) {
       steps.add(CloseStep(line));
     } else if ((m = _answer.firstMatch(line)) != null) {
       steps.add(AnswerStep(line, m![1]!.replaceAll('""', '"')));
+    } else if ((m = _key.firstMatch(line)) != null) {
+      final target = m![1]!;
+      final modifiers = m[3]!.split('+');
+      final key = keyCodesByLowerName[m[4]!.toLowerCase()];
+      if (key == null) {
+        throw FormatException('line ${i + 1}: no key named "${m[4]}"');
+      }
+      steps.add(KeyStep(line, m[2]!, key.$1,
+          control: target.toLowerCase() == 'form' ? null : target,
+          shift: modifiers.contains('Shift'),
+          ctrl: modifiers.contains('Ctrl'),
+          alt: modifiers.contains('Alt')));
     } else if ((m = _resize.firstMatch(line)) != null) {
       steps.add(ResizeStep(line, int.parse(m![1]!), int.parse(m[2]!)));
     } else if ((m = _select.firstMatch(line)) != null) {
@@ -458,6 +494,9 @@ abstract interface class ScriptDriver {
   /// already chosen, so that nothing happens.
   Future<EventOutcome?> select(String control, int index);
 
+  /// The user presses or lets go a key (D101), as [step] says.
+  Future<EventOutcome> key(KeyStep step);
+
   /// Closes the open MsgBox; false if there is none.
   Future<bool> ok();
 
@@ -573,6 +612,8 @@ Future<List<String>> driveEventScript(
       case ResizeStep(:final width, :final height):
         final outcome = await driver.resize(width, height);
         if (outcome != null) _record(out, step.text, outcome);
+      case KeyStep():
+        _record(out, step.text, await driver.key(step));
     }
   }
   await settle();
@@ -662,6 +703,13 @@ class _HostDriver implements ScriptDriver {
     host.userSets(control, 'ListIndex', index);
     return interpreter.raiseEvent(control, 'Changed');
   }
+
+  @override
+  Future<EventOutcome> key(KeyStep step) async => interpreter.raiseKey(
+      step.event,
+      GbKeyEvent(keyCodes[step.key]!,
+          shift: step.shift, control: step.ctrl, alt: step.alt),
+      inTextBox: step.control != null);
 
   @override
   Future<bool> ok() async => host.answer(inputBox: false);

@@ -16,6 +16,10 @@ sealed class GbType {
   static const object = PrimitiveType._('Object');
   static const exception = PrimitiveType._('Exception');
 
+  /// What a form's KeyDown and KeyUp are told: the key and Shift, Control
+  /// and Alt (docs/DESIGN.md D101).
+  static const keyEventArgs = PrimitiveType._('KeyEventArgs');
+
   /// The type of the `Nothing` literal.
   static const nothing = SpecialType._('Nothing');
 
@@ -139,6 +143,7 @@ const Map<String, GbType> namedTypes = {
   'date': GbType.date,
   'object': GbType.object,
   'exception': GbType.exception,
+  'keyeventargs': GbType.keyEventArgs,
 };
 
 /// A type name written after `As` or `New` (not `List`): a built-in type

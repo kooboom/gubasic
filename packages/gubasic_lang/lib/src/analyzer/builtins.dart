@@ -172,4 +172,5 @@ const _builtins = <Callable>[
 const Map<String, String> builtinObjects = {
   'debug': 'Debug',
   'integer': 'Integer',
+  'keys': 'Keys',
 };

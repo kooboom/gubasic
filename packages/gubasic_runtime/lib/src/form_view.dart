@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 
+import 'package:flutter/services.dart';
+
 import 'check_box.dart';
 import 'form_model.dart';
+import 'keys.dart';
 import 'image.dart';
 import 'list_box.dart';
 import 'text_box.dart';
@@ -10,15 +13,86 @@ import 'text_box.dart';
 /// each control at `Left`, `Top`, sized `Width` x `Height`
 /// (docs/LANGUAGE.md §11.1). The form's `Caption` is the window's title,
 /// which the app around it shows.
-class GbFormView extends StatelessWidget {
+///
+/// The form takes the keyboard's focus when it is shown and when its empty
+/// part is clicked; its keys go to [GbFormModel.onKey] (D101), and are
+/// left for the control that has the focus too (a TextBox types them).
+/// The arrow keys do not move the focus between its controls, so that a
+/// game can use them.
+class GbFormView extends StatefulWidget {
   const GbFormView({super.key, required this.model});
 
   final GbFormModel model;
 
   @override
+  State<GbFormView> createState() => _GbFormViewState();
+}
+
+class _GbFormViewState extends State<GbFormView> {
+  final _focus = FocusNode(debugLabel: 'form');
+
+  GbFormModel get model => widget.model;
+
+  @override
+  void initState() {
+    super.initState();
+    model.requestFocus = _focus.requestFocus;
+  }
+
+  @override
+  void didUpdateWidget(GbFormView old) {
+    super.didUpdateWidget(old);
+    if (old.model != model) model.requestFocus = _focus.requestFocus;
+  }
+
+  @override
+  void dispose() {
+    if (model.requestFocus == _focus.requestFocus) model.requestFocus = null;
+    _focus.dispose();
+    super.dispose();
+  }
+
+  KeyEventResult _key(FocusNode node, KeyEvent event) {
+    final sink = model.onKey;
+    final code = gbKeyCode(event);
+    if (sink == null || code == null) return KeyEventResult.ignored;
+    final keyboard = HardwareKeyboard.instance;
+    final inTextBox =
+        FocusManager.instance.primaryFocus?.context
+            ?.findAncestorWidgetOfExactType<GbTextBox>() !=
+        null;
+    sink(
+      event is KeyUpEvent ? 'KeyUp' : 'KeyDown',
+      code,
+      shift: keyboard.isShiftPressed,
+      control: keyboard.isControlPressed,
+      alt: keyboard.isAltPressed,
+      inTextBox: inTextBox,
+    );
+    return KeyEventResult.ignored;
+  }
+
+  @override
   Widget build(BuildContext context) => Theme(
     data: gbFormTheme(Theme.of(context)),
-    child: Builder(builder: _form),
+    child: Shortcuts(
+      shortcuts: const {
+        SingleActivator(LogicalKeyboardKey.arrowLeft):
+            DoNothingAndStopPropagationIntent(),
+        SingleActivator(LogicalKeyboardKey.arrowRight):
+            DoNothingAndStopPropagationIntent(),
+        SingleActivator(LogicalKeyboardKey.arrowUp):
+            DoNothingAndStopPropagationIntent(),
+        SingleActivator(LogicalKeyboardKey.arrowDown):
+            DoNothingAndStopPropagationIntent(),
+      },
+      child: Focus(
+        focusNode: _focus,
+        autofocus: model.onKey != null,
+        onKeyEvent: _key,
+        child: Builder(builder: _form),
+      ),
+    ),
   );
 
   Widget _form(BuildContext context) => ListenableBuilder(
@@ -28,7 +102,16 @@ class GbFormView extends StatelessWidget {
       height: model.form.integer('Height').toDouble(),
       child: Stack(
         clipBehavior: Clip.hardEdge,
-        children: [for (final c in model.drawingOrder) _GbPlaced(model, c)],
+        children: [
+          // A click on the form's empty part gives it the focus.
+          Positioned.fill(
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTapDown: (_) => _focus.requestFocus(),
+            ),
+          ),
+          for (final c in model.drawingOrder) _GbPlaced(model, c),
+        ],
       ),
     ),
   );

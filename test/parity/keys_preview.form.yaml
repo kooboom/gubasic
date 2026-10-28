@@ -1,0 +1,4 @@
+formatVersion: 1
+controls:
+  - { name: txtName, type: TextBox }
+  - { name: btnPreview, type: Button, properties: { Caption: Preview, Top: 40 } }

@@ -17,6 +17,7 @@ import '../diagnostics/diagnostic.dart';
 import '../diagnostics/messages_en.dart';
 import '../forms/anchor.dart';
 import '../forms/component.dart';
+import '../forms/keys.dart';
 import '../forms/pictures.dart';
 import '../lexer/keyword.dart';
 import 'checked_math.dart';
@@ -356,6 +357,25 @@ class Interpreter {
     return EventOutcome.started;
   }
 
+  /// A key pressed (KeyDown, again while held) or let go (KeyUp) on the
+  /// form in front (D101). [inTextBox]: while a TextBox is typed in, the
+  /// form gets it only when its KeyPreview is True. Like a click it waits
+  /// for the running handler, does not re-enter, and is blocked while a
+  /// dialog is open.
+  EventOutcome raiseKey(String event, GbKeyEvent key,
+      {String? form, bool inTextBox = false}) {
+    if (refusal(null, event, form: form) case final refused?) return refused;
+    final front = _front!;
+    if (inTextBox &&
+        _formHost.getProperty(front.name, null, 'KeyPreview') != true) {
+      return EventOutcome.noHandler;
+    }
+    final handler = _handler(front, null, event);
+    if (handler == null) return EventOutcome.noHandler;
+    _runHandler(handler, front.controls[null], args: [key]);
+    return EventOutcome.started;
+  }
+
   /// The procedure a run starts with: `Sub Main()`, or else
   /// `Sub Form_Load()`. Null if there is neither.
   ProcedureDecl? get startProcedure {
@@ -540,8 +560,10 @@ class Interpreter {
     throw const _Abandoned();
   }
 
-  /// Runs [handler] when it gets the turn (D28), for an event of [sender].
-  Future<void> _runHandler(ProcedureDecl handler, GbControl? sender) async {
+  /// Runs [handler] when it gets the turn (D28), for an event of [sender];
+  /// with [args] for an event that has parameters (D101).
+  Future<void> _runHandler(ProcedureDecl handler, GbControl? sender,
+      {List<Object?>? args}) async {
     _running.add(handler);
     try {
       await _takeTurn();
@@ -549,8 +571,8 @@ class Interpreter {
         if (_ended != null) return;
         _frame = _Frame(null, _formOf[handler] ?? _top);
         _depth = 0;
-        await _guard(
-            () => _callUser(handler, _senderArgs(handler, sender), handler));
+        await _guard(() =>
+            _callUser(handler, args ?? _senderArgs(handler, sender), handler));
       } finally {
         _passTurn();
       }
@@ -1922,6 +1944,19 @@ class Interpreter {
         return null;
       case _BuiltinObject(name: 'Integer'):
         return name == 'maxvalue' ? GbInt.maxValue : GbInt.minValue;
+      case _BuiltinObject(name: 'Keys'):
+        return GbInt.of(keyCodesByLowerName[name]!.$2);
+      case GbKeyEvent k:
+        switch (name) {
+          case 'keycode':
+            return GbInt.of(k.keyCode);
+          case 'shift':
+            return k.shift;
+          case 'control':
+            return k.control;
+          case 'alt':
+            return k.alt;
+        }
       case null:
         _fail(DiagnosticCode.nothingReference, node);
       case GbList l:

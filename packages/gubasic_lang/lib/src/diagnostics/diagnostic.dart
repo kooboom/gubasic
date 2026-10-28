@@ -349,6 +349,11 @@ enum DiagnosticCode {
   /// designer. Args: the type (D100).
   placedInDesigner('A052'),
 
+  /// `Sub Form_KeyDown(KeyCode As Integer, Shift As Integer)` (Visual
+  /// Basic 6): GuBASIC's key events take a KeyEventArgs. Args: the
+  /// procedure, the line to write (D101).
+  vb6KeyHandler('A053'),
+
   // Form and project files (.form.yaml, .gbproj)
 
   /// The file is not in the expected layout (YAML syntax).

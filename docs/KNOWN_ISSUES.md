@@ -105,6 +105,12 @@ Problems we know about and have **deliberately** left unfixed for now. Each entr
 - **Why deferred:** a browser asks the user before a page reads the clipboard, and text pasted from elsewhere would have to be checked as a form file is checked (F codes).
 - **Revisit:** when two IDE windows are used side by side, or with separate windows on the desktop (D89).
 
+## Keys a TextBox uses do not reach the form
+
+- **What:** with `KeyPreview` True and a TextBox typed in, the form gets the keys the TextBox only types (letters, digits, Space), not those it acts on itself, such as the arrow keys, Home and End, which move its caret (D101).
+- **Why deferred:** Flutter's text field takes those keys before the form can see them; letting the form see them first would mean taking them over from every text field.
+- **Revisit:** when a program needs them, or with the menus' shortcut keys.
+
 ## The form designer needs a mouse
 
 - **What:** controls are placed with the mouse (or a touchpad); the keyboard chooses a control (Tab, Shift+Tab), moves, resizes, deletes and orders it, and the Properties window chooses controls and takes typed values. On the web with Flutter's accessibility layer on (as a screen reader turns it on), a double-click in the toolbox did not place a control when tried in Chrome; choosing a tool and clicking on the form still works. The cause was not looked into.

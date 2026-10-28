@@ -401,14 +401,18 @@ ComponentSpec readComponentFile(String text) {
   return spec;
 }
 
+/// The types an event's or a method's parameter can have: the values, and
+/// a key event's (D101).
+const _parameterTypes = {..._valueTypes, 'keyeventargs': GbType.keyEventArgs};
+
 /// `a As Integer, b As String`: the parameters of an event or a method.
 List<ParamSpec> _parameters(String text) {
   final paramPattern = RegExp(r'^([A-Za-z][A-Za-z0-9_]*) As ([A-Za-z]+)$');
   return [
     for (final part in text.split(',').where((s) => s.trim().isNotEmpty))
       switch (paramPattern.firstMatch(part.trim())) {
-        final pm? when _valueTypes[pm[2]!.toLowerCase()] != null =>
-          ParamSpec(pm[1]!, _valueTypes[pm[2]!.toLowerCase()]!),
+        final pm? when _parameterTypes[pm[2]!.toLowerCase()] != null =>
+          ParamSpec(pm[1]!, _parameterTypes[pm[2]!.toLowerCase()]!),
         _ => throw FormatException('bad parameter: $part'),
       },
   ];

@@ -47,7 +47,9 @@ void main() {
     expect(
         describe('Form'),
         'Caption As String = , Width As Integer = 480, Height As Integer = 360, '
-        'Tag As String =  | x_Load(), x_Resize(), x_Closed() | default Load');
+        'Tag As String = , KeyPreview As Boolean = false | x_Load(), '
+        'x_Resize(), x_Closed(), x_KeyDown(e As KeyEventArgs), '
+        'x_KeyUp(e As KeyEventArgs) | default Load');
     expect(
         describe('Button'),
         'Caption As String = , Left As Integer = 0, Top As Integer = 0, '

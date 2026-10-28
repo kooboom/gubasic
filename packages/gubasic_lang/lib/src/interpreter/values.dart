@@ -82,6 +82,18 @@ class GbControls {
   final List<GbControl> items;
 }
 
+/// What a form's KeyDown and KeyUp are told (D101): the key's number, as
+/// in Keys, and the modifiers held.
+class GbKeyEvent {
+  const GbKeyEvent(this.keyCode,
+      {this.shift = false, this.control = false, this.alt = false});
+
+  final int keyCode;
+  final bool shift;
+  final bool control;
+  final bool alt;
+}
+
 class GbException {
   GbException(this.message);
 
@@ -112,6 +124,7 @@ String formatValue(Object? value) {
       a.element.displayName == '?' ? '()' : '${a.element.displayName}()',
     GbException e => e.message,
     GbControls() => 'Controls',
+    GbKeyEvent() => 'KeyEventArgs',
     _ => '$value',
   };
 }
@@ -130,6 +143,7 @@ String typeNameOf(Object? value) {
     GbException() => 'Exception',
     GbControl c => c.component.name,
     GbControls() => 'Controls',
+    GbKeyEvent() => 'KeyEventArgs',
     _ => 'Object',
   };
 }

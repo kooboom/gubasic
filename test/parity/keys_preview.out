@@ -1,0 +1,12 @@
+> txtName.KeyDown B
+> txtName.KeyUp B
+> Form.KeyDown B
+Debug.Print: Form got 66 (KeyPreview False)
+> Form.KeyUp B
+> btnPreview.Click
+Set Form.KeyPreview: True
+> txtName.KeyDown B
+Debug.Print: Form got 66 (KeyPreview True)
+> txtName.KeyUp B
+> Close
+Closed
