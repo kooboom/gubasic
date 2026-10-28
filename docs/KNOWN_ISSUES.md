@@ -105,6 +105,12 @@ Problems we know about and have **deliberately** left unfixed for now. Each entr
 - **Why deferred:** a browser asks the user before a page reads the clipboard, and text pasted from elsewhere would have to be checked as a form file is checked (F codes).
 - **Revisit:** when two IDE windows are used side by side, or with separate windows on the desktop (D89).
 
+## Controls go into a Frame only in the designer
+
+- **What:** the program cannot put a control into a Frame (D105): a Frame has no `Controls` of its own, so `Me.Controls.Add` puts a control on the form itself, and a control removed from a Frame and added again is on the form. A Frame that holds controls cannot be removed (R023). In the designer a dragged control stays in its Frame; it goes in or out by cut and paste.
+- **Why deferred:** a Frame's own `Controls`, and dragging into and out of Frames, add rules (which Frame a drop means, what happens to the Anchor) that the first programs with Frames do not need.
+- **Revisit:** when programs make Frames' contents at run time, or users ask to drag controls into Frames.
+
 ## Keys a TextBox uses do not reach the form
 
 - **What:** with `KeyPreview` True and a TextBox typed in, the form gets the keys the TextBox only types (letters, digits, Space), not those it acts on itself, such as the arrow keys, Home and End, which move its caret (D101).

@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import 'form_model.dart';
 
 /// An OptionButton: a round box with `Caption` beside it, one of the
-/// form's group of choices (docs/DESIGN.md D104). A click on a box that is
+/// group of choices of its form, or of its Frame (docs/DESIGN.md D104,
+/// D105). A click on a box that is
 /// not checked checks it, unchecks the others of the group and raises
 /// `Changed`; on the checked one it does nothing. As before a Button's
 /// Click, text still being composed in a TextBox is committed first. A
@@ -20,7 +21,9 @@ class GbOptionButton extends StatelessWidget {
     if (state['Checked'] == true) return;
     if (!model.accepts(state.name, 'Changed')) return;
     for (final other in model.controls) {
-      if (other.kind == GbControlKind.optionButton && other != state) {
+      if (other.kind == GbControlKind.optionButton &&
+          other != state &&
+          other.container?.toLowerCase() == state.container?.toLowerCase()) {
         other.set('Checked', false);
       }
     }

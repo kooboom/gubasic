@@ -204,6 +204,7 @@ void main() {
         'Double',
         'Exception',
         'Form',
+        'Frame',
         'Image',
         'Integer',
         'KeyEventArgs',

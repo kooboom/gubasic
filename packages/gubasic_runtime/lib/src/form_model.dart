@@ -13,6 +13,7 @@ enum GbControlKind {
   image,
   optionButton,
   comboBox,
+  frame,
 }
 
 /// The layer a control is drawn in, its component.yaml's `layer`
@@ -30,10 +31,16 @@ class GbControlState extends ChangeNotifier {
     this.kind,
     Map<String, Object> properties, {
     this.layer = GbLayer.control,
+    this.container,
   }) : _properties = Map.of(properties);
 
   /// The control's name; null for the form.
   final String? name;
+
+  /// The name of the Frame it is in, or null: on the form itself
+  /// (docs/DESIGN.md D105). Its `Left` and `Top` are from the Frame's
+  /// top-left corner, and its Anchor keeps distances to the Frame's edges.
+  final String? container;
   final GbControlKind kind;
   final GbLayer layer;
   final Map<String, Object> _properties;
@@ -136,14 +143,22 @@ class GbFormModel {
   static bool _acceptAll(String? control, String event) => true;
   static Uint8List? _noPictures(String name) => null;
 
-  /// [controls] in the order they are drawn, the last on top: the
-  /// graphic layer first, each layer in the form file's order (D41).
-  List<GbControlState> get drawingOrder => _drawingOrder ??= List.unmodifiable([
-    for (final layer in GbLayer.values)
-      for (final c in _controls)
-        if (c.layer == layer) c,
-  ]);
-  List<GbControlState>? _drawingOrder;
+  /// The controls on the form itself in the order they are drawn, the last
+  /// on top: the graphic layer first, each layer in the form file's order
+  /// (D41). Those in a Frame are drawn in it: [drawnIn].
+  List<GbControlState> get drawingOrder => drawnIn(null);
+
+  /// The controls in the Frame named [container] (null: on the form
+  /// itself), in the order they are drawn (D41, D105).
+  List<GbControlState> drawnIn(String? container) =>
+      (_drawingOrder ??= {})[container?.toLowerCase()] ??= List.unmodifiable([
+        for (final layer in GbLayer.values)
+          for (final c in _controls)
+            if (c.layer == layer &&
+                c.container?.toLowerCase() == container?.toLowerCase())
+              c,
+      ]);
+  Map<String?, List<GbControlState>>? _drawingOrder;
 
   /// Puts [control] on the form, on top of the others of its layer, for
   /// the program (D98).
@@ -165,34 +180,43 @@ class GbFormModel {
 
   final _committers = <VoidCallback>[];
 
-  /// For each control with an Anchor: where it was, and the form's size
-  /// then, as the form file or the program last placed it (D57).
+  /// For each control with an Anchor: where it was, and the size of the
+  /// form (or of its Frame) then, as the form file or the program last
+  /// placed it (D57, D105). A Frame comes before the controls in it.
   final _bases = <GbControlState, (GbRect, int, int)>{};
 
   static const _placing = {'Left', 'Top', 'Width', 'Height', 'Anchor'};
 
-  (GbRect, int, int) _baseOf(GbControlState c) => (
-    (
-      left: c.integer('Left'),
-      top: c.integer('Top'),
-      width: c.integer('Width'),
-      height: c.integer('Height'),
-    ),
-    form.integer('Width'),
-    form.integer('Height'),
-  );
+  (GbRect, int, int) _baseOf(GbControlState c) {
+    final outer = _outer(c);
+    return (
+      (
+        left: c.integer('Left'),
+        top: c.integer('Top'),
+        width: c.integer('Width'),
+        height: c.integer('Height'),
+      ),
+      outer.integer('Width'),
+      outer.integer('Height'),
+    );
+  }
 
-  /// Moves the controls as their Anchor says, for the form's size now.
+  /// What [c] is placed in: its Frame, or the form (D105).
+  GbControlState _outer(GbControlState c) => control(c.container) ?? form;
+
+  /// Moves the controls as their Anchor says, for the size now of the form
+  /// and of each Frame, a Frame before the controls in it.
   void _place() {
     for (final MapEntry(key: c, value: (base, width, height))
         in _bases.entries) {
+      final outer = _outer(c);
       final r = gbAnchored(
         base,
         c.text('Anchor'),
         baseWidth: width,
         baseHeight: height,
-        width: form.integer('Width'),
-        height: form.integer('Height'),
+        width: outer.integer('Width'),
+        height: outer.integer('Height'),
       );
       c
         ..set('Left', r.left)
@@ -213,6 +237,8 @@ class GbFormModel {
       if (property == 'Width' || property == 'Height') _place();
     } else if (_placing.contains(property) && _bases.containsKey(c)) {
       _bases[c] = _baseOf(c);
+      // A Frame's new size moves the controls in it (D105).
+      if (property == 'Width' || property == 'Height') _place();
     }
   }
 

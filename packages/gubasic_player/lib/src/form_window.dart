@@ -23,7 +23,7 @@ GbFormModel formModelOf(
       controlStateOf(c.name, c.component, {
         for (final p in c.component.properties.values)
           if (p.isStored) p.name: c.valueOf(p.name),
-      }),
+      }, container: c.container),
   ],
   onEvent: onEvent,
   accepts: accepts,
@@ -33,15 +33,18 @@ GbFormModel formModelOf(
 );
 
 /// The state of control [name], a [component], with [properties]: one of a
-/// form file, or one the program made with New (docs/DESIGN.md D98).
+/// form file, in the Frame named [container] if it is in one (D105), or one
+/// the program made with New (docs/DESIGN.md D98).
 GbControlState controlStateOf(
   String name,
   ComponentSpec component,
-  Map<String, Object> properties,
-) => GbControlState(
+  Map<String, Object> properties, {
+  String? container,
+}) => GbControlState(
   name,
   _kind(component.name),
   properties,
+  container: container,
   layer: switch (component.layer) {
     ComponentLayer.graphic => GbLayer.graphic,
     ComponentLayer.control => GbLayer.control,
@@ -57,6 +60,7 @@ GbControlKind _kind(String component) => switch (component.toLowerCase()) {
   'image' => GbControlKind.image,
   'optionbutton' => GbControlKind.optionButton,
   'combobox' => GbControlKind.comboBox,
+  'frame' => GbControlKind.frame,
   _ => throw ArgumentError('no widget for component $component'),
 };
 

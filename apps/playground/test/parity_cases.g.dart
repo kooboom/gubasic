@@ -220,6 +220,18 @@ const parityCases = <(
     false,
   ),
   (
+    "events_frame",
+    "' Frames (D105): the OptionButtons in each Frame are a group of their\n' own, apart from those on the form. The controls in a Frame are placed\n' from its corner and anchored to its edges: a Frame that grows with the\n' form moves the Button anchored to its right edge.\nSub Size_Changed(sender As OptionButton) Handles optSmall.Changed, optLarge.Changed\n    Debug.Print(sender.Caption & \"; Red \" & optRed.Checked & \", Alone \" & optAlone.Checked)\nEnd Sub\n\nSub Colour_Changed(sender As OptionButton) Handles optRed.Changed, optBlue.Changed\n    Debug.Print(sender.Caption & \"; Small \" & optSmall.Checked & \", Large \" & optLarge.Checked)\nEnd Sub\n\nSub Form_Resize()\n    Debug.Print(\"Frame \" & fraSize.Width & \" wide, btnInside at \" & btnInside.Left & \",\" & btnInside.Top)\nEnd Sub\n\nSub btnWider_Click()\n    fraSize.Width = fraSize.Width + 20\n    Debug.Print(\"btnInside at \" & btnInside.Left)\nEnd Sub\n\nSub btnInside_Click()\n    optSmall.Checked = True\nEnd Sub\n",
+    [],
+    "Debug.Print: Frame 180 wide, btnInside at 100,88\n> optLarge.Click\nDebug.Print: Large; Red True, Alone True\n> optBlue.Click\nDebug.Print: Blue; Small False, Large True\n> btnInside.Click\nSet optSmall.Checked: True\nSet optLarge.Checked: False\nDebug.Print: Small; Red False, Alone True\n> Form.Resize 440 260\nDebug.Print: Frame 220 wide, btnInside at 140,88\n> btnWider.Click\nSet fraSize.Width: 240\nDebug.Print: btnInside at 160\n> Close\nClosed\n",
+    "formatVersion: 2\nproperties: { Width: 400, Height: 260 }\ncontrols:\n  - name: fraSize\n    type: Frame\n    properties: { Caption: Size, Left: 8, Top: 8, Width: 180, Height: 120, Anchor: Left Top Right }\n    controls:\n      - { name: optSmall, type: OptionButton, properties: { Caption: Small, Left: 8, Top: 24, Checked: true } }\n      - { name: optLarge, type: OptionButton, properties: { Caption: Large, Left: 8, Top: 56 } }\n      - { name: btnInside, type: Button, properties: { Caption: Here, Left: 100, Top: 88, Width: 72, Height: 24, Anchor: Right Top } }\n  - name: fraColor\n    type: Frame\n    properties: { Caption: Colour, Left: 8, Top: 136, Width: 180, Height: 100 }\n    controls:\n      - { name: optRed, type: OptionButton, properties: { Caption: Red, Left: 8, Top: 24, Checked: true } }\n      - { name: optBlue, type: OptionButton, properties: { Caption: Blue, Left: 8, Top: 56 } }\n  - { name: optAlone, type: OptionButton, properties: { Caption: Alone, Left: 200, Top: 8, Checked: true } }\n  - { name: btnWider, type: Button, properties: { Caption: Wider, Left: 200, Top: 48 } }\n",
+    "optLarge.Click\noptBlue.Click\nbtnInside.Click\nForm.Resize 440 260\nbtnWider.Click\nClose\n",
+    null,
+    [],
+    [],
+    false,
+  ),
+  (
     "events_image",
     "' Image: Picture names a picture of the project in any case and keeps\n' the project's spelling; \"\" shows none; a name the project does not\n' have stops the program (R013). Click runs as for a Label.\nSub Form_Load()\n    Debug.Print(\"Picture: \" & imgShape.Picture)\n    Debug.Print(\"Stretch: \" & imgShape.Stretch)\nEnd Sub\n\nSub btnNext_Click()\n    If imgShape.Picture = \"triangle.png\" Then\n        imgShape.Picture = \"CIRCLE.PNG\"\n    Else\n        imgShape.Picture = \"\"\n    End If\n    imgShape.Stretch = Not imgShape.Stretch\n    Debug.Print(\"Picture: [\" & imgShape.Picture & \"] Stretch: \" & imgShape.Stretch)\nEnd Sub\n\nSub imgShape_Click()\n    Dim name As String = \"square.png\"\n    Try\n        imgShape.Picture = name\n    Catch ex As Exception\n        Debug.Print(\"Caught: \" & ex.Message)\n    End Try\n    Debug.Print(\"Still: [\" & imgShape.Picture & \"]\")\nEnd Sub\n",
     [],

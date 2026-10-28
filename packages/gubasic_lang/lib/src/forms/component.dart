@@ -126,6 +126,7 @@ class ComponentSpec {
     this.otherEvents = const {},
     this.visual = true,
     this.aliases = const [],
+    this.container = false,
   })  : properties = {for (final p in properties) p.name.toLowerCase(): p},
         events = {for (final e in events) e.name.toLowerCase(): e},
         methods = {for (final m in methods) m.name.toLowerCase(): m};
@@ -165,6 +166,10 @@ class ComponentSpec {
   /// OptionButton): the analyzer and the form file point to this one
   /// (A056, F020, D104).
   final List<String> aliases;
+
+  /// Whether controls of this kind hold other controls, placed inside it
+  /// (a Frame, D105): its OptionButtons are a group of their own.
+  final bool container;
 
   /// The properties the form file and the Properties window can set.
   Iterable<PropertySpec> get designProperties =>
@@ -368,6 +373,10 @@ ComponentSpec readComponentFile(String text) {
   }
   final visual = doc['visual'] ?? true;
   if (visual is! bool) throw const FormatException('visual is true or false');
+  final container = doc['container'] ?? false;
+  if (container is! bool) {
+    throw const FormatException('container is true or false');
+  }
   final aliases = doc['aliases'] ?? YamlList();
   if (aliases is! List || aliases.any((a) => a is! String)) {
     throw const FormatException('aliases is a list of names');
@@ -385,6 +394,7 @@ ComponentSpec readComponentFile(String text) {
     otherEvents: otherEvents,
     visual: visual,
     aliases: List.unmodifiable(aliases.cast<String>()),
+    container: container,
   );
   for (final MapEntry(:key, :value) in spec.otherEvents.entries) {
     if (spec.events.containsKey(key) ||

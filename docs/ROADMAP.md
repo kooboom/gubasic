@@ -66,7 +66,7 @@ Three releases, then the rest (D94–D96). The order follows who GuBASIC is for 
 - [x] Choosing several controls in the designer; copying and pasting them (D97)
 - [ ] Menus in the apps made with GuBASIC, with a menu editor: a menu bar and right-click menus (Visual Basic 6's [Menu Editor](https://learn.microsoft.com/en-us/previous-versions/visualstudio/visual-studio-2008/62aawczc(v=vs.90)) and [PopupMenu](https://learn.microsoft.com/en-us/previous-versions/visualstudio/visual-basic-6/aa716251(v=vs.60)); Visual Basic .NET's `ContextMenuStrip`, same source)
 - [x] `DialogResult` (D103)
-- [ ] `OptionButton`: radio buttons, of which one in a group is chosen, with a way to form groups (in Visual Basic 6 the option buttons on a form are one group and those in each frame another: [Microsoft](https://learn.microsoft.com/en-us/previous-versions/visualstudio/visual-basic-6/aa241737(v=vs.60))); `Frame`; `ComboBox` (OptionButton and ComboBox done, D104; Frame next)
+- [x] `OptionButton`: radio buttons, of which one in a group is chosen, with a way to form groups (in Visual Basic 6 the option buttons on a form are one group and those in each frame another: [Microsoft](https://learn.microsoft.com/en-us/previous-versions/visualstudio/visual-basic-6/aa241737(v=vs.60))); `Frame`; `ComboBox` (D104, D105)
 - [x] The project explorer: forms, or the files on disk (D94)
 
 ### v0.4 — For work

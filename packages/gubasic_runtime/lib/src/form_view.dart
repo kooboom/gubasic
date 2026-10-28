@@ -144,9 +144,71 @@ class _GbPlaced extends StatelessWidget {
       GbControlKind.image => GbImage(model: model, state: state),
       GbControlKind.optionButton => GbOptionButton(model: model, state: state),
       GbControlKind.comboBox => GbComboBox(model: model, state: state),
+      GbControlKind.frame => GbFrame(model: model, state: state),
       GbControlKind.form => throw ArgumentError('a form inside a form'),
     },
   );
+}
+
+/// A Frame (docs/DESIGN.md D105): a line around it, broken at the top
+/// left by its `Caption`, and the controls in it, placed from its top-left
+/// corner and cut off at its edges. A click on its empty part raises
+/// `Click`.
+class GbFrame extends StatelessWidget {
+  const GbFrame({super.key, required this.model, required this.state});
+
+  final GbFormModel model;
+  final GbControlState state;
+
+  /// How far down the line runs along the top: through the middle of the
+  /// caption's line.
+  static const lineTop = 8.0;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return ListenableBuilder(
+      listenable: Listenable.merge([state, model.layout]),
+      builder: (context, _) => Stack(
+        clipBehavior: Clip.hardEdge,
+        children: [
+          Positioned.fill(
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: () => model.raise(state.name, 'Click'),
+              child: Container(
+                margin: const EdgeInsets.only(top: lineTop),
+                decoration: BoxDecoration(
+                  border: Border.all(color: scheme.outline),
+                  borderRadius: gbControlRadius,
+                ),
+              ),
+            ),
+          ),
+          if (state.text('Caption').isNotEmpty)
+            Positioned(
+              left: 8,
+              top: 0,
+              right: 8,
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Container(
+                  color: scheme.surface,
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  child: Text(
+                    state.text('Caption'),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(height: 1.2),
+                  ),
+                ),
+              ),
+            ),
+          for (final c in model.drawnIn(state.name)) _GbPlaced(model, c),
+        ],
+      ),
+    );
+  }
 }
 
 /// The corners of the controls on a form: square, as in Visual Basic 6

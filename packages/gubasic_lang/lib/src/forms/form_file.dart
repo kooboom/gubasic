@@ -8,7 +8,7 @@ import 'pictures.dart';
 import 'yaml_reader.dart';
 
 /// The newest form file layout this GuBASIC reads (docs/LANGUAGE.md §11.2).
-const formFileVersion = 1;
+const formFileVersion = 2;
 
 /// A control placed on a form.
 class ControlDecl {
@@ -17,10 +17,16 @@ class ControlDecl {
     required this.component,
     required this.properties,
     required this.line,
+    this.container,
   });
 
   final String name;
   final ComponentSpec component;
+
+  /// The name of the Frame it is in, as the form file writes it; null when
+  /// it is on the form itself (D105). Its Left and Top are from the
+  /// Frame's top-left corner.
+  final String? container;
 
   /// The values written in the file, by the property's own spelling.
   final Map<String, Object> properties;
@@ -59,6 +65,16 @@ class FormFile {
       if (c.name.toLowerCase() == lower) return c;
     }
     return null;
+  }
+
+  /// The controls on the form itself ([container] null), or inside the
+  /// Frame named [container] (any case), in the file's order (D105).
+  List<ControlDecl> inside(String? container) {
+    final lower = container?.toLowerCase();
+    return [
+      for (final c in controls)
+        if (c.container?.toLowerCase() == lower) c
+    ];
   }
 
   /// The value of the form's own [property]: as written, or the default.
@@ -108,14 +124,28 @@ FormFileResult readFormFile(
     _properties(r, formProps, formComponent, properties, pictureNames);
   }
 
-  final list = top['controls'] == null
-      ? null
-      : r.list(top['controls']!, 'controls', '- name: btnOk');
   final seen = <String, int>{};
+  if (top['controls'] case final node?) {
+    _controls(r, node, null, controls, seen, pictureNames);
+  }
+  return result;
+}
+
+/// Reads a `controls:` list into [controls]: the form's, or with
+/// [container] the controls inside that Frame (D105), each followed by
+/// the ones inside it.
+void _controls(
+    YamlReader r,
+    YamlNode node,
+    String? container,
+    List<ControlDecl> controls,
+    Map<String, int> seen,
+    Map<String, String>? pictures) {
+  final list = r.list(node, 'controls', '- name: btnOk');
   for (final item in list?.nodes ?? const <YamlNode>[]) {
     final entry = r.map(item, 'controls');
     if (entry == null) continue;
-    final keys = r.entries(entry, {'name', 'type', 'properties'});
+    final keys = r.entries(entry, {'name', 'type', 'properties', 'controls'});
     final line = entry.span.start.line + 1;
 
     final nameNode = keys['name'];
@@ -161,17 +191,26 @@ FormFileResult readFormFile(
 
     final values = <String, Object>{};
     if (component != null && keys['properties'] != null) {
-      _properties(r, keys['properties']!, component, values, pictureNames);
+      _properties(r, keys['properties']!, component, values, pictures);
     }
     if (controlName != null && component != null) {
       controls.add(ControlDecl(
           name: controlName,
           component: component,
           properties: values,
-          line: line));
+          line: line,
+          container: container));
+    }
+    if (keys['controls'] case final inner?) {
+      if (component != null && !component.container) {
+        r.report(inner.span, DiagnosticCode.notContainer,
+            [controlName ?? component.name]);
+      } else if (controlName != null && component != null) {
+        // The controls inside a Frame (D105), after it in the list.
+        _controls(r, inner, controlName, controls, seen, pictures);
+      }
     }
   }
-  return result;
 }
 
 String _controlTypeNames() => [

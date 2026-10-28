@@ -1,0 +1,18 @@
+formatVersion: 2
+properties: { Width: 400, Height: 260 }
+controls:
+  - name: fraSize
+    type: Frame
+    properties: { Caption: Size, Left: 8, Top: 8, Width: 180, Height: 120, Anchor: Left Top Right }
+    controls:
+      - { name: optSmall, type: OptionButton, properties: { Caption: Small, Left: 8, Top: 24, Checked: true } }
+      - { name: optLarge, type: OptionButton, properties: { Caption: Large, Left: 8, Top: 56 } }
+      - { name: btnInside, type: Button, properties: { Caption: Here, Left: 100, Top: 88, Width: 72, Height: 24, Anchor: Right Top } }
+  - name: fraColor
+    type: Frame
+    properties: { Caption: Colour, Left: 8, Top: 136, Width: 180, Height: 100 }
+    controls:
+      - { name: optRed, type: OptionButton, properties: { Caption: Red, Left: 8, Top: 24, Checked: true } }
+      - { name: optBlue, type: OptionButton, properties: { Caption: Blue, Left: 8, Top: 56 } }
+  - { name: optAlone, type: OptionButton, properties: { Caption: Alone, Left: 200, Top: 8, Checked: true } }
+  - { name: btnWider, type: Button, properties: { Caption: Wider, Left: 200, Top: 48 } }

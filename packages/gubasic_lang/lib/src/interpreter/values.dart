@@ -36,7 +36,8 @@ class GbArray {
 /// its properties live in the [FormHost]; a control made with New, or
 /// taken off its form, keeps them in [pending] (D98).
 class GbControl {
-  GbControl(this.name, this.component, {this.form = '', this.attached = true})
+  GbControl(this.name, this.component,
+      {this.form = '', this.attached = true, this.container})
       : pending = attached ? <String, Object>{} : defaultProperties(component);
 
   /// The control's name; null for a form, and for a control made with New
@@ -46,6 +47,9 @@ class GbControl {
 
   /// The name of the form it is on, or is (D88).
   String form;
+
+  /// The name of the Frame it is in on [form], or null (D105).
+  String? container;
 
   /// Whether it is on [form]; always for a form.
   bool attached;

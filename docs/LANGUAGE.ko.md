@@ -199,6 +199,7 @@ TypeOf CType AddHandler AddressOf
 | F018 | **경고.** 프로젝트 파일의 `id`가 앱 ID가 아님(11.3절). 무시함 |
 | F019 | `startup: Sub Main`인데 `Sub Main()`이 있는 모듈이 없음(11.5절) |
 | F020 | 다른 BASIC의 이름으로 쓴 컨트롤 타입: `type: RadioButton`(11.1절) |
+| F021 | Frame이 아닌 컨트롤 아래의 `controls:`(11.2절) |
 
 **실행 중**
 
@@ -228,6 +229,7 @@ TypeOf CType AddHandler AddressOf
 | R020 | `Name`에 이름이 아닌 글을 넣음(11.4절) |
 | R021 | 이미 처리기가 있는 이벤트에 `AddHandler`(8절) |
 | R022 | 다른 타입의 컨트롤에 쓴 `CType`(11.4절) |
+| R023 | 컨트롤을 담은 Frame에 쓴 `Me.Controls.Remove`(11.1절) |
 
 ## 2. 타입
 
@@ -684,6 +686,7 @@ End Sub
 | `Image` | `Picture` (`String`, 프로젝트 그림 가운데 하나의 이름), `Stretch` (`Boolean`), `Left`, `Top`, `Width`, `Height` (`Integer`) | `Click` |
 | `OptionButton` | `Caption` (`String`), `Checked` (`Boolean`), `Left`, `Top`, `Width`, `Height` (`Integer`) | `Changed` |
 | `ComboBox` | `ListBox`와 같음: `ListIndex`, `ListCount`, `Text`, `AddItem(item)`, `RemoveItem(index)`, `Clear()`, `List(index)` | `Changed` |
+| `Frame` | `Caption` (`String`), `Left`, `Top`, `Width`, `Height` (`Integer`), 다른 컨트롤을 담음 | `Click` |
 | `Timer` | `Interval` (`Integer`, 밀리초, 1 이상, 처음 100), `Enabled` (`Boolean`, 처음 `False`). 메서드: `Start()`, `Stop()`. 폼에 보이지 않음(아래) | `Tick` |
 | `ListBox` | `ListIndex` (`Integer`, 코드에서만 정함), `ListCount` (`Integer`)와 `Text` (`String`)는 읽기만 함, `Left`, `Top`, `Width`, `Height` (`Integer`). 메서드: `AddItem(item)`, `RemoveItem(index)`, `Clear()`, `List(index)` | `Changed` |
 
@@ -697,9 +700,10 @@ End Sub
 - **Image**는 프로젝트의 그림 하나를 보입니다(11.3절). `imgShape.Picture = "triangle.png"`로 보이고, `""`로 지웁니다. 이름은 코드의 이름처럼 대소문자를 가리지 않고(`"Triangle.PNG"`는 `triangle.png`), 읽으면 프로젝트에 적힌 철자로 나옵니다. 프로젝트에 없는 그림 이름은 프로그램을 멈춥니다(R013). 코드에 글자로 쓴 이름은 분석기가 먼저 경고하고(A037), 폼 파일에서는 F016입니다. `Stretch = False`(기본값)이면 그림 전체를 비율을 지켜 컨트롤 안에 맞추고, `True`이면 컨트롤을 가득 채워 그림이 눌려 보일 수 있습니다. Visual Basic 6의 Image는 `Stretch`가 False일 때 그림 크기에 맞춰 컨트롤 크기가 바뀌지만([Microsoft](https://learn.microsoft.com/en-us/previous-versions/visualstudio/visual-basic-6/aa242027(v=vs.60))), GuBASIC은 그린 크기를 그대로 둡니다. Image는 Label처럼 다른 컨트롤 아래에 그려지고(DESIGN.ko.md D41), 그림이 있든 없든 영역 전체에서 클릭을 받습니다.
 - **`Anchor`**는 모든 컨트롤에 있으며, 폼 크기가 바뀔 때 컨트롤이 거리를 지킬 폼의 가장자리를 적습니다. 폼 크기는 사용자가 창 크기를 바꾸거나, 프로그램이 폼의 `Width`나 `Height`를 바꿀 때 바뀝니다(DESIGN.ko.md D57). 값은 글자입니다: `"Left Top"`(기본값, 그린 자리에 그대로 있음), `"Right Bottom"`(오른쪽 아래 모서리에 붙어 있음), `"Left Right"`(폼 너비를 따라 늘어남), `""`(가장자리 없음, 가운데 가까이 머묾). 단어의 순서와 대소문자는 상관없고 띄어쓰기나 쉼표로 나누며, 읽으면 `Left Top Right Bottom` 순서로 나옵니다. 마주 보는 두 가장자리에 붙인 컨트롤은 늘어나되 0보다 작아지지 않고, 어느 쪽에도 붙이지 않은 컨트롤은 폼이 커진 만큼의 절반을 움직입니다(내림). Visual Basic .NET의 규칙과 같습니다([Microsoft](https://learn.microsoft.com/en-us/dotnet/api/system.windows.forms.anchorstyles)). Visual Basic 6에서는 프로그램이 `Form_Resize`에서 컨트롤을 직접 옮깁니다([Microsoft](https://learn.microsoft.com/en-us/previous-versions/visualstudio/visual-basic-6/aa445540(v=vs.60))). `Left`, `Top`, `Width`, `Height`를 읽으면 지금 자리가 나옵니다. 프로그램이 자리를 정하거나 `Anchor`를 바꾼 컨트롤은 그 자리에 있다가 거기서부터 `Anchor`를 따릅니다. 다른 단어가 있는 글자는 프로그램을 멈춥니다(R014). 코드에 글자로 쓰면 분석기가 먼저 경고하고(A038), 폼 파일에서는 F017입니다.
 - **`Form_Resize`**는 폼 안쪽 크기가 바뀔 때 실행됩니다. 사용자가 창 크기를 바꿀 때, 그리고 프로그램이 폼의 `Width`나 `Height`를 넣을 때입니다(`TextBox.Changed`처럼 그 대입의 일부로 바로). Visual Basic 6처럼 폼이 처음 보일 때 `Form_Load` 다음에 한 번도 실행됩니다([Microsoft](https://learn.microsoft.com/en-us/previous-versions/visualstudio/visual-basic-6/aa445540(v=vs.60))). 그때는 이미 컨트롤이 `Anchor`대로 옮겨져 있으므로, 처리기는 그 자리를 보고 다른 컨트롤을 직접 놓을 수 있습니다. 폼 크기를 바꾸는 처리기는 그 변경으로 다시 시작되지 않습니다(8.1절). 대화상자가 열려 있는 동안에는 폼 크기를 바꿀 수 없습니다(DESIGN.ko.md D58).
-- **OptionButton**(DESIGN.ko.md D104)은 여러 보기 가운데 하나입니다. 폼의 OptionButton은 한 묶음이고, 그 가운데 하나가 켜집니다. 클릭하거나 `Checked = True`로 하나를 켜면 나머지는 꺼집니다. 켜진 것을 클릭하면 아무 일도 없고, `Checked = False`로 하면 하나도 켜지지 않은 상태가 됩니다. `Changed`는 Visual Basic 6의 Click처럼 켜지는 것에서만 실행되고, 그 때문에 꺼지는 것에서는 실행되지 않습니다. 그래서 묶음 전체의 처리기 하나는 한 번만 실행됩니다. 디자이너의 속성 창에서 하나를 켜면 나머지가 꺼집니다. Visual Basic .NET의 이름은 RadioButton입니다(A056, F020).
+- **OptionButton**(DESIGN.ko.md D104)은 여러 보기 가운데 하나입니다. 폼 위의 OptionButton이 한 묶음이고 Frame마다 또 한 묶음이며(D105), 그 가운데 하나가 켜집니다. 클릭하거나 `Checked = True`로 하나를 켜면 나머지는 꺼집니다. 켜진 것을 클릭하면 아무 일도 없고, `Checked = False`로 하면 하나도 켜지지 않은 상태가 됩니다. `Changed`는 Visual Basic 6의 Click처럼 켜지는 것에서만 실행되고, 그 때문에 꺼지는 것에서는 실행되지 않습니다. 그래서 묶음 전체의 처리기 하나는 한 번만 실행됩니다. 디자이너의 속성 창에서 하나를 켜면 나머지가 꺼집니다. Visual Basic .NET의 이름은 [RadioButton](https://learn.microsoft.com/en-us/dotnet/api/system.windows.forms.radiobutton)입니다(A056, F020).
 - **ComboBox**(D104)는 고른 항목을 보이는 닫힌 상자이고, 클릭하면 목록이 열려 하나를 고릅니다. 사용자는 고르기만 하고 치지는 않습니다(Visual Basic 6의 Style 2). 프로그램은 ListBox와 똑같이 채우고 읽습니다: `AddItem`, `RemoveItem`, `Clear`, `List`, `ListCount`, `ListIndex`, `Text`, 그리고 `ListIndex`가 바뀌면 `Changed`. 직접 칠 수 있는 ComboBox는 나중에 넣습니다.
-- **컨트롤 타입의 다른 이름**(D104): 다른 BASIC의 `RadioButton`은 `OptionButton`, `CommandButton`은 `Button`, `PictureBox`는 `Image`이고, 코드(A056)와 폼 파일(F020)에서 알려 줍니다.
+- **Frame**(DESIGN.ko.md D105)은 위쪽 테두리에 `Caption`이 있고 다른 컨트롤을 담는 상자입니다. 그 안의 컨트롤은 Frame의 왼쪽 위 모서리에서부터 놓입니다. `Left`와 `Top`이 거기서부터이고, Anchor는 Frame의 가장자리와의 거리를 지킵니다. 그래서 폼을 따라 커지도록 고정한 Frame은 오른쪽이나 아래에 고정한 컨트롤을 옮깁니다. Frame의 가장자리 밖으로 나간 부분은 보이지 않습니다. Frame의 OptionButton은 Visual Basic 6처럼 따로 한 묶음입니다([Microsoft](https://learn.microsoft.com/en-us/previous-versions/visualstudio/visual-basic-6/aa241737(v=vs.60))). Frame 안에 Frame을 둘 수도 있습니다. 디자이너에서는 Frame 위에 그리거나 끌어다 놓은 컨트롤이 그 안에 들어가고, Frame을 옮기면 안의 것도 함께 옮겨지며, Frame을 지우거나 복사하거나 붙여 넣으면 안의 것도 함께입니다. Frame 하나를 고른 채 붙여 넣은 컨트롤은 그 안에 들어갑니다. 컨트롤을 끌어도 Frame 밖으로 나가지는 않습니다. 꺼내거나 다른 Frame에 넣으려면 잘라 내고 붙여 넣어 주세요. `Me.Controls`에는 Frame 안의 컨트롤도 들어 있습니다. 컨트롤을 담은 Frame을 `Me.Controls.Remove`로 빼면 R023이고, Frame에서 뺐다가 다시 넣은 컨트롤은 폼에 바로 놓입니다. Visual Basic .NET의 이름은 [GroupBox](https://learn.microsoft.com/en-us/dotnet/api/system.windows.forms.groupbox)입니다(A056, F020).
+- **컨트롤 타입의 다른 이름**(D104): 다른 BASIC의 `RadioButton`은 `OptionButton`, `CommandButton`은 `Button`, `PictureBox`는 `Image`, `GroupBox`는 `Frame`이고, 코드(A056)와 폼 파일(F020)에서 알려 줍니다.
 - **폼의 키**(DESIGN.ko.md D101). `Form_KeyDown(e As KeyEventArgs)`는 키를 누를 때와 누르고 있는 동안 다시 실행되고, `Form_KeyUp(e As KeyEventArgs)`는 키를 뗄 때 실행됩니다. `e.KeyCode`는 키의 번호이고 `Keys`와 비교합니다: `Keys.Left`, `Keys.Right`, `Keys.Up`, `Keys.Down`, `Keys.Space`, `Keys.Enter`, `Keys.Escape`, `Keys.Back`, `Keys.Tab`, `Keys.Delete`, `Keys.Insert`, `Keys.Home`, `Keys.End`, `Keys.PageUp`, `Keys.PageDown`, `Keys.A`부터 `Keys.Z`, `Keys.D0`부터 `Keys.D9`, `Keys.NumPad0`부터 `Keys.NumPad9`, `Keys.F1`부터 `Keys.F12`. 번호는 Visual Basic .NET과 같습니다([Microsoft](https://learn.microsoft.com/en-us/dotnet/api/system.windows.forms.keys)). `e.Shift`, `e.Control`, `e.Alt`는 함께 누른 키를 알려 주고, 그 키만 눌러서는 이벤트가 오지 않습니다. 글자와 숫자 키는 입력기가 무엇을 치든 자판의 자리로 구별합니다. 맨 앞의 폼은 보인 때부터, 폼이나 TextBox가 아닌 컨트롤에 포커스가 있는 동안 키를 받습니다. TextBox에 입력하는 동안에는 **`KeyPreview`**가 `True`일 때만 받고(Visual Basic .NET처럼 처음에는 `False`: [Microsoft](https://learn.microsoft.com/en-us/dotnet/api/system.windows.forms.form.keypreview)), TextBox도 그 키를 그대로 받습니다. 키 이벤트는 도는 처리기를 기다리고, 다시 들어가지 않으며, 대화상자가 열려 있으면 막힙니다. Visual Basic 6의 `(KeyCode As Integer, Shift As Integer)`는 A053입니다. 폰(3단계)에서는 키 이벤트가 오지 않습니다.
 
   ```vb
@@ -740,7 +744,8 @@ controls:
 ```
 
 - 파일은 일반 텍스트가 되도록 YAML로 씁니다(D13). 디자이너가 쓰지만 손으로 고칠 수도 있으며, 실수는 F 코드로 알립니다(1.2절).
-- `formatVersion`은 이 형식의 버전이며 지금은 1입니다. 더 새로운 버전의 파일은 읽지 않아서(F003) 예전 GuBASIC이 파일을 잘못 읽는 일이 없습니다. 예전 파일을 다르게 읽게 되는 변경에는 새 버전과 변환기를 둡니다(D12).
+- `formatVersion`은 이 형식의 버전입니다. 더 새로운 버전의 파일은 읽지 않아서(F003) 예전 GuBASIC이 파일을 잘못 읽는 일이 없습니다. 예전 파일을 다르게 읽게 되는 변경에는 새 버전과 변환기를 둡니다(D12). Frame 안에 컨트롤이 있는 폼은 버전 2로 쓰고, 다른 폼은 그대로 버전 1입니다. 버전 2는 버전 1 파일을 바꾸지 않고 그대로 읽으므로 변환기가 필요 없습니다(DESIGN.ko.md D105).
+- Frame의 `controls`에는 그 안의 컨트롤을 폼의 것과 같은 형태로 적습니다(D105). 컨트롤을 담는 것은 Frame뿐이고(F021), 이름은 폼 전체에서 겹치지 않아야 합니다.
 - `properties`에는 기본값과 다른 값만 적습니다. 키와 속성 이름은 대소문자를 가리지 않습니다.
 - 컨트롤마다 `name`과 `type`, 필요하면 `properties`가 있습니다. 이름은 식별자 규칙(1절)을 따릅니다: 영문자로 시작하고 영문자, 숫자, `_`를 씁니다. 키워드나 `Form`은 쓸 수 없고, 대소문자만 다른 같은 이름의 컨트롤 둘도 둘 수 없습니다.
 - `String` 속성은 적힌 그대로 값이 됩니다: `Caption: 2026`은 글자 `2026`입니다. 따옴표, `-`, `[`, `{`로 시작하거나 `: `, ` #`가 들어 있어서 YAML이 다르게 읽을 글자는 따옴표로 감싸 주세요.

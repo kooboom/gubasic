@@ -1,0 +1,24 @@
+' Frames (D105): the OptionButtons in each Frame are a group of their
+' own, apart from those on the form. The controls in a Frame are placed
+' from its corner and anchored to its edges: a Frame that grows with the
+' form moves the Button anchored to its right edge.
+Sub Size_Changed(sender As OptionButton) Handles optSmall.Changed, optLarge.Changed
+    Debug.Print(sender.Caption & "; Red " & optRed.Checked & ", Alone " & optAlone.Checked)
+End Sub
+
+Sub Colour_Changed(sender As OptionButton) Handles optRed.Changed, optBlue.Changed
+    Debug.Print(sender.Caption & "; Small " & optSmall.Checked & ", Large " & optLarge.Checked)
+End Sub
+
+Sub Form_Resize()
+    Debug.Print("Frame " & fraSize.Width & " wide, btnInside at " & btnInside.Left & "," & btnInside.Top)
+End Sub
+
+Sub btnWider_Click()
+    fraSize.Width = fraSize.Width + 20
+    Debug.Print("btnInside at " & btnInside.Left)
+End Sub
+
+Sub btnInside_Click()
+    optSmall.Checked = True
+End Sub

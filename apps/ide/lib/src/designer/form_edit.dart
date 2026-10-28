@@ -30,6 +30,7 @@ List<ComponentSpec> get toolboxComponents => [
     'listbox',
     'combobox',
     'optionbutton',
+    'frame',
     'image',
     'timer',
   ])
@@ -51,12 +52,131 @@ String newControlName(FormFile form, ComponentSpec type) {
 Iterable<ControlDecl> placedControls(FormFile form) =>
     form.controls.where((c) => c.component.visual);
 
-/// The box of [control] on its form; a control seen on it.
+/// The box of [control] as its file writes it: in its Frame, from the
+/// Frame's top-left corner, if it is in one (D105); a control seen on the
+/// form.
 ControlBox boxOf(ControlDecl control) => (
   left: control.valueOf('Left') as int,
   top: control.valueOf('Top') as int,
   width: control.valueOf('Width') as int,
   height: control.valueOf('Height') as int,
+);
+
+/// The box of [control] where it is seen on [form]: in a Frame, moved by
+/// where the Frame is (D105). The designer works with these.
+ControlBox boxOn(FormFile form, ControlDecl control) =>
+    shiftedBox(boxOf(control), originOf(form, control.container));
+
+/// Where the inside of the Frame named [container] starts on [form], its
+/// top-left corner: what the boxes of the controls in it are from (D105).
+/// (0, 0) for the form itself.
+({int left, int top}) originOf(FormFile form, String? container) {
+  var (left, top) = (0, 0);
+  var frame = container == null ? null : form.control(container);
+  while (frame != null) {
+    left += frame.valueOf('Left') as int;
+    top += frame.valueOf('Top') as int;
+    frame = frame.container == null ? null : form.control(frame.container!);
+  }
+  return (left: left, top: top);
+}
+
+/// The size of what the controls in [container] are placed in: that
+/// Frame's, or the form's for null (D105).
+({int width, int height}) roomOf(FormFile form, String? container) =>
+    switch (container == null ? null : form.control(container)) {
+      final frame? => (
+        width: frame.valueOf('Width') as int,
+        height: frame.valueOf('Height') as int,
+      ),
+      null => formSizeOf(form),
+    };
+
+/// [box] moved by [by], or back by it when [back].
+ControlBox shiftedBox(
+  ControlBox box,
+  ({int left, int top}) by, {
+  bool back = false,
+}) {
+  final sign = back ? -1 : 1;
+  return (
+    left: box.left + sign * by.left,
+    top: box.top + sign * by.top,
+    width: box.width,
+    height: box.height,
+  );
+}
+
+/// The Frame of [form] that a control put at [p] goes into: the innermost
+/// one drawn there, or null for the form itself (D105). [except] and the
+/// Frames in it are passed over.
+String? frameAt(FormFile form, Point<double> p, {String? except}) {
+  String? found;
+  for (final c in form.controls) {
+    if (!c.component.container ||
+        (except != null && isWithin(form, c, except))) {
+      continue;
+    }
+    final b = boxOn(form, c);
+    // The controls come after the Frame they are in: the last one there is
+    // the innermost.
+    if (p.x >= b.left &&
+        p.x < b.left + b.width &&
+        p.y >= b.top &&
+        p.y < b.top + b.height &&
+        (c.container == null ||
+            found?.toLowerCase() == c.container!.toLowerCase())) {
+      found = c.name;
+    }
+  }
+  return found;
+}
+
+/// Whether [control] is the control named [frame] or inside it, in any
+/// depth (D105).
+bool isWithin(FormFile form, ControlDecl control, String frame) {
+  final lower = frame.toLowerCase();
+  for (ControlDecl? c = control; c != null;) {
+    if (c.name.toLowerCase() == lower) return true;
+    c = c.container == null ? null : form.control(c.container!);
+  }
+  return false;
+}
+
+/// The names of [names] and of the controls inside them, in any depth, in
+/// the form's order: what deleting or copying them takes (D105).
+List<String> withInside(FormFile form, Iterable<String> names) => [
+  for (final c in form.controls)
+    if (names.any((n) => isWithin(form, c, n))) c.name,
+];
+
+/// [names] without those inside another of them: when a Frame moves, the
+/// controls in it move with it (D105).
+List<String> outermost(FormFile form, Iterable<String> names) => [
+  for (final n in names)
+    if (form.control(n) case final c?
+        when !names.any(
+          (other) =>
+              other.toLowerCase() != n.toLowerCase() &&
+              c.container != null &&
+              isWithin(form, form.control(c.container!)!, other),
+        ))
+      n,
+];
+
+/// [control] with [properties], and [name] and [container] when given;
+/// its line as it was.
+ControlDecl _changed(
+  ControlDecl control, {
+  String? name,
+  Map<String, Object>? properties,
+  String? Function()? container,
+}) => ControlDecl(
+  name: name ?? control.name,
+  component: control.component,
+  properties: properties ?? control.properties,
+  line: control.line,
+  container: container == null ? control.container : container(),
 );
 
 /// The form's inside size: `Width` x `Height`.
@@ -74,15 +194,18 @@ ControlBox boxOf(ControlDecl control) => (
 /// The box a control of [type] gets when the user drags from [start] to
 /// [end] on [form], in any direction. A drag of less than
 /// [clickDistance] is a click: the default size at [start]. The box is on
-/// the grid when [grid] is on and inside the form where it fits.
+/// the grid when [grid] is on and inside the form where it fits; inside
+/// [room] instead when given, a Frame's, with [start] and [end] from its
+/// corner (D105).
 ControlBox drawnBox(
   FormFile form,
   ComponentSpec type, {
   required Point<double> start,
   required Point<double> end,
   required bool grid,
+  ({int width, int height})? room,
 }) {
-  final size = formSizeOf(form);
+  final size = room ?? formSizeOf(form);
   final isClick =
       (end.x - start.x).abs() < clickDistance &&
       (end.y - start.y).abs() < clickDistance;
@@ -173,15 +296,18 @@ ControlBox _inside(ControlBox box, ({int width, int height}) size) => (
   height: box.height,
 );
 
-/// [form] with a new control of [type] named [name] at [box], last, so
-/// that it is drawn above the others. A type with a `Caption` shows its
-/// name there.
+/// [form] with a new control of [type] named [name] at [box] on the form,
+/// last, so that it is drawn above the others; in the Frame named
+/// [container] if given (D105). A type with a `Caption` shows its name
+/// there.
 FormFile withControl(
   FormFile form,
   ComponentSpec type,
   String name,
-  ControlBox box,
-) {
+  ControlBox box, {
+  String? container,
+}) {
+  box = shiftedBox(box, originOf(form, container), back: true);
   final properties = <String, Object>{
     if (type.properties.containsKey('caption')) 'Caption': name,
     // A Timer has no place (D100).
@@ -194,7 +320,13 @@ FormFile withControl(
   };
   return _copy(form, [
     ...form.controls,
-    ControlDecl(name: name, component: type, properties: properties, line: 0),
+    ControlDecl(
+      name: name,
+      component: type,
+      properties: properties,
+      line: 0,
+      container: container,
+    ),
   ]);
 }
 
@@ -208,11 +340,9 @@ FormFile withOrder(FormFile form, String name, {required bool front}) {
   return _copy(form, front ? [...others, ...moved] : [...moved, ...others]);
 }
 
-/// [form] without the control named [name].
-FormFile withoutControl(FormFile form, String name) => _copy(form, [
-  for (final c in form.controls)
-    if (c.name.toLowerCase() != name.toLowerCase()) c,
-]);
+/// [form] without the control named [name], and the controls in it.
+FormFile withoutControl(FormFile form, String name) =>
+    withoutControls(form, [name]);
 
 FormFile _copy(FormFile form, List<ControlDecl> controls) => FormFile(
   name: form.name,
@@ -511,13 +641,24 @@ ControlBox grownBox(
   height: max(minFormSize, snap(size.height + dy, grid: grid)),
 );
 
-/// [form] with the control named [name] at [box].
-FormFile withBox(FormFile form, String name, ControlBox box) => _copy(form, [
+/// [form] with the control named [name] at [box], where it is seen on the
+/// form (D105).
+FormFile withBox(FormFile form, String name, ControlBox box) {
+  final container = form.control(name)?.container;
+  return withOwnBox(
+    form,
+    name,
+    shiftedBox(box, originOf(form, container), back: true),
+  );
+}
+
+/// [form] with the control named [name] at [box] as its file writes it:
+/// in its Frame, from the Frame's corner (D105).
+FormFile withOwnBox(FormFile form, String name, ControlBox box) => _copy(form, [
   for (final c in form.controls)
     if (c.name.toLowerCase() == name.toLowerCase())
-      ControlDecl(
-        name: c.name,
-        component: c.component,
+      _changed(
+        c,
         properties: {
           ...c.properties,
           'Left': box.left,
@@ -525,7 +666,6 @@ FormFile withBox(FormFile form, String name, ControlBox box) => _copy(form, [
           'Width': box.width,
           'Height': box.height,
         },
-        line: c.line,
       )
     else
       c,
@@ -538,12 +678,13 @@ bool isOutside(ControlBox box, ({int width, int height}) size) =>
     box.left + box.width > size.width ||
     box.top + box.height > size.height;
 
-/// The controls of [form] that reach outside it, in the form's order.
+/// The controls of [form] that reach outside it, in the form's order;
+/// those in a Frame go where it goes (D105).
 List<ControlDecl> controlsOutside(FormFile form) {
   final size = formSizeOf(form);
   return [
     for (final c in placedControls(form))
-      if (isOutside(boxOf(c), size)) c,
+      if (c.container == null && isOutside(boxOf(c), size)) c,
   ];
 }
 
@@ -618,12 +759,7 @@ FormFile withProperty(
   return _copy(form, [
     for (final c in form.controls)
       if (c.name.toLowerCase() == control.toLowerCase())
-        ControlDecl(
-          name: c.name,
-          component: c.component,
-          properties: {...c.properties, property: value},
-          line: c.line,
-        )
+        _changed(c, properties: {...c.properties, property: value})
       else
         c,
   ]);
@@ -632,24 +768,29 @@ FormFile withProperty(
 /// [form] with the control named [name] renamed to [newName]. Its
 /// properties stay as they are, but a `Caption` that still is the old
 /// name, as a new control gets it, takes the new one (D68): a Label1
-/// renamed lblQuestion no longer says Label1 next to the next Label1.
-FormFile withName(FormFile form, String name, String newName) => _copy(form, [
-  for (final c in form.controls)
-    if (c.name.toLowerCase() == name.toLowerCase())
-      ControlDecl(
-        name: newName,
-        component: c.component,
-        properties: {
-          ...c.properties,
-          if (c.component.properties.containsKey('caption') &&
-              c.valueOf('Caption') == c.name)
-            'Caption': newName,
-        },
-        line: c.line,
-      )
-    else
-      c,
-]);
+/// renamed lblQuestion no longer says Label1 next to the next Label1. The
+/// controls in a Frame that is renamed stay in it (D105).
+FormFile withName(FormFile form, String name, String newName) {
+  final lower = name.toLowerCase();
+  return _copy(form, [
+    for (final c in form.controls)
+      if (c.name.toLowerCase() == lower)
+        _changed(
+          c,
+          name: newName,
+          properties: {
+            ...c.properties,
+            if (c.component.properties.containsKey('caption') &&
+                c.valueOf('Caption') == c.name)
+              'Caption': newName,
+          },
+        )
+      else if (c.container?.toLowerCase() == lower)
+        _changed(c, container: () => newName)
+      else
+        c,
+  ]);
+}
 
 /// The form sizes the designer offers (D60), upright for a phone and a
 /// tablet: the inside of the form, as `Width` and `Height`.
@@ -683,7 +824,8 @@ typedef AnchorBase = ({
   ({int width, int height}) size,
 });
 
-/// [form]'s controls and size as they are, to move controls from.
+/// [form]'s controls and size as they are, to move controls from. The
+/// boxes are as the file writes them: in a Frame, from its corner (D105).
 AnchorBase anchorBaseOf(FormFile form) => (
   boxes: {for (final c in placedControls(form)) c.name.toLowerCase(): boxOf(c)},
   size: formSizeOf(form),
@@ -691,25 +833,64 @@ AnchorBase anchorBaseOf(FormFile form) => (
 
 /// Where each control of [form], by name in lower case, goes when the
 /// form becomes [size]: moved from [base] as its Anchor says (D57), never
-/// to the grid. A control [base] does not have stays where it is.
+/// to the grid; a control in a Frame as the Frame's size changes (D105).
+/// A control [base] does not have stays where it is. The boxes are as the
+/// file writes them.
 Map<String, ControlBox> anchoredBoxes(
   FormFile form,
   ({int width, int height}) size,
   AnchorBase base,
-) => {
-  for (final c in placedControls(form))
-    c.name.toLowerCase(): switch (base.boxes[c.name.toLowerCase()]) {
+) {
+  final boxes = <String, ControlBox>{};
+  // What each control is placed in, before and after: a Frame comes
+  // before the controls in it.
+  ({int width, int height}) outer(
+    ControlDecl c,
+    Map<String, ControlBox> of,
+    ({int width, int height}) form,
+  ) => switch (c.container == null ? null : of[c.container!.toLowerCase()]) {
+    final b? => (width: b.width, height: b.height),
+    null => form,
+  };
+  for (final c in placedControls(form)) {
+    final key = c.name.toLowerCase();
+    final before = outer(c, base.boxes, base.size);
+    final after = outer(c, boxes, size);
+    boxes[key] = switch (base.boxes[key]) {
       final from? => anchoredRect(
         from,
         c.valueOf('Anchor') as String,
-        baseWidth: base.size.width,
-        baseHeight: base.size.height,
-        width: size.width,
-        height: size.height,
+        baseWidth: before.width,
+        baseHeight: before.height,
+        width: after.width,
+        height: after.height,
       ),
       null => boxOf(c),
-    },
-};
+    };
+  }
+  return boxes;
+}
+
+/// [own], boxes as the file writes them by name in lower case, where they
+/// are seen on [form] (D105).
+Map<String, ControlBox> boxesOn(FormFile form, Map<String, ControlBox> own) {
+  ({int left, int top}) origin(String? container) {
+    var (left, top) = (0, 0);
+    var frame = container == null ? null : form.control(container);
+    while (frame != null) {
+      final b = own[frame.name.toLowerCase()] ?? boxOf(frame);
+      left += b.left;
+      top += b.top;
+      frame = frame.container == null ? null : form.control(frame.container!);
+    }
+    return (left: left, top: top);
+  }
+
+  return {
+    for (final MapEntry(:key, :value) in own.entries)
+      key: shiftedBox(value, origin(form.control(key)?.container)),
+  };
+}
 
 /// [form] with its inside [size] and each control moved as its Anchor
 /// says, from [base].
@@ -721,7 +902,7 @@ FormFile withAnchoredSize(
   final boxes = anchoredBoxes(form, size, base);
   var sized = withFormSize(form, size);
   for (final c in placedControls(form)) {
-    sized = withBox(sized, c.name, boxes[c.name.toLowerCase()]!);
+    sized = withOwnBox(sized, c.name, boxes[c.name.toLowerCase()]!);
   }
   return sized;
 }
@@ -792,9 +973,10 @@ FormFile withBoxes(FormFile form, Map<String, ControlBox> boxes) {
   return result;
 }
 
-/// [form] without the controls named in [names], in any case.
+/// [form] without the controls named in [names], in any case, and the
+/// controls inside them (D105).
 FormFile withoutControls(FormFile form, Iterable<String> names) {
-  final lower = {for (final n in names) n.toLowerCase()};
+  final lower = {for (final n in withInside(form, names)) n.toLowerCase()};
   return _copy(form, [
     for (final c in form.controls)
       if (!lower.contains(c.name.toLowerCase())) c,
@@ -819,51 +1001,83 @@ FormFile withOrderOf(
   return _copy(form, front ? [...others, ...moved] : [...moved, ...others]);
 }
 
+/// The controls named in [names] and those inside them, as the
+/// designer's clipboard keeps them (D105): the outermost at the place
+/// they are seen on [form], in no Frame; the others in their Frames.
+List<ControlDecl> copiedControls(FormFile form, Iterable<String> names) {
+  final roots = {for (final n in outermost(form, names)) n.toLowerCase()};
+  return [
+    for (final name in withInside(form, roots))
+      if (form.control(name) case final c?)
+        roots.contains(name.toLowerCase())
+            ? _changed(
+                c,
+                properties: {
+                  ...c.properties,
+                  if (c.component.visual)
+                    ...switch (boxOn(form, c)) {
+                      final b => {'Left': b.left, 'Top': b.top},
+                    },
+                },
+                container: () => null,
+              )
+            : c,
+  ];
+}
+
 /// Controls pasted onto [form]: the form with them last, on top, and the
 /// names they got.
 typedef Pasted = ({FormFile form, List<String> names});
 
 /// [form] with copies of [controls] added last, so that they are drawn
-/// above the others, and chosen by the names returned.
+/// above the others, and chosen by the names returned: on the form, or in
+/// the Frame named [into] (D105). [controls] are as [copiedControls] gives
+/// them: those in no Frame at the place they were seen on their form,
+/// which here is from the corner of [into]; those in a Frame of the copy
+/// go into the Frame's copy.
 ///
 /// A copy keeps its name when the form has no control of that name, and
 /// otherwise takes a new control's name (`Button2`), its `Caption` too
 /// when that was its old name (D68), so that the code of the form, which
 /// names the original, is not suddenly about the copy. The copies keep their
-/// places to one another; while one would lie exactly where a control of
-/// the form starts, as when they are pasted back onto the form they were
-/// copied from, they all move a grid step down and right, and then into
-/// the form as far as they fit. A `Picture` that [hasPicture] says the
+/// places to one another; while one would lie exactly where a control
+/// starts, as when they are pasted back where they were copied from, they
+/// all move a grid step down and right, and then into the form (or the
+/// Frame) as far as they fit. A `Picture` that [hasPicture] says the
 /// project does not have is left empty, so that the form file stays
 /// valid (F016).
 Pasted withPasted(
   FormFile form,
   List<ControlDecl> controls, {
   required bool Function(String picture) hasPicture,
+  String? into,
 }) {
+  final origin = originOf(form, into);
   final starts = {
-    for (final c in placedControls(form)) (boxOf(c).left, boxOf(c).top),
+    for (final c in placedControls(form))
+      (boxOn(form, c).left - origin.left, boxOn(form, c).top - origin.top),
   };
+  final copied = {for (final c in controls) c.name.toLowerCase()};
+  bool isRoot(ControlDecl c) =>
+      c.container == null || !copied.contains(c.container!.toLowerCase());
   // A Timer has no place (D100): it is pasted without one.
   final placed = {
     for (final (i, c) in controls.indexed)
-      if (c.component.visual) '$i': c,
+      if (c.component.visual && isRoot(c))
+        '$i': shiftedBox(boxOf(c), origin, back: true),
   };
   var shift = 0;
   while (shift < 40 * gridStep &&
       placed.values.any(
-        (c) => starts.contains((boxOf(c).left + shift, boxOf(c).top + shift)),
+        (b) => starts.contains((b.left + shift, b.top + shift)),
       )) {
     shift += gridStep;
   }
-  final size = formSizeOf(form);
+  final size = roomOf(form, into);
   final boxes = placed.isEmpty
       ? const <String, ControlBox>{}
       : movedTogether(
-          {
-            for (final MapEntry(:key, :value) in placed.entries)
-              key: boxOf(value),
-          },
+          placed,
           (bounds) => _inside((
             left: bounds.left + shift,
             top: bounds.top + shift,
@@ -873,10 +1087,12 @@ Pasted withPasted(
         );
   var result = form;
   final names = <String>[];
+  final renamed = <String, String>{};
   for (final (i, c) in controls.indexed) {
     final name = result.control(c.name) == null
         ? c.name
         : newControlName(result, c.component);
+    renamed[c.name.toLowerCase()] = name;
     final box = boxes['$i'];
     result = _copy(result, [
       ...result.controls,
@@ -902,6 +1118,7 @@ Pasted withPasted(
           },
         },
         line: 0,
+        container: isRoot(c) ? into : renamed[c.container!.toLowerCase()],
       ),
     ]);
     names.add(name);

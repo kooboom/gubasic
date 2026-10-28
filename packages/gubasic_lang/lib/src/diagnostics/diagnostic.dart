@@ -441,6 +441,7 @@ enum DiagnosticCode {
   /// A control type in a form file under the name another version of BASIC
   /// gives it. Args: the type as written, GuBASIC's (D104).
   controlTypeHasOtherName('F020'),
+  notContainer('F021'),
 
   // Run time (the interpreter)
 
@@ -519,7 +520,11 @@ enum DiagnosticCode {
 
   /// `CType` of a control of another type. Args: the value's type, the
   /// type asked for.
-  castFailed('R022');
+  castFailed('R022'),
+
+  /// `Me.Controls.Remove` of a Frame that holds controls (D105). Args:
+  /// the Frame's name.
+  frameNotEmpty('R023');
 
   const DiagnosticCode(this.code, [this.severity = DiagnosticSeverity.error]);
 

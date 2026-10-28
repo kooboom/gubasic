@@ -251,6 +251,9 @@ class ScriptedHost implements FormHost {
     }
     for (final c in form.controls) {
       _components[_key(name, c.name, '')] = c.component.name;
+      if (c.container case final frame?) {
+        _containers[_key(name, c.name, '')] = frame;
+      }
       for (final p in c.component.properties.values.where((p) => p.isStored)) {
         _properties[_key(name, c.name, p.name)] = c.valueOf(p.name);
       }
@@ -277,8 +280,8 @@ class ScriptedHost implements FormHost {
         width: _int(form, control, 'Width'),
         height: _int(form, control, 'Height'),
       ),
-      _int(form, null, 'Width'),
-      _int(form, null, 'Height'),
+      _int(form, _containers[_key(form, control, '')], 'Width'),
+      _int(form, _containers[_key(form, control, '')], 'Height'),
     );
   }
 
@@ -289,13 +292,15 @@ class ScriptedHost implements FormHost {
         in _bases.entries) {
       if (!key.startsWith(prefix)) continue;
       final control = key.substring(prefix.length, key.length - 1);
+      // Anchored to the edges of its Frame, if it is in one (D105).
+      final outer = _containers[key];
       final r = anchoredRect(
         base,
         _properties[_key(form, control, 'Anchor')] as String,
         baseWidth: width,
         baseHeight: height,
-        width: _int(form, null, 'Width'),
-        height: _int(form, null, 'Height'),
+        width: _int(form, outer, 'Width'),
+        height: _int(form, outer, 'Height'),
       );
       _properties[_key(form, control, 'Left')] = r.left;
       _properties[_key(form, control, 'Top')] = r.top;
@@ -319,6 +324,9 @@ class ScriptedHost implements FormHost {
   }
 
   final _components = <String, String>{};
+
+  /// The Frame each control in one is in, by the control's key (D105).
+  final _containers = <String, String>{};
 
   /// The component of [control] of [form], or of the form in front
   /// (`CheckBox`); null if there is none.
@@ -393,6 +401,8 @@ class ScriptedHost implements FormHost {
         _placing.contains(lower) &&
         _bases.containsKey(_key(form, control, ''))) {
       _rebase(form, control);
+      // A Frame's new size moves the controls in it (D105).
+      if (lower == 'width' || lower == 'height') _place(form);
     }
   }
 
@@ -414,7 +424,7 @@ class ScriptedHost implements FormHost {
   @override
   void resetForm(String form) {
     final prefix = '${form.toLowerCase()}.';
-    for (final map in [_properties, _components, _bases]) {
+    for (final map in [_properties, _components, _bases, _containers]) {
       map.removeWhere((key, _) => key.startsWith(prefix));
     }
     _start(_files[form.toLowerCase()]!);
@@ -435,7 +445,7 @@ class ScriptedHost implements FormHost {
   @override
   void removeControl(String form, String control) {
     final prefix = '${form.toLowerCase()}.${control.toLowerCase()}.';
-    for (final map in [_properties, _components, _bases]) {
+    for (final map in [_properties, _components, _bases, _containers]) {
       map.removeWhere((key, _) => key.startsWith(prefix));
     }
     transcript.add(
@@ -451,11 +461,16 @@ class ScriptedHost implements FormHost {
   }
 
   /// The user checks OptionButton [control] of the form in front: the
-  /// others of its form are unchecked (D104).
+  /// others of its form, or of its Frame, are unchecked (D104, D105).
   void checkOption(String control) {
     final prefix = '${front.toLowerCase()}.';
+    final frame = _containers[_key(front, control, '')]?.toLowerCase();
     for (final MapEntry(:key, :value) in _components.entries) {
-      if (value != 'OptionButton' || !key.startsWith(prefix)) continue;
+      if (value != 'OptionButton' ||
+          !key.startsWith(prefix) ||
+          _containers[key]?.toLowerCase() != frame) {
+        continue;
+      }
       _properties['${key}checked'] = false;
     }
     userSets(control, 'Checked', true);

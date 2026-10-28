@@ -296,7 +296,8 @@ class _FormDesignerState extends State<FormDesigner> {
   /// Deletes the chosen controls. When the code uses one or has its
   /// handlers, asks first, naming the lines (D64).
   Future<void> _delete() async {
-    final names = [for (final c in _chosenControls) c.name];
+    // A Frame goes with the controls in it (D105).
+    final names = withInside(_form, [for (final c in _chosenControls) c.name]);
     if (!_canEdit || names.isEmpty) return;
     final code = widget.project.files[_codeFile] ?? '';
     final s = widget.strings;
@@ -355,14 +356,14 @@ class _FormDesignerState extends State<FormDesigner> {
 
   /// Moves the selected control one step, [dx] and [dy] being -1, 0 or 1.
   void _nudge(int dx, int dy) => _arrow(
-    (b) => nudgedBox(b, dx, dy, size: formSizeOf(_form), grid: _grid),
+    (b, size) => nudgedBox(b, dx, dy, size: size, grid: _grid),
     together: true,
   );
 
   /// Makes the selected control one step wider or narrower, taller or
   /// shorter.
   void _grow(int dx, int dy) => _arrow(
-    (b) => grownBox(b, dx, dy, size: formSizeOf(_form), grid: _grid),
+    (b, size) => grownBox(b, dx, dy, size: size, grid: _grid),
     together: false,
   );
 
@@ -371,18 +372,46 @@ class _FormDesignerState extends State<FormDesigner> {
   /// places to one another and stop together at the form's edge; else
   /// each on its own.
   void _arrow(
-    ControlBox Function(ControlBox) change, {
+    ControlBox Function(ControlBox box, ({int width, int height}) size)
+    change, {
     required bool together,
   }) {
     final chosen = _chosenPlaced;
     if (!_canEdit || chosen.isEmpty || _change != null) return;
     if (_groupChange != null) return;
-    final boxes = {for (final c in chosen) c.name: boxOf(c)};
+    final form = _form;
+    // The controls in a chosen Frame move with it (D105).
+    final moving = outermost(form, [for (final c in chosen) c.name]);
+    final space = _space(moving);
+    final boxes = {
+      for (final n in moving)
+        n: shiftedBox(boxOn(form, form.control(n)!), space.origin, back: true),
+    };
     final changed = together
-        ? movedTogether(boxes, change)
-        : {for (final e in boxes.entries) e.key: change(e.value)};
+        ? movedTogether(boxes, (b) => change(b, space.size))
+        : {for (final e in boxes.entries) e.key: change(e.value, space.size)};
     if (changed.entries.every((e) => boxes[e.key] == e.value)) return;
-    _apply(withBoxes(_form, changed), choose: [for (final c in chosen) c.name]);
+    _apply(
+      withBoxes(form, {
+        for (final e in changed.entries)
+          e.key: shiftedBox(e.value, space.origin),
+      }),
+      choose: [for (final c in chosen) c.name],
+    );
+  }
+
+  /// What the controls named [names] move in: their Frame when they are
+  /// all in the same one, else the form (D105); where it starts on the
+  /// form, and its size.
+  ({({int left, int top}) origin, ({int width, int height}) size}) _space(
+    Iterable<String> names,
+  ) {
+    final form = _form;
+    final containers = {
+      for (final n in names) form.control(n)?.container?.toLowerCase(),
+    };
+    final shared = containers.length == 1 ? containers.single : null;
+    return (origin: originOf(form, shared), size: roomOf(form, shared));
   }
 
   ControlDecl? get _selectedControl =>
@@ -438,15 +467,34 @@ class _FormDesignerState extends State<FormDesigner> {
     if (!type.visual) return _placeInTray(type);
     final name = newControlName(form, type);
     setState(() => _tool = null);
+    final drawn = _drawn(type, at, at);
     _apply(
-      withControl(
-        form,
-        type,
-        name,
-        drawnBox(form, type, start: at, end: at, grid: _grid),
-      ),
+      withControl(form, type, name, drawn.box, container: drawn.frame),
       select: name,
     );
+  }
+
+  /// The box of a control of [type] drawn from [start] to [end], where it
+  /// is seen on the form: in the Frame where the drag started, and inside
+  /// it as far as it fits, if there is one there (D105).
+  ({String? frame, ControlBox box, ControlBox own}) _drawn(
+    ComponentSpec type,
+    Point<double> start,
+    Point<double> end,
+  ) {
+    final form = _form;
+    final frame = frameAt(form, start);
+    final o = originOf(form, frame);
+    Point<double> local(Point<double> p) => Point(p.x - o.left, p.y - o.top);
+    final own = drawnBox(
+      form,
+      type,
+      start: local(start),
+      end: local(end),
+      grid: _grid,
+      room: roomOf(form, frame),
+    );
+    return (frame: frame, box: shiftedBox(own, o), own: own);
   }
 
   // The mouse on the form.
@@ -498,7 +546,12 @@ class _FormDesignerState extends State<FormDesigner> {
       setState(() {
         _selected = c?.name;
         if (c != null && _canEdit) {
-          _change = (name: c.name, start: boxOf(c), handle: null, from: p);
+          _change = (
+            name: c.name,
+            start: boxOn(_form, c),
+            handle: null,
+            from: p,
+          );
         }
       });
       return;
@@ -526,12 +579,14 @@ class _FormDesignerState extends State<FormDesigner> {
       return;
     }
     final selected = _selectedPlaced;
-    final handle = selected == null ? null : _handleAt(p, boxOf(selected));
+    final handle = selected == null
+        ? null
+        : _handleAt(p, boxOn(_form, selected));
     if (handle != null && _canEdit) {
       setState(
         () => _change = (
           name: selected!.name,
-          start: boxOf(selected),
+          start: boxOn(_form, selected),
           handle: handle,
           from: p,
         ),
@@ -543,7 +598,13 @@ class _FormDesignerState extends State<FormDesigner> {
       // without a drag chooses that one alone.
       setState(() {
         _groupChange = (
-          start: {for (final x in _chosenPlaced) x.name: boxOf(x)},
+          // The controls in a chosen Frame move with it (D105).
+          start: {
+            for (final n in outermost(_form, [
+              for (final x in _chosenPlaced) x.name,
+            ]))
+              n: boxOn(_form, _form.control(n)!),
+          },
           from: p,
           clicked: c.name,
         );
@@ -554,7 +615,7 @@ class _FormDesignerState extends State<FormDesigner> {
     setState(() {
       _selected = c?.name;
       if (c != null && _canEdit) {
-        _change = (name: c.name, start: boxOf(c), handle: null, from: p);
+        _change = (name: c.name, start: boxOn(_form, c), handle: null, from: p);
         _cursor = SystemMouseCursors.move;
       }
       // A drag over the form chooses the controls it touches.
@@ -595,7 +656,7 @@ class _FormDesignerState extends State<FormDesigner> {
           if (!small)
             for (final c in placedControls(_form))
               if (!before.contains(c.name.toLowerCase()) &&
-                  touches(boxOf(c), band.from, to))
+                  touches(boxOn(_form, c), band.from, to))
                 c.name,
         ];
       });
@@ -609,20 +670,20 @@ class _FormDesignerState extends State<FormDesigner> {
               d.dy.abs() < clickDistance)) {
         return;
       }
-      final size = formSizeOf(_form);
-      final live = movedTogether(
-        group.start,
-        (b) => movedBox(b, d.dx, d.dy, size: size, grid: _grid),
-      );
+      final space = _space(group.start.keys);
+      final live = {
+        for (final e in movedTogether(
+          {
+            for (final e in group.start.entries)
+              e.key: shiftedBox(e.value, space.origin, back: true),
+          },
+          (b) => movedBox(b, d.dx, d.dy, size: space.size, grid: _grid),
+        ).entries)
+          e.key: shiftedBox(e.value, space.origin),
+      };
       if (mapEquals(live, _groupLive)) return;
       // The runtime's widgets follow at once; the file changes at the end.
-      for (final MapEntry(key: name, value: box) in live.entries) {
-        _model.control(name)!
-          ..set('Left', box.left)
-          ..set('Top', box.top)
-          ..set('Width', box.width)
-          ..set('Height', box.height);
-      }
+      live.forEach(_showLive);
       setState(() => _groupLive = live);
       return;
     }
@@ -636,21 +697,17 @@ class _FormDesignerState extends State<FormDesigner> {
         d.dy.abs() < clickDistance) {
       return;
     }
-    final size = formSizeOf(_form);
-    final box = switch (change.handle) {
-      null => movedBox(change.start, d.dx, d.dy, size: size, grid: _grid),
-      final h => resizedBox(
-        change.start,
-        h,
-        d.dx,
-        d.dy,
-        size: size,
-        grid: _grid,
-      ),
-    };
+    // In its Frame, if it is in one: it stays in it (D105).
+    final space = _space([change.name]);
+    final size = space.size;
+    final start = shiftedBox(change.start, space.origin, back: true);
+    final box = shiftedBox(switch (change.handle) {
+      null => movedBox(start, d.dx, d.dy, size: size, grid: _grid),
+      final h => resizedBox(start, h, d.dx, d.dy, size: size, grid: _grid),
+    }, space.origin);
     // Said in the status line while the form's edge stops it (D77).
     final pastEdge = dragPastEdge(
-      change.start,
+      start,
       change.handle,
       d.dx,
       d.dy,
@@ -660,12 +717,24 @@ class _FormDesignerState extends State<FormDesigner> {
     if (pastEdge != _pastEdge) setState(() => _pastEdge = pastEdge);
     if (box == _live) return;
     // The runtime's widget follows at once; the file changes at the end.
-    _model.control(change.name)!
-      ..set('Left', box.left)
-      ..set('Top', box.top)
-      ..set('Width', box.width)
-      ..set('Height', box.height);
+    _showLive(change.name, box);
     setState(() => _live = box);
+  }
+
+  /// Shows control [name] at [box] on the form while it is dragged: the
+  /// runtime's widget is placed in its Frame, if it is in one (D105).
+  void _showLive(String name, ControlBox box) {
+    final form = _form;
+    final own = shiftedBox(
+      box,
+      originOf(form, form.control(name)?.container),
+      back: true,
+    );
+    _model.control(name)!
+      ..set('Left', own.left)
+      ..set('Top', own.top)
+      ..set('Width', own.width)
+      ..set('Height', own.height);
   }
 
   void _up(PointerUpEvent e) {
@@ -703,10 +772,13 @@ class _FormDesignerState extends State<FormDesigner> {
     if (start == null || tool == null) return;
     final form = _form;
     final name = newControlName(form, tool);
-    final box = drawnBox(form, tool, start: start, end: _point(e), grid: _grid);
+    final drawn = _drawn(tool, start, _point(e));
     _dragStart = _dragEnd = null;
     _tool = null;
-    _apply(withControl(form, tool, name, box), select: name);
+    _apply(
+      withControl(form, tool, name, drawn.box, container: drawn.frame),
+      select: name,
+    );
     _hover(e.localPosition);
   }
 
@@ -736,7 +808,9 @@ class _FormDesignerState extends State<FormDesigner> {
   /// Sets the cursor for the mouse at [p] on the form.
   void _hover(Offset p) {
     final selected = _selectedPlaced;
-    final handle = selected == null ? null : _handleAt(p, boxOf(selected));
+    final handle = selected == null
+        ? null
+        : _handleAt(p, boxOn(_form, selected));
     final cursor = !_canEdit
         ? MouseCursor.defer
         : _tool != null
@@ -826,14 +900,20 @@ class _FormDesignerState extends State<FormDesigner> {
   ControlDecl? _controlAt(Offset p) => _controlsAt(p).firstOrNull;
 
   /// The controls drawn at [p], from the top down: the order the runtime
-  /// draws them in (D41).
+  /// draws them in (D41); in a Frame, the controls in it over the Frame,
+  /// where the Frame is (D105).
   List<ControlDecl> _controlsAt(Offset p) {
     final form = _form;
-    return [
-      for (final drawn in _model.drawingOrder.reversed)
-        if (form.control(drawn.name!) case final c?)
-          if (_contains(boxOf(c), p)) c,
-    ];
+    Iterable<ControlDecl> at(String? container) sync* {
+      for (final drawn in _model.drawnIn(container).reversed) {
+        final c = form.control(drawn.name!);
+        if (c == null || !_contains(boxOn(form, c), p)) continue;
+        if (c.component.container) yield* at(c.name);
+        yield c;
+      }
+    }
+
+    return at(null).toList();
   }
 
   static bool _contains(ControlBox b, Offset p) =>
@@ -870,7 +950,8 @@ class _FormDesignerState extends State<FormDesigner> {
   void _copy() {
     final chosen = _chosenControls;
     if (chosen.isEmpty) return;
-    _clipboard = chosen;
+    // A Frame with the controls in it (D105).
+    _clipboard = copiedControls(_form, [for (final c in chosen) c.name]);
     setState(() {});
   }
 
@@ -892,7 +973,14 @@ class _FormDesignerState extends State<FormDesigner> {
       for (final name in widget.project.pictures.keys) name.toLowerCase(),
     };
     bool has(String picture) => pictures.contains(picture.toLowerCase());
-    final pasted = withPasted(_form, copied, hasPicture: has);
+    // Into the one chosen Frame, if a Frame is chosen (D105).
+    final frame = _selectedControl;
+    final pasted = withPasted(
+      _form,
+      copied,
+      hasPicture: has,
+      into: frame != null && frame.component.container ? frame.name : null,
+    );
     _apply(pasted.form, choose: pasted.names);
     final missing = missingPictures(copied, hasPicture: has);
     if (missing.isNotEmpty) {
@@ -1073,7 +1161,7 @@ class _FormDesignerState extends State<FormDesigner> {
   ControlBox? get _drawing {
     final (start, end, tool) = (_dragStart, _dragEnd, _tool);
     if (start == null || end == null || tool == null) return null;
-    return drawnBox(_form, tool, start: start, end: end, grid: _grid);
+    return _drawn(tool, start, end).box;
   }
 
   /// Sets a property from the Properties window: one step of undo for
@@ -1090,10 +1178,13 @@ class _FormDesignerState extends State<FormDesigner> {
     if (value == true &&
         property == 'Checked' &&
         form.control(control ?? '')?.component.name == 'OptionButton') {
-      // One OptionButton of the form is checked (D104).
+      // One OptionButton of the form, or of its Frame, is checked (D104,
+      // D105).
+      final frame = form.control(control!)!.container?.toLowerCase();
       for (final c in form.controls) {
         if (c.component.name == 'OptionButton' &&
-            c.name.toLowerCase() != control!.toLowerCase() &&
+            c.container?.toLowerCase() == frame &&
+            c.name.toLowerCase() != control.toLowerCase() &&
             c.valueOf('Checked') == true) {
           form = withProperty(form, c.name, 'Checked', false);
         }
@@ -1541,10 +1632,28 @@ class _FormDesignerState extends State<FormDesigner> {
     // Anchor puts them.
     final live = _liveForm == null
         ? null
-        : anchoredBoxes(form, _liveForm!, _resizeBase);
-    ControlBox boxNow(ControlDecl c) => _live != null && c.name == _change?.name
-        ? _live!
-        : _groupLive?[c.name] ?? live?[c.name.toLowerCase()] ?? boxOf(c);
+        : boxesOn(form, anchoredBoxes(form, _liveForm!, _resizeBase));
+    // Where each control is seen now: a control in a Frame moves with it
+    // (D105).
+    ControlBox boxNow(ControlDecl c) {
+      if (_live != null && c.name == _change?.name) return _live!;
+      if (_groupLive?[c.name] ?? live?[c.name.toLowerCase()] case final b?) {
+        return b;
+      }
+      final frame = c.container == null ? null : form.control(c.container!);
+      if (frame == null) return boxOf(c);
+      final at = boxNow(frame);
+      return shiftedBox(boxOf(c), (left: at.left, top: at.top));
+    }
+
+    // What the selected control's Anchor is to: its Frame's edges, or the
+    // form's.
+    final selectedFrame = selected?.container == null
+        ? null
+        : form.control(selected!.container!);
+    final selectedRoom = selectedFrame == null
+        ? (box: (left: 0, top: 0, width: size.width, height: size.height))
+        : (box: boxNow(selectedFrame));
     final area = SizedBox(
       key: designerFormKey,
       width: width,
@@ -1604,7 +1713,9 @@ class _FormDesignerState extends State<FormDesigner> {
                         edgeColor: scheme.outline,
                         outside: [
                           for (final c in placedControls(form))
-                            if (isOutside(boxNow(c), size)) boxNow(c),
+                            if (c.container == null &&
+                                isOutside(boxNow(c), size))
+                              boxNow(c),
                         ],
                         outsideColor: scheme.error,
                         selected: selected == null ? null : boxNow(selected),
@@ -1619,11 +1730,31 @@ class _FormDesignerState extends State<FormDesigner> {
                               ),
                         anchorLines: selected == null
                             ? const []
-                            : anchorLines(
-                                boxNow(selected),
-                                selected.valueOf('Anchor') as String,
-                                size,
-                              ),
+                            : [
+                                for (final (a, b) in anchorLines(
+                                  shiftedBox(boxNow(selected), (
+                                    left: selectedRoom.box.left,
+                                    top: selectedRoom.box.top,
+                                  ), back: true),
+                                  selected.valueOf('Anchor') as String,
+                                  (
+                                    width: selectedRoom.box.width,
+                                    height: selectedRoom.box.height,
+                                  ),
+                                ))
+                                  (
+                                    a +
+                                        Point(
+                                          selectedRoom.box.left.toDouble(),
+                                          selectedRoom.box.top.toDouble(),
+                                        ),
+                                    b +
+                                        Point(
+                                          selectedRoom.box.left.toDouble(),
+                                          selectedRoom.box.top.toDouble(),
+                                        ),
+                                  ),
+                              ],
                         drawing: _drawing,
                         color: scheme.primary,
                         handleFill: scheme.surface,
@@ -1798,7 +1929,11 @@ class _FormDesignerState extends State<FormDesigner> {
     String describe(String name, String type, ControlBox b) =>
         '$name ($type) · Left ${b.left}, Top ${b.top} · '
         '${b.width}×${b.height}';
-    final drawing = _drawing;
+    // In a Frame, from its corner, as the Properties window says (D105).
+    final (start, end, tool) = (_dragStart, _dragEnd, _tool);
+    final drawing = start == null || end == null || tool == null
+        ? null
+        : _drawn(tool, start, end).own;
     final selected = _selectedControl;
     final size = _liveForm ?? formSizeOf(form);
     final text = drawing != null
@@ -1814,7 +1949,13 @@ class _FormDesignerState extends State<FormDesigner> {
         ? describe(
             selected.name,
             selected.component.name,
-            _live ?? boxOf(selected),
+            _live == null
+                ? boxOf(selected)
+                : shiftedBox(
+                    _live!,
+                    originOf(form, selected.container),
+                    back: true,
+                  ),
           )
         : '${form.name} (Form) · ${size.width}×${size.height}';
     final theme = Theme.of(context);

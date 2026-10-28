@@ -245,6 +245,8 @@ const Map<DiagnosticCode, String> koreanMessages = {
       '프로젝트가 Sub Main으로 시작하는데, Sub Main()이 있는 모듈이 없습니다. 모듈에 Sub Main을 넣거나 폼으로 시작해 주세요.',
   DiagnosticCode.controlTypeHasOtherName:
       'GuBASIC에서는 {0} 컨트롤의 이름이 {1} 컨트롤입니다. type: {1} 형태로 써 주세요.',
+  DiagnosticCode.notContainer:
+      '{0} 컨트롤은 Frame이 아니어서 다른 컨트롤을 담지 못합니다. 그 컨트롤들을 폼이나 Frame의 controls: 아래로 옮겨 주세요.',
   DiagnosticCode.badProjectId:
       '"{0}" 값은 앱 ID가 아니어서 무시하고, 앱을 다음에 내보낼 때 새 ID를 만듭니다. 앱 ID는 영어 소문자와 숫자 8~32자입니다.',
   DiagnosticCode.badAnchor:
@@ -291,6 +293,8 @@ const Map<DiagnosticCode, String> koreanMessages = {
       '{0} 이벤트에는 이미 {1} 처리기가 있고, 이벤트 하나는 처리기 하나가 처리합니다. 그 프로시저를 쓰거나 다른 컨트롤을 써 주세요.',
   DiagnosticCode.castFailed:
       '이 값은 {1} 타입이 아니라 {0} 타입이어서 CType으로 바꿀 수 없습니다. 먼저 TypeOf 값 Is {1} 형태로 확인해 주세요.',
+  DiagnosticCode.frameNotEmpty:
+      '{0} 컨트롤 안에 다른 컨트롤이 있어서 폼에서 뺄 수 없습니다. 안에 있는 컨트롤부터 빼 주세요.',
   DiagnosticCode.settingsNotSaved: '설정을 저장하지 못했습니다({0}). '
       '설정을 보관하는 곳에 자리가 없을 수 있습니다.',
   DiagnosticCode.unhandledException:

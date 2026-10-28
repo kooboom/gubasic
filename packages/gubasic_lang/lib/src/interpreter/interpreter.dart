@@ -148,7 +148,8 @@ class Interpreter {
     final form =
         run.controls[null] = GbControl(null, f.file.component, form: f.name);
     for (final c in f.file.controls) {
-      final control = GbControl(c.name, c.component, form: f.name);
+      final control =
+          GbControl(c.name, c.component, form: f.name, container: c.container);
       run.controls[c.name.toLowerCase()] = control;
       run.designed[c.name.toLowerCase()] = control;
       // A Timer is not one of the controls seen on the form (D100).
@@ -1417,9 +1418,11 @@ class Interpreter {
   /// one on no form.
   Iterable<GbControl> _optionGroup(GbControl c) => !c.attached
       ? const []
-      : _formNamed(c.form)!
-          .order
-          .where((o) => o.component.name == 'OptionButton');
+      : _formNamed(c.form)!.order.where((o) =>
+          o.component.name == 'OptionButton' &&
+          // The OptionButtons of a Frame are a group of their own
+          // (D105).
+          o.container?.toLowerCase() == c.container?.toLowerCase());
 
   /// `c.Name = value`: only a control made with New that is on no form
   /// yet takes a Name (D98).
@@ -1501,6 +1504,10 @@ class Interpreter {
         c.form.toLowerCase() != form.name.toLowerCase()) {
       _fail(DiagnosticCode.controlNotOnForm, at, ['$c', form.name]);
     }
+    final lower = c.name!.toLowerCase();
+    if (form.order.any((o) => o.container?.toLowerCase() == lower)) {
+      _fail(DiagnosticCode.frameNotEmpty, at, ['$c']);
+    }
     for (final p in c.component.properties.values) {
       if (p.isStored) {
         c.pending[p.name] = _formHost.getProperty(form.name, c.name, p.name);
@@ -1509,7 +1516,10 @@ class Interpreter {
     _formHost.removeControl(form.name, c.name!);
     form.controls.remove(c.name!.toLowerCase());
     form.order.remove(c);
-    c.attached = false;
+    // Added again, it is on the form itself (D105).
+    c
+      ..attached = false
+      ..container = null;
   }
 
   /// `TypeOf value Is T` (D98).

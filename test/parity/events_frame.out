@@ -1,0 +1,16 @@
+Debug.Print: Frame 180 wide, btnInside at 100,88
+> optLarge.Click
+Debug.Print: Large; Red True, Alone True
+> optBlue.Click
+Debug.Print: Blue; Small False, Large True
+> btnInside.Click
+Set optSmall.Checked: True
+Set optLarge.Checked: False
+Debug.Print: Small; Red False, Alone True
+> Form.Resize 440 260
+Debug.Print: Frame 220 wide, btnInside at 140,88
+> btnWider.Click
+Set fraSize.Width: 240
+Debug.Print: btnInside at 160
+> Close
+Closed

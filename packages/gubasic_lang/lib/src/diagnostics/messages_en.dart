@@ -298,6 +298,8 @@ const Map<DiagnosticCode, String> englishMessages = {
       'module has a Sub Main(). Add one to a module, or start with a form.',
   DiagnosticCode.controlTypeHasOtherName: 'GuBASIC calls the {0} control '
       '{1}: write type: {1}.',
+  DiagnosticCode.notContainer: '{0} is not a Frame, so it holds no '
+      'controls: move them under the controls: of the form or of a Frame.',
   DiagnosticCode.badProjectId: '"{0}" is not an app ID, so it is ignored '
       'and the next export of the app makes a new one. An app ID is 8 to 32 '
       'lowercase letters and digits.',
@@ -347,6 +349,8 @@ const Map<DiagnosticCode, String> englishMessages = {
       'an event has one handler. Use that procedure, or another control.',
   DiagnosticCode.castFailed: 'This value is a {0}, not a {1}, so CType '
       'cannot turn it into one. Check it first with TypeOf value Is {1}.',
+  DiagnosticCode.frameNotEmpty: '{0} holds controls, so it cannot be '
+      'removed from the form. Remove the controls inside it first.',
   DiagnosticCode.settingsNotSaved: 'The setting could not be saved ({0}). '
       'There may be no room left where settings are kept.',
   DiagnosticCode.unhandledException: 'An error was thrown and not caught: '

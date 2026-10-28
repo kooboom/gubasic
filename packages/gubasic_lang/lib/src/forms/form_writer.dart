@@ -12,18 +12,29 @@ import 'yaml_text.dart';
 /// changed (D13). Comments and other layout of a hand-written file are
 /// not kept.
 String writeFormFile(FormFile form) {
-  final out = StringBuffer('formatVersion: $formFileVersion\n');
+  // The oldest version that holds the form, so that older GuBASICs still
+  // read what they can: controls inside a Frame need 2 (D105).
+  final version = form.controls.any((c) => c.container != null) ? 2 : 1;
+  final out = StringBuffer('formatVersion: $version\n');
   _properties(out, '', form.component, form.properties);
-  if (form.controls.isNotEmpty) {
-    out.writeln('controls:');
-    for (final c in form.controls) {
-      out
-        ..writeln('  - name: ${yamlString(c.name)}')
-        ..writeln('    type: ${c.component.name}');
-      _properties(out, '    ', c.component, c.properties);
-    }
-  }
+  _controls(out, '', form, null);
   return '$out';
+}
+
+/// Writes the `controls:` list of the form ([container] null) or of the
+/// Frame named [container], if it has any.
+void _controls(
+    StringBuffer out, String indent, FormFile form, String? container) {
+  final inside = form.inside(container);
+  if (inside.isEmpty) return;
+  out.writeln('${indent}controls:');
+  for (final c in inside) {
+    out
+      ..writeln('$indent  - name: ${yamlString(c.name)}')
+      ..writeln('$indent    type: ${c.component.name}');
+    _properties(out, '$indent    ', c.component, c.properties);
+    if (c.component.container) _controls(out, '$indent    ', form, c.name);
+  }
 }
 
 /// Writes the `properties:` map of [values] for [component], if any

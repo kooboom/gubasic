@@ -89,10 +89,10 @@ controls:
 
   test('F003: newer than this GuBASIC; nothing else is read', () {
     final r = readFormFile(
-        'formatVersion: 2\ncontrols:\n  - { name: a, type: Lable }\n',
+        'formatVersion: 3\ncontrols:\n  - { name: a, type: Lable }\n',
         name: 'F');
     expect(
-        r.diagnostics.map((d) => '${d.code.code} ${d.args}'), ['F003 [2, 1]']);
+        r.diagnostics.map((d) => '${d.code.code} ${d.args}'), ['F003 [3, 2]']);
     expect(r.form.controls, isEmpty);
   });
 
@@ -150,7 +150,7 @@ controls:
         ['F008@3', 'F008@4']);
     expect(r.diagnostics.first.args, [
       'Buton',
-      'Button, CheckBox, ComboBox, Image, Label, ListBox, OptionButton, '
+      'Button, CheckBox, ComboBox, Frame, Image, Label, ListBox, OptionButton, '
           'TextBox, Timer',
     ]);
     expect(r.form.controls, isEmpty);

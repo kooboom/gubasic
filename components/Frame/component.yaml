@@ -1,0 +1,32 @@
+# A box with a Caption on its edge that holds other controls
+# (docs/DESIGN.md D105). The controls in it are placed from its top-left
+# corner, anchored to its edges, and move with it; its OptionButtons are a
+# group of their own, as in Visual Basic 6.
+name: Frame
+version: 1
+visual: true
+container: true
+defaultEvent: Click
+properties:
+  - { name: Caption, type: String, default: "" }
+  - { name: Left, type: Integer, default: 0 }
+  - { name: Top, type: Integer, default: 0 }
+  - { name: Width, type: Integer, min: 0, default: 200 }
+  - { name: Height, type: Integer, min: 0, default: 120 }
+  # The edges of the form, or of the Frame it is in, whose distance it
+  # keeps (D57, D105).
+  - { name: Anchor, type: String, default: "Left Top", anchor: true }
+  # Any text the program keeps with it, as in Visual Basic; GuBASIC does
+  # nothing with it (D98).
+  - { name: Tag, type: String, default: "" }
+events:
+  - Click()
+methods: []
+# Names other versions of BASIC use, pointed to GuBASIC's (A036,
+# docs/DESIGN.md D50).
+otherNames:
+  # Visual Basic 6's control arrays numbered controls; a Tag can (D99).
+  Index: Tag
+  Text: Caption
+# The type's name in Visual Basic .NET (A056, F020, D104).
+aliases: [GroupBox]
