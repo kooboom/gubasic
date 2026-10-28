@@ -208,7 +208,12 @@ jobs:
       # takes each form's size (D88, D89).
       - name: Several forms in the player's own window
         working-directory: apps/player
-        run: flutter test integration_test -d windows
+        run: flutter test integration_test/forms_test.dart -d windows
+      # A form's menus where the platform puts them (D106). Each file runs
+      # on its own: a second app launched in one run loses its connection.
+      - name: Menus in the player's own window
+        working-directory: apps/player
+        run: flutter test integration_test/menus_test.dart -d windows
       - name: The Windows template (D86), with every file a PC needs
         working-directory: apps/player
         run: dart run tool/windows_template.dart
@@ -289,7 +294,12 @@ jobs:
         working-directory: apps/player
       - name: Several forms in the player's own window
         working-directory: apps/player
-        run: flutter test integration_test -d macos
+        run: flutter test integration_test/forms_test.dart -d macos
+      # A form's menus where the platform puts them (D106). Each file runs
+      # on its own: a second app launched in one run loses its connection.
+      - name: Menus in the player's own window
+        working-directory: apps/player
+        run: flutter test integration_test/menus_test.dart -d macos
       - name: The macOS template (D87), with every file the app needs
         run: dart run tool/macos_template.dart
         working-directory: apps/player

@@ -402,7 +402,7 @@ class _MenuEditorState extends State<_MenuEditor> {
                       visualDensity: VisualDensity.compact,
                       selected: i == _at,
                       selectedTileColor: theme.colorScheme.secondaryContainer,
-                      contentPadding: EdgeInsets.only(left: 8 + 24.0 * r.level),
+                      contentPadding: const EdgeInsets.only(left: 8),
                       title: Text(
                         '${'····' * r.level}'
                         '${r.caption.isEmpty ? r.name : r.caption}',
