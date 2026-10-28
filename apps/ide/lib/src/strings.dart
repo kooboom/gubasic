@@ -155,6 +155,13 @@ class IdeStrings {
     required this.bringToFront,
     required this.sendToBack,
     required this.delete,
+    required this.cut,
+    required this.copy,
+    required this.paste,
+    required this.selectAll,
+    required this.chosenControls,
+    required this.chooseOneControl,
+    required this.pastedWithoutPicture,
     required this.picturesMenu,
     required this.picturesGroup,
     required this.explorerForms,
@@ -521,6 +528,20 @@ class IdeStrings {
   final String bringToFront;
   final String sendToBack;
   final String delete;
+
+  // Several controls at once in the designer: the context menu, the
+  // status line, the Properties window, and a paste without a picture.
+  final String cut;
+  final String copy;
+  final String paste;
+  final String selectAll;
+
+  /// `{0}` how many.
+  final String chosenControls;
+  final String chooseOneControl;
+
+  /// `{0}` the pictures' names.
+  final String pastedWithoutPicture;
 
   // The project's pictures (D51).
   final String picturesMenu;
@@ -893,6 +914,13 @@ class IdeStrings {
     bringToFront: 'Bring to Front',
     sendToBack: 'Send to Back',
     delete: 'Delete',
+    cut: 'Cut',
+    copy: 'Copy',
+    paste: 'Paste',
+    selectAll: 'Select All',
+    chosenControls: '{0} controls chosen',
+    chooseOneControl: 'Choose one control to see and change its properties.',
+    pastedWithoutPicture: 'This project has no picture {0}, so the pasted control shows none. Add it with File → Pictures…, then choose it in Picture.',
     picturesMenu: 'Pictures…',
     picturesGroup: 'Pictures',
     explorerForms: 'Forms',
@@ -1174,6 +1202,13 @@ class IdeStrings {
     bringToFront: '맨 앞으로',
     sendToBack: '맨 뒤로',
     delete: '삭제',
+    cut: '잘라내기',
+    copy: '복사',
+    paste: '붙여넣기',
+    selectAll: '모두 선택',
+    chosenControls: '컨트롤 {0}개를 골랐습니다',
+    chooseOneControl: '속성을 보고 바꾸려면 컨트롤을 하나만 고릅니다.',
+    pastedWithoutPicture: '이 프로젝트에는 그림 {0} 파일이 없어서, 붙여넣은 컨트롤에는 그림이 없습니다. [파일 → 그림…]으로 그림을 더한 뒤 Picture에서 고릅니다.',
     picturesMenu: '그림…',
     picturesGroup: '그림',
     explorerForms: '폼',

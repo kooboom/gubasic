@@ -738,3 +738,172 @@ List<(Point<double>, Point<double>)> anchorLines(
       (Point(midX, bottom), Point(midX, size.height.toDouble())),
   ];
 }
+
+// Several controls at once: moving, deleting, copying and pasting them.
+
+/// The smallest box around [boxes], which must not be empty.
+ControlBox boundsOf(Iterable<ControlBox> boxes) {
+  final left = boxes.map((b) => b.left).reduce(min);
+  final top = boxes.map((b) => b.top).reduce(min);
+  final right = boxes.map((b) => b.left + b.width).reduce(max);
+  final bottom = boxes.map((b) => b.top + b.height).reduce(max);
+  return (left: left, top: top, width: right - left, height: bottom - top);
+}
+
+/// [boxes] all moved as one, by as much as [move] moves the box around
+/// them: so that they keep their places to one another, and stop together
+/// at the form's edge.
+Map<String, ControlBox> movedTogether(
+  Map<String, ControlBox> boxes,
+  ControlBox Function(ControlBox bounds) move,
+) {
+  final bounds = boundsOf(boxes.values);
+  final moved = move(bounds);
+  final dx = moved.left - bounds.left;
+  final dy = moved.top - bounds.top;
+  return {
+    for (final MapEntry(key: name, value: b) in boxes.entries)
+      name: (
+        left: b.left + dx,
+        top: b.top + dy,
+        width: b.width,
+        height: b.height,
+      ),
+  };
+}
+
+/// [form] with each control named in [boxes] at its box.
+FormFile withBoxes(FormFile form, Map<String, ControlBox> boxes) {
+  var result = form;
+  for (final MapEntry(key: name, value: box) in boxes.entries) {
+    result = withBox(result, name, box);
+  }
+  return result;
+}
+
+/// [form] without the controls named in [names], in any case.
+FormFile withoutControls(FormFile form, Iterable<String> names) {
+  final lower = {for (final n in names) n.toLowerCase()};
+  return _copy(form, [
+    for (final c in form.controls)
+      if (!lower.contains(c.name.toLowerCase())) c,
+  ]);
+}
+
+/// [form] with the controls named in [names] on top of the others of
+/// their layers ([front]), or under them (D42), keeping their order among
+/// themselves.
+FormFile withOrderOf(
+  FormFile form,
+  Iterable<String> names, {
+  required bool front,
+}) {
+  final lower = {for (final n in names) n.toLowerCase()};
+  final moved = form.controls.where(
+    (c) => lower.contains(c.name.toLowerCase()),
+  );
+  final others = form.controls.where(
+    (c) => !lower.contains(c.name.toLowerCase()),
+  );
+  return _copy(form, front ? [...others, ...moved] : [...moved, ...others]);
+}
+
+/// Controls pasted onto [form]: the form with them last, on top, and the
+/// names they got.
+typedef Pasted = ({FormFile form, List<String> names});
+
+/// [form] with copies of [controls] added last, so that they are drawn
+/// above the others, and chosen by the names returned.
+///
+/// A copy keeps its name when the form has no control of that name, and
+/// otherwise takes a new control's name (`Button2`), its `Caption` too
+/// when that was its old name (D68), so that the code of the form, which
+/// names the original, is not suddenly about the copy. The copies keep their
+/// places to one another; while one would lie exactly where a control of
+/// the form starts, as when they are pasted back onto the form they were
+/// copied from, they all move a grid step down and right, and then into
+/// the form as far as they fit. A `Picture` that [hasPicture] says the
+/// project does not have is left empty, so that the form file stays
+/// valid (F016).
+Pasted withPasted(
+  FormFile form,
+  List<ControlDecl> controls, {
+  required bool Function(String picture) hasPicture,
+}) {
+  final starts = {for (final c in form.controls) (boxOf(c).left, boxOf(c).top)};
+  var shift = 0;
+  while (shift < 40 * gridStep &&
+      controls.any(
+        (c) => starts.contains((boxOf(c).left + shift, boxOf(c).top + shift)),
+      )) {
+    shift += gridStep;
+  }
+  final size = formSizeOf(form);
+  final boxes = movedTogether(
+    {for (final (i, c) in controls.indexed) '$i': boxOf(c)},
+    (bounds) => _inside((
+      left: bounds.left + shift,
+      top: bounds.top + shift,
+      width: bounds.width,
+      height: bounds.height,
+    ), size),
+  );
+  var result = form;
+  final names = <String>[];
+  for (final (i, c) in controls.indexed) {
+    final name = result.control(c.name) == null
+        ? c.name
+        : newControlName(result, c.component);
+    final box = boxes['$i']!;
+    result = _copy(result, [
+      ...result.controls,
+      ControlDecl(
+        name: name,
+        component: c.component,
+        properties: {
+          for (final MapEntry(:key, :value) in c.properties.entries)
+            if (!(key == 'Picture' &&
+                value is String &&
+                value.isNotEmpty &&
+                !hasPicture(value)))
+              key: value,
+          if (name != c.name &&
+              c.component.properties.containsKey('caption') &&
+              c.valueOf('Caption') == c.name)
+            'Caption': name,
+          'Left': box.left,
+          'Top': box.top,
+          'Width': box.width,
+          'Height': box.height,
+        },
+        line: 0,
+      ),
+    ]);
+    names.add(name);
+  }
+  return (form: result, names: names);
+}
+
+/// The pictures of [controls] that [hasPicture] says the project does not
+/// have, which a paste leaves empty.
+List<String> missingPictures(
+  List<ControlDecl> controls, {
+  required bool Function(String picture) hasPicture,
+}) => [
+  for (final c in controls)
+    if (c.properties['Picture'] case final String p
+        when p.isNotEmpty && !hasPicture(p))
+      p,
+];
+
+/// Whether [box] and the rectangle from [a] to [b], drawn in any
+/// direction, overlap: a rubber band chooses each control it touches, so
+/// that a control needs not be wholly inside it.
+bool touches(ControlBox box, Point<double> a, Point<double> b) {
+  final left = min(a.x, b.x), right = max(a.x, b.x);
+  final top = min(a.y, b.y), bottom = max(a.y, b.y);
+  return box.left <= right &&
+      box.left + box.width >= left &&
+      box.top <= bottom &&
+      box.top + box.height >= top;
+}

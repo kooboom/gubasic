@@ -90,8 +90,34 @@ class _FormDesignerState extends State<FormDesigner> {
   /// The control type being placed; null for the pointer.
   ComponentSpec? _tool;
 
-  /// The selected control's name; null for none.
-  String? _selected;
+  /// The chosen controls' names, as the form file spells them: none, one,
+  /// or several, chosen with Shift or ⌘ (Ctrl) and a click, ⌘A (Ctrl+A),
+  /// or a rubber band dragged over the form.
+  List<String> _chosen = const [];
+
+  /// The one chosen control's name; null for none, and for several.
+  String? get _selected => _chosen.length == 1 ? _chosen.single : null;
+  set _selected(String? name) => _chosen = name == null ? const [] : [name];
+
+  bool _isChosen(String name) =>
+      _chosen.any((n) => n.toLowerCase() == name.toLowerCase());
+
+  /// The chosen controls that the form has, in its order.
+  List<ControlDecl> get _chosenControls => [
+    for (final c in _form.controls)
+      if (_isChosen(c.name)) c,
+  ];
+
+  /// Several controls being moved with the mouse: their boxes when the
+  /// drag started, and where it started; and where they are now, null
+  /// until the drag goes far enough.
+  ({Map<String, ControlBox> start, Offset from, String clicked})? _groupChange;
+  Map<String, ControlBox>? _groupLive;
+
+  /// A rubber band being dragged over the form, from where to where, and
+  /// the controls chosen before it, which it adds to when Shift or ⌘ was
+  /// held.
+  ({Point<double> from, Point<double> to, List<String> before})? _band;
 
   /// Where a drag that draws a control started and is now.
   Point<double>? _dragStart;
@@ -216,12 +242,13 @@ class _FormDesignerState extends State<FormDesigner> {
     super.dispose();
   }
 
-  /// Writes [form] as the form file: one step of the history.
-  void _apply(FormFile form, {String? select}) {
+  /// Writes [form] as the form file: one step of the history. [select]
+  /// is then the one chosen control, or [choose] the chosen ones.
+  void _apply(FormFile form, {String? select, List<String>? choose}) {
     final before = _text;
     final text = writeFormFile(form);
     widget.history.record(before, text);
-    setState(() => _selected = select);
+    setState(() => _chosen = choose ?? [?select]);
     widget.project.setFile(widget.file, text);
   }
 
@@ -250,22 +277,32 @@ class _FormDesignerState extends State<FormDesigner> {
     }
   }
 
-  /// Deletes the selected control. When the code uses it or has its
+  /// Deletes the chosen controls. When the code uses one or has its
   /// handlers, asks first, naming the lines (D64).
   Future<void> _delete() async {
-    final name = _selectedControl?.name;
-    if (!_canEdit || name == null) return;
-    final uses = usesOfControl(widget.project.files[_codeFile] ?? '', name);
-    if (uses.lines.isNotEmpty || uses.handlers.isNotEmpty) {
-      final s = widget.strings;
-      final message = [
-        if (uses.lines.isNotEmpty)
+    final names = [for (final c in _chosenControls) c.name];
+    if (!_canEdit || names.isEmpty) return;
+    final code = widget.project.files[_codeFile] ?? '';
+    final s = widget.strings;
+    final lines = <String>[];
+    final handlers = <String>[];
+    for (final name in names) {
+      final uses = usesOfControl(code, name);
+      if (uses.lines.isNotEmpty) {
+        lines.add(
           s.deleteUsedControl
               .replaceAll('{0}', name)
               .replaceAll('{1}', _codeFile)
               .replaceAll('{2}', uses.lines.join(', ')),
-        if (uses.handlers.isNotEmpty)
-          s.deleteHandlersStay.replaceAll('{0}', uses.handlers.join(', ')),
+        );
+      }
+      handlers.addAll(uses.handlers);
+    }
+    if (lines.isNotEmpty || handlers.isNotEmpty) {
+      final message = [
+        ...lines,
+        if (handlers.isNotEmpty)
+          s.deleteHandlersStay.replaceAll('{0}', handlers.join(', ')),
         s.deleteUndo.replaceAll('{0}', _isApple ? '⌘Z' : 'Ctrl+Z'),
       ].join('\n\n');
       final go = await showDialog<bool>(
@@ -287,32 +324,49 @@ class _FormDesignerState extends State<FormDesigner> {
       if (go != true || !mounted) return;
       _focus.requestFocus();
       // The form may have changed while the dialog was open.
-      if (_form.control(name) == null) return;
+      if (names.any((n) => _form.control(n) == null)) return;
     }
-    _apply(withoutControl(_form, name));
+    _apply(withoutControls(_form, names));
   }
 
   void _escape() => setState(() {
     _tool = null;
     _selected = null;
     _dragStart = _dragEnd = null;
+    _band = null;
     _endChange();
   });
 
   /// Moves the selected control one step, [dx] and [dy] being -1, 0 or 1.
-  void _nudge(int dx, int dy) =>
-      _arrow((b) => nudgedBox(b, dx, dy, size: formSizeOf(_form), grid: _grid));
+  void _nudge(int dx, int dy) => _arrow(
+    (b) => nudgedBox(b, dx, dy, size: formSizeOf(_form), grid: _grid),
+    together: true,
+  );
 
   /// Makes the selected control one step wider or narrower, taller or
   /// shorter.
-  void _grow(int dx, int dy) =>
-      _arrow((b) => grownBox(b, dx, dy, size: formSizeOf(_form), grid: _grid));
+  void _grow(int dx, int dy) => _arrow(
+    (b) => grownBox(b, dx, dy, size: formSizeOf(_form), grid: _grid),
+    together: false,
+  );
 
-  void _arrow(ControlBox Function(ControlBox) change) {
-    final c = _selectedControl;
-    if (!_canEdit || c == null || _change != null) return;
-    final box = change(boxOf(c));
-    if (box != boxOf(c)) _apply(withBox(_form, c.name, box), select: c.name);
+  /// Changes the box of each chosen control with [change]: as one box
+  /// around them all when they move [together], so that they keep their
+  /// places to one another and stop together at the form's edge; else
+  /// each on its own.
+  void _arrow(
+    ControlBox Function(ControlBox) change, {
+    required bool together,
+  }) {
+    final chosen = _chosenControls;
+    if (!_canEdit || chosen.isEmpty || _change != null) return;
+    if (_groupChange != null) return;
+    final boxes = {for (final c in chosen) c.name: boxOf(c)};
+    final changed = together
+        ? movedTogether(boxes, change)
+        : {for (final e in boxes.entries) e.key: change(e.value)};
+    if (changed.entries.every((e) => boxes[e.key] == e.value)) return;
+    _apply(withBoxes(_form, changed), choose: [for (final c in chosen) c.name]);
   }
 
   ControlDecl? get _selectedControl =>
@@ -418,6 +472,28 @@ class _FormDesignerState extends State<FormDesigner> {
       });
       return;
     }
+    // Shift, or ⌘ (Ctrl elsewhere), and a click: the control joins the
+    // chosen ones, or leaves them; on the form, a rubber band adds to them.
+    final keys = HardwareKeyboard.instance;
+    final adding =
+        keys.isShiftPressed ||
+        (_isApple ? keys.isMetaPressed : keys.isControlPressed);
+    final c = _controlAt(p);
+    if (adding) {
+      setState(() {
+        if (c == null) {
+          _band = (from: _point(e), to: _point(e), before: List.of(_chosen));
+        } else if (_isChosen(c.name)) {
+          _chosen = [
+            for (final n in _chosen)
+              if (n.toLowerCase() != c.name.toLowerCase()) n,
+          ];
+        } else {
+          _chosen = [..._chosen, c.name];
+        }
+      });
+      return;
+    }
     final selected = _selectedControl;
     final handle = selected == null ? null : _handleAt(p, boxOf(selected));
     if (handle != null && _canEdit) {
@@ -431,13 +507,27 @@ class _FormDesignerState extends State<FormDesigner> {
       );
       return;
     }
-    final c = _controlAt(p);
+    if (c != null && _chosen.length > 1 && _isChosen(c.name)) {
+      // A drag on one of several chosen controls moves them all; a click
+      // without a drag chooses that one alone.
+      setState(() {
+        _groupChange = (
+          start: {for (final x in _chosenControls) x.name: boxOf(x)},
+          from: p,
+          clicked: c.name,
+        );
+        if (_canEdit) _cursor = SystemMouseCursors.move;
+      });
+      return;
+    }
     setState(() {
       _selected = c?.name;
       if (c != null && _canEdit) {
         _change = (name: c.name, start: boxOf(c), handle: null, from: p);
         _cursor = SystemMouseCursors.move;
       }
+      // A drag over the form chooses the controls it touches.
+      if (c == null) _band = (from: _point(e), to: _point(e), before: const []);
     });
   }
 
@@ -458,6 +548,51 @@ class _FormDesignerState extends State<FormDesigner> {
   void _move(PointerMoveEvent e) {
     if (_dragStart != null) {
       setState(() => _dragEnd = _point(e));
+      return;
+    }
+    if (_band case final band?) {
+      final to = _point(e);
+      final before = {for (final n in band.before) n.toLowerCase()};
+      // A click that moves a pixel or two draws no band.
+      final small =
+          (to.x - band.from.x).abs() < clickDistance &&
+          (to.y - band.from.y).abs() < clickDistance;
+      setState(() {
+        _band = (from: band.from, to: to, before: band.before);
+        _chosen = [
+          ...band.before,
+          if (!small)
+            for (final c in _form.controls)
+              if (!before.contains(c.name.toLowerCase()) &&
+                  touches(boxOf(c), band.from, to))
+                c.name,
+        ];
+      });
+      return;
+    }
+    if (_groupChange case final group?) {
+      final d = e.localPosition - group.from;
+      if (!_canEdit ||
+          (_groupLive == null &&
+              d.dx.abs() < clickDistance &&
+              d.dy.abs() < clickDistance)) {
+        return;
+      }
+      final size = formSizeOf(_form);
+      final live = movedTogether(
+        group.start,
+        (b) => movedBox(b, d.dx, d.dy, size: size, grid: _grid),
+      );
+      if (mapEquals(live, _groupLive)) return;
+      // The runtime's widgets follow at once; the file changes at the end.
+      for (final MapEntry(key: name, value: box) in live.entries) {
+        _model.control(name)!
+          ..set('Left', box.left)
+          ..set('Top', box.top)
+          ..set('Width', box.width)
+          ..set('Height', box.height);
+      }
+      setState(() => _groupLive = live);
       return;
     }
     final change = _change;
@@ -503,6 +638,23 @@ class _FormDesignerState extends State<FormDesigner> {
   }
 
   void _up(PointerUpEvent e) {
+    if (_band != null) {
+      setState(() => _band = null);
+      return;
+    }
+    if (_groupChange case final group?) {
+      final live = _groupLive;
+      _endChange();
+      if (live == null) {
+        setState(() => _selected = group.clicked);
+      } else if (!mapEquals(live, group.start)) {
+        _apply(withBoxes(_form, live), choose: [...group.start.keys]);
+      } else {
+        setState(() {});
+      }
+      _hover(e.localPosition);
+      return;
+    }
     final change = _change;
     if (change != null) {
       final live = _live;
@@ -529,6 +681,7 @@ class _FormDesignerState extends State<FormDesigner> {
 
   void _cancel(PointerCancelEvent e) => setState(() {
     _dragStart = _dragEnd = null;
+    _band = null;
     _endChange();
   });
 
@@ -538,9 +691,13 @@ class _FormDesignerState extends State<FormDesigner> {
   /// Forgets a move or resize; the form is shown from its file again.
   void _endChange() {
     _pastEdge = false;
-    if (_live != null || _liveForm != null) _readText = null;
+    if (_live != null || _liveForm != null || _groupLive != null) {
+      _readText = null;
+    }
     _change = null;
     _live = null;
+    _groupChange = null;
+    _groupLive = null;
     _formChange = null;
     _liveForm = null;
   }
@@ -668,9 +825,57 @@ class _FormDesignerState extends State<FormDesigner> {
   /// ⌘J / ⌘K, Ctrl+J / Ctrl+K: the selected control on top of the others
   /// of its layer, or under them (D42); one step of undo.
   void _order({required bool front}) {
-    final name = _selectedControl?.name;
-    if (!_canEdit || name == null) return;
-    _apply(withOrder(_form, name, front: front), select: name);
+    final names = [for (final c in _chosenControls) c.name];
+    if (!_canEdit || names.isEmpty) return;
+    _apply(withOrderOf(_form, names, front: front), choose: names);
+  }
+
+  /// ⌘A, Ctrl+A: every control of the form.
+  void _chooseAll() =>
+      setState(() => _chosen = [for (final c in _form.controls) c.name]);
+
+  /// ⌘C, Ctrl+C: the chosen controls go to the designer's clipboard, which
+  /// any form of any project can take them from while the IDE runs.
+  void _copy() {
+    final chosen = _chosenControls;
+    if (chosen.isEmpty) return;
+    _clipboard = chosen;
+    setState(() {});
+  }
+
+  /// ⌘X, Ctrl+X: copies the chosen controls, then deletes them, asking
+  /// first as Delete does when the code uses them.
+  Future<void> _cut() async {
+    if (!_canEdit || _chosenControls.isEmpty) return;
+    _copy();
+    await _delete();
+  }
+
+  /// ⌘V, Ctrl+V: copies of the clipboard's controls on top of the form,
+  /// chosen; one step of undo. A picture the project does not have is left
+  /// out, saying so.
+  void _paste() {
+    final copied = _clipboard;
+    if (!_canEdit || copied == null || copied.isEmpty) return;
+    final pictures = {
+      for (final name in widget.project.pictures.keys) name.toLowerCase(),
+    };
+    bool has(String picture) => pictures.contains(picture.toLowerCase());
+    final pasted = withPasted(_form, copied, hasPicture: has);
+    _apply(pasted.form, choose: pasted.names);
+    final missing = missingPictures(copied, hasPicture: has);
+    if (missing.isNotEmpty) {
+      ScaffoldMessenger.maybeOf(context)?.showSnackBar(
+        SnackBar(
+          content: Text(
+            widget.strings.pastedWithoutPicture.replaceAll(
+              '{0}',
+              missing.toSet().join(', '),
+            ),
+          ),
+        ),
+      );
+    }
   }
 
   /// The designer's context menu at [global], for what is at [local] on
@@ -680,8 +885,11 @@ class _FormDesignerState extends State<FormDesigner> {
   Future<void> _contextMenu(Offset global, Offset local) async {
     final c = _controlAt(local);
     setState(() {
-      _selected = c?.name;
+      // A click on one of several chosen controls keeps them chosen.
+      if (c == null || !_isChosen(c.name)) _selected = c?.name;
       _change = null;
+      _groupChange = null;
+      _band = null;
       _dragStart = _dragEnd = null;
     });
     final s = widget.strings;
@@ -730,6 +938,22 @@ class _FormDesignerState extends State<FormDesigner> {
         if (c != null) ...[
           const PopupMenuDivider(),
           item(
+            designerMenuKey('cut'),
+            s.cut,
+            _cut,
+            enabled: editable,
+            shortcut: key('X'),
+          ),
+          item(designerMenuKey('copy'), s.copy, _copy, shortcut: key('C')),
+          item(
+            designerMenuKey('paste'),
+            s.paste,
+            _paste,
+            enabled: editable && _clipboard != null,
+            shortcut: key('V'),
+          ),
+          const PopupMenuDivider(),
+          item(
             designerMenuKey('front'),
             s.bringToFront,
             () => _order(front: true),
@@ -755,9 +979,24 @@ class _FormDesignerState extends State<FormDesigner> {
             designerMenuKey('properties'),
             s.properties,
             _focusProperties,
-            enabled: editable,
+            enabled: editable && _chosen.length == 1,
           ),
         ] else ...[
+          const PopupMenuDivider(),
+          item(
+            designerMenuKey('paste'),
+            s.paste,
+            _paste,
+            enabled: editable && _clipboard != null,
+            shortcut: key('V'),
+          ),
+          item(
+            designerMenuKey('selectAll'),
+            s.selectAll,
+            _chooseAll,
+            enabled: _form.controls.isNotEmpty,
+            shortcut: key('A'),
+          ),
           const PopupMenuDivider(),
           CheckedPopupMenuItem(
             key: designerMenuKey('grid'),
@@ -899,7 +1138,11 @@ class _FormDesignerState extends State<FormDesigner> {
           const ShortcutAt(PhysicalKeyboardKey.keyJ): () => _order(front: true),
           const ShortcutAt(PhysicalKeyboardKey.keyK): () =>
               _order(front: false),
+          const ShortcutAt(PhysicalKeyboardKey.keyX): _cut,
+          const ShortcutAt(PhysicalKeyboardKey.keyV): _paste,
         },
+        const ShortcutAt(PhysicalKeyboardKey.keyC): _copy,
+        const ShortcutAt(PhysicalKeyboardKey.keyA): _chooseAll,
         // Tab chooses controls while the form has the focus; in the
         // Properties window and the code editor it stays theirs.
         const SingleActivator(LogicalKeyboardKey.tab): () => _selectNext(1),
@@ -964,6 +1207,7 @@ class _FormDesignerState extends State<FormDesigner> {
                         child: PropertiesPanel(
                           form: form,
                           selected: _selectedControl,
+                          chosen: _chosen.length,
                           editable: editable,
                           strings: s,
                           onSelect: _select,
@@ -1068,7 +1312,7 @@ class _FormDesignerState extends State<FormDesigner> {
                     key: designerMenuKey('toolbar.front'),
                     tooltip: '${s.bringToFront} (${apple ? '⌘J' : 'Ctrl+J'})',
                     icon: const Icon(Icons.flip_to_front),
-                    onPressed: editable && _selectedControl != null
+                    onPressed: editable && _chosenControls.isNotEmpty
                         ? () => _order(front: true)
                         : null,
                   ),
@@ -1076,7 +1320,7 @@ class _FormDesignerState extends State<FormDesigner> {
                     key: designerMenuKey('toolbar.back'),
                     tooltip: '${s.sendToBack} (${apple ? '⌘K' : 'Ctrl+K'})',
                     icon: const Icon(Icons.flip_to_back),
-                    onPressed: editable && _selectedControl != null
+                    onPressed: editable && _chosenControls.isNotEmpty
                         ? () => _order(front: false)
                         : null,
                   ),
@@ -1248,7 +1492,7 @@ class _FormDesignerState extends State<FormDesigner> {
         : anchoredBoxes(form, _liveForm!, _resizeBase);
     ControlBox boxNow(ControlDecl c) => _live != null && c.name == _change?.name
         ? _live!
-        : live?[c.name.toLowerCase()] ?? boxOf(c);
+        : _groupLive?[c.name] ?? live?[c.name.toLowerCase()] ?? boxOf(c);
     final area = SizedBox(
       key: designerFormKey,
       width: width,
@@ -1312,6 +1556,15 @@ class _FormDesignerState extends State<FormDesigner> {
                         ],
                         outsideColor: scheme.error,
                         selected: selected == null ? null : boxNow(selected),
+                        chosen: _chosen.length > 1
+                            ? [for (final c in _chosenControls) boxNow(c)]
+                            : const [],
+                        band: _band == null
+                            ? null
+                            : Rect.fromPoints(
+                                Offset(_band!.from.x, _band!.from.y),
+                                Offset(_band!.to.x, _band!.to.y),
+                              ),
                         anchorLines: selected == null
                             ? const []
                             : anchorLines(
@@ -1460,6 +1713,11 @@ class _FormDesignerState extends State<FormDesigner> {
     final size = _liveForm ?? formSizeOf(form);
     final text = drawing != null
         ? describe(newControlName(form, _tool!), _tool!.name, drawing)
+        : _chosen.length > 1
+        ? widget.strings.chosenControls.replaceAll(
+            '{0}',
+            '${_chosenControls.length}',
+          )
         : selected != null
         ? describe(
             selected.name,
@@ -1484,6 +1742,14 @@ class _FormDesignerState extends State<FormDesigner> {
     );
   }
 }
+
+/// The controls last copied or cut in a designer, kept while the IDE runs,
+/// to be pasted onto any form of any project.
+List<ControlDecl>? _clipboard;
+
+/// Empties the designer's clipboard, for tests.
+@visibleForTesting
+void clearDesignerClipboard() => _clipboard = null;
 
 bool get _isApple => switch (defaultTargetPlatform) {
   TargetPlatform.macOS || TargetPlatform.iOS => true,
@@ -1554,6 +1820,8 @@ class _MarksPainter extends CustomPainter {
     required this.outside,
     required this.outsideColor,
     required this.selected,
+    this.chosen = const [],
+    this.band,
     required this.anchorLines,
     required this.drawing,
     required this.color,
@@ -1568,6 +1836,12 @@ class _MarksPainter extends CustomPainter {
   final List<ControlBox> outside;
   final Color outsideColor;
   final ControlBox? selected;
+
+  /// Several chosen controls: a frame around each, without handles.
+  final List<ControlBox> chosen;
+
+  /// A rubber band being dragged over the form.
+  final Rect? band;
 
   /// The selected control's Anchor: a dashed line from each edge it is
   /// anchored to out to the form's edge (D59).
@@ -1664,6 +1938,20 @@ class _MarksPainter extends CustomPainter {
       }
       canvas.drawPoints(PointMode.points, points, dashes);
     }
+    for (final b in chosen) {
+      canvas.drawRect(
+        _rect(b).deflate(0.5),
+        Paint()
+          ..color = color
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 2,
+      );
+    }
+    if (band case final r?) {
+      canvas
+        ..drawRect(r, Paint()..color = color.withValues(alpha: 0.08))
+        ..drawRect(r, line);
+    }
     if (selected case final b?) {
       final r = _rect(b);
       canvas.drawRect(r.deflate(0.5), line);
@@ -1691,6 +1979,8 @@ class _MarksPainter extends CustomPainter {
       !listEquals(old.outside, outside) ||
       old.outsideColor != outsideColor ||
       old.selected != selected ||
+      !listEquals(old.chosen, chosen) ||
+      old.band != band ||
       !listEquals(old.anchorLines, anchorLines) ||
       old.drawing != drawing ||
       old.color != color ||

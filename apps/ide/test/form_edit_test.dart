@@ -503,6 +503,86 @@ void main() {
     final back = withAnchoredSize(larger, (width: 300, height: 200), base);
     expect(writeFormFile(back), writeFormFile(form));
   });
+
+  group('several controls', () {
+    final image = builtinComponents['image']!;
+    final form = read(
+      'formatVersion: 1\nproperties:\n  Width: 200\n  Height: 100\n'
+      'controls:\n'
+      '  - name: btnA\n    type: Button\n    properties:\n'
+      '      Caption: btnA\n      Left: 8\n      Top: 8\n'
+      '  - name: picCat\n    type: Image\n    properties:\n'
+      '      Picture: cat.png\n      Left: 156\n      Top: 40\n'
+      '      Width: 40\n      Height: 40\n',
+    );
+
+    test('move together and stop together at the edge', () {
+      const boxes = {
+        'a': (left: 8, top: 8, width: 40, height: 16),
+        'b': (left: 100, top: 40, width: 40, height: 16),
+      };
+      final moved = movedTogether(
+        boxes,
+        (b) =>
+            movedBox(b, 100, -20, size: (width: 200, height: 100), grid: true),
+      );
+      // The right one stops at the edge; the left one keeps its distance.
+      expect(moved['b'], (left: 160, top: 32, width: 40, height: 16));
+      expect(moved['a'], (left: 68, top: 0, width: 40, height: 16));
+      expect(boundsOf(boxes.values), (left: 8, top: 8, width: 132, height: 48));
+    });
+
+    test('a rubber band touches what it overlaps, drawn either way', () {
+      const box = (left: 10, top: 10, width: 20, height: 20);
+      expect(touches(box, const Point(0, 0), const Point(12, 12)), isTrue);
+      expect(touches(box, const Point(40, 40), const Point(29, 29)), isTrue);
+      expect(touches(box, const Point(0, 0), const Point(9, 40)), isFalse);
+    });
+
+    test('pasted copies keep free names, take new ones where taken, and '
+        'move a step while they would start where a control does', () {
+      bool has(String p) => p == 'cat.png';
+      final pasted = withPasted(form, form.controls, hasPicture: has);
+      expect(pasted.names, ['Button1', 'Image1']);
+      final copy = pasted.form.control('Button1')!;
+      expect(copy.valueOf('Caption'), 'Button1', reason: 'it was its name');
+      expect(pasted.form.control('Image1')!.valueOf('Picture'), 'cat.png');
+      // A step down and right, then back inside the form, together.
+      expect(boxOf(pasted.form.control('Image1')!).left, 160);
+      expect(boxOf(copy).left, 12);
+      expect(boxOf(copy).top, 16);
+
+      final elsewhere = withPasted(empty, form.controls, hasPicture: has);
+      expect(elsewhere.names, ['btnA', 'picCat']);
+      expect(boxOf(elsewhere.form.control('btnA')!).left, 8);
+    });
+
+    test('a picture the project does not have is left out', () {
+      bool has(String p) => false;
+      final pasted = withPasted(empty, form.controls, hasPicture: has);
+      final pic = pasted.form.control('picCat')!;
+      expect(pic.component, image);
+      expect(pic.valueOf('Picture'), '');
+      expect(missingPictures(form.controls, hasPicture: has), ['cat.png']);
+      // The form file reads again without errors.
+      expect(
+        readFormFile(writeFormFile(pasted.form), name: 'Form1').hasErrors,
+        isFalse,
+      );
+    });
+
+    test('ordered and deleted together, keeping their own order', () {
+      final three = withControl(form, button, 'btnC', _box);
+      final back = withOrderOf(three, ['btnC', 'picCat'], front: false);
+      expect(back.controls.map((c) => c.name), ['picCat', 'btnC', 'btnA']);
+      final front = withOrderOf(three, ['BTNA', 'picCat'], front: true);
+      expect(front.controls.map((c) => c.name), ['btnC', 'btnA', 'picCat']);
+      expect(
+        withoutControls(three, ['btna', 'btnC']).controls.map((c) => c.name),
+        ['picCat'],
+      );
+    });
+  });
 }
 
 const ControlBox _box = (left: 16, top: 24, width: 40, height: 16);

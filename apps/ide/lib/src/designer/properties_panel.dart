@@ -27,6 +27,7 @@ class PropertiesPanel extends StatelessWidget {
     super.key,
     required this.form,
     required this.selected,
+    this.chosen = 0,
     required this.editable,
     required this.strings,
     required this.onSelect,
@@ -64,6 +65,10 @@ class PropertiesPanel extends StatelessWidget {
 
   /// The control shown; null for the form.
   final ControlDecl? selected;
+
+  /// How many controls are chosen in the designer: when several, the
+  /// window shows none of them, and says to choose one.
+  final int chosen;
   final bool editable;
   final IdeStrings strings;
 
@@ -108,7 +113,11 @@ class PropertiesPanel extends StatelessWidget {
             child: DropdownButton<String>(
               key: propertiesTargetKey,
               isExpanded: true,
-              value: target ?? '',
+              value: chosen > 1 ? null : target ?? '',
+              // Several controls chosen: none of them is shown.
+              hint: chosen > 1
+                  ? Text(strings.chosenControls.replaceAll('{0}', '$chosen'))
+                  : null,
               underline: const SizedBox(),
               onChanged: (name) => onSelect(name!.isEmpty ? null : name),
               items: [
@@ -119,61 +128,70 @@ class PropertiesPanel extends StatelessWidget {
             ),
           ),
           const Divider(height: 1),
-          Expanded(
-            child: ListView(
-              padding: const EdgeInsets.symmetric(vertical: 4),
-              children: [
-                _row(
-                  context,
-                  '(Name)',
-                  control == null
-                      ? Tooltip(
-                          message: strings.formNameIsFile,
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 6),
-                            child: Text(
-                              form.name,
-                              key: propertyFieldKey('(Name)'),
-                              style: TextStyle(color: theme.disabledColor),
-                            ),
-                          ),
-                        )
-                      : NameField(
-                          key: ValueKey('${control.name}.(Name)'),
-                          form: form,
-                          control: control,
-                          code: code,
-                          codeFile: codeFile,
-                          editable: editable,
-                          strings: strings,
-                          onRename: onRename,
-                          onLeave: onLeave,
-                        ),
-                ),
-                for (final p in component.designProperties)
+          if (chosen > 1)
+            Padding(
+              padding: const EdgeInsets.all(12),
+              child: Text(
+                strings.chooseOneControl,
+                style: TextStyle(color: theme.hintColor),
+              ),
+            )
+          else
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                children: [
                   _row(
                     context,
-                    p.name,
-                    PropertyField(
-                      key: ValueKey('${target ?? ''}.${p.name}'),
-                      spec: p,
-                      value: valueOf(p),
-                      editable: editable,
-                      strings: strings,
-                      onChange: (v, group) =>
-                          onChange(target, p.name, v, group),
-                      onPreview: onPreview == null
-                          ? null
-                          : (text) => onPreview!(target, p.name, text),
-                      onDone: onDone,
-                      onLeave: onLeave,
-                      pictures: pictures,
-                      onAddPicture: onAddPicture,
-                    ),
+                    '(Name)',
+                    control == null
+                        ? Tooltip(
+                            message: strings.formNameIsFile,
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 6),
+                              child: Text(
+                                form.name,
+                                key: propertyFieldKey('(Name)'),
+                                style: TextStyle(color: theme.disabledColor),
+                              ),
+                            ),
+                          )
+                        : NameField(
+                            key: ValueKey('${control.name}.(Name)'),
+                            form: form,
+                            control: control,
+                            code: code,
+                            codeFile: codeFile,
+                            editable: editable,
+                            strings: strings,
+                            onRename: onRename,
+                            onLeave: onLeave,
+                          ),
                   ),
-              ],
+                  for (final p in component.designProperties)
+                    _row(
+                      context,
+                      p.name,
+                      PropertyField(
+                        key: ValueKey('${target ?? ''}.${p.name}'),
+                        spec: p,
+                        value: valueOf(p),
+                        editable: editable,
+                        strings: strings,
+                        onChange: (v, group) =>
+                            onChange(target, p.name, v, group),
+                        onPreview: onPreview == null
+                            ? null
+                            : (text) => onPreview!(target, p.name, text),
+                        onDone: onDone,
+                        onLeave: onLeave,
+                        pictures: pictures,
+                        onAddPicture: onAddPicture,
+                      ),
+                    ),
+                ],
+              ),
             ),
-          ),
         ],
       ),
     );

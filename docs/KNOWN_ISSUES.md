@@ -93,17 +93,17 @@ Problems we know about and have **deliberately** left unfixed for now. Each entr
 - **Why deferred:** the controls of a running form do not take the keyboard focus in turn yet (Tab), and a quiz is answered with the mouse.
 - **Revisit:** when the run window gets keyboard focus for its controls (Tab between them).
 
-## No copy and paste in the form designer
+## Several chosen controls are not changed together in the Properties window
 
-- **What:** the form designer cannot copy, cut or paste controls (⌘C / ⌘X / ⌘V, Ctrl+C / Ctrl+X / Ctrl+V).
-- **Why deferred:** a pasted control needs a new name and a place, and what it copies depends on the properties the Properties window (E2d) will set; drawing a new control already takes one drag.
-- **Revisit:** after E2d (the Properties window). When they come, Cut, Copy and Paste go into the designer's context menu too (D42).
+- **What:** with several controls chosen (D97), the Properties window says to choose one: a property they share, such as `Anchor` or `Width`, cannot be set for all of them at once. The mouse resizes one control at a time; Shift and an arrow resize every chosen one.
+- **Why deferred:** which properties controls of different types share, and what to show when their values differ, are rules of their own; moving, deleting, ordering, copying and pasting cover most of the work with several controls.
+- **Revisit:** when forms with many controls of one kind, such as the input forms of v0.4, make it a burden.
 
-## The form designer selects one control at a time
+## The designer's clipboard is its own
 
-- **What:** only one control can be selected, so several cannot be moved, deleted or brought to the front together.
-- **Why deferred:** forms in stage 1 have a few controls; a group selection needs its own rules for moving and resizing. The drawing order can be changed one control at a time (D42).
-- **Revisit:** when forms with many controls (ListBox, Image, stage 1) make it a burden, or with `Anchor`.
+- **What:** controls copied or cut in the designer (D97) stay in the IDE, not on the system clipboard: they cannot be pasted into another IDE window, or as text into another program, and they are gone when the IDE closes.
+- **Why deferred:** a browser asks the user before a page reads the clipboard, and text pasted from elsewhere would have to be checked as a form file is checked (F codes).
+- **Revisit:** when two IDE windows are used side by side, or with separate windows on the desktop (D89).
 
 ## The form designer needs a mouse
 
