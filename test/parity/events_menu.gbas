@@ -1,0 +1,24 @@
+' A form's menu bar (D106): an item without items raises Click; Checked
+' and Enabled change as the program sets them; an item that is not
+' Enabled, or is in a menu that is not, cannot be chosen.
+Sub mnuFileNew_Click()
+    Debug.Print("New, " & mnuFileNew.Shortcut)
+End Sub
+
+Sub mnuViewBig_Click()
+    mnuViewBig.Checked = Not mnuViewBig.Checked
+End Sub
+
+Sub mnuViewMoreA_Click()
+    Debug.Print("A chosen")
+End Sub
+
+Sub btnEnable_Click()
+    mnuViewMoreA.Enabled = True
+    mnuFile.Enabled = False
+    mnuFileNew.Shortcut = "ctrl + shift + n"
+End Sub
+
+Sub mnuFileExit_Click()
+    Me.Close
+End Sub

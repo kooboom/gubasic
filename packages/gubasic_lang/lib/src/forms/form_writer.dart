@@ -13,19 +13,44 @@ import 'yaml_text.dart';
 /// not kept.
 String writeFormFile(FormFile form) {
   // The oldest version that holds the form, so that older GuBASICs still
-  // read what they can: controls inside a Frame need 2 (D105).
-  final version = form.controls.any((c) => c.container != null) ? 2 : 1;
+  // read what they can: controls inside a Frame need 2 (D105), a menu bar
+  // 3 (D106).
+  final version = form.controls.any((c) => c.component.menu)
+      ? 3
+      : form.controls.any((c) => c.container != null)
+          ? 2
+          : 1;
   final out = StringBuffer('formatVersion: $version\n');
   _properties(out, '', form.component, form.properties);
   _controls(out, '', form, null);
+  _menus(out, '', form, null);
   return '$out';
+}
+
+/// Writes the `menus:` list of the menu bar ([menu] null) or of the menu
+/// named [menu], if it has items (D106).
+void _menus(StringBuffer out, String indent, FormFile form, String? menu) {
+  final items = [
+    for (final c in form.inside(menu))
+      if (c.component.menu) c
+  ];
+  if (items.isEmpty) return;
+  out.writeln('${indent}menus:');
+  for (final c in items) {
+    out.writeln('$indent  - name: ${yamlString(c.name)}');
+    _properties(out, '$indent    ', c.component, c.properties);
+    _menus(out, '$indent    ', form, c.name);
+  }
 }
 
 /// Writes the `controls:` list of the form ([container] null) or of the
 /// Frame named [container], if it has any.
 void _controls(
     StringBuffer out, String indent, FormFile form, String? container) {
-  final inside = form.inside(container);
+  final inside = [
+    for (final c in form.inside(container))
+      if (!c.component.menu) c
+  ];
   if (inside.isEmpty) return;
   out.writeln('${indent}controls:');
   for (final c in inside) {

@@ -174,6 +174,17 @@ const Map<DiagnosticCode, String> englishMessages = {
       'to the project, or check its name.',
   DiagnosticCode.showWithArgument: 'Show takes no argument. To show the '
       'form as a dialog and wait until it is closed, write {0}.ShowDialog.',
+  DiagnosticCode.badShortcutInCode: '"{0}" is not a shortcut, so the '
+      'program will stop here when it runs. Write Ctrl, Shift or Alt and a key, joined by +, as in "Ctrl+O" or "F5", or "" for none. A letter or digit needs Ctrl or Alt.',
+  DiagnosticCode.popupWithoutItems: '{0} has no items, so PopupMenu has '
+      'nothing to show. Give it items in the menu editor, or show the menu '
+      'it is in.',
+  DiagnosticCode.popupOfOtherForm: '{0} is a menu of {1}, so {2} cannot '
+      'show it. Call {1}.PopupMenu, or give {2} a menu of its own.',
+  DiagnosticCode.badShortcut:
+      '"{0}" is not a shortcut. Write Ctrl, Shift or Alt and a key, joined by +, as in "Ctrl+O" or "F5", or "" for none. A letter or digit needs Ctrl or Alt.',
+  DiagnosticCode.badShortcutValue:
+      '"{0}" is not a shortcut. Write Ctrl, Shift or Alt and a key, joined by +, as in "Ctrl+O" or "F5", or "" for none. A letter or digit needs Ctrl or Alt.',
   DiagnosticCode.badAnchorInCode: '"{0}" is not an Anchor, so the program '
       'will stop here when it runs. Name the edges the control keeps its '
       'distance to with Left, Top, Right and Bottom, as in "Right Bottom", '

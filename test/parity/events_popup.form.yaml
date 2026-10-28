@@ -1,0 +1,18 @@
+formatVersion: 3
+properties: { Caption: Popup, Width: 320, Height: 160 }
+controls:
+  - { name: btnMore, type: Button, properties: { Caption: More, Left: 16, Top: 16 } }
+menus:
+  - name: mnuFile
+    properties: { Caption: File }
+    menus:
+      - { name: mnuFileQuit, properties: { Caption: Quit } }
+  - name: mnuEdit
+    properties: { Caption: Edit, Visible: false }
+    menus:
+      - { name: mnuEditCopy, properties: { Caption: Copy } }
+      - { name: mnuEditPaste, properties: { Caption: Paste, Enabled: false } }
+      - name: mnuEditMore
+        properties: { Caption: More }
+        menus:
+          - { name: mnuEditMoreUpper, properties: { Caption: Upper case } }

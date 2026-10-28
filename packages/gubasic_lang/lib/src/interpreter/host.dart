@@ -83,6 +83,11 @@ abstract interface class FormHost implements Host {
   /// The program takes [control] off [form] (D98).
   void removeControl(String form, String control);
 
+  /// `PopupMenu` (D106): shows the items of [menu], a menu of [form], and
+  /// completes with the name of the item the user chooses, or null for
+  /// none. Like MsgBox, it is modal.
+  Future<String?> popupMenu(String form, String menu);
+
   /// The program has ended: close the forms, and close any open dialog as
   /// if it was cancelled.
   void endProgram();

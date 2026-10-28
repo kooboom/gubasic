@@ -83,6 +83,15 @@ class AnswerStep extends ScriptStep {
   final String? value;
 }
 
+/// `Choose mnuEditCopy` or `Dismiss`: chooses an item of the menu
+/// `PopupMenu` shows, or closes it with none (D106).
+class ChooseStep extends ScriptStep {
+  const ChooseStep(super.text, this.item);
+
+  /// Null for Dismiss.
+  final String? item;
+}
+
 /// `Close`: the user closes the form.
 class CloseStep extends ScriptStep {
   const CloseStep(super.text);
@@ -104,6 +113,7 @@ final _formEvent = RegExp(
 final _type = RegExp(r'^([A-Za-z][A-Za-z0-9_]*)\.Type\s+"((?:[^"]|"")*)"$');
 final _select = RegExp(r'^([A-Za-z][A-Za-z0-9_]*)\.Select\s+(\d+)$');
 final _answer = RegExp(r'^Answer\s+"((?:[^"]|"")*)"$');
+final _choose = RegExp(r'^Choose\s+([A-Za-z][A-Za-z0-9_]*)$');
 final _key = RegExp(
     r'^([A-Za-z][A-Za-z0-9_]*)\.(KeyDown|KeyUp)\s+((?:(?:Shift|Ctrl|Alt)\+)*)([A-Za-z0-9]+)$');
 final _resize = RegExp(r'^Form\.Resize\s+(\d+)\s+(\d+)$', caseSensitive: false);
@@ -123,6 +133,10 @@ List<ScriptStep> parseEventScript(String text) {
       steps.add(AnswerStep(line, null));
     } else if (line == 'Close') {
       steps.add(CloseStep(line));
+    } else if (line == 'Dismiss') {
+      steps.add(ChooseStep(line, null));
+    } else if ((m = _choose.firstMatch(line)) != null) {
+      steps.add(ChooseStep(line, m![1]!));
     } else if ((m = _answer.firstMatch(line)) != null) {
       steps.add(AnswerStep(line, m![1]!.replaceAll('""', '"')));
     } else if ((m = _key.firstMatch(line)) != null) {
@@ -171,9 +185,12 @@ String _withoutComment(String line) {
 }
 
 class _Dialog {
-  _Dialog(this.isInputBox);
+  _Dialog(this.isInputBox, {this.isPopup = false});
 
   final bool isInputBox;
+
+  /// A menu `PopupMenu` shows (D106).
+  final bool isPopup;
   final answer = Completer<Object?>();
 }
 
@@ -187,6 +204,9 @@ abstract final class TranscriptLine {
 
   static String inputBox(String prompt, String title) =>
       title.isEmpty ? 'InputBox: $prompt' : 'InputBox [$title]: $prompt';
+
+  /// `PopupMenu` shows [menu]'s items (D106).
+  static String popupMenu(String menu) => 'PopupMenu: $menu';
 
   static String saveSettings(String text) => 'Settings: $text';
 
@@ -378,6 +398,32 @@ class ScriptedHost implements FormHost {
   }
 
   @override
+  Future<String?> popupMenu(String form, String menu) async {
+    transcript.add(TranscriptLine.popupMenu(menu));
+    final d = _Dialog(false, isPopup: true);
+    _dialogs.add(d);
+    return (await d.answer.future) as String?;
+  }
+
+  /// Chooses [item] in the open popup menu, or none when it is null; false
+  /// when no popup menu is open. An item that cannot be chosen there (not
+  /// in that menu, a line, or one that is not Enabled or not Visible) is
+  /// a mistake in the script.
+  bool choose(String? item) {
+    if (_dialogs.isEmpty || !_dialogs.last.isPopup) return false;
+    if (item != null) {
+      final form = front;
+      if (_properties[_key(form, item, 'Enabled')] != true ||
+          _properties[_key(form, item, 'Visible')] != true ||
+          _properties[_key(form, item, 'Caption')] == '-') {
+        throw StateError('$item cannot be chosen');
+      }
+    }
+    _dialogs.removeLast().answer.complete(item);
+    return true;
+  }
+
+  @override
   Future<void> yieldNow() => Future<void>.delayed(Duration.zero);
 
   @override
@@ -460,6 +506,30 @@ class ScriptedHost implements FormHost {
     _dialogs.clear();
   }
 
+  /// Whether menu item [control] of the form in front can be chosen in the
+  /// menu bar: it and the menus it is in are Enabled and Visible (D106). A menu with items, or a
+  /// line, is never chosen itself: a script that does is wrong.
+  bool menuEnabled(String control) {
+    final form = front;
+    final lower = control.toLowerCase();
+    final prefix = '${form.toLowerCase()}.';
+    if (_containers.entries.any(
+        (e) => e.key.startsWith(prefix) && e.value.toLowerCase() == lower)) {
+      throw StateError('$control opens a menu: choose one of its items');
+    }
+    if (_properties[_key(form, control, 'Caption')] == '-') {
+      throw StateError('$control is a line between menu items');
+    }
+    for (String? c = control; c != null;) {
+      if (_properties[_key(form, c, 'Enabled')] != true ||
+          _properties[_key(form, c, 'Visible')] != true) {
+        return false;
+      }
+      c = _containers[_key(form, c, '')];
+    }
+    return true;
+  }
+
   /// The user checks OptionButton [control] of the form in front: the
   /// others of its form, or of its Frame, are unchecked (D104, D105).
   void checkOption(String control) {
@@ -483,7 +553,11 @@ class ScriptedHost implements FormHost {
 
   /// Closes the topmost dialog; false if it is not of that kind.
   bool answer({required bool inputBox, Object? value}) {
-    if (_dialogs.isEmpty || _dialogs.last.isInputBox != inputBox) return false;
+    if (_dialogs.isEmpty ||
+        _dialogs.last.isPopup ||
+        _dialogs.last.isInputBox != inputBox) {
+      return false;
+    }
     _dialogs.removeLast().answer.complete(value);
     return true;
   }
@@ -529,6 +603,10 @@ abstract interface class ScriptDriver {
   /// Closes the open InputBox with [value], or cancels it when [value] is
   /// null; false if there is none.
   Future<bool> answer(String? value);
+
+  /// Chooses [item] in the open popup menu, or none when it is null
+  /// (D106); false when no popup menu is open.
+  Future<bool> choose(String? item);
 
   /// The user closes the form; false when an open dialog blocks it.
   Future<bool> close();
@@ -644,6 +722,10 @@ Future<List<String>> driveEventScript(
         if (!await driver.answer(value)) {
           throw StateError('"${step.text}" but no InputBox is open');
         }
+      case ChooseStep(:final item):
+        if (!await driver.choose(item)) {
+          throw StateError('"${step.text}" but no popup menu is open');
+        }
       case CloseStep():
         if (!await driver.close()) out.add('Blocked: ${step.text}');
       case ResizeStep(:final width, :final height):
@@ -719,6 +801,13 @@ class _HostDriver implements ScriptDriver {
     }
     if (control != null &&
         event == 'Click' &&
+        host.componentOf(control) == 'Menu') {
+      // A menu item chosen (D106): not one that is greyed, nor one in a
+      // greyed menu.
+      if (!host.menuEnabled(control)) return EventOutcome.disabled;
+    }
+    if (control != null &&
+        event == 'Click' &&
         host.componentOf(control) == 'CheckBox') {
       // A click the program would ignore leaves the box as it was (D44).
       if (interpreter.refusal(control, 'Changed') case final refused?) {
@@ -768,6 +857,9 @@ class _HostDriver implements ScriptDriver {
   @override
   Future<bool> answer(String? value) async =>
       host.answer(inputBox: true, value: value ?? '');
+
+  @override
+  Future<bool> choose(String? item) async => host.choose(item);
 
   @override
   Future<bool> close() async {

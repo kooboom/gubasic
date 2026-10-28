@@ -1,0 +1,8 @@
+mnuFileNew.Click
+mnuViewBig.Click
+mnuViewBig.Click
+mnuViewMoreA.Click    ' not Enabled: nothing
+btnEnable.Click
+mnuViewMoreA.Click
+mnuFileNew.Click      ' in a menu that is not Enabled: nothing
+Close

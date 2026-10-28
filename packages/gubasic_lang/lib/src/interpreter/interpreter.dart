@@ -19,6 +19,7 @@ import '../forms/anchor.dart';
 import '../forms/component.dart';
 import '../forms/keys.dart';
 import '../forms/pictures.dart';
+import '../forms/shortcut.dart';
 import '../lexer/keyword.dart';
 import 'checked_math.dart';
 import 'host.dart';
@@ -1366,6 +1367,9 @@ class Interpreter {
     if (spec.anchor && v is String) {
       v = normalAnchor(v) ?? _fail(DiagnosticCode.badAnchorValue, e, [v]);
     }
+    if (spec.shortcut && v is String) {
+      v = normalShortcut(v) ?? _fail(DiagnosticCode.badShortcutValue, e, [v]);
+    }
     if (spec.picture && v is String && v.isNotEmpty) {
       // Any case names the picture; the property keeps the project's
       // spelling (D51).
@@ -1664,6 +1668,23 @@ class Interpreter {
           return null;
         };
         return null;
+      case ('Form', 'PopupMenu'):
+        final form = _formNamed(c.form)!;
+        final menu =
+            args[0] as GbControl? ?? _fail(DiagnosticCode.nothingReference, at);
+        if (menu.form.toLowerCase() != form.name.toLowerCase()) {
+          _fail(DiagnosticCode.popupOfOtherForm, at,
+              ['$menu', menu.form, form.name]);
+        }
+        if (!form.controls.values.any(
+            (m) => m.container?.toLowerCase() == menu.name!.toLowerCase())) {
+          _fail(DiagnosticCode.popupWithoutItems, at, ['$menu']);
+        }
+        _pendingCall = () async {
+          await _popupMenu(form, menu);
+          return null;
+        };
+        return null;
       case ('Timer', 'Start'):
         _rawSet(c, 'Enabled', true);
         return null;
@@ -1697,6 +1718,20 @@ class Interpreter {
         return items[_itemIndex(items, args[0], at)];
     }
     throw StateError('no code for ${c.component.name}.${method.name}');
+  }
+
+  /// `PopupMenu` (D106): waits, as for a MsgBox, until the user chooses
+  /// one of [menu]'s items or none; the chosen item's Click then runs
+  /// before PopupMenu returns, unless it is running already (D5).
+  Future<void> _popupMenu(_FormRun form, GbControl menu) async {
+    final chosen = await _dialog(_formHost.popupMenu(form.name, menu.name!));
+    if (chosen is! String) return;
+    final item = form.controls[chosen.toLowerCase()];
+    final handler = _handler(form, chosen, 'Click');
+    if (item == null || handler == null || _running.contains(handler)) {
+      return;
+    }
+    await _runNow(handler, item);
   }
 
   /// Sets a ListBox's ListIndex to [index] if it differs; its Changed is

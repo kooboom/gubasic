@@ -172,6 +172,7 @@ TypeOf CType AddHandler AddressOf
 | A054 | 두 모듈이 모두 `Public`으로 둔 이름을 모듈 이름 없이 씀(11.5절) |
 | A055 | 두 모듈에 `Sub Main`이 있음(11.5절) |
 | A056 | 다른 BASIC의 이름으로 쓴 타입: `OptionButton` 대신 `RadioButton`(11.1절) |
+| A057 | `Shortcut`에 단축키가 아닌 글자를 넣음(경고, 11.1절) |
 
 **폼·프로젝트 파일**
 
@@ -200,6 +201,7 @@ TypeOf CType AddHandler AddressOf
 | F019 | `startup: Sub Main`인데 `Sub Main()`이 있는 모듈이 없음(11.5절) |
 | F020 | 다른 BASIC의 이름으로 쓴 컨트롤 타입: `type: RadioButton`(11.1절) |
 | F021 | Frame이 아닌 컨트롤 아래의 `controls:`(11.2절) |
+| F022 | 단축키가 아닌 `Shortcut`(11.1절) |
 
 **실행 중**
 
@@ -230,6 +232,9 @@ TypeOf CType AddHandler AddressOf
 | R021 | 이미 처리기가 있는 이벤트에 `AddHandler`(8절) |
 | R022 | 다른 타입의 컨트롤에 쓴 `CType`(11.4절) |
 | R023 | 컨트롤을 담은 Frame에 쓴 `Me.Controls.Remove`(11.1절) |
+| R024 | `Shortcut`에 단축키가 아닌 글자를 넣음(11.1절) |
+| R025 | 항목이 없는 메뉴에 쓴 `PopupMenu`(11.1절) |
+| R026 | 다른 폼의 메뉴에 쓴 `PopupMenu`(11.1절) |
 
 ## 2. 타입
 
@@ -678,7 +683,7 @@ End Sub
 
 | 컨트롤 | 속성 | 이벤트 |
 |---|---|---|
-| `Form` | `Caption` (`String`), `Width`, `Height` (`Integer`), `KeyPreview` (`Boolean`), `DialogResult` (`Integer`, 코드에서만 정함), `Controls`(11.4절). 메서드: `Show()`, `ShowDialog()`(`DialogResult`를 줌), `Hide()`, `Close()` | `Load`, `Resize`, `Closed`, `KeyDown(e As KeyEventArgs)`, `KeyUp(e As KeyEventArgs)` |
+| `Form` | `Caption` (`String`), `Width`, `Height` (`Integer`), `KeyPreview` (`Boolean`), `DialogResult` (`Integer`, 코드에서만 정함), `Controls`(11.4절). 메서드: `Show()`, `ShowDialog()`(`DialogResult`를 줌), `Hide()`, `Close()`, `PopupMenu(menu)` | `Load`, `Resize`, `Closed`, `KeyDown(e As KeyEventArgs)`, `KeyUp(e As KeyEventArgs)` |
 | `Button` | `Caption` (`String`), `Left`, `Top`, `Width`, `Height` (`Integer`) | `Click` |
 | `Label` | `Caption` (`String`), `Left`, `Top`, `Width`, `Height` (`Integer`) | `Click` |
 | `TextBox` | `Text` (`String`), `Left`, `Top`, `Width`, `Height` (`Integer`) | `Changed` |
@@ -687,6 +692,7 @@ End Sub
 | `OptionButton` | `Caption` (`String`), `Checked` (`Boolean`), `Left`, `Top`, `Width`, `Height` (`Integer`) | `Changed` |
 | `ComboBox` | `ListBox`와 같음: `ListIndex`, `ListCount`, `Text`, `AddItem(item)`, `RemoveItem(index)`, `Clear()`, `List(index)` | `Changed` |
 | `Frame` | `Caption` (`String`), `Left`, `Top`, `Width`, `Height` (`Integer`), 다른 컨트롤을 담음 | `Click` |
+| `Menu` | `Caption` (`String`), `Checked`, `Enabled`, `Visible` (`Boolean`), `Shortcut` (`String`), 메뉴 편집기에서 만듦 | `Click` |
 | `Timer` | `Interval` (`Integer`, 밀리초, 1 이상, 처음 100), `Enabled` (`Boolean`, 처음 `False`). 메서드: `Start()`, `Stop()`. 폼에 보이지 않음(아래) | `Tick` |
 | `ListBox` | `ListIndex` (`Integer`, 코드에서만 정함), `ListCount` (`Integer`)와 `Text` (`String`)는 읽기만 함, `Left`, `Top`, `Width`, `Height` (`Integer`). 메서드: `AddItem(item)`, `RemoveItem(index)`, `Clear()`, `List(index)` | `Changed` |
 
@@ -703,6 +709,8 @@ End Sub
 - **OptionButton**(DESIGN.ko.md D104)은 여러 보기 가운데 하나입니다. 폼 위의 OptionButton이 한 묶음이고 Frame마다 또 한 묶음이며(D105), 그 가운데 하나가 켜집니다. 클릭하거나 `Checked = True`로 하나를 켜면 나머지는 꺼집니다. 켜진 것을 클릭하면 아무 일도 없고, `Checked = False`로 하면 하나도 켜지지 않은 상태가 됩니다. `Changed`는 Visual Basic 6의 Click처럼 켜지는 것에서만 실행되고, 그 때문에 꺼지는 것에서는 실행되지 않습니다. 그래서 묶음 전체의 처리기 하나는 한 번만 실행됩니다. 디자이너의 속성 창에서 하나를 켜면 나머지가 꺼집니다. Visual Basic .NET의 이름은 [RadioButton](https://learn.microsoft.com/en-us/dotnet/api/system.windows.forms.radiobutton)입니다(A056, F020).
 - **ComboBox**(D104)는 고른 항목을 보이는 닫힌 상자이고, 클릭하면 목록이 열려 하나를 고릅니다. 사용자는 고르기만 하고 치지는 않습니다(Visual Basic 6의 Style 2). 프로그램은 ListBox와 똑같이 채우고 읽습니다: `AddItem`, `RemoveItem`, `Clear`, `List`, `ListCount`, `ListIndex`, `Text`, 그리고 `ListIndex`가 바뀌면 `Changed`. 직접 칠 수 있는 ComboBox는 나중에 넣습니다.
 - **Frame**(DESIGN.ko.md D105)은 위쪽 테두리에 `Caption`이 있고 다른 컨트롤을 담는 상자입니다. 그 안의 컨트롤은 Frame의 왼쪽 위 모서리에서부터 놓입니다. `Left`와 `Top`이 거기서부터이고, Anchor는 Frame의 가장자리와의 거리를 지킵니다. 그래서 폼을 따라 커지도록 고정한 Frame은 오른쪽이나 아래에 고정한 컨트롤을 옮깁니다. Frame의 가장자리 밖으로 나간 부분은 보이지 않습니다. Frame의 OptionButton은 Visual Basic 6처럼 따로 한 묶음입니다([Microsoft](https://learn.microsoft.com/en-us/previous-versions/visualstudio/visual-basic-6/aa241737(v=vs.60))). Frame 안에 Frame을 둘 수도 있습니다. 디자이너에서는 Frame 위에 그리거나 끌어다 놓은 컨트롤이 그 안에 들어가고, Frame을 옮기면 안의 것도 함께 옮겨지며, Frame을 지우거나 복사하거나 붙여 넣으면 안의 것도 함께입니다. Frame 하나를 고른 채 붙여 넣은 컨트롤은 그 안에 들어갑니다. 컨트롤을 끌어도 Frame 밖으로 나가지는 않습니다. 꺼내거나 다른 Frame에 넣으려면 잘라 내고 붙여 넣어 주세요. `Me.Controls`에는 Frame 안의 컨트롤도 들어 있습니다. 컨트롤을 담은 Frame을 `Me.Controls.Remove`로 빼면 R023이고, Frame에서 뺐다가 다시 넣은 컨트롤은 폼에 바로 놓입니다. Visual Basic .NET의 이름은 [GroupBox](https://learn.microsoft.com/en-us/dotnet/api/system.windows.forms.groupbox)입니다(A056, F020).
+- **폼의 메뉴 막대**(DESIGN.ko.md D106)는 Visual Basic 6의 [메뉴 편집기](https://learn.microsoft.com/en-us/previous-versions/visualstudio/visual-studio-2008/62aawczc(v=vs.90))처럼 디자이너의 메뉴 편집기(⌘E, Ctrl+E)에서 만듭니다. 항목마다 `Caption`, `Name`, 단계가 있고, `Shortcut`을 두거나 `Checked`, `Enabled`가 아니게, `Visible`이 아니게 할 수 있습니다. 항목은 `Menu` 컨트롤입니다. 처리기는 `mnuFileOpen_Click`이고, 코드가 속성을 정합니다(`mnuViewBig.Checked = True`). 다른 항목을 담은 항목은 그것들을 열고 아무 이벤트도 내지 않으며, 담은 항목이 없는 항목은 골라지고 `Click`을 냅니다. `Caption`이 `-` 하나면 항목 사이의 줄입니다. `Enabled`가 아니거나 `Enabled`가 아닌 메뉴 안에 든 항목은 회색이고 고를 수 없으며, `Visible`이 아닌 항목은 보이지 않습니다. `Shortcut`은 Ctrl, Shift, Alt와 키 하나를 `+`로 이은 것입니다(`Ctrl+O`, `Ctrl+Shift+S`, `F5`). 글자나 숫자 키에는 Ctrl이나 Alt가 있어야 합니다(A057, F022, R024). macOS에서는 IDE의 실행 창과 내보낸 앱 모두에서 메뉴가 시스템 메뉴 막대의 앱 메뉴와 윈도우 메뉴 사이에 놓이고, Shortcut의 Ctrl은 Command 키입니다. 웹과 Windows에서는 창 안, 폼 위에 놓이며 폼을 줄이지 않습니다. 어디서나 같은 항목을 고르고 같은 처리기를 실행합니다. 디자이너는 폼 위에 메뉴 막대를 보여 주고, 거기서 항목을 고르면 그 `Click`이 열립니다. 메뉴는 `Me.Controls`에 들지 않습니다.
+- **`Me.PopupMenu(mnuEdit)`**(D106)는 Visual Basic 6의 [PopupMenu](https://learn.microsoft.com/en-us/previous-versions/visualstudio/visual-basic-6/aa716251(v=vs.60))처럼 폼의 메뉴 하나의 항목을, 마우스가 폼에서 마지막으로 눌린 곳에 보여 줍니다. 메뉴 막대에서 `Visible`이 아닌 메뉴를 보여 주는 것이 흔한 쓰임입니다. MsgBox처럼, 항목을 고르거나 Esc나 메뉴 밖 클릭으로 아무것도 고르지 않고 닫을 때까지 기다립니다. 고른 항목의 `Click`은 `PopupMenu`가 돌아오기 전에 실행됩니다. GuBASIC에서는 다른 폼 메서드처럼 `Me.`와 괄호를 붙여 씁니다(7절, P011). 항목이 없는 메뉴는 R025, 다른 폼의 메뉴는 R026입니다.
 - **컨트롤 타입의 다른 이름**(D104): 다른 BASIC의 `RadioButton`은 `OptionButton`, `CommandButton`은 `Button`, `PictureBox`는 `Image`, `GroupBox`는 `Frame`이고, 코드(A056)와 폼 파일(F020)에서 알려 줍니다.
 - **폼의 키**(DESIGN.ko.md D101). `Form_KeyDown(e As KeyEventArgs)`는 키를 누를 때와 누르고 있는 동안 다시 실행되고, `Form_KeyUp(e As KeyEventArgs)`는 키를 뗄 때 실행됩니다. `e.KeyCode`는 키의 번호이고 `Keys`와 비교합니다: `Keys.Left`, `Keys.Right`, `Keys.Up`, `Keys.Down`, `Keys.Space`, `Keys.Enter`, `Keys.Escape`, `Keys.Back`, `Keys.Tab`, `Keys.Delete`, `Keys.Insert`, `Keys.Home`, `Keys.End`, `Keys.PageUp`, `Keys.PageDown`, `Keys.A`부터 `Keys.Z`, `Keys.D0`부터 `Keys.D9`, `Keys.NumPad0`부터 `Keys.NumPad9`, `Keys.F1`부터 `Keys.F12`. 번호는 Visual Basic .NET과 같습니다([Microsoft](https://learn.microsoft.com/en-us/dotnet/api/system.windows.forms.keys)). `e.Shift`, `e.Control`, `e.Alt`는 함께 누른 키를 알려 주고, 그 키만 눌러서는 이벤트가 오지 않습니다. 글자와 숫자 키는 입력기가 무엇을 치든 자판의 자리로 구별합니다. 맨 앞의 폼은 보인 때부터, 폼이나 TextBox가 아닌 컨트롤에 포커스가 있는 동안 키를 받습니다. TextBox에 입력하는 동안에는 **`KeyPreview`**가 `True`일 때만 받고(Visual Basic .NET처럼 처음에는 `False`: [Microsoft](https://learn.microsoft.com/en-us/dotnet/api/system.windows.forms.form.keypreview)), TextBox도 그 키를 그대로 받습니다. 키 이벤트는 도는 처리기를 기다리고, 다시 들어가지 않으며, 대화상자가 열려 있으면 막힙니다. Visual Basic 6의 `(KeyCode As Integer, Shift As Integer)`는 A053입니다. 폰(3단계)에서는 키 이벤트가 오지 않습니다.
 
@@ -746,6 +754,7 @@ controls:
 - 파일은 일반 텍스트가 되도록 YAML로 씁니다(D13). 디자이너가 쓰지만 손으로 고칠 수도 있으며, 실수는 F 코드로 알립니다(1.2절).
 - `formatVersion`은 이 형식의 버전입니다. 더 새로운 버전의 파일은 읽지 않아서(F003) 예전 GuBASIC이 파일을 잘못 읽는 일이 없습니다. 예전 파일을 다르게 읽게 되는 변경에는 새 버전과 변환기를 둡니다(D12). Frame 안에 컨트롤이 있는 폼은 버전 2로 쓰고, 다른 폼은 그대로 버전 1입니다. 버전 2는 버전 1 파일을 바꾸지 않고 그대로 읽으므로 변환기가 필요 없습니다(DESIGN.ko.md D105).
 - Frame의 `controls`에는 그 안의 컨트롤을 폼의 것과 같은 형태로 적습니다(D105). 컨트롤을 담는 것은 Frame뿐이고(F021), 이름은 폼 전체에서 겹치지 않아야 합니다.
+- `menus`에는 메뉴 막대의 항목을 적습니다(D106). 항목마다 `name`, `properties`가 있고, 메뉴는 자기 `menus`를 가집니다. `type`은 적지 않습니다. 메뉴 막대가 있는 폼은 버전 3으로 씁니다.
 - `properties`에는 기본값과 다른 값만 적습니다. 키와 속성 이름은 대소문자를 가리지 않습니다.
 - 컨트롤마다 `name`과 `type`, 필요하면 `properties`가 있습니다. 이름은 식별자 규칙(1절)을 따릅니다: 영문자로 시작하고 영문자, 숫자, `_`를 씁니다. 키워드나 `Form`은 쓸 수 없고, 대소문자만 다른 같은 이름의 컨트롤 둘도 둘 수 없습니다.
 - `String` 속성은 적힌 그대로 값이 됩니다: `Caption: 2026`은 글자 `2026`입니다. 따옴표, `-`, `[`, `{`로 시작하거나 `: `, ` #`가 들어 있어서 YAML이 다르게 읽을 글자는 따옴표로 감싸 주세요.

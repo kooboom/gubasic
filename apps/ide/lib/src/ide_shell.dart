@@ -214,6 +214,23 @@ class _IdeShellState extends State<IdeShell> {
     final controller = widget.controller;
     final files =
         (controller.canUseFolders || controller.canUseBrowser) && !_running;
+    // On macOS a running program's menus go on the system's menu bar
+    // (D106).
+    return SystemMenus(
+      appName: 'GuBASIC',
+      strings: s.player,
+      session: session,
+      child: _shell(context, s, session, controller, files),
+    );
+  }
+
+  Widget _shell(
+    BuildContext context,
+    IdeStrings s,
+    RunSession? session,
+    ProjectController controller,
+    bool files,
+  ) {
     return CallbackShortcuts(
       bindings: {
         const SingleActivator(LogicalKeyboardKey.f5): _run,

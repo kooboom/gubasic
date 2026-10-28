@@ -1,0 +1,26 @@
+> btnMore.Click
+PopupMenu: mnuEdit
+> Choose mnuEditCopy
+Debug.Print: Copy
+Debug.Print: after the menu
+> btnMore.Click
+PopupMenu: mnuEdit
+> btnMore.Click
+Blocked: btnMore.Click
+> Dismiss
+Debug.Print: after the menu
+> mnuEditCopy.Click
+Disabled: mnuEditCopy.Click
+> btnMore.Click
+PopupMenu: mnuEdit
+> Choose mnuEditMoreUpper
+Debug.Print: Upper case
+Set mnuEditPaste.Enabled: True
+Debug.Print: after the menu
+> btnMore.Click
+PopupMenu: mnuEdit
+> Choose mnuEditPaste
+Debug.Print: Paste
+Debug.Print: after the menu
+> Close
+Closed

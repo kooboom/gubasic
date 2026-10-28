@@ -137,7 +137,8 @@ class _PlayerScreenState extends State<PlayerScreen> {
         fitWindow(
           _project.name,
           width: form.integer('Width'),
-          height: form.integer('Height'),
+          height:
+              form.integer('Height') + menuBarHeight(host.windowModel).toInt(),
         ),
       );
     }
@@ -192,10 +193,16 @@ class _PlayerScreenState extends State<PlayerScreen> {
     if (_ended && (kIsWeb || _measuring)) {
       return Scaffold(body: Center(child: Text(widget.strings.programEnded)));
     }
-    return Scaffold(
-      body: widget.asApp
-          ? AppView(session: session)
-          : RunWindow(session: session, fit: _fit),
+    // On macOS the form's menus go on the system's menu bar (D106).
+    return SystemMenus(
+      appName: _project.name,
+      strings: widget.strings,
+      session: session,
+      child: Scaffold(
+        body: widget.asApp
+            ? AppView(session: session)
+            : RunWindow(session: session, fit: _fit),
+      ),
     );
   }
 }

@@ -8,6 +8,7 @@ import 'form_model.dart';
 import 'keys.dart';
 import 'image.dart';
 import 'list_box.dart';
+import 'menus.dart';
 import 'option_button.dart';
 import 'text_box.dart';
 
@@ -15,6 +16,10 @@ import 'text_box.dart';
 /// each control at `Left`, `Top`, sized `Width` x `Height`
 /// (docs/LANGUAGE.md §11.1). The form's `Caption` is the window's title,
 /// which the app around it shows.
+///
+/// The Shortcuts of its menu items choose them (docs/DESIGN.md D106); its
+/// menu bar is drawn by the window around it ([GbMenuBar]), or by the
+/// system on macOS ([gbPlatformMenus]).
 ///
 /// The form takes the keyboard's focus when it is shown and when its empty
 /// part is clicked; its keys go to [GbFormModel.onKey] (D101), and are
@@ -88,32 +93,50 @@ class _GbFormViewState extends State<GbFormView> {
         SingleActivator(LogicalKeyboardKey.arrowDown):
             DoNothingAndStopPropagationIntent(),
       },
-      child: Focus(
-        focusNode: _focus,
-        autofocus: model.onKey != null,
-        onKeyEvent: _key,
-        child: Builder(builder: _form),
+      child: _menuShortcuts(
+        Focus(
+          focusNode: _focus,
+          autofocus: model.onKey != null,
+          onKeyEvent: _key,
+          child: Builder(builder: _form),
+        ),
       ),
     ),
   );
 
+  /// [child] with the Shortcuts of the form's menu items (D106), while it
+  /// runs; on macOS the system's menu bar takes them.
+  Widget _menuShortcuts(Widget child) {
+    final items = model.menuItems;
+    if (model.designing || gbUsesSystemMenus || items.isEmpty) return child;
+    return ListenableBuilder(
+      listenable: Listenable.merge(items),
+      builder: (context, child) =>
+          CallbackShortcuts(bindings: gbMenuShortcuts(model), child: child!),
+      child: child,
+    );
+  }
+
   Widget _form(BuildContext context) => ListenableBuilder(
     listenable: Listenable.merge([model.form, model.layout]),
-    builder: (context, _) => SizedBox(
-      width: model.form.integer('Width').toDouble(),
-      height: model.form.integer('Height').toDouble(),
-      child: Stack(
-        clipBehavior: Clip.hardEdge,
-        children: [
-          // A click on the form's empty part gives it the focus.
-          Positioned.fill(
-            child: GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onTapDown: (_) => _focus.requestFocus(),
+    builder: (context, _) => Listener(
+      onPointerDown: (e) => model.lastPointer = e.position,
+      child: SizedBox(
+        width: model.form.integer('Width').toDouble(),
+        height: model.form.integer('Height').toDouble(),
+        child: Stack(
+          clipBehavior: Clip.hardEdge,
+          children: [
+            // A click on the form's empty part gives it the focus.
+            Positioned.fill(
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTapDown: (_) => _focus.requestFocus(),
+              ),
             ),
-          ),
-          for (final c in model.drawingOrder) _GbPlaced(model, c),
-        ],
+            for (final c in model.drawingOrder) _GbPlaced(model, c),
+          ],
+        ),
       ),
     ),
   );
@@ -146,6 +169,7 @@ class _GbPlaced extends StatelessWidget {
       GbControlKind.comboBox => GbComboBox(model: model, state: state),
       GbControlKind.frame => GbFrame(model: model, state: state),
       GbControlKind.form => throw ArgumentError('a form inside a form'),
+      GbControlKind.menu => throw ArgumentError('a menu on the form'),
     },
   );
 }

@@ -1,0 +1,20 @@
+' PopupMenu (D106): shows the items of a menu, here one that is not
+' Visible on the menu bar, and waits; the item chosen runs its Click
+' before PopupMenu returns. Closed with none, nothing runs.
+Sub btnMore_Click()
+    Me.PopupMenu(mnuEdit)
+    Debug.Print("after the menu")
+End Sub
+
+Sub mnuEditCopy_Click()
+    Debug.Print("Copy")
+End Sub
+
+Sub mnuEditMoreUpper_Click()
+    Debug.Print("Upper case")
+    mnuEditPaste.Enabled = True
+End Sub
+
+Sub mnuEditPaste_Click()
+    Debug.Print("Paste")
+End Sub

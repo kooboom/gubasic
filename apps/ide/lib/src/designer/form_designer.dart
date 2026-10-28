@@ -14,6 +14,7 @@ import '../project/open_project.dart';
 import '../strings.dart';
 import '../theme.dart';
 import 'form_edit.dart';
+import 'menu_editor.dart';
 import 'properties_panel.dart';
 import 'toolbox.dart';
 
@@ -206,7 +207,12 @@ class _FormDesignerState extends State<FormDesigner> {
       // A new model each time, never changed: the designer only shows it.
       _model = formModelOf(
         _read.form,
-        onEvent: (_, _) {},
+        // A menu item chosen in the menu bar opens its Click (D106).
+        onEvent: (control, event) {
+          if (control != null && event == 'Click') {
+            widget.onOpenHandler?.call(control);
+          }
+        },
         designing: true,
         pictures: pictureSource(widget.project.pictures),
       );
@@ -925,12 +931,24 @@ class _FormDesignerState extends State<FormDesigner> {
   /// Tab / Shift+Tab: the next or the previous control in the form file,
   /// round again at the end (D42).
   void _selectNext(int step) {
-    final controls = _form.controls;
+    final controls = designedControls(_form).toList();
     if (controls.isEmpty) return;
     final i = controls.indexWhere((c) => c.name == _selected);
     final n = controls.length;
     final next = i < 0 ? (step > 0 ? 0 : n - 1) : (i + step + n) % n;
     setState(() => _selected = controls[next].name);
+  }
+
+  /// ⌘E, Ctrl+E: the menu editor (D106); its menu bar is one step of
+  /// undo.
+  Future<void> _editMenus() async {
+    if (!_canEdit) return;
+    final rows = await showMenuEditor(context, _form, widget.strings);
+    _focus.requestFocus();
+    if (rows == null || !mounted || !_canEdit) return;
+    final form = withMenuRows(_form, rows);
+    if (writeFormFile(form) == _text) return;
+    _apply(form, choose: _chosen);
   }
 
   /// ⌘J / ⌘K, Ctrl+J / Ctrl+K: the selected control on top of the others
@@ -942,8 +960,9 @@ class _FormDesignerState extends State<FormDesigner> {
   }
 
   /// ⌘A, Ctrl+A: every control of the form.
-  void _chooseAll() =>
-      setState(() => _chosen = [for (final c in _form.controls) c.name]);
+  void _chooseAll() => setState(
+    () => _chosen = [for (final c in designedControls(_form)) c.name],
+  );
 
   /// ⌘C, Ctrl+C: the chosen controls go to the designer's clipboard, which
   /// any form of any project can take them from while the IDE runs.
@@ -1086,6 +1105,13 @@ class _FormDesignerState extends State<FormDesigner> {
             enabled: editable,
             shortcut: key('K'),
           ),
+          item(
+            designerMenuKey('menus'),
+            s.menuEditor,
+            _editMenus,
+            enabled: editable,
+            shortcut: key('E'),
+          ),
           const PopupMenuDivider(),
           item(
             designerMenuKey('delete'),
@@ -1113,7 +1139,7 @@ class _FormDesignerState extends State<FormDesigner> {
             designerMenuKey('selectAll'),
             s.selectAll,
             _chooseAll,
-            enabled: _form.controls.isNotEmpty,
+            enabled: designedControls(_form).isNotEmpty,
             shortcut: key('A'),
           ),
           const PopupMenuDivider(),
@@ -1274,6 +1300,7 @@ class _FormDesignerState extends State<FormDesigner> {
           const ShortcutAt(PhysicalKeyboardKey.keyK): () =>
               _order(front: false),
           const ShortcutAt(PhysicalKeyboardKey.keyX): _cut,
+          const ShortcutAt(PhysicalKeyboardKey.keyE): _editMenus,
           const ShortcutAt(PhysicalKeyboardKey.keyV): _paste,
         },
         const ShortcutAt(PhysicalKeyboardKey.keyC): _copy,
@@ -1466,6 +1493,13 @@ class _FormDesignerState extends State<FormDesigner> {
                     onPressed: editable && _chosenControls.isNotEmpty
                         ? () => _order(front: false)
                         : null,
+                  ),
+                  const SizedBox(width: 8),
+                  IconButton(
+                    key: designerMenuKey('toolbar.menus'),
+                    tooltip: '${s.menuEditor} (${apple ? '⌘E' : 'Ctrl+E'})',
+                    icon: const Icon(Icons.menu_open),
+                    onPressed: editable ? _editMenus : null,
                   ),
                 ],
               ),
@@ -1768,10 +1802,21 @@ class _FormDesignerState extends State<FormDesigner> {
         ),
       ),
     );
+    // The menu bar as the window draws it, above the form (D106).
+    final bar = _model.menuItems.isEmpty ? 0.0 : gbMenuBarHeight;
     final frame = FormWindowFrame(
       caption: _model.form.text('Caption'),
       width: width,
-      child: area,
+      child: bar == 0
+          ? area
+          : Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                ExcludeFocus(child: GbMenuBar(model: _model)),
+                area,
+              ],
+            ),
     );
     // The form's handles sit on its right and bottom edges, half outside
     // the window; the padding lets the mouse take that half too.
@@ -1779,7 +1824,7 @@ class _FormDesignerState extends State<FormDesigner> {
     Widget formHandle(Handle h, MouseCursor cursor) {
       final centre = Offset(
         h.x == 0 ? width / 2 : width,
-        formTitleHeight + (h.y == 0 ? height / 2 : height),
+        formTitleHeight + bar + (h.y == 0 ? height / 2 : height),
       );
       return Positioned(
         key: ValueKey('designer.formHandle.${h.x}.${h.y}'),
@@ -1825,7 +1870,7 @@ class _FormDesignerState extends State<FormDesigner> {
       ],
     );
     // The window with its handles, as it is laid out unshrunk.
-    final natural = Size(width + reach, formTitleHeight + height + reach);
+    final natural = Size(width + reach, formTitleHeight + bar + height + reach);
     // The bar about controls outside the form (D72) lies over the canvas,
     // in a strip above the form kept free for it whether it shows or not:
     // so that it never moves the form, its scale or the Properties window,
@@ -1890,7 +1935,7 @@ class _FormDesignerState extends State<FormDesigner> {
   /// handler of; null when there are none.
   Widget? _tray(BuildContext context, FormFile form) {
     final hidden = [
-      for (final c in form.controls)
+      for (final c in designedControls(form))
         if (!c.component.visual) c,
     ];
     if (hidden.isEmpty) return null;

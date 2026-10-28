@@ -44,7 +44,7 @@ class RunHost implements FormHost {
 
   static Map<String, (String, Map<String, Object>)> _timersOf(FormFile f) => {
     for (final c in f.controls)
-      if (!c.component.visual)
+      if (!c.component.visual && !c.component.menu)
         c.name.toLowerCase(): (
           c.name,
           {
@@ -283,6 +283,19 @@ class RunHost implements FormHost {
   @override
   void removeControl(String form, String control) =>
       modelOf(form).removeControl(control);
+
+  /// Shows the menu where the mouse last went down on the form, or at the
+  /// middle of the run window before it ever did (D106).
+  @override
+  Future<String?> popupMenu(String form, String menu) {
+    final context = _context;
+    final model = modelOf(form);
+    final at =
+        model.lastPointer ??
+        (context.findRenderObject() as RenderBox?)?.paintBounds.center ??
+        Offset.zero;
+    return dialogs.popupMenu(context, model, menu, at);
+  }
 
   @override
   void endProgram() {

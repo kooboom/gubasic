@@ -111,6 +111,18 @@ Problems we know about and have **deliberately** left unfixed for now. Each entr
 - **Why deferred:** a Frame's own `Controls`, and dragging into and out of Frames, add rules (which Frame a drop means, what happens to the Anchor) that the first programs with Frames do not need.
 - **Revisit:** when programs make Frames' contents at run time, or users ask to drag controls into Frames.
 
+## A popup menu is shown from code only
+
+- **What:** `Me.PopupMenu(mnuEdit)` (D106) is called from a handler, such as a Button's Click; GuBASIC has no event for a right click on a control or the form yet, so a menu cannot open where the user right-clicks, as context menus usually do.
+- **Why deferred:** a right click needs mouse events with the button and the place (Visual Basic 6's MouseDown and MouseUp), a language change of its own with parity on every platform and a long press on touch screens.
+- **Revisit:** with the mouse events, which the author decides on.
+
+## Menus on macOS show ✓ for Checked, and the menu editor renames no handlers
+
+- **What:** on macOS's menu bar (D106) a Checked item shows ✓ before its Caption rather than in the system's own place for check marks. Renaming an item in the menu editor does not rename its handlers in the code, as renaming a control in the Properties window does (D39). A `&` in a Caption is shown as it is: there are no access keys (Alt and a letter) yet.
+- **Why deferred:** Flutter's platform menus send no check marks to the system. Renaming in the code and access keys each add to the menu editor and the three ways menus are drawn, which the first programs with menus do not need.
+- **Revisit:** when Flutter's platform menus take check marks; when users ask for renaming or access keys.
+
 ## Keys a TextBox uses do not reach the form
 
 - **What:** with `KeyPreview` True and a TextBox typed in, the form gets the keys the TextBox only types (letters, digits, Space), not those it acts on itself, such as the arrow keys, Home and End, which move its caret (D101).

@@ -117,5 +117,7 @@ class _Host implements FormHost {
   @override
   void removeControl(String form, String control) {}
   @override
+  Future<String?> popupMenu(String form, String menu) async => null;
+  @override
   void endProgram() {}
 }

@@ -147,6 +147,16 @@ const Map<DiagnosticCode, String> koreanMessages = {
       '"{0}" 그림은 이 프로젝트에 없어서, 실행하면 여기서 프로그램이 멈춥니다. 그림을 프로젝트에 넣거나 이름을 확인해 주세요.',
   DiagnosticCode.showWithArgument:
       'Show에는 인자가 없습니다. 폼을 대화상자로 띄우고 닫힐 때까지 기다리려면 {0}.ShowDialog로 써 주세요.',
+  DiagnosticCode.badShortcutInCode:
+      '"{0}" 값은 단축키가 아니어서, 실행하면 여기서 프로그램이 멈춥니다. "Ctrl+O"나 "F5"처럼 Ctrl, Shift, Alt와 키 하나를 +로 이어 적거나, 없으면 ""로 적어 주세요. 글자나 숫자 키에는 Ctrl이나 Alt가 있어야 합니다.',
+  DiagnosticCode.popupWithoutItems:
+      '{0} 메뉴에는 항목이 없어서 PopupMenu로 보일 것이 없습니다. 메뉴 편집기에서 항목을 넣거나, 이 항목이 든 메뉴를 보여 주세요.',
+  DiagnosticCode.popupOfOtherForm:
+      '{0} 메뉴는 {1} 폼의 메뉴여서 {2} 폼이 보여 줄 수 없습니다. {1}.PopupMenu를 쓰거나 {2} 폼에 메뉴를 따로 만들어 주세요.',
+  DiagnosticCode.badShortcut:
+      '"{0}" 값은 단축키가 아닙니다. "Ctrl+O"나 "F5"처럼 Ctrl, Shift, Alt와 키 하나를 +로 이어 적거나, 없으면 ""로 적어 주세요. 글자나 숫자 키에는 Ctrl이나 Alt가 있어야 합니다.',
+  DiagnosticCode.badShortcutValue:
+      '"{0}" 값은 단축키가 아닙니다. "Ctrl+O"나 "F5"처럼 Ctrl, Shift, Alt와 키 하나를 +로 이어 적거나, 없으면 ""로 적어 주세요. 글자나 숫자 키에는 Ctrl이나 Alt가 있어야 합니다.',
   DiagnosticCode.badAnchorInCode:
       '"{0}" 값은 Anchor 값이 아니어서, 실행하면 여기서 프로그램이 멈춥니다. 컨트롤이 거리를 지킬 폼의 가장자리를 "Right Bottom"처럼 Left, Top, Right, Bottom으로 적거나, 없으면 ""로 적어 주세요.',
   DiagnosticCode.memberHasOtherName:

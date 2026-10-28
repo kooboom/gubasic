@@ -1,0 +1,19 @@
+formatVersion: 3
+properties: { Caption: Menus, Width: 320, Height: 160 }
+controls:
+  - { name: btnEnable, type: Button, properties: { Caption: Enable, Left: 16, Top: 16 } }
+menus:
+  - name: mnuFile
+    properties: { Caption: File }
+    menus:
+      - { name: mnuFileNew, properties: { Caption: New, Shortcut: Ctrl+N } }
+      - { name: mnuFileLine, properties: { Caption: "-" } }
+      - { name: mnuFileExit, properties: { Caption: Exit } }
+  - name: mnuView
+    properties: { Caption: View }
+    menus:
+      - { name: mnuViewBig, properties: { Caption: Big } }
+      - name: mnuViewMore
+        properties: { Caption: More }
+        menus:
+          - { name: mnuViewMoreA, properties: { Caption: A, Enabled: false } }

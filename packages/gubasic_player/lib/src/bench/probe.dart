@@ -123,6 +123,8 @@ class BenchProbe {
           host.dialogs.answerTop('');
         case AnswerStep(:final value):
           host.dialogs.answerTop(value);
+        case ChooseStep(:final item):
+          host.dialogs.answerTop(item);
         case CloseStep():
           interpreter.closeForm();
         case KeyStep(:final event, :final key):

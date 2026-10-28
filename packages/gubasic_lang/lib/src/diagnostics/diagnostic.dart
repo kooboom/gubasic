@@ -284,6 +284,10 @@ enum DiagnosticCode {
   /// not an edge: the program would stop there (R014). Args: the text.
   badAnchorInCode('A038', DiagnosticSeverity.warning),
 
+  /// Text that is not a shortcut given to a Shortcut (D106): R024 when
+  /// it runs. Args: the text.
+  badShortcutInCode('A057', DiagnosticSeverity.warning),
+
   /// `Form2.Show vbModal` (Visual Basic 6): Show takes no argument; a form
   /// that the code waits for is shown with ShowDialog (D88). Args: the
   /// form as written.
@@ -443,6 +447,9 @@ enum DiagnosticCode {
   controlTypeHasOtherName('F020'),
   notContainer('F021'),
 
+  /// A Shortcut that is not one (D106). Args: the text.
+  badShortcut('F022'),
+
   // Run time (the interpreter)
 
   /// An Integer result outside the 64-bit range.
@@ -524,7 +531,17 @@ enum DiagnosticCode {
 
   /// `Me.Controls.Remove` of a Frame that holds controls (D105). Args:
   /// the Frame's name.
-  frameNotEmpty('R023');
+  frameNotEmpty('R023'),
+
+  /// A Shortcut set to text that is not one (D106). Args: the text.
+  badShortcutValue('R024'),
+
+  /// `PopupMenu` of a menu item that has no items (D106). Args: its name.
+  popupWithoutItems('R025'),
+
+  /// `PopupMenu` of another form's menu (D106). Args: the menu, its form,
+  /// the form asked to show it.
+  popupOfOtherForm('R026');
 
   const DiagnosticCode(this.code, [this.severity = DiagnosticSeverity.error]);
 

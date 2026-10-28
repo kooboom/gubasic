@@ -1,0 +1,18 @@
+> mnuFileNew.Click
+Debug.Print: New, Ctrl+N
+> mnuViewBig.Click
+Set mnuViewBig.Checked: True
+> mnuViewBig.Click
+Set mnuViewBig.Checked: False
+> mnuViewMoreA.Click
+Disabled: mnuViewMoreA.Click
+> btnEnable.Click
+Set mnuViewMoreA.Enabled: True
+Set mnuFile.Enabled: False
+Set mnuFileNew.Shortcut: Ctrl+Shift+N
+> mnuViewMoreA.Click
+Debug.Print: A chosen
+> mnuFileNew.Click
+Disabled: mnuFileNew.Click
+> Close
+Closed

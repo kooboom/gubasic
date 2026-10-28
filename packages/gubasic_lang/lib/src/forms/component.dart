@@ -3,6 +3,7 @@ import 'package:yaml/yaml.dart';
 import '../analyzer/builtins.dart';
 import '../analyzer/types.dart';
 import 'anchor.dart';
+import 'shortcut.dart';
 import 'components.g.dart';
 
 /// The range of an Integer property unless its component.yaml narrows it:
@@ -24,6 +25,7 @@ class PropertySpec {
     this.internal = false,
     this.picture = false,
     this.anchor = false,
+    this.shortcut = false,
   }) : designTime = designTime && !readOnly && !internal;
 
   final String name;
@@ -69,6 +71,11 @@ class PropertySpec {
   /// it only edge names (F017, A038, R014), kept as [normalAnchor] gives
   /// them.
   final bool anchor;
+
+  /// A String property naming the keys that choose a menu item
+  /// (`Shortcut`, D106): the form file and the program may give it only
+  /// shortcuts (F022, A057, R024), kept as [normalShortcut] gives them.
+  final bool shortcut;
 
   /// Whether a host keeps its value: all but the [readOnly] ones.
   bool get isStored => !readOnly;
@@ -127,6 +134,7 @@ class ComponentSpec {
     this.visual = true,
     this.aliases = const [],
     this.container = false,
+    this.menu = false,
   })  : properties = {for (final p in properties) p.name.toLowerCase(): p},
         events = {for (final e in events) e.name.toLowerCase(): e},
         methods = {for (final m in methods) m.name.toLowerCase(): m};
@@ -171,6 +179,11 @@ class ComponentSpec {
   /// (a Frame, D105): its OptionButtons are a group of their own.
   final bool container;
 
+  /// Whether controls of this kind are the items of a form's menu bar
+  /// (Menu, D106), written under `menus:` in the form file. Not [visual],
+  /// and not in the designer's tray: the menu editor makes them.
+  final bool menu;
+
   /// The properties the form file and the Properties window can set.
   Iterable<PropertySpec> get designProperties =>
       properties.values.where((p) => p.designTime);
@@ -189,6 +202,9 @@ final Map<String, ComponentSpec> builtinComponents = {
 
 /// The form's own component.
 ComponentSpec get formComponent => builtinComponents['form']!;
+
+/// The component of a form's menu items (D106).
+ComponentSpec get menuComponent => builtinComponents['menu']!;
 
 /// The built-in component another version of BASIC calls [name] (any
 /// case), or null (D104).
@@ -253,13 +269,15 @@ ComponentSpec readComponentFile(String text) {
     final designTime = p['designTime'] ?? true;
     final picture = p['picture'] ?? false;
     final anchor = p['anchor'] ?? false;
+    final shortcut = p['shortcut'] ?? false;
     if (internal is! bool ||
         readOnly is! bool ||
         designTime is! bool ||
         picture is! bool ||
-        anchor is! bool) {
+        anchor is! bool ||
+        shortcut is! bool) {
       throw FormatException('$name: internal, readOnly, designTime, '
-          'picture and anchor are true or false');
+          'picture, anchor and shortcut are true or false');
     }
     final type = typeName == 'list(of string)' && internal
         ? const ListType(GbType.string)
@@ -306,7 +324,8 @@ ComponentSpec readComponentFile(String text) {
         readOnly: readOnly,
         internal: internal,
         picture: picture,
-        anchor: anchor);
+        anchor: anchor,
+        shortcut: shortcut);
     if (picture && (type != GbType.string || spec.defaultValue != '')) {
       throw FormatException('$name: a picture property is a String, '
           'empty by default');
@@ -316,6 +335,12 @@ ComponentSpec readComponentFile(String text) {
             normalAnchor(spec.defaultValue as String) != spec.defaultValue)) {
       throw FormatException('$name: an anchor property is a String whose '
           'default names edges as normalAnchor writes them');
+    }
+    if (shortcut &&
+        (type != GbType.string ||
+            normalShortcut(spec.defaultValue as String) != spec.defaultValue)) {
+      throw FormatException('$name: a shortcut property is a String whose '
+          'default is written as normalShortcut writes it');
     }
     if (!spec.accepts(spec.defaultValue)) {
       throw FormatException('$name: default is out of range');
@@ -374,8 +399,9 @@ ComponentSpec readComponentFile(String text) {
   final visual = doc['visual'] ?? true;
   if (visual is! bool) throw const FormatException('visual is true or false');
   final container = doc['container'] ?? false;
-  if (container is! bool) {
-    throw const FormatException('container is true or false');
+  final menu = doc['menu'] ?? false;
+  if (container is! bool || menu is! bool) {
+    throw const FormatException('container and menu are true or false');
   }
   final aliases = doc['aliases'] ?? YamlList();
   if (aliases is! List || aliases.any((a) => a is! String)) {
@@ -395,6 +421,7 @@ ComponentSpec readComponentFile(String text) {
     visual: visual,
     aliases: List.unmodifiable(aliases.cast<String>()),
     container: container,
+    menu: menu,
   );
   for (final MapEntry(:key, :value) in spec.otherEvents.entries) {
     if (spec.events.containsKey(key) ||
@@ -442,6 +469,9 @@ List<ParamSpec> _parameters(String text) {
   return [
     for (final part in text.split(',').where((s) => s.trim().isNotEmpty))
       switch (paramPattern.firstMatch(part.trim())) {
+        // A form's menu (D106): Menu is a component, read after this one.
+        final pm? when pm[2]!.toLowerCase() == 'menu' =>
+          ParamSpec.of(pm[1]!, ArgKind.menu),
         final pm? when _parameterTypes[pm[2]!.toLowerCase()] != null =>
           ParamSpec(pm[1]!, _parameterTypes[pm[2]!.toLowerCase()]!),
         _ => throw FormatException('bad parameter: $part'),

@@ -1,0 +1,11 @@
+btnMore.Click
+Choose mnuEditCopy
+btnMore.Click
+btnMore.Click      ' the menu is open: blocked
+Dismiss
+mnuEditCopy.Click  ' Edit is not Visible on the menu bar: nothing
+btnMore.Click
+Choose mnuEditMoreUpper
+btnMore.Click
+Choose mnuEditPaste
+Close

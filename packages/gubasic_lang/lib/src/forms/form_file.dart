@@ -5,10 +5,11 @@ import '../diagnostics/diagnostic.dart';
 import 'anchor.dart';
 import 'component.dart';
 import 'pictures.dart';
+import 'shortcut.dart';
 import 'yaml_reader.dart';
 
 /// The newest form file layout this GuBASIC reads (docs/LANGUAGE.md §11.2).
-const formFileVersion = 2;
+const formFileVersion = 3;
 
 /// A control placed on a form.
 class ControlDecl {
@@ -25,7 +26,8 @@ class ControlDecl {
 
   /// The name of the Frame it is in, as the form file writes it; null when
   /// it is on the form itself (D105). Its Left and Top are from the
-  /// Frame's top-left corner.
+  /// Frame's top-left corner. For a menu item, the menu it is in; null for
+  /// one on the menu bar (D106).
   final String? container;
 
   /// The values written in the file, by the property's own spelling.
@@ -116,7 +118,8 @@ FormFileResult readFormFile(
 
   final doc = r.load(text);
   if (doc == null) return result;
-  final top = r.entries(doc, {'formatversion', 'properties', 'controls'});
+  final top =
+      r.entries(doc, {'formatversion', 'properties', 'controls', 'menus'});
   if (!r.checkVersion(doc, top, formFileVersion)) return result;
 
   final formProps = top['properties'];
@@ -128,24 +131,36 @@ FormFileResult readFormFile(
   if (top['controls'] case final node?) {
     _controls(r, node, null, controls, seen, pictureNames);
   }
+  if (top['menus'] case final node?) {
+    // The menu bar (D106), after the controls.
+    _controls(r, node, null, controls, seen, pictureNames, menus: true);
+  }
   return result;
 }
 
 /// Reads a `controls:` list into [controls]: the form's, or with
 /// [container] the controls inside that Frame (D105), each followed by
-/// the ones inside it.
+/// the ones inside it. With [menus], a `menus:` list of menu items, each
+/// followed by the items in it (D106): they have no `type`.
 void _controls(
     YamlReader r,
     YamlNode node,
     String? container,
     List<ControlDecl> controls,
     Map<String, int> seen,
-    Map<String, String>? pictures) {
-  final list = r.list(node, 'controls', '- name: btnOk');
+    Map<String, String>? pictures,
+    {bool menus = false}) {
+  final list = menus
+      ? r.list(node, 'menus', '- name: mnuFile')
+      : r.list(node, 'controls', '- name: btnOk');
   for (final item in list?.nodes ?? const <YamlNode>[]) {
     final entry = r.map(item, 'controls');
     if (entry == null) continue;
-    final keys = r.entries(entry, {'name', 'type', 'properties', 'controls'});
+    final keys = r.entries(
+        entry,
+        menus
+            ? {'name', 'properties', 'menus'}
+            : {'name', 'type', 'properties', 'controls'});
     final line = entry.span.start.line + 1;
 
     final nameNode = keys['name'];
@@ -168,14 +183,16 @@ void _controls(
 
     final typeNode = keys['type'];
     ComponentSpec? component;
-    if (typeNode == null) {
+    if (menus) {
+      component = menuComponent;
+    } else if (typeNode == null) {
       r.report(
           entry.span, DiagnosticCode.wrongValueForm, ['type', 'type: Button']);
     } else {
       final typeName = r.text(typeNode, 'type', 'type: Button');
       if (typeName != null) {
         component = builtinComponents[typeName.toLowerCase()];
-        if (component == null || component == formComponent) {
+        if (component == null || component == formComponent || component.menu) {
           component = null;
           if (componentAliased(typeName) case final c?) {
             // `RadioButton` (Visual Basic .NET) for OptionButton (D104).
@@ -201,6 +218,12 @@ void _controls(
           line: line,
           container: container));
     }
+    if (keys['menus'] case final inner?) {
+      if (controlName != null) {
+        // The items of a menu (D106).
+        _controls(r, inner, controlName, controls, seen, pictures, menus: true);
+      }
+    }
     if (keys['controls'] case final inner?) {
       if (component != null && !component.container) {
         r.report(inner.span, DiagnosticCode.notContainer,
@@ -215,7 +238,7 @@ void _controls(
 
 String _controlTypeNames() => [
       for (final c in builtinComponents.values)
-        if (c != formComponent) c.name
+        if (c != formComponent && !c.menu) c.name
     ].join(', ');
 
 /// Reads a `properties:` map for [component] into [into].
@@ -257,6 +280,15 @@ void _properties(YamlReader r, YamlNode node, ComponentSpec component,
         continue;
       }
       into[spec.name] = anchor;
+      continue;
+    }
+    if (spec.shortcut && v is String) {
+      final shortcut = normalShortcut(v);
+      if (shortcut == null) {
+        r.report(value.span, DiagnosticCode.badShortcut, [v]);
+        continue;
+      }
+      into[spec.name] = shortcut;
       continue;
     }
     if (spec.picture && v is String && v.isNotEmpty) {

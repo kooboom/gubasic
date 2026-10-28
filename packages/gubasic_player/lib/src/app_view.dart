@@ -50,7 +50,7 @@ class _AppViewState extends State<AppView> {
             final form = model.form;
             final natural = Size(
               form.integer('Width').toDouble(),
-              form.integer('Height').toDouble(),
+              menuBarHeight(model) + form.integer('Height'),
             );
             final scale = fitScale(natural, constraints.biggest);
             return Stack(
@@ -62,9 +62,15 @@ class _AppViewState extends State<AppView> {
                       size: natural,
                       // The form appears when Form_Load has finished.
                       child: session.formShown
-                          ? KeyedSubtree(
-                              key: runFormKey(session.host.windowForm),
-                              child: GbFormView(key: appFormKey, model: model),
+                          ? withMenuBar(
+                              model,
+                              KeyedSubtree(
+                                key: runFormKey(session.host.windowForm),
+                                child: GbFormView(
+                                  key: appFormKey,
+                                  model: model,
+                                ),
+                              ),
                             )
                           : null,
                     ),

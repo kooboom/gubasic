@@ -37,6 +37,9 @@ methods:
   - ShowDialog() As Integer
   - Hide()
   - Close()
+  # Shows the items of one of the form's menus where the mouse last went
+  # down on it, and waits until one is chosen, or none (D106).
+  - PopupMenu(menu As Menu)
 # Names other versions of BASIC use, pointed to GuBASIC's (A036,
 # docs/DESIGN.md D50).
 otherNames:

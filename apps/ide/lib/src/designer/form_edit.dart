@@ -47,6 +47,11 @@ String newControlName(FormFile form, ComponentSpec type) {
   }
 }
 
+/// The controls of [form] the designer chooses, copies and keeps in its
+/// tray: all but its menu items, which the menu editor makes (D106).
+Iterable<ControlDecl> designedControls(FormFile form) =>
+    form.controls.where((c) => !c.component.menu);
+
 /// The controls of [form] seen on it, with a place and a size: all but its
 /// Timers, which the designer keeps in a tray (D100).
 Iterable<ControlDecl> placedControls(FormFile form) =>

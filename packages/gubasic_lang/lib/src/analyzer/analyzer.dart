@@ -5,6 +5,7 @@ import '../forms/anchor.dart';
 import '../forms/component.dart';
 import '../forms/form_file.dart';
 import '../forms/pictures.dart';
+import '../forms/shortcut.dart';
 import '../lexer/keyword.dart';
 import '../parser/parse_result.dart';
 import '../parser/parser.dart' show formStatements;
@@ -913,6 +914,12 @@ class _Analyzer {
     final type = _result.types[target.target];
     if (value is! StringLiteral || type is! ControlType) return;
     final property = type.component.properties[target.name.name.toLowerCase()];
+    if (property != null &&
+        property.shortcut &&
+        normalShortcut(value.value) == null) {
+      // A Shortcut likewise (A057, R024, D106).
+      _reportAt(value, DiagnosticCode.badShortcutInCode, [value.value]);
+    }
     if (property == null || !property.anchor) return;
     if (normalAnchor(value.value) == null) {
       _reportAt(value, DiagnosticCode.badAnchorInCode, [value.value]);
@@ -1528,11 +1535,14 @@ class _Analyzer {
         ok = type.isNumeric || type == GbType.string || type == GbType.boolean;
       case ArgKind.array:
         ok = type is ArrayType;
+      case ArgKind.menu:
+        ok = type is ControlType && type.component.menu;
     }
     if (!ok && type != GbType.void_) {
       final expected = switch (param.kind) {
         ArgKind.numeric || ArgKind.numericOrString => GbType.double_,
         ArgKind.array => const ArrayType(GbType.object),
+        ArgKind.menu => menuComponent.type,
         _ => GbType.string,
       };
       _reportAt(arg, DiagnosticCode.typeMismatch,

@@ -172,6 +172,22 @@ class IdeStrings {
     required this.chosenControls,
     required this.chooseOneControl,
     required this.pastedWithoutPicture,
+    required this.menuEditor,
+    required this.menuEditorTitle,
+    required this.menuNext,
+    required this.menuInsert,
+    required this.menuOut,
+    required this.menuIn,
+    required this.menuUp,
+    required this.menuDown,
+    required this.menuLineHint,
+    required this.menuNoName,
+    required this.menuBadName,
+    required this.menuNameTaken,
+    required this.menuTooDeep,
+    required this.menuLineHolds,
+    required this.menuBadShortcut,
+    required this.menuShortcutOfMenu,
     required this.picturesMenu,
     required this.picturesGroup,
     required this.explorerForms,
@@ -572,6 +588,54 @@ class IdeStrings {
   /// `{0}` the pictures' names.
   final String pastedWithoutPicture;
 
+  /// The designer's button and menu item that open the menu editor (D106).
+  final String menuEditor;
+
+  /// The menu editor's title.
+  final String menuEditorTitle;
+
+  /// Goes to the next item, adding one at the end.
+  final String menuNext;
+
+  /// Adds an item before the chosen one.
+  final String menuInsert;
+
+  /// Moves the chosen item one level out.
+  final String menuOut;
+
+  /// Moves the chosen item one level in, into the menu above it.
+  final String menuIn;
+
+  /// Moves the chosen item up.
+  final String menuUp;
+
+  /// Moves the chosen item down.
+  final String menuDown;
+
+  /// Under the menu editor's fields.
+  final String menuLineHint;
+
+  /// An item without a Name.
+  final String menuNoName;
+
+  /// `{0}` the name.
+  final String menuBadName;
+
+  /// `{0}` the name.
+  final String menuNameTaken;
+
+  /// `{0}` the item's name.
+  final String menuTooDeep;
+
+  /// `{0}` the line's name.
+  final String menuLineHolds;
+
+  /// `{0}` the text.
+  final String menuBadShortcut;
+
+  /// `{0}` the item's name.
+  final String menuShortcutOfMenu;
+
   // The project's pictures (D51).
   final String picturesMenu;
 
@@ -964,6 +1028,23 @@ class IdeStrings {
     chosenControls: '{0} controls chosen',
     chooseOneControl: 'Choose one control to see and change its properties.',
     pastedWithoutPicture: 'This project has no picture {0}, so the pasted control shows none. Add it with File → Pictures…, then choose it in Picture.',
+    menuEditor: 'Menu Editor…',
+    menuEditorTitle: 'Menu Editor',
+    menuNext: 'Next',
+    menuInsert: 'Insert',
+    menuOut: 'One level out',
+    menuIn: 'One level in',
+    menuUp: 'Up',
+    menuDown: 'Down',
+    menuLineHint: 'A Caption of - alone makes a line between items. Ctrl in a Shortcut is the Command key on macOS.',
+    menuNoName: 'Give each item a Name.',
+    menuBadName: '{0} cannot be a Name: start with an English letter, then use letters, digits or _, and do not use a keyword.',
+    menuNameTaken: 'Another control or item is already named {0}: give this one another Name.',
+    menuTooDeep: '{0} is two levels deeper than the item above it: move it one level out.',
+    menuLineHolds: 'The line {0} cannot hold items: move the items under it one level out.',
+    menuBadShortcut: '{0} is not a shortcut: write Ctrl, Shift or Alt and a key, joined by +, as in Ctrl+O or F5. A letter or digit needs Ctrl or Alt.',
+    menuShortcutOfMenu:
+        '{0} holds items, so no Shortcut can choose it: clear its Shortcut.',
     picturesMenu: 'Pictures…',
     picturesGroup: 'Pictures',
     explorerForms: 'Forms',
@@ -1263,6 +1344,24 @@ class IdeStrings {
     chosenControls: '컨트롤 {0}개를 골랐습니다',
     chooseOneControl: '속성을 보고 바꾸려면 컨트롤을 하나만 고릅니다.',
     pastedWithoutPicture: '이 프로젝트에는 그림 {0} 파일이 없어서, 붙여넣은 컨트롤에는 그림이 없습니다. [파일 → 그림…]으로 그림을 더한 뒤 Picture에서 고릅니다.',
+    menuEditor: '메뉴 편집기…',
+    menuEditorTitle: '메뉴 편집기',
+    menuNext: '다음',
+    menuInsert: '끼워 넣기',
+    menuOut: '한 단계 밖으로',
+    menuIn: '한 단계 안으로',
+    menuUp: '위로',
+    menuDown: '아래로',
+    menuLineHint: 'Caption을 - 하나로 하면 항목 사이에 줄이 생깁니다. Shortcut의 Ctrl은 macOS에서 Command 키입니다.',
+    menuNoName: '항목마다 Name을 정해 주세요.',
+    menuBadName:
+        '{0} 값은 Name으로 쓸 수 없습니다. 영문자로 시작하고 영문자, 숫자, _만 쓰며, 키워드는 쓰지 말아 주세요.',
+    menuNameTaken: '이미 {0} 이름을 쓰는 컨트롤이나 항목이 있습니다. 다른 Name을 정해 주세요.',
+    menuTooDeep: '{0} 항목이 바로 위 항목보다 두 단계 안에 있습니다. 한 단계 밖으로 옮겨 주세요.',
+    menuLineHolds: '{0} 항목은 줄이어서 다른 항목을 담을 수 없습니다. 그 아래 항목을 한 단계 밖으로 옮겨 주세요.',
+    menuBadShortcut: '{0} 값은 단축키가 아닙니다. Ctrl+O나 F5처럼 Ctrl, Shift, Alt와 키 하나를 +로 이어 적어 주세요. 글자나 숫자 키에는 Ctrl이나 Alt가 있어야 합니다.',
+    menuShortcutOfMenu:
+        '{0} 항목은 다른 항목을 담고 있어서 단축키로 고를 수 없습니다. Shortcut을 비워 주세요.',
     picturesMenu: '그림…',
     picturesGroup: '그림',
     explorerForms: '폼',

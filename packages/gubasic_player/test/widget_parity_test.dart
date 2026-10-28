@@ -222,6 +222,12 @@ class _RecordingHost extends RunHost {
   }
 
   @override
+  Future<String?> popupMenu(String form, String menu) {
+    transcript.add(TranscriptLine.popupMenu(menu));
+    return super.popupMenu(form, menu);
+  }
+
+  @override
   void removeControl(String form, String control) {
     transcript.add(
       TranscriptLine.removeControl(control, form: _several ? form : null),
@@ -268,6 +274,7 @@ class _WidgetDriver implements ScriptDriver {
         GbListBox(:final state) ||
         GbOptionButton(:final state) ||
         GbComboBox(:final state) ||
+        GbFrame(:final state) ||
         GbImage(
           :final state,
         ) => state.name?.toLowerCase() == name.toLowerCase(),
@@ -313,8 +320,43 @@ class _WidgetDriver implements ScriptDriver {
     if (form != null && form.toLowerCase() != host.front!.name.toLowerCase()) {
       return EventOutcome.blocked;
     }
+    final model = host.model;
+    if (model.control(control) case final item?
+        when item.kind == GbControlKind.menu) {
+      return _choose(model, item);
+    }
     host.lastOutcome = null;
     if (!await _tap(_control(control))) return EventOutcome.blocked;
+    return host.lastOutcome ?? EventOutcome.noHandler;
+  }
+
+  /// Chooses menu item [item] in the window's menu bar (D106): opens the
+  /// menus it is in, from the menu bar down, then clicks it. One that is
+  /// grey, or in a menu that opens nothing, is not chosen.
+  Future<EventOutcome> _choose(GbFormModel model, GbControlState item) async {
+    final path = <GbControlState>[];
+    for (GbControlState? m = item; m != null;) {
+      path.insert(0, m);
+      m = m.container == null ? null : model.control(m.container);
+    }
+    host.lastOutcome = null;
+    for (final m in path) {
+      final button = find.byKey(gbMenuKey(m.name!));
+      if (button.hitTestable().evaluate().isEmpty) {
+        // In a menu that is not Enabled: it opened nothing.
+        await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+        await tester.pumpAndSettle();
+        return EventOutcome.disabled;
+      }
+      if (m == item &&
+          tester.widget<MenuItemButton>(button).onPressed == null) {
+        await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+        await tester.pumpAndSettle();
+        return EventOutcome.disabled;
+      }
+      await tester.tap(button);
+      await tester.pumpAndSettle();
+    }
     return host.lastOutcome ?? EventOutcome.noHandler;
   }
 
@@ -467,6 +509,41 @@ class _WidgetDriver implements ScriptDriver {
         matching: find.text(value == null ? strings.cancel : strings.ok),
       ),
     );
+  }
+
+  /// Chooses [item] in the open popup menu (D106), opening the items it
+  /// is in first; or closes the menu with Escape.
+  @override
+  Future<bool> choose(String? item) async {
+    final open = find.byWidgetPredicate(
+      (w) =>
+          w.key is ValueKey<String> &&
+          (w.key! as ValueKey<String>).value.startsWith('gb.popup.'),
+    );
+    if (open.evaluate().isEmpty) return false;
+    if (item == null) {
+      await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+      await tester.pumpAndSettle();
+      return true;
+    }
+    // The menus it is in, from the outermost; those not in the popup, as
+    // the menu it shows, are passed over.
+    final model = host.model;
+    final path = <String>[];
+    for (var m = model.control(item); m != null;) {
+      path.insert(0, m.name!);
+      m = m.container == null ? null : model.control(m.container);
+    }
+    for (final name in path) {
+      final key = find.byKey(gbPopupKey(name));
+      if (key.evaluate().isEmpty) continue;
+      if (tester.widget<InkWell>(key).onTap == null) {
+        throw StateError('$name cannot be chosen');
+      }
+      await tester.tap(key);
+      await tester.pumpAndSettle();
+    }
+    return true;
   }
 
   @override

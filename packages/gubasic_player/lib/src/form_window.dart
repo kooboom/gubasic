@@ -18,8 +18,11 @@ GbFormModel formModelOf(
       p.name: form.valueOf(p.name),
   },
   controls: [
-    // A Timer is not seen on the form (D100).
-    for (final c in form.controls.where((c) => c.component.visual))
+    // A Timer is not seen on the form (D100); the menu items are drawn in
+    // the menu bar (D106).
+    for (final c in form.controls.where(
+      (c) => c.component.visual || c.component.menu,
+    ))
       controlStateOf(c.name, c.component, {
         for (final p in c.component.properties.values)
           if (p.isStored) p.name: c.valueOf(p.name),
@@ -61,6 +64,7 @@ GbControlKind _kind(String component) => switch (component.toLowerCase()) {
   'optionbutton' => GbControlKind.optionButton,
   'combobox' => GbControlKind.comboBox,
   'frame' => GbControlKind.frame,
+  'menu' => GbControlKind.menu,
   _ => throw ArgumentError('no widget for component $component'),
 };
 

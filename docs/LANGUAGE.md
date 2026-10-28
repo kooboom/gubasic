@@ -172,6 +172,7 @@ The analyzer checks names and types (§2.1, §3.2, §5.2). It runs even when the
 | A054 | A name two modules make `Public`, written without its module's name (§11.5) |
 | A055 | `Sub Main` in two modules (§11.5) |
 | A056 | A type under another version of BASIC's name: `RadioButton` for `OptionButton` (§11.1) |
+| A057 | Text that is not a shortcut given to a `Shortcut` (warning, §11.1) |
 
 **Form and project files**
 
@@ -200,6 +201,7 @@ Form files and project files (§11.2, §11.3) are checked the same way: a proble
 | F019 | `startup: Sub Main`, but no module has a `Sub Main()` (§11.5) |
 | F020 | A control type under another version of BASIC's name: `type: RadioButton` (§11.1) |
 | F021 | `controls:` under a control that is not a Frame (§11.2) |
+| F022 | A `Shortcut` that is not a shortcut (§11.1) |
 
 **Run time**
 
@@ -230,6 +232,9 @@ Errors found while a program runs. Each stops the program and points at its line
 | R021 | `AddHandler` for an event that already has a handler (§8) |
 | R022 | `CType` of a control of another type (§11.4) |
 | R023 | `Me.Controls.Remove` of a Frame that holds controls (§11.1) |
+| R024 | A `Shortcut` set to text that is not a shortcut (§11.1) |
+| R025 | `PopupMenu` of a menu item that has no items (§11.1) |
+| R026 | `PopupMenu` of another form's menu (§11.1) |
 
 ## 2. Types
 
@@ -678,7 +683,7 @@ End Sub
 
 | Control | Properties | Events |
 |---|---|---|
-| `Form` | `Caption` (`String`); `Width`, `Height` (`Integer`); `KeyPreview` (`Boolean`); `DialogResult` (`Integer`, set only in code); `Controls` (§11.4). Methods: `Show()`, `ShowDialog()` (gives a `DialogResult`), `Hide()`, `Close()` | `Load`, `Resize`, `Closed`, `KeyDown(e As KeyEventArgs)`, `KeyUp(e As KeyEventArgs)` |
+| `Form` | `Caption` (`String`); `Width`, `Height` (`Integer`); `KeyPreview` (`Boolean`); `DialogResult` (`Integer`, set only in code); `Controls` (§11.4). Methods: `Show()`, `ShowDialog()` (gives a `DialogResult`), `Hide()`, `Close()`, `PopupMenu(menu)` | `Load`, `Resize`, `Closed`, `KeyDown(e As KeyEventArgs)`, `KeyUp(e As KeyEventArgs)` |
 | `Button` | `Caption` (`String`); `Left`, `Top`, `Width`, `Height` (`Integer`) | `Click` |
 | `Label` | `Caption` (`String`); `Left`, `Top`, `Width`, `Height` (`Integer`) | `Click` |
 | `TextBox` | `Text` (`String`); `Left`, `Top`, `Width`, `Height` (`Integer`) | `Changed` |
@@ -687,6 +692,7 @@ End Sub
 | `OptionButton` | `Caption` (`String`); `Checked` (`Boolean`); `Left`, `Top`, `Width`, `Height` (`Integer`) | `Changed` |
 | `ComboBox` | as a `ListBox`: `ListIndex`, `ListCount`, `Text`; `AddItem(item)`, `RemoveItem(index)`, `Clear()`, `List(index)` | `Changed` |
 | `Frame` | `Caption` (`String`); `Left`, `Top`, `Width`, `Height` (`Integer`); holds other controls | `Click` |
+| `Menu` | `Caption` (`String`); `Checked`, `Enabled`, `Visible` (`Boolean`); `Shortcut` (`String`); made in the menu editor | `Click` |
 | `Timer` | `Interval` (`Integer`, milliseconds, at least 1; 100 at first); `Enabled` (`Boolean`, `False` at first). Methods: `Start()`, `Stop()`. Not seen on the form (below) | `Tick` |
 | `ListBox` | `ListIndex` (`Integer`, set only in code); `ListCount` (`Integer`), `Text` (`String`), both read only; `Left`, `Top`, `Width`, `Height` (`Integer`). Methods: `AddItem(item)`, `RemoveItem(index)`, `Clear()`, `List(index)` | `Changed` |
 
@@ -700,6 +706,8 @@ End Sub
 - **An OptionButton** (DESIGN.md D104) is one of a group of choices: the OptionButtons on a form are one group, and those in each Frame another (D105), of which one is checked. Checking one, by a click or by setting `Checked = True`, unchecks the others; a click on the checked one does nothing; `Checked = False` leaves none checked. `Changed` runs for the one that becomes checked, as Visual Basic 6's Click did, and not for the ones it unchecks, so one handler for the group runs once. In the designer, checking one in the Properties window unchecks the others. Visual Basic .NET calls it [RadioButton](https://learn.microsoft.com/en-us/dotnet/api/system.windows.forms.radiobutton) (A056, F020).
 - **A ComboBox** (D104) is a closed box showing the chosen item, which a click opens as a list to pick one; the user picks and does not type (Visual Basic 6's Style 2). The program fills it and reads it exactly as a ListBox: `AddItem`, `RemoveItem`, `Clear`, `List`, `ListCount`, `ListIndex`, `Text`, and `Changed` when `ListIndex` changes. A ComboBox the user types in is left for later.
 - **A Frame** (DESIGN.md D105) is a box with its `Caption` on its top edge that holds other controls. A control in it is placed from the Frame's top-left corner: its `Left` and `Top` are from there, and its Anchor keeps distances to the Frame's edges, so that a Frame anchored to grow with the form moves the controls anchored to its right or bottom. The Frame cuts off what reaches past its edges. Its OptionButtons are a group of their own, as in Visual Basic 6 ([Microsoft](https://learn.microsoft.com/en-us/previous-versions/visualstudio/visual-basic-6/aa241737(v=vs.60))). A Frame can hold Frames. In the designer, a control drawn or dropped on a Frame goes into it; moving a Frame moves what is in it; deleting, copying or pasting a Frame takes what is in it along; and a control pasted while one Frame is chosen goes into it. A control does not leave its Frame when dragged: to take it out, or into another Frame, cut it and paste it. `Me.Controls` has the controls in Frames too; `Me.Controls.Remove` of a Frame that holds controls is R023, and a control removed from a Frame and added again is on the form itself. Visual Basic .NET calls it [GroupBox](https://learn.microsoft.com/en-us/dotnet/api/system.windows.forms.groupbox) (A056, F020).
+- **A form's menu bar** (DESIGN.md D106) is made in the designer's menu editor (⌘E, Ctrl+E), as in Visual Basic 6's [Menu Editor](https://learn.microsoft.com/en-us/previous-versions/visualstudio/visual-studio-2008/62aawczc(v=vs.90)): each item has a `Caption`, a `Name` and a level, and may have a `Shortcut`, be `Checked`, not `Enabled` or not `Visible`. An item is a `Menu` control: its handler is `mnuFileOpen_Click`, and code sets its properties (`mnuViewBig.Checked = True`). An item with items opens them and raises nothing; an item without is chosen and raises `Click`; a `Caption` of `-` alone is a line between items. An item that is not `Enabled`, or is in a menu that is not, is grey and cannot be chosen; one that is not `Visible` is not shown. A `Shortcut` is Ctrl, Shift and Alt and one key, joined by `+` (`Ctrl+O`, `Ctrl+Shift+S`, `F5`); a letter or digit needs Ctrl or Alt (A057, F022, R024). On macOS, in the IDE's run window and in an exported app, the menus are on the system's menu bar, between the app's own menu and the Window menu, and Ctrl in a Shortcut is the Command key; on the web and on Windows they are in the window, above the form, which they do not make smaller. They choose the same items and run the same handlers everywhere. The designer shows the menu bar above the form; choosing an item there opens its `Click`. Menus are not among `Me.Controls`.
+- **`Me.PopupMenu(mnuEdit)`** (D106) shows the items of one of the form's menus where the mouse last went down on the form, as Visual Basic 6's [PopupMenu](https://learn.microsoft.com/en-us/previous-versions/visualstudio/visual-basic-6/aa716251(v=vs.60)) does; a menu that is not `Visible` on the menu bar is the usual one to show. It waits, as a MsgBox does, until an item is chosen, or the menu is closed with none by Escape or a click outside it; the chosen item's `Click` runs before `PopupMenu` returns. GuBASIC writes the call with `Me.` and parentheses, as for every form method (§7, P011). A menu with no items is R025; another form's menu is R026.
 - **Other names of control types**, as other versions of BASIC give them (D104): `RadioButton` is `OptionButton`, `CommandButton` is `Button`, `PictureBox` is `Image`, `GroupBox` is `Frame`, in code (A056) and in form files (F020).
 - **The form's keys** (DESIGN.md D101). `Form_KeyDown(e As KeyEventArgs)` runs when a key is pressed, and again while it is held; `Form_KeyUp(e As KeyEventArgs)` when it is let go. `e.KeyCode` is the key's number, compared with `Keys`: `Keys.Left`, `Keys.Right`, `Keys.Up`, `Keys.Down`, `Keys.Space`, `Keys.Enter`, `Keys.Escape`, `Keys.Back`, `Keys.Tab`, `Keys.Delete`, `Keys.Insert`, `Keys.Home`, `Keys.End`, `Keys.PageUp`, `Keys.PageDown`, `Keys.A` to `Keys.Z`, `Keys.D0` to `Keys.D9`, `Keys.NumPad0` to `Keys.NumPad9`, `Keys.F1` to `Keys.F12`, with Visual Basic .NET's numbers ([Microsoft](https://learn.microsoft.com/en-us/dotnet/api/system.windows.forms.keys)). `e.Shift`, `e.Control` and `e.Alt` say which modifiers are held; they raise no event alone. Letters and digits are told by where they are on the keyboard, whatever the input method types. The form in front gets the keys while it or a control other than a TextBox has the focus, from when it is shown; while a TextBox is typed in, only when its **`KeyPreview`** is `True` (`False` at first, as in Visual Basic .NET: [Microsoft](https://learn.microsoft.com/en-us/dotnet/api/system.windows.forms.form.keypreview)), and the TextBox still gets the key. A key event waits for the running handler, does not re-enter, and is blocked while a dialog is open. Visual Basic 6's `(KeyCode As Integer, Shift As Integer)` is A053. On phones (stage 3) key events do not come.
 
@@ -746,6 +754,7 @@ controls:
 - The file is YAML, so that it is plain text (D13). The designer writes it; it can also be edited by hand, and mistakes are reported with F codes (§1.2).
 - `formatVersion` is the version of this layout. A file with a newer version is not read (F003), so that an older GuBASIC never misreads it. A change that would read old files differently gets a new version and a converter (D12). A form with controls inside a Frame is written as version 2; any other form is still version 1, which version 2 reads unchanged, so that it needs no converter (DESIGN.md D105).
 - A Frame's `controls` lists the controls inside it, written as the form's own (D105). Only a Frame holds controls (F021), and names are unique across the whole form.
+- `menus` lists the menu bar's items (D106), each with a `name`, `properties` and, for a menu, its own `menus`; they have no `type`. A form with a menu bar is written as version 3.
 - `properties` holds only the values that differ from the defaults. Keys and property names are not case-sensitive.
 - Each control has a `name`, a `type` and, if needed, `properties`. A name follows the rules for identifiers (§1): an English letter, then letters, digits or `_`. It cannot be a keyword or `Form`, and two controls cannot have the same name in any case.
 - A `String` property takes the value as it is written: `Caption: 2026` is the text `2026`. Use quotes for text that YAML would otherwise read differently, such as text starting with a quote, `-`, `[` or `{`, or containing `: ` or ` #`.

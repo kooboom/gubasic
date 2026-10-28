@@ -15,6 +15,8 @@ void main() {
       DiagnosticCode.unknownPictureInCode,
       // The line may never run, as for a picture (D57).
       DiagnosticCode.badAnchorInCode,
+      // Likewise for a menu's Shortcut (D106).
+      DiagnosticCode.badShortcutInCode,
       // The procedure still handles what its Handles lists (D98).
       DiagnosticCode.handlerNameMismatch,
     };

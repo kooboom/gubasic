@@ -26,6 +26,24 @@ ValueKey<String> runFormKey(String name) =>
   );
 }
 
+/// The height of [model]'s menu bar in its window: none on macOS, where
+/// the system's menu bar shows the menus, nor without menus (D106).
+double menuBarHeight(GbFormModel model) =>
+    gbUsesSystemMenus || model.menuItems.isEmpty ? 0 : gbMenuBarHeight;
+
+/// [form], [model]'s view, under its menu bar in the window when it has
+/// one (D106).
+Widget withMenuBar(GbFormModel model, Widget form) => menuBarHeight(model) == 0
+    ? form
+    : Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          GbMenuBar(model: model),
+          form,
+        ],
+      );
+
 /// The forms shown as dialogs over the window or the page (D88): each
 /// over a dim barrier that takes the clicks meant for what is behind,
 /// centred, shrunk when larger than the area. A dialog has no close
@@ -43,7 +61,9 @@ List<Widget> dialogLayers(BuildContext context, RunSession session) {
             builder: (context, _) {
               final natural = Size(
                 model.form.integer('Width').toDouble(),
-                formTitleHeight + model.form.integer('Height'),
+                formTitleHeight +
+                    menuBarHeight(model) +
+                    model.form.integer('Height'),
               );
               final scale = fitScale(natural, inside(constraints, 16));
               return Center(
@@ -51,9 +71,9 @@ List<Widget> dialogLayers(BuildContext context, RunSession session) {
                   FormWindowFrame(
                     caption: model.form.text('Caption'),
                     width: natural.width,
-                    child: GbFormView(
-                      key: runFormKey(dialog.name),
-                      model: model,
+                    child: withMenuBar(
+                      model,
+                      GbFormView(key: runFormKey(dialog.name), model: model),
                     ),
                   ),
                   natural,
@@ -118,7 +138,10 @@ class _RunWindowState extends State<RunWindow> {
             final form = session.host.windowModel.form;
             final natural = Size(
               form.integer('Width') + _cornerReach,
-              formTitleHeight + form.integer('Height') + _cornerReach,
+              formTitleHeight +
+                  menuBarHeight(session.host.windowModel) +
+                  form.integer('Height') +
+                  _cornerReach,
             );
             final scale = fit?.value ?? false
                 ? fitScale(natural, inside(constraints, padding))
@@ -276,9 +299,12 @@ class _WindowState extends State<_Window> {
               ),
               // The form appears when Form_Load has finished.
               child: session.formShown
-                  ? GbFormView(
-                      key: runFormKey(session.host.windowForm),
-                      model: _model,
+                  ? withMenuBar(
+                      _model,
+                      GbFormView(
+                        key: runFormKey(session.host.windowForm),
+                        model: _model,
+                      ),
                     )
                   : null,
             ),

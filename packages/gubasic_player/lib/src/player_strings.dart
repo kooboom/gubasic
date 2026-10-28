@@ -16,6 +16,7 @@ class PlayerStrings {
     required this.cannotStart,
     required this.bundleTooNew,
     required this.notABundle,
+    required this.windowMenu,
   });
 
   /// The words on MsgBox and InputBox.
@@ -46,6 +47,9 @@ class PlayerStrings {
   /// The app's project file is damaged (D83).
   final String notABundle;
 
+  /// The Window menu on macOS's menu bar (D106).
+  final String windowMenu;
+
   /// [diagnostic] in [file], in this language.
   String problem(String file, Diagnostic diagnostic) => errorAt
       .replaceAll('{0}', file)
@@ -66,6 +70,7 @@ class PlayerStrings {
     notABundle:
         'This app\'s program file (project.gbz) is damaged. Export the app '
         'again.',
+    windowMenu: 'Window',
   );
 
   static const ko = PlayerStrings(
@@ -78,5 +83,6 @@ class PlayerStrings {
     cannotStart: '다음 오류 때문에 프로그램을 시작할 수 없습니다.',
     bundleTooNew: '이 앱의 프로그램은 이 앱보다 새로운 GuBASIC {0} 버전으로 만들었습니다. 그 GuBASIC으로 앱을 다시 내보내 주세요.',
     notABundle: '이 앱의 프로그램 파일(project.gbz)이 손상되었습니다. 앱을 다시 내보내 주세요.',
+    windowMenu: '윈도우',
   );
 }

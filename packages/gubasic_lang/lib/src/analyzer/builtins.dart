@@ -19,6 +19,9 @@ enum ArgKind {
 
   /// Any array.
   array,
+
+  /// A menu item of a form (`PopupMenu`, docs/DESIGN.md D106).
+  menu,
 }
 
 class ParamSpec {

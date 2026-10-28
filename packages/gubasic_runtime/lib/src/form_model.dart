@@ -1,3 +1,5 @@
+import 'dart:ui' show Offset;
+
 import 'package:flutter/foundation.dart';
 
 import 'anchor.dart';
@@ -14,6 +16,7 @@ enum GbControlKind {
   optionButton,
   comboBox,
   frame,
+  menu,
 }
 
 /// The layer a control is drawn in, its component.yaml's `layer`
@@ -40,6 +43,7 @@ class GbControlState extends ChangeNotifier {
   /// The name of the Frame it is in, or null: on the form itself
   /// (docs/DESIGN.md D105). Its `Left` and `Top` are from the Frame's
   /// top-left corner, and its Anchor keeps distances to the Frame's edges.
+  /// For a menu item, the menu it is in; null on the menu bar (D106).
   final String? container;
   final GbControlKind kind;
   final GbLayer layer;
@@ -133,6 +137,10 @@ class GbFormModel {
   /// keys come to [onKey].
   VoidCallback? requestFocus;
 
+  /// Where on the screen the mouse or a finger last went down on the form,
+  /// set by its view: where `PopupMenu` shows a menu (D106).
+  Offset? lastPointer;
+
   /// Whether the form is shown in a designer rather than run: an empty
   /// ListBox then shows its name, so that it can be seen.
   final bool designing;
@@ -155,10 +163,27 @@ class GbFormModel {
         for (final layer in GbLayer.values)
           for (final c in _controls)
             if (c.layer == layer &&
+                c.kind != GbControlKind.menu &&
                 c.container?.toLowerCase() == container?.toLowerCase())
               c,
       ]);
   Map<String?, List<GbControlState>>? _drawingOrder;
+
+  /// The form's menu items (D106), in the form file's order: each menu
+  /// followed by its items.
+  List<GbControlState> get menuItems => [
+    for (final c in _controls)
+      if (c.kind == GbControlKind.menu) c,
+  ];
+
+  /// The items of the menu named [menu], or of the menu bar for null
+  /// (D106).
+  List<GbControlState> menusIn(String? menu) => [
+    for (final c in _controls)
+      if (c.kind == GbControlKind.menu &&
+          c.container?.toLowerCase() == menu?.toLowerCase())
+        c,
+  ];
 
   /// Puts [control] on the form, on top of the others of its layer, for
   /// the program (D98).

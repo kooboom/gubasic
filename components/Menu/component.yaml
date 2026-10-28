@@ -1,0 +1,31 @@
+# An item of a form's menu bar (docs/DESIGN.md D106), made in the menu
+# editor and written under menus: in the form file. A menu with items in
+# it opens them; an item without opens nothing and raises Click. A
+# Caption of "-" is a line between items. Ctrl in a Shortcut is the
+# Command key on macOS. Not seen on the form: the window draws the menu
+# bar, or on macOS the system's menu bar does.
+name: Menu
+version: 1
+visual: false
+menu: true
+defaultEvent: Click
+properties:
+  - { name: Caption, type: String, default: "" }
+  - { name: Checked, type: Boolean, default: false }
+  - { name: Enabled, type: Boolean, default: true }
+  # False: not on the menu bar, or not in its menu; a menu that is not
+  # Visible can still be shown with PopupMenu.
+  - { name: Visible, type: Boolean, default: true }
+  - { name: Shortcut, type: String, default: "", shortcut: true }
+  # Any text the program keeps with it, as in Visual Basic; GuBASIC does
+  # nothing with it (D98).
+  - { name: Tag, type: String, default: "" }
+events:
+  - Click()
+methods: []
+# Names other versions of BASIC use, pointed to GuBASIC's (A036,
+# docs/DESIGN.md D50).
+otherNames:
+  # Visual Basic 6's control arrays numbered controls; a Tag can (D99).
+  Index: Tag
+  Text: Caption
