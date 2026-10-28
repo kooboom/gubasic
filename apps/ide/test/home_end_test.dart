@@ -6,6 +6,8 @@ import 'package:gubasic_ide/src/code/code_editor.dart';
 import 'package:gubasic_ide/src/project/examples.g.dart';
 import 'package:gubasic_ide/src/strings.dart';
 
+import 'support/explorer.dart';
+
 /// Home and End in the code editor (D71): along the caret's line on every
 /// system, Home first after the indentation, then at the line's start.
 void main() {
@@ -28,7 +30,7 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    await tester.tap(find.text(codeFile));
+    await tester.tap(explorerItem(codeFile));
     await tester.pumpAndSettle();
   }
 

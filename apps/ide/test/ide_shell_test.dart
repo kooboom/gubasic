@@ -10,6 +10,8 @@ import 'package:gubasic_ide/src/project/project_pictures.dart';
 import 'package:gubasic_player/gubasic_player.dart';
 import 'package:gubasic_ide/src/strings.dart';
 
+import 'support/explorer.dart';
+
 void main() {
   Future<void> open(
     WidgetTester tester,
@@ -89,13 +91,15 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Form1.gbas'));
+    await tester.tap(explorerItem('Form1.gbas'));
     await tester.pumpAndSettle();
+    // The form's line in the explorer (D94), its Code button too.
     final tile = tester.widget<ListTile>(
-      find.ancestor(
-        of: find.text('Form1.gbas'),
-        matching: find.byType(ListTile),
-      ),
+      find.byKey(const ValueKey('explorer.form.Form1')),
+    );
+    expect(
+      tester.widget<IconButton>(explorerItem('Form1.gbas')).isSelected,
+      isTrue,
     );
     final scheme = Theme.of(tester.element(find.byType(IdeShell))).colorScheme;
     expect(tile.selected, isTrue);
@@ -153,7 +157,7 @@ void main() {
   testWidgets('a MsgBox blocks the form, not the IDE', (tester) async {
     await upToMsgBox(tester);
     expect(find.text('Say hello').hitTestable(), findsNothing);
-    expect(find.text('Form1.gbas').hitTestable(), findsOneWidget);
+    expect(explorerItem('Form1.gbas').hitTestable(), findsOneWidget);
     expect(find.text('Stop (Shift+F5)').hitTestable(), findsOneWidget);
   });
 
@@ -161,7 +165,7 @@ void main() {
     tester,
   ) async {
     await upToMsgBox(tester);
-    await tester.tap(find.text('Form1.form.yaml'));
+    await tester.tap(explorerItem('Form1.form.yaml'));
     await tester.pumpAndSettle();
     expect(find.text('Hello, Ann! (1)'), findsNothing);
     expect(find.byType(FormDesigner), findsOneWidget, reason: 'the file');
@@ -179,7 +183,7 @@ void main() {
     testWidgets('Stop with a MsgBox open, looking at $where', (tester) async {
       await upToMsgBox(tester);
       if (where == 'a file') {
-        await tester.tap(find.text('Form1.gbas'));
+        await tester.tap(explorerItem('Form1.gbas'));
         await tester.pumpAndSettle();
       }
       await tester.tap(find.text('Stop (Shift+F5)'));
@@ -193,7 +197,7 @@ void main() {
 
   testWidgets('files are read-only while a program runs', (tester) async {
     await upToMsgBox(tester);
-    await tester.tap(find.text('Form1.gbas'));
+    await tester.tap(explorerItem('Form1.gbas'));
     await tester.pumpAndSettle();
     final shown = tester.widgetList<EditableText>(find.byType(EditableText));
     expect(shown, isNotEmpty);

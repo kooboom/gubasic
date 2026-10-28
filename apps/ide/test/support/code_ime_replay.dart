@@ -12,6 +12,8 @@ import 'package:gubasic_ide/src/project/examples.g.dart';
 import 'package:gubasic_ide/src/strings.dart';
 import 'package:gubasic_runtime/gubasic_runtime.dart';
 
+import 'explorer.dart';
+
 /// Replays the real input methods' recordings ([logs]: file name → JSON,
 /// from packages/gubasic_runtime/test/ime_logs) into the code editor, in a
 /// comment and in a string, and checks what D36 promises: the file gets
@@ -45,7 +47,7 @@ void defineCodeImeTests(Map<String, String> logs) {
         strings: IdeStrings.en,
       ),
     );
-    await t.tap(find.text(codeFile));
+    await t.tap(explorerItem(codeFile));
     await t.pumpAndSettle();
     await t.tap(find.byKey(codeFieldKey));
     await t.pump();

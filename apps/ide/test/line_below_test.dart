@@ -8,6 +8,8 @@ import 'package:gubasic_ide/src/code/completion_list.dart';
 import 'package:gubasic_ide/src/project/examples.g.dart';
 import 'package:gubasic_ide/src/strings.dart';
 
+import 'support/explorer.dart';
+
 /// ⌘Enter / Ctrl+Enter (D73): a new line below the caret's, wherever the
 /// caret is on it, made as an Enter at the line's end makes it.
 void main() {
@@ -36,7 +38,7 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    await tester.tap(find.text(codeFile));
+    await tester.tap(explorerItem(codeFile));
     await tester.pumpAndSettle();
   }
 

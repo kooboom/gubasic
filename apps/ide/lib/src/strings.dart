@@ -157,6 +157,11 @@ class IdeStrings {
     required this.delete,
     required this.picturesMenu,
     required this.picturesGroup,
+    required this.explorerForms,
+    required this.explorerFiles,
+    required this.explorerViewHint,
+    required this.viewDesign,
+    required this.projectSettings,
     required this.picturesTitle,
     required this.noPictures,
     required this.addPicture,
@@ -522,6 +527,19 @@ class IdeStrings {
 
   /// The group of the project's pictures in the file list (D68).
   final String picturesGroup;
+
+  // The project explorer (D94).
+  /// Its two views: the forms, and the files as they are on disk.
+  final String explorerForms;
+  final String explorerFiles;
+  final String explorerViewHint;
+
+  /// The tooltip of a form's button that opens its design; the one that
+  /// opens its code says [viewCode].
+  final String viewDesign;
+
+  /// Under the .gbproj file in the forms view.
+  final String projectSettings;
   final String picturesTitle;
   final String noPictures;
   final String addPicture;
@@ -877,6 +895,11 @@ class IdeStrings {
     delete: 'Delete',
     picturesMenu: 'Pictures…',
     picturesGroup: 'Pictures',
+    explorerForms: 'Forms',
+    explorerFiles: 'Files',
+    explorerViewHint: 'Forms: one line for each form, as Visual Basic shows a project. Files: the files as they are on disk.',
+    viewDesign: 'View Design',
+    projectSettings: 'Project settings',
     picturesTitle: 'Pictures',
     noPictures: 'This project has no pictures yet. Add PNG, JPEG or GIF pictures for its Image controls to show.',
     addPicture: 'Add Picture…',
@@ -1153,6 +1176,12 @@ class IdeStrings {
     delete: '삭제',
     picturesMenu: '그림…',
     picturesGroup: '그림',
+    explorerForms: '폼',
+    explorerFiles: '파일 목록',
+    explorerViewHint:
+        '폼: Visual Basic처럼 폼마다 한 줄로 보입니다. 파일 목록: 디스크에 있는 파일을 그대로 보입니다.',
+    viewDesign: '디자인 보기',
+    projectSettings: '프로젝트 설정',
     picturesTitle: '그림',
     noPictures: '이 프로젝트에는 아직 그림이 없습니다. Image 컨트롤에 보일 PNG, JPEG, GIF 그림을 추가합니다.',
     addPicture: '그림 추가…',

@@ -9,6 +9,8 @@ import 'package:gubasic_ide/src/project/examples.g.dart';
 import 'package:gubasic_ide/src/strings.dart';
 import 'package:gubasic_lang/gubasic_lang.dart';
 
+import 'support/explorer.dart';
+
 /// The form size presets (D60): phone 360×800, tablet 768×1024, desktop
 /// 800×600, and turning the form; the controls move as their Anchor says,
 /// and going back puts each exactly where it was.
@@ -50,7 +52,7 @@ void main() {
         strings: s,
       ),
     );
-    await tester.tap(find.text(formFile));
+    await tester.tap(explorerItem(formFile));
     await tester.pumpAndSettle();
   }
 

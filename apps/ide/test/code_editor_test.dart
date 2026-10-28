@@ -11,6 +11,8 @@ import 'package:gubasic_ide/src/project/open_project.dart';
 import 'package:gubasic_ide/src/strings.dart';
 import 'package:gubasic_ide/src/theme.dart';
 
+import 'support/explorer.dart';
+
 void main() {
   const s = IdeStrings.en;
   final hello = exampleProjects['hello']!;
@@ -28,7 +30,7 @@ void main() {
         strings: s,
       ),
     );
-    await tester.tap(find.text(codeFile));
+    await tester.tap(explorerItem(codeFile));
     await tester.pumpAndSettle();
   }
 
@@ -100,7 +102,7 @@ void main() {
     await tester.pumpWidget(IdeApp(projects: {'hello': hello}, strings: s));
     await tester.pumpAndSettle();
     expect(CodeFont.loaded.value, isFalse, reason: 'not on the first view');
-    await tester.tap(find.text(codeFile));
+    await tester.tap(explorerItem(codeFile));
     await tester.pumpAndSettle();
     await tester.runAsync(() => CodeFont.load());
     await tester.pumpAndSettle();
@@ -176,7 +178,7 @@ void main() {
     await open(tester);
     await tester.sendKeyEvent(LogicalKeyboardKey.f5);
     await tester.pumpAndSettle();
-    await tester.tap(find.text(codeFile));
+    await tester.tap(explorerItem(codeFile));
     await tester.pumpAndSettle();
     expect(tester.widget<TextField>(find.byKey(codeFieldKey)).readOnly, isTrue);
     await tester.enterText(find.byKey(codeFieldKey), 'changed');
@@ -199,7 +201,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byType(CodeEditor), findsNothing, reason: 'the form first');
     for (final f in [codeFile, 'Hello.gbproj']) {
-      await tester.tap(find.text(f));
+      await tester.tap(explorerItem(f));
       await tester.pumpAndSettle();
       await tester.sendKeyEvent(LogicalKeyboardKey.f5);
       await tester.pumpAndSettle();
@@ -231,7 +233,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(running(), isTrue, reason: 'F5 from the code editor');
       if (via != 'the run window') {
-        await tester.tap(find.text(codeFile));
+        await tester.tap(explorerItem(codeFile));
         await tester.pumpAndSettle();
       }
       if (via == 'the code, then back') {
@@ -250,7 +252,7 @@ void main() {
     await tester.sendKeyEvent(LogicalKeyboardKey.f5);
     await tester.pumpAndSettle();
     await key(tester, LogicalKeyboardKey.f5, shift: true);
-    await tester.tap(find.text(codeFile));
+    await tester.tap(explorerItem(codeFile));
     await tester.pumpAndSettle();
     expect(
       FocusManager.instance.primaryFocus?.context
@@ -273,7 +275,7 @@ void main() {
     await tester.sendKeyEvent(LogicalKeyboardKey.f5);
     await tester.pumpAndSettle();
     await key(tester, LogicalKeyboardKey.f5, shift: true);
-    await tester.tap(find.text(codeFile));
+    await tester.tap(explorerItem(codeFile));
     await tester.pumpAndSettle();
     expect(c().selection, const TextSelection.collapsed(offset: 3));
     await key(tester, LogicalKeyboardKey.keyZ, control: true);

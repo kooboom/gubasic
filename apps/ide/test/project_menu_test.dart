@@ -15,6 +15,7 @@ import 'package:gubasic_ide/src/project/project_controller.dart';
 import 'package:gubasic_ide/src/strings.dart';
 
 import 'support/memory_folders.dart';
+import 'support/explorer.dart';
 
 void main() {
   final hello = exampleProjects['hello']!;
@@ -185,7 +186,7 @@ void main() {
     await start(tester);
     opens = ['/home/Hello/Hello.gbproj'];
     await menu(tester, s.open);
-    await tester.tap(find.text('Form1.form.yaml'));
+    await tester.tap(explorerItem('Form1.form.yaml'));
     await tester.pumpAndSettle();
     final button = find.byKey(const ValueKey('toolbox.Button'));
     await tester.tap(button);
@@ -370,7 +371,7 @@ void main() {
     SystemMouseCursor? cursor() =>
         RendererBinding.instance.mouseTracker.debugDeviceActiveCursor(1)
             as SystemMouseCursor?;
-    await tester.tap(find.text('Form1.gbas'));
+    await tester.tap(explorerItem('Form1.gbas'));
     await tester.pumpAndSettle();
     final code = tester.getCenter(find.byKey(codeFieldKey));
     await mouse.moveTo(code);
@@ -407,7 +408,9 @@ void main() {
   testWidgets('the File menu is at the top left', (tester) async {
     await start(tester);
     final menu = tester.getTopLeft(find.text(s.fileMenu));
-    final title = tester.getTopLeft(find.text('Hello').first);
+    final title = tester.getTopLeft(
+      find.descendant(of: find.byType(AppBar), matching: find.text('Hello')),
+    );
     expect(menu.dx, lessThan(title.dx));
     expect(menu.dx, lessThan(100));
     // The playground is the web IDE's neighbour, not the desktop app's.

@@ -9,6 +9,8 @@ import 'package:gubasic_ide/src/ide_shell.dart';
 import 'package:gubasic_ide/src/project/examples.g.dart';
 import 'package:gubasic_ide/src/strings.dart';
 
+import 'support/explorer.dart';
+
 void main() {
   const s = IdeStrings.en;
   final hello = exampleProjects['hello']!;
@@ -114,7 +116,7 @@ void main() {
     tester.testTextInput.enterText(failing.replaceFirst('a(5)', 'a(1)'));
     await tester.pumpAndSettle();
     await run(tester);
-    await tester.tap(find.text(codeFile));
+    await tester.tap(explorerItem(codeFile));
     await tester.pumpAndSettle();
     expect(mark, findsNothing);
     expect(code(tester), contains('a(1)'));
@@ -144,7 +146,7 @@ void main() {
         '    y = 1\n'
         'End Sub\n';
     await open(tester, broken);
-    await tester.tap(find.text(codeFile));
+    await tester.tap(explorerItem(codeFile));
     await tester.pumpAndSettle();
     await run(tester);
     expect(find.text(s.cannotStart), findsOneWidget);
@@ -173,7 +175,7 @@ void main() {
     tester.testTextInput.enterText(fixed);
     await tester.pumpAndSettle();
     await run(tester);
-    await tester.tap(find.text(codeFile));
+    await tester.tap(explorerItem(codeFile));
     await tester.pumpAndSettle();
     expect(find.byKey(codeProblemLineKey(2)), findsNothing);
     expect(find.byKey(codeProblemLineKey(4)), findsNothing);
@@ -217,7 +219,7 @@ void main() {
       'its line and lights it for a moment (D70)', (tester) async {
     final code = long('a(5) = 1');
     await open(tester, code);
-    await tester.tap(find.text(codeFile));
+    await tester.tap(explorerItem(codeFile));
     await tester.pumpAndSettle();
     await run(tester);
     await tester.tap(find.textContaining('$codeFile, line 280:'));
@@ -239,7 +241,7 @@ void main() {
       'to its line too', (tester) async {
     final code = long('y = ');
     await open(tester, code);
-    await tester.tap(find.text(codeFile));
+    await tester.tap(explorerItem(codeFile));
     await tester.pumpAndSettle();
     await run(tester);
     await tester.tap(find.textContaining('$codeFile, line 280:').first);

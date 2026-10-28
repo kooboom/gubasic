@@ -18,6 +18,7 @@ import 'package:gubasic_ide/src/strings.dart';
 import 'project_zip_test.dart' show zipOf;
 import 'support/fake_browser.dart';
 import 'support/pictures.dart';
+import 'support/explorer.dart';
 
 void main() {
   final hello = exampleProjects['hello']!;
@@ -204,7 +205,7 @@ void main() {
     await start(tester);
     await keepHelloAs(tester, 'Quiz');
 
-    await tester.tap(find.text('Form1.form.yaml'));
+    await tester.tap(explorerItem('Form1.form.yaml'));
     await tester.pumpAndSettle();
     final label = find.byKey(const ValueKey('toolbox.Label'));
     await tester.tap(label);

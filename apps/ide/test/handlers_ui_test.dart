@@ -9,6 +9,8 @@ import 'package:gubasic_ide/src/ide_shell.dart';
 import 'package:gubasic_ide/src/project/examples.g.dart';
 import 'package:gubasic_ide/src/strings.dart';
 
+import 'support/explorer.dart';
+
 void main() {
   const s = IdeStrings.en;
   final hello = exampleProjects['hello']!;
@@ -163,7 +165,7 @@ void main() {
     await placeFromToolbox(tester, 'Button');
     await tester.sendKeyEvent(LogicalKeyboardKey.f5);
     await tester.pumpAndSettle();
-    await tester.tap(find.text(formFile));
+    await tester.tap(explorerItem(formFile));
     await tester.pumpAndSettle();
     await doubleClick(tester, const Offset(150, 100));
     expect(
@@ -179,7 +181,7 @@ void main() {
 
   testWidgets('the lists choose an object and its event', (tester) async {
     await open(tester);
-    await tester.tap(find.text(codeFile));
+    await tester.tap(explorerItem(codeFile));
     await tester.pumpAndSettle();
     // The caret in Form_Load: the lists follow it.
     final c = editor(tester);
@@ -232,7 +234,7 @@ void main() {
 
   testWidgets('Korean words', (tester) async {
     await open(tester, strings: IdeStrings.ko);
-    await tester.tap(find.text(codeFile));
+    await tester.tap(explorerItem(codeFile));
     await tester.pumpAndSettle();
     final c = editor(tester);
     c.selection = const TextSelection.collapsed(offset: 0);

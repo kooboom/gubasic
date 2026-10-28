@@ -199,6 +199,10 @@ class _IdeAppState extends State<IdeApp> {
   final _fitDesigner = ValueNotifier(true);
   final _fitRun = ValueNotifier(true);
 
+  /// Whether the project explorer shows the files rather than the forms
+  /// (D94): the forms at first, as Visual Basic shows a project.
+  final _explorerFiles = ValueNotifier(false);
+
   /// Asks about unsaved changes when the app is about to quit.
   late final AppLifecycleListener _lifecycle;
 
@@ -215,6 +219,7 @@ class _IdeAppState extends State<IdeApp> {
     _grid.dispose();
     _fitDesigner.dispose();
     _fitRun.dispose();
+    _explorerFiles.dispose();
     super.dispose();
   }
 
@@ -255,6 +260,7 @@ class _IdeAppState extends State<IdeApp> {
         grid: _grid,
         fitDesigner: _fitDesigner,
         fitRun: _fitRun,
+        explorerFiles: _explorerFiles,
         autoRun: widget.autoRun,
       ),
     ),

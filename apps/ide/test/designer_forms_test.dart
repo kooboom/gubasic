@@ -116,7 +116,7 @@ void main() {
     // The startup form, tagged in the list.
     await formAction(tester, 'Question', s.makeStartupForm);
     expect(projectFile(tester).startup, 'Question');
-    expect(find.text(s.startupFormTag), findsOneWidget);
+    expect(find.textContaining(s.startupFormTag), findsOneWidget);
 
     // Deleting says where the code uses it.
     await formAction(tester, 'Question', s.deleteForm);

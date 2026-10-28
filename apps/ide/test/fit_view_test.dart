@@ -10,6 +10,8 @@ import 'package:gubasic_ide/src/strings.dart';
 import 'package:gubasic_lang/gubasic_lang.dart';
 import 'package:gubasic_runtime/gubasic_runtime.dart';
 
+import 'support/explorer.dart';
+
 /// A form larger than the space is shrunk to fit (D66), in the designer
 /// and in the run window; the mouse works on it as the user sees it.
 void main() {
@@ -34,7 +36,7 @@ void main() {
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
     await tester.pumpWidget(IdeApp(projects: {'hello': tall}, strings: s));
-    await tester.tap(find.text(formFile));
+    await tester.tap(explorerItem(formFile));
     await tester.pumpAndSettle();
   }
 

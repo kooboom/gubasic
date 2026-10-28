@@ -11,6 +11,8 @@ import 'package:gubasic_ide/src/project/examples.g.dart';
 import 'package:gubasic_ide/src/strings.dart';
 import 'package:gubasic_lang/gubasic_lang.dart';
 
+import 'support/explorer.dart';
+
 void main() {
   const s = IdeStrings.en;
   final hello = exampleProjects['hello']!;
@@ -27,7 +29,7 @@ void main() {
     await tester.pumpWidget(
       IdeApp(projects: {'hello': project ?? hello}, strings: strings),
     );
-    await tester.tap(find.text(formFile));
+    await tester.tap(explorerItem(formFile));
     await tester.pumpAndSettle();
   }
 
@@ -295,7 +297,7 @@ void main() {
     await open(tester);
     await tester.sendKeyEvent(LogicalKeyboardKey.f5);
     await tester.pumpAndSettle();
-    await tester.tap(find.text(formFile));
+    await tester.tap(explorerItem(formFile));
     await tester.pumpAndSettle();
     expect(tester.widget<TextField>(field('Caption')).readOnly, isTrue);
     await tester.enterText(field('Caption'), 'No');
@@ -394,15 +396,15 @@ void main() {
 
     testWidgets('the code editor shows the renamed code', (tester) async {
       await open(tester);
-      await tester.tap(find.text('Form1.gbas'));
+      await tester.tap(explorerItem('Form1.gbas'));
       await tester.pumpAndSettle();
-      await tester.tap(find.text(formFile));
+      await tester.tap(explorerItem(formFile));
       await tester.pumpAndSettle();
       await click(tester, const Offset(30, 70));
       await tester.enterText(field('(Name)'), 'btnOk');
       await tester.testTextInput.receiveAction(TextInputAction.done);
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Form1.gbas'));
+      await tester.tap(explorerItem('Form1.gbas'));
       await tester.pumpAndSettle();
       expect(
         tester.widget<TextField>(find.byKey(codeFieldKey)).controller!.text,

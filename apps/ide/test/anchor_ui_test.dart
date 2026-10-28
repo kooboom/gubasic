@@ -12,6 +12,8 @@ import 'package:gubasic_ide/src/strings.dart';
 import 'package:gubasic_lang/gubasic_lang.dart';
 import 'package:gubasic_runtime/gubasic_runtime.dart';
 
+import 'support/explorer.dart';
+
 /// Anchor in the IDE (D59): the designer moves controls as their Anchor
 /// says when the form changes size, the Properties window sets it with a
 /// cross, and the run window's corner resizes a running form.
@@ -45,7 +47,7 @@ void main() {
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
     await tester.pumpWidget(IdeApp(projects: {'hello': project}, strings: s));
-    await tester.tap(find.text(formFile));
+    await tester.tap(explorerItem(formFile));
     await tester.pumpAndSettle();
   }
 

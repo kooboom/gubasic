@@ -19,6 +19,7 @@ import 'package:gubasic_runtime/gubasic_runtime.dart';
 
 import 'support/memory_folders.dart';
 import 'support/pictures.dart';
+import 'support/explorer.dart';
 
 void main() {
   const s = IdeStrings.en;
@@ -110,7 +111,7 @@ void main() {
   /// Puts an Image in the middle of the form with a double-click on its
   /// tool; it is selected then.
   Future<void> placeImage(WidgetTester tester) async {
-    await tester.tap(find.text(formFile));
+    await tester.tap(explorerItem(formFile));
     await tester.pumpAndSettle();
     final tool = find.byKey(const ValueKey('toolbox.Image'));
     await tester.tap(tool);

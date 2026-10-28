@@ -11,6 +11,8 @@ import 'package:gubasic_ide/src/project/examples.g.dart';
 import 'package:gubasic_ide/src/strings.dart';
 import 'package:gubasic_lang/gubasic_lang.dart';
 
+import 'support/explorer.dart';
+
 /// The toolbox (D69): a tool is chosen as the button goes down, a
 /// double-click places a control in the middle, and a tool dragged onto
 /// the form places one where it is dropped; none of the three gets in the
@@ -30,7 +32,7 @@ void main() {
         strings: s,
       ),
     );
-    await tester.tap(find.text(formFile));
+    await tester.tap(explorerItem(formFile));
     await tester.pumpAndSettle();
   }
 

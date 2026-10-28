@@ -66,7 +66,7 @@ IDE 안에서 완결되는 비주얼 베이직의 핵심 경험입니다.
 - [ ] 메뉴 편집기와 GuBASIC으로 만든 앱의 메뉴: 메뉴 막대와 오른쪽 클릭 메뉴(Visual Basic 6의 [메뉴 편집기](https://learn.microsoft.com/en-us/previous-versions/visualstudio/visual-studio-2008/62aawczc(v=vs.90))와 [PopupMenu](https://learn.microsoft.com/en-us/previous-versions/visualstudio/visual-basic-6/aa716251(v=vs.60)), Visual Basic .NET의 `ContextMenuStrip`(같은 출처)에 해당)
 - [ ] `DialogResult`
 - [ ] `OptionButton`: 묶음 안에서 하나만 고르는 라디오 버튼과 묶음을 만드는 방법(Visual Basic 6에서는 폼 위의 옵션 버튼이 한 묶음이고, 프레임마다 또 한 묶음: [Microsoft](https://learn.microsoft.com/en-us/previous-versions/visualstudio/visual-basic-6/aa241737(v=vs.60))). `Frame`, `ComboBox`
-- [ ] 프로젝트 탐색기: 폼으로 보기, 또는 디스크의 파일로 보기(D94)
+- [x] 프로젝트 탐색기: 폼으로 보기, 또는 디스크의 파일로 보기(D94)
 
 ### v0.4 — 업무에 쓰기
 

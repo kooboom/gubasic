@@ -9,6 +9,8 @@ import 'package:gubasic_ide/src/designer/form_edit.dart';
 import 'package:gubasic_ide/src/project/examples.g.dart';
 import 'package:gubasic_ide/src/strings.dart';
 
+import 'support/explorer.dart';
+
 /// D77: a drag stopped at the form's edge says why, and a control wholly
 /// outside the form has an arrow on the edge pointing to it.
 void main() {
@@ -63,7 +65,7 @@ void main() {
     await tester.pumpWidget(
       IdeApp(projects: {'hello': exampleProjects['hello']!}, strings: s),
     );
-    await tester.tap(find.text('Form1.form.yaml'));
+    await tester.tap(explorerItem('Form1.form.yaml'));
     await tester.pumpAndSettle();
     final origin = tester.getTopLeft(find.byKey(designerFormKey));
     await tester.tapAt(

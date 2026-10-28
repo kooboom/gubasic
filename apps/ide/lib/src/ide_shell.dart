@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart' show kDoubleTapTimeout;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gubasic_lang/gubasic_lang.dart';
@@ -41,6 +44,7 @@ class IdeShell extends StatefulWidget {
     required this.grid,
     this.fitDesigner,
     this.fitRun,
+    this.explorerFiles,
     this.autoRun = false,
   });
 
@@ -59,6 +63,10 @@ class IdeShell extends StatefulWidget {
   /// (D66), each kept from project to project.
   final ValueNotifier<bool>? fitDesigner;
   final ValueNotifier<bool>? fitRun;
+
+  /// Whether the project explorer shows the files on disk rather than the
+  /// forms (D94), kept from project to project.
+  final ValueNotifier<bool>? explorerFiles;
 
   @override
   State<IdeShell> createState() => _IdeShellState();
@@ -191,6 +199,8 @@ class _IdeShellState extends State<IdeShell> {
 
   @override
   void dispose() {
+    if (widget.explorerFiles == null) _explorerFiles.dispose();
+    _clickTimer?.cancel();
     _focus.dispose();
     _session?.dispose();
     super.dispose();
@@ -275,7 +285,7 @@ class _IdeShellState extends State<IdeShell> {
             body: Row(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                SizedBox(width: 200, child: _fileList(context)),
+                SizedBox(width: 220, child: _explorer(context)),
                 const VerticalDivider(width: 1),
                 Expanded(
                   child: Column(
@@ -502,67 +512,236 @@ class _IdeShellState extends State<IdeShell> {
     );
   }
 
-  Widget _fileList(BuildContext context) => ListView(
-    children: [
-      if (_running)
-        ListTile(
-          dense: true,
-          leading: const Icon(Icons.play_arrow),
-          title: Text(widget.strings.runWindow),
-          selected: _showRun,
-          onTap: () {
-            setState(() => _showRun = true);
-            _focus.requestFocus();
-          },
-        ),
-      ListTile(dense: true, title: Text(widget.strings.files)),
-      for (final f in _project.files.keys)
-        ListTile(
-          dense: true,
-          title: Text(f),
-          // A form's actions, and which one starts (D88).
-          subtitle:
-              f == '${widget.controller.startupForm}.form.yaml' &&
-                  widget.controller.forms.length > 1
-              ? Text(widget.strings.startupFormTag)
-              : null,
-          trailing: _formMenu(f),
-          // The open file in the accent colour, not a grey (D68).
-          selectedColor: Theme.of(context).colorScheme.primary,
-          selectedTileColor: Theme.of(context).colorScheme.primaryContainer,
-          selected: f == _file && !(_running && _showRun),
-          onTap: () {
-            setState(() {
-              _file = f;
-              _showRun = false;
-              _codeFocusCount++;
-            });
-            // The IDE takes the focus, so that F5 and ⌘S work: the view that
-            // had it may be hidden now. A designer or code editor that
-            // opens takes it next.
-            _focus.requestFocus();
-          },
-        ),
-      // The project's pictures, a group of their own (D68): a click opens
-      // File → Pictures.
-      if (widget.controller.current.pictures.isNotEmpty) ...[
-        ListTile(
-          key: const ValueKey('files.pictures'),
-          dense: true,
-          leading: const Icon(Icons.image_outlined, size: 18),
-          title: Text(widget.strings.picturesGroup),
-          onTap: _running ? null : _pictures,
-        ),
-        for (final name in widget.controller.current.pictures.keys)
+  /// Whether the explorer shows the files on disk (D94); a shell of its
+  /// own keeps it when the IDE does not.
+  late final _explorerFiles = widget.explorerFiles ?? ValueNotifier(false);
+
+  /// The project explorer (D94): the forms, as Visual Basic shows a
+  /// project, or the files as they are on disk.
+  Widget _explorer(BuildContext context) => ValueListenableBuilder(
+    valueListenable: _explorerFiles,
+    builder: (context, showFiles, _) => ListView(
+      children: [
+        if (_running)
           ListTile(
             dense: true,
-            contentPadding: const EdgeInsets.only(left: 36, right: 10),
-            title: Text(name),
+            leading: const Icon(Icons.play_arrow),
+            title: Text(widget.strings.runWindow),
+            selected: _showRun,
+            onTap: () {
+              setState(() => _showRun = true);
+              _focus.requestFocus();
+            },
+          ),
+        _explorerHeader(context, showFiles),
+        if (showFiles)
+          for (final f in _project.files.keys) _fileTile(context, f)
+        else
+          ..._formTiles(context),
+        // The project's pictures, a group of their own (D68): a click
+        // opens File → Pictures.
+        if (widget.controller.current.pictures.isNotEmpty) ...[
+          ListTile(
+            key: const ValueKey('files.pictures'),
+            dense: true,
+            leading: const Icon(Icons.image_outlined, size: 18),
+            title: Text(widget.strings.picturesGroup),
             onTap: _running ? null : _pictures,
           ),
+          for (final name in widget.controller.current.pictures.keys)
+            ListTile(
+              dense: true,
+              contentPadding: const EdgeInsets.only(left: 36, right: 10),
+              title: Text(name),
+              onTap: _running ? null : _pictures,
+            ),
+        ],
+        // In the forms view the project's settings come last, as a line
+        // of their own.
+        if (!showFiles)
+          for (final f in _project.files.keys)
+            if (f.toLowerCase().endsWith('.gbproj'))
+              _fileTile(
+                context,
+                f,
+                key: const ValueKey('explorer.settings'),
+                leading: const Icon(Icons.settings_outlined, size: 18),
+                subtitle: widget.strings.projectSettings,
+              ),
       ],
-    ],
+    ),
   );
+
+  /// "Project", and the switch between the forms and the files.
+  Widget _explorerHeader(BuildContext context, bool showFiles) {
+    final s = widget.strings;
+    return ListTile(
+      dense: true,
+      title: Text(s.files),
+      trailing: Tooltip(
+        message: s.explorerViewHint,
+        child: SegmentedButton<bool>(
+          key: const ValueKey('explorer.view'),
+          showSelectedIcon: false,
+          style: const ButtonStyle(
+            visualDensity: VisualDensity(horizontal: -4, vertical: -4),
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            padding: WidgetStatePropertyAll(
+              EdgeInsets.symmetric(horizontal: 8),
+            ),
+          ),
+          segments: [
+            ButtonSegment(value: false, label: Text(s.explorerForms)),
+            ButtonSegment(value: true, label: Text(s.explorerFiles)),
+          ],
+          selected: {showFiles},
+          onSelectionChanged: (chosen) => _explorerFiles.value = chosen.first,
+        ),
+      ),
+    );
+  }
+
+  /// A file of the project, as it is on disk; the file shown is in the
+  /// accent colour (D68).
+  Widget _fileTile(
+    BuildContext context,
+    String f, {
+    Key? key,
+    Widget? leading,
+    String? subtitle,
+  }) => ListTile(
+    key: key,
+    dense: true,
+    leading: leading,
+    title: Text(f),
+    // A form's actions, and which one starts (D88).
+    subtitle: subtitle != null
+        ? Text(subtitle)
+        : f == '${widget.controller.startupForm}.form.yaml' &&
+              widget.controller.forms.length > 1
+        ? Text(widget.strings.startupFormTag)
+        : null,
+    trailing: _formMenu(f),
+    // The open file in the accent colour, not a grey (D68).
+    selectedColor: Theme.of(context).colorScheme.primary,
+    selectedTileColor: Theme.of(context).colorScheme.primaryContainer,
+    selected: f == _file && !(_running && _showRun),
+    onTap: () => _show(f),
+  );
+
+  /// Shows [file] in the middle.
+  void _show(String file) {
+    setState(() {
+      _file = file;
+      _showRun = false;
+      _codeFocusCount++;
+    });
+    // The IDE takes the focus, so that F5 and ⌘S work: the view that had
+    // it may be hidden now. A designer or code editor that opens takes it
+    // next.
+    _focus.requestFocus();
+  }
+
+  /// One line for each form (D94), then the project's other files that
+  /// are not its settings (none in a project GuBASIC wrote).
+  List<Widget> _formTiles(BuildContext context) {
+    final files = _project.files;
+    final forms = widget.controller.forms;
+    final ofForms = {
+      for (final form in forms) ...['$form.form.yaml', '$form.gbas'],
+    };
+    return [
+      for (final form in forms) _formTile(context, form),
+      for (final f in files.keys)
+        if (!ofForms.contains(f) && !f.toLowerCase().endsWith('.gbproj'))
+          _fileTile(context, f),
+    ];
+  }
+
+  /// The form clicked in the explorer within the last double-click time:
+  /// a second click on it opens its code (D94). The first click opens the
+  /// design at once, without waiting to see whether a second comes.
+  String? _clickedForm;
+  Timer? _clickTimer;
+
+  /// A form's line: its name, its Caption and whether it starts; a click
+  /// opens its design, a double-click its code (D94).
+  Widget _formTile(BuildContext context, String form) {
+    final s = widget.strings;
+    final design = '$form.form.yaml';
+    final code = '$form.gbas';
+    final shown = !(_running && _showRun) ? _file : null;
+    final caption = _captionOf(form);
+    final startup =
+        form == widget.controller.startupForm &&
+        widget.controller.forms.length > 1;
+    final subtitle = [
+      if (startup) s.startupFormTag,
+      if (caption.isNotEmpty) caption,
+    ].join(' · ');
+    final scheme = Theme.of(context).colorScheme;
+    Widget open(String file, IconData icon, String tooltip, String key) =>
+        IconButton(
+          key: ValueKey('explorer.$key.$form'),
+          tooltip: tooltip,
+          isSelected: shown == file,
+          color: shown == file ? scheme.primary : null,
+          visualDensity: VisualDensity.compact,
+          padding: EdgeInsets.zero,
+          constraints: const BoxConstraints.tightFor(width: 28, height: 28),
+          iconSize: 16,
+          icon: Icon(icon),
+          onPressed: _has(file) ? () => _show(file) : null,
+        );
+    return ListTile(
+      key: ValueKey('explorer.form.$form'),
+      dense: true,
+      contentPadding: const EdgeInsets.only(left: 16, right: 4),
+      title: Text(form, overflow: TextOverflow.ellipsis),
+      subtitle: subtitle.isEmpty
+          ? null
+          : Text(subtitle, maxLines: 1, overflow: TextOverflow.ellipsis),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          open(design, Icons.design_services_outlined, s.viewDesign, 'design'),
+          open(code, Icons.code, s.viewCode, 'code'),
+          ?_formMenu(design),
+        ],
+      ),
+      selectedColor: scheme.primary,
+      selectedTileColor: scheme.primaryContainer,
+      selected: shown == design || shown == code,
+      onTap: () {
+        final second = _clickedForm == form;
+        _clickTimer?.cancel();
+        _clickedForm = second ? null : form;
+        if (!second) {
+          _clickTimer = Timer(kDoubleTapTimeout, () => _clickedForm = null);
+        }
+        if (second && _has(code)) {
+          _show(code);
+        } else if (_has(design)) {
+          _show(design);
+        } else if (_has(code)) {
+          _show(code);
+        }
+      },
+    );
+  }
+
+  /// Whether the project has [file]; a form's code file may be missing
+  /// until its first handler.
+  bool _has(String file) => _project.files.containsKey(file);
+
+  /// The `Caption` of [form], as its file says; empty when it cannot be
+  /// read.
+  String _captionOf(String form) {
+    final text = _project.files['$form.form.yaml'];
+    if (text == null) return '';
+    final value = readFormFile(text, name: form).form.valueOf('Caption');
+    return value is String ? value : '';
+  }
 
   /// The ⋮ menu of a form's file in the project list (D88); null for
   /// other files.

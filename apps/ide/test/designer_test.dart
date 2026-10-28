@@ -15,6 +15,8 @@ import 'package:gubasic_ide/src/strings.dart';
 import 'package:gubasic_lang/gubasic_lang.dart';
 import 'package:gubasic_runtime/gubasic_runtime.dart';
 
+import 'support/explorer.dart';
+
 void main() {
   const s = IdeStrings.en;
   final hello = exampleProjects['hello']!;
@@ -30,7 +32,7 @@ void main() {
     await tester.pumpWidget(
       IdeApp(projects: projects ?? {'hello': hello}, strings: s),
     );
-    await tester.tap(find.text(formFile));
+    await tester.tap(explorerItem(formFile));
     await tester.pumpAndSettle();
   }
 
@@ -287,7 +289,7 @@ void main() {
     await open(tester);
     await tester.sendKeyEvent(LogicalKeyboardKey.f5);
     await tester.pumpAndSettle();
-    await tester.tap(find.text(formFile));
+    await tester.tap(explorerItem(formFile));
     await tester.pumpAndSettle();
     expect(find.text(s.lockedWhileRunning), findsOneWidget);
 
@@ -331,7 +333,7 @@ void main() {
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
     await tester.pumpWidget(IdeApp(projects: exampleProjects, strings: s));
-    await tester.tap(find.text(formFile));
+    await tester.tap(explorerItem(formFile));
     await tester.pumpAndSettle();
     await chooseTool(tester, 'Button');
     await drag(tester, const Offset(200, 64), const Offset(200, 64));
@@ -347,7 +349,7 @@ void main() {
     await tester.tap(find.text('hello').last);
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text(formFile));
+    await tester.tap(explorerItem(formFile));
     await tester.pumpAndSettle();
     expect(formText(tester), hello[formFile]);
     final undo = tester.widget<IconButton>(
@@ -585,7 +587,7 @@ void main() {
     await open(tester);
     await tester.sendKeyEvent(LogicalKeyboardKey.f5);
     await tester.pumpAndSettle();
-    await tester.tap(find.text(formFile));
+    await tester.tap(explorerItem(formFile));
     await tester.pumpAndSettle();
     await drag(tester, const Offset(30, 70), const Offset(90, 100));
     await ctrl(tester, LogicalKeyboardKey.arrowRight);
@@ -672,7 +674,7 @@ void main() {
     await tester.pumpWidget(
       IdeApp(projects: {'hello': hello}, strings: IdeStrings.ko),
     );
-    await tester.tap(find.text(formFile));
+    await tester.tap(explorerItem(formFile));
     await tester.pumpAndSettle();
     expect(find.text('포인터'), findsOneWidget);
     expect(find.text('격자'), findsOneWidget);

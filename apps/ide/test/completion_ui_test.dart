@@ -9,6 +9,8 @@ import 'package:gubasic_ide/src/ide_shell.dart';
 import 'package:gubasic_ide/src/project/examples.g.dart';
 import 'package:gubasic_ide/src/strings.dart';
 
+import 'support/explorer.dart';
+
 /// The completion list of the code editor (D50), in the quiz example,
 /// whose form has lblNumber, lblQuestion (Label), lstChoices (ListBox),
 /// chkShowAnswer (CheckBox) and btnNext (Button).
@@ -33,7 +35,7 @@ void main() {
         strings: strings,
       ),
     );
-    await t.tap(find.text(codeFile));
+    await t.tap(explorerItem(codeFile));
     await t.pumpAndSettle();
     await t.tap(find.byKey(codeFieldKey));
     await t.pump();

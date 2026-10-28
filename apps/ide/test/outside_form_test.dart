@@ -11,6 +11,8 @@ import 'package:gubasic_ide/src/project/examples.g.dart';
 import 'package:gubasic_ide/src/strings.dart';
 import 'package:gubasic_lang/gubasic_lang.dart';
 
+import 'support/explorer.dart';
+
 /// Controls outside the form (D72): marked, counted and named above the
 /// designer, and brought inside in one step.
 void main() {
@@ -117,7 +119,7 @@ void main() {
         strings: strings,
       ),
     );
-    await tester.tap(find.text(formFile));
+    await tester.tap(explorerItem(formFile));
     await tester.pumpAndSettle();
   }
 
@@ -204,7 +206,7 @@ void main() {
     await phone(tester);
     await tester.sendKeyEvent(LogicalKeyboardKey.f5);
     await tester.pumpAndSettle();
-    await tester.tap(find.text(formFile));
+    await tester.tap(explorerItem(formFile));
     await tester.pumpAndSettle();
     expect(find.text('1 control is outside the form:'), findsOneWidget);
     expect(

@@ -7,6 +7,8 @@ import 'package:gubasic_ide/src/ide_shell.dart';
 import 'package:gubasic_ide/src/project/examples.g.dart';
 import 'package:gubasic_ide/src/strings.dart';
 
+import 'support/explorer.dart';
+
 /// Enter at the end of a line that opens a block puts in its closing line
 /// (DESIGN.md D50), but not when Enter commits what the input method is
 /// composing.
@@ -26,7 +28,7 @@ void main() {
         strings: IdeStrings.en,
       ),
     );
-    await t.tap(find.text(codeFile));
+    await t.tap(explorerItem(codeFile));
     await t.pumpAndSettle();
     await t.tap(find.byKey(codeFieldKey));
     await t.pump();

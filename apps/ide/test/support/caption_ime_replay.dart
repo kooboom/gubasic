@@ -14,6 +14,8 @@ import 'package:gubasic_ide/src/strings.dart';
 import 'package:gubasic_lang/gubasic_lang.dart';
 import 'package:gubasic_runtime/gubasic_runtime.dart';
 
+import 'explorer.dart';
+
 /// Replays the real input methods' recordings ([logs]: file name → JSON,
 /// from packages/gubasic_runtime/test/ime_logs) into the Caption field of
 /// the Properties window, and checks what D35 promises: only committed
@@ -69,7 +71,7 @@ void defineCaptionImeTests(Map<String, String> logs) {
     await t.pumpWidget(
       IdeApp(projects: {'hello': hello}, strings: IdeStrings.en),
     );
-    await t.tap(find.text(formFile));
+    await t.tap(explorerItem(formFile));
     await t.pumpAndSettle();
     await clickButton(t);
     await t.pumpAndSettle();
