@@ -1,0 +1,20 @@
+' One handler for several controls, told which one raised the event
+' (D98): Handles with a sender of the controls' type, or Control for
+' controls of different types; Handles Me.Load for the form's own event;
+' a handler by name may take a sender too.
+Sub Started(sender As Form) Handles Me.Load
+    Debug.Print("Loaded " & sender.Name & " (" & Me.Name & ")")
+End Sub
+
+Sub Digit_Click(sender As Button) Handles btn1.Click, btn2.Click, btn3.Click
+    lblShow.Caption = lblShow.Caption & sender.Caption
+End Sub
+
+Sub Other(sender As Control) Handles lblShow.Click, chkLoud.Changed
+    Debug.Print(sender.Name & " " & sender.Tag & " at " & sender.Top)
+End Sub
+
+Sub btnClear_Click(sender As Button)
+    lblShow.Caption = ""
+    Debug.Print(sender.Name & " cleared")
+End Sub

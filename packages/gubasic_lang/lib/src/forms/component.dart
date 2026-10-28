@@ -167,6 +167,29 @@ final Map<String, ComponentSpec> builtinComponents = {
 /// The form's own component.
 ComponentSpec get formComponent => builtinComponents['form']!;
 
+/// `Control`, the type of any control on a form (docs/DESIGN.md D98): a
+/// handler's `sender` for controls of different types, the items of
+/// `Me.Controls`. It has what every control has: its place, size, Anchor
+/// and Tag (and its Name, which every control has as a member). It is not
+/// a component: nothing is made of it.
+final ComponentSpec controlComponent = ComponentSpec(
+  name: 'Control',
+  version: 1,
+  defaultEvent: '',
+  properties: [
+    for (final name in const [
+      'Left',
+      'Top',
+      'Width',
+      'Height',
+      'Anchor',
+      'Tag'
+    ])
+      builtinComponents['button']!.properties[name.toLowerCase()]!,
+  ],
+  events: const [],
+);
+
 const _valueTypes = {
   'integer': GbType.integer,
   'double': GbType.double_,

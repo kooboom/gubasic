@@ -1,0 +1,25 @@
+' Controls made while the program runs (D98): New, then Controls.Add puts
+' one on the form, named Button1 and so on unless it was given a Name;
+' AddHandler gives its event a handler; Controls.Remove takes it away.
+Dim count As Integer
+
+Sub btnAdd_Click()
+    count = count + 1
+    Dim b As New Button
+    b.Caption = "No. " & count
+    b.Top = 40 * count
+    b.Tag = CStr(count)
+    If count = 2 Then b.Name = "btnSecond"
+    Me.Controls.Add(b)
+    AddHandler b.Click, AddressOf Added_Click
+    Debug.Print(b.Name & " added: " & Me.Controls.Count & " controls")
+End Sub
+
+Sub Added_Click(sender As Button)
+    Debug.Print("Clicked " & sender.Name & " (" & sender.Tag & ")")
+    If sender.Tag = "1" Then
+        Me.Controls.Remove(sender)
+        sender.Caption = "gone"
+        Debug.Print(sender.Name & " removed, still " & sender.Caption & ": " & Me.Controls.Count & " controls")
+    End If
+End Sub

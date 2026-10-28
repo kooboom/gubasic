@@ -112,5 +112,10 @@ class _Host implements FormHost {
   @override
   void resetForm(String form) {}
   @override
+  void addControl(String form, String control, String component,
+      Map<String, Object> properties) {}
+  @override
+  void removeControl(String form, String control) {}
+  @override
   void endProgram() {}
 }

@@ -26,7 +26,8 @@ void main() {
       expect(r.diagnostics, isEmpty);
       expect(
           r.analysis.handlers.entries.map((e) => '${e.key.name.name} → '
-              '${e.value.control?.name ?? 'Form'}.${e.value.event.name}'),
+              '${e.value.single.control?.name ?? 'Form'}.'
+              '${e.value.single.event.name}'),
           ['Form_Load → Form.Load', 'btnHello_Click → btnHello.Click']);
     });
   }

@@ -84,8 +84,8 @@ const Map<DiagnosticCode, String> koreanMessages = {
       'GuBASIC에서는 {0} 키워드를 쓰지 않습니다. 지우고 x = 값처럼 바로 대입해 주세요.',
   DiagnosticCode.byRefNotAvailable: 'ByRef는 아직 준비 중입니다. '
       '바뀐 값을 돌려받으려면 Function을 만들어 Return으로 돌려주세요.',
-  DiagnosticCode.handlesNotAvailable: 'Handles는 아직 준비 중입니다. '
-      "지금은 btnSave_Click처럼 '컨트롤이름_이벤트이름'으로 Sub 프로시저를 만들어 주세요.",
+  DiagnosticCode.otherCast:
+      'GuBASIC에서는 컨트롤을 다른 타입으로 바꿀 때 CType을 씁니다. {0}(값, 타입) 대신 CType(값, 타입)으로 써 주세요.',
   DiagnosticCode.expectedValueAndParen:
       '여기에는 값과 ) 기호가 필요합니다. 값을 쓰고 괄호를 닫아 주세요.',
   DiagnosticCode.unloadStatement:
@@ -171,8 +171,24 @@ const Map<DiagnosticCode, String> koreanMessages = {
   DiagnosticCode.handlerSignature:
       '{0} 프로시저는 {1} 이벤트 때 실행되므로 첫 줄이 {2} 형태여야 합니다. '
           '그렇게 고치거나, 이벤트를 처리할 프로시저가 아니라면 이름을 바꿔 주세요.',
-  DiagnosticCode.newControlNotAvailable:
-      '{0} 컨트롤은 아직 코드로 만들 수 없습니다. 폼에 컨트롤을 올려 주세요.',
+  DiagnosticCode.unknownEvent:
+      '{0} 컨트롤은 {1} 타입이고, "{2}" 이벤트가 없습니다. 철자나 컨트롤을 확인해 주세요.',
+  DiagnosticCode.eventHandledTwice:
+      '{0} 이벤트는 이미 {1} 프로시저가 처리하고, 이벤트 하나는 처리기 하나가 처리합니다. 둘 중 하나에서 빼 주세요.',
+  DiagnosticCode.handlerNameMismatch:
+      '{0} 프로시저는 이름이 {1} 이벤트의 처리기 같지만 Handles에 그 이벤트가 없어서, {1} 이벤트 때는 실행되지 않습니다. Handles에 {1} 이벤트를 넣거나 이름을 바꿔 주세요.',
+  DiagnosticCode.senderTypeMismatch:
+      '{0} 프로시저는 {2} 타입인 {1} 이벤트를 처리하는데, sender의 타입 {3} 타입으로는 그 컨트롤을 담을 수 없습니다. sender As {2} 형태로 쓰거나, 종류가 다른 컨트롤을 함께 처리하려면 sender As Control로 써 주세요.',
+  DiagnosticCode.netHandlerSignature:
+      'GuBASIC에서는 이벤트를 낸 컨트롤을 그 타입의 매개변수 하나로 알려 줍니다. ({1}) 형태로 쓰거나 괄호를 비워 주세요. {0} 프로시저는 Object와 EventArgs를 받을 수 없습니다.',
+  DiagnosticCode.castNeedsControlType:
+      '{0} 타입은 컨트롤 타입이 아닙니다. CType과 TypeOf는 컨트롤에 씁니다. 숫자와 글자에는 CInt, CDbl, CStr을 써 주세요.',
+  DiagnosticCode.controlNarrowing:
+      '{0} 타입에는 {1} 컨트롤만이 아니라 어떤 컨트롤이든 들어 있을 수 있습니다. CType(값, {1}) 형태로 쓰고, 다른 컨트롤일 수도 있으면 먼저 TypeOf 값 Is {1} 형태로 확인해 주세요.',
+  DiagnosticCode.newForm:
+      '{0} 타입은 New로 만들지 않습니다. 프로젝트의 폼은 Form2.Show처럼 이름으로 쓰고, Control은 어떤 컨트롤이든 담는 타입입니다. New Button처럼 특정한 컨트롤을 만들어 주세요.',
+  DiagnosticCode.notAProcedure:
+      '"{0}" 이름은 이 코드의 Sub 프로시저가 아니어서 이벤트를 처리할 수 없습니다. AddressOf 뒤에는 Sub 프로시저의 이름을 써 주세요.',
   DiagnosticCode.readOnlyProperty:
       '"{0}" 값은 읽기만 할 수 있습니다. 프로그램에서 값을 넣을 수 없습니다.',
 
@@ -237,6 +253,20 @@ const Map<DiagnosticCode, String> koreanMessages = {
       '"{0}" 값은 Anchor 값이 아닙니다. 가장자리를 "Right Bottom"처럼 Left, Top, Right, Bottom으로 적거나, 없으면 ""로 적어 주세요.',
   DiagnosticCode.dialogAlreadyShown:
       '{0} 폼은 이미 보이고 있어서 대화상자로 띄울 수 없습니다. 먼저 숨기거나 닫고, 아니면 {0}.Show를 써 주세요.',
+  DiagnosticCode.controlNameTaken:
+      '{1} 폼에는 이미 {0} 컨트롤이 있습니다. 새 컨트롤을 넣기 전에 Name을 다르게 정해 주세요.',
+  DiagnosticCode.controlAlreadyOnForm:
+      '{0} 컨트롤은 이미 {1} 폼에 있습니다. 컨트롤은 한 번에 한 폼에만 있을 수 있으니, 먼저 거기서 빼 주세요.',
+  DiagnosticCode.controlNotOnForm:
+      '{0} 컨트롤은 {1} 폼에 없어서 뺄 수 없습니다. 어느 폼에 넣었는지 확인해 주세요.',
+  DiagnosticCode.nameOfControlOnForm:
+      '{0} 컨트롤은 폼에 있어서 Name을 더 바꿀 수 없습니다. Name은 Controls.Add 전에 정해 주세요.',
+  DiagnosticCode.badControlName:
+      '"{0}" 값은 이름이 아닙니다. 컨트롤의 Name은 영어 글자로 시작하고, 그다음에 글자, 숫자, "_"만 씁니다.',
+  DiagnosticCode.eventAlreadyHandled:
+      '{0} 이벤트에는 이미 {1} 처리기가 있고, 이벤트 하나는 처리기 하나가 처리합니다. 그 프로시저를 쓰거나 다른 컨트롤을 써 주세요.',
+  DiagnosticCode.castFailed:
+      '이 값은 {1} 타입이 아니라 {0} 타입이어서 CType으로 바꿀 수 없습니다. 먼저 TypeOf 값 Is {1} 형태로 확인해 주세요.',
   DiagnosticCode.settingsNotSaved: '설정을 저장하지 못했습니다({0}). '
       '설정을 보관하는 곳에 자리가 없을 수 있습니다.',
   DiagnosticCode.unhandledException:

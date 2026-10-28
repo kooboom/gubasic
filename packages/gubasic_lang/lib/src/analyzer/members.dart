@@ -1,3 +1,4 @@
+import '../forms/component.dart';
 import 'builtins.dart';
 import 'symbols.dart';
 import 'types.dart';
@@ -75,8 +76,20 @@ Map<String, MemberSpec>? membersOf(GbType type) {
       ];
     case GbType.exception:
       list = [const MemberSpec.property('Message', _s)];
+    case ControlsType():
+      final control = controlComponent.type;
+      list = [
+        const MemberSpec.property('Count', _i),
+        MemberSpec.method('Add', [ParamSpec('control', control)], _v),
+        MemberSpec.method('Remove', [ParamSpec('control', control)], _v),
+      ];
     case ControlType(:final component, :final form):
       list = [
+        // Every control and form has a name (D98): a form's, and a
+        // control's on a form, can only be read (A034, R019).
+        const MemberSpec.property('Name', _s, readOnly: false),
+        if (component == formComponent)
+          const MemberSpec.property('Controls', GbType.controls),
         for (final p in component.properties.values)
           if (!p.internal)
             MemberSpec.property(p.name, p.type, readOnly: p.readOnly),

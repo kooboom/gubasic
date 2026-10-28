@@ -111,8 +111,8 @@ enum DiagnosticCode {
   /// `ByRef`: not available yet (planned for stage 2).
   byRefNotAvailable('P021'),
 
-  /// `Handles`: not available yet (planned for stage 2).
-  handlesNotAvailable('P022'),
+  // P022 (Handles not available yet) is retired: Handles works since D98.
+  // The code is not reused.
 
   /// A line that ends inside an open parenthesis, with a value missing:
   /// `(1 +`, `f(1,`. Says both what and `)` are missing.
@@ -125,6 +125,10 @@ enum DiagnosticCode {
   /// `Load Form2` (Visual Basic 6): GuBASIC shows a form with
   /// `Form2.Show`. Args: the form as written.
   loadStatement('P025'),
+
+  /// `DirectCast` or `TryCast` (Visual Basic .NET): read as `CType`, which
+  /// is GuBASIC's (D98). Args: the word as written.
+  otherCast('P026'),
 
   // Analyzer: names
 
@@ -244,9 +248,8 @@ enum DiagnosticCode {
   /// (`Sub btnSave_Click()`).
   handlerSignature('A032'),
 
-  /// `New Button`: controls cannot be created by code yet (stage 2).
-  /// Args: the type.
-  newControlNotAvailable('A033'),
+  // A033 (controls cannot be created by code yet) is retired: they can
+  // since D98. The code is not reused; a form with New is A047.
 
   /// A value given to a property the program can only read
   /// (`lstNames.ListCount = 3`, `names.Count = 0`). Args: the property as
@@ -277,6 +280,47 @@ enum DiagnosticCode {
   /// that the code waits for is shown with ShowDialog (D88). Args: the
   /// form as written.
   showWithArgument('A039'),
+
+  // Analyzer: events and controls as objects (D98)
+
+  /// An event the control does not have, in `Handles` or `AddHandler`.
+  /// Args: the control as written, its type, the event as written.
+  unknownEvent('A040'),
+
+  /// Two procedures handle the same event: one event has one handler.
+  /// Args: the event (`btnA.Click`), the procedure that handles it first.
+  eventHandledTwice('A041'),
+
+  /// A procedure named as the handler of one event whose `Handles` does
+  /// not list that event: it handles only what `Handles` lists. Args: the
+  /// procedure, the event its name suggests (`btnA.Click`).
+  handlerNameMismatch('A042', DiagnosticSeverity.warning),
+
+  /// A handler's `sender` cannot hold one of the controls it handles.
+  /// Args: the procedure, the event (`lblA.Click`), the control's type,
+  /// the parameter's type.
+  senderTypeMismatch('A043'),
+
+  /// A handler written as in Visual Basic .NET, `(sender As Object, e As
+  /// EventArgs)`. Args: the procedure, the parameter to write
+  /// (`sender As Button`).
+  netHandlerSignature('A044'),
+
+  /// `CType` or `TypeOf … Is` with a type that is not a control's. Args:
+  /// the type.
+  castNeedsControlType('A045'),
+
+  /// A Control where a particular control type is expected. Args: the
+  /// value's type (`Control`), the expected type (`TextBox`).
+  controlNarrowing('A046'),
+
+  /// `New Form2` or `New Form`: a project's forms are used by their names
+  /// (D88). Args: the type as written.
+  newForm('A047'),
+
+  /// `AddressOf` names something that is not a procedure of this code.
+  /// Args: the name.
+  notAProcedure('A048'),
 
   // Form and project files (.form.yaml, .gbproj)
 
@@ -397,7 +441,33 @@ enum DiagnosticCode {
   badAnchorValue('R014'),
 
   /// ShowDialog of a form that is already shown (D88). Args: the form.
-  dialogAlreadyShown('R015');
+  dialogAlreadyShown('R015'),
+
+  /// `Controls.Add` of a control whose name the form already has. Args:
+  /// the name, the form.
+  controlNameTaken('R016'),
+
+  /// `Controls.Add` of a control that is on a form already. Args: the
+  /// control, the form it is on.
+  controlAlreadyOnForm('R017'),
+
+  /// `Controls.Remove` of a control that is not on that form. Args: the
+  /// control, the form.
+  controlNotOnForm('R018'),
+
+  /// `Name` set on a control that is on a form. Args: the control.
+  nameOfControlOnForm('R019'),
+
+  /// `Name` set to text that is not a name. Args: the text.
+  badControlName('R020'),
+
+  /// `AddHandler` for an event that already has a handler. Args: the
+  /// event (`btn5.Click`), its handler.
+  eventAlreadyHandled('R021'),
+
+  /// `CType` of a control of another type. Args: the value's type, the
+  /// type asked for.
+  castFailed('R022');
 
   const DiagnosticCode(this.code, [this.severity = DiagnosticSeverity.error]);
 

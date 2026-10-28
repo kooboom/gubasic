@@ -18,6 +18,9 @@ properties:
   - { name: Height, type: Integer, min: 0, default: 120 }
   # The edges of the form whose distance it keeps (D57).
   - { name: Anchor, type: String, default: "Left Top", anchor: true }
+  # Any text the program keeps with it, as in Visual Basic; GuBASIC does
+  # nothing with it (D98).
+  - { name: Tag, type: String, default: "" }
 events:
   - Click()
 methods: []

@@ -32,20 +32,54 @@ class GbArray {
   List<Object?> items;
 }
 
-/// A control on the form, or the form itself (`btnSave`, `Me`). Its
-/// properties live in the [FormHost]; this only names it.
+/// A control, or a form itself (`btnSave`, `Me`). While it is on a form
+/// its properties live in the [FormHost]; a control made with New, or
+/// taken off its form, keeps them in [pending] (D98).
 class GbControl {
-  GbControl(this.name, this.component, {this.form = ''});
+  GbControl(this.name, this.component, {this.form = '', this.attached = true})
+      : pending = attached ? <String, Object>{} : defaultProperties(component);
 
-  /// The control's name; null for the form.
-  final String? name;
+  /// The control's name; null for a form, and for a control made with New
+  /// until it is given one or added to a form.
+  String? name;
   final ComponentSpec component;
 
   /// The name of the form it is on, or is (D88).
-  final String form;
+  String form;
+
+  /// Whether it is on [form]; always for a form.
+  bool attached;
+
+  /// Its properties while it is not on a form.
+  final Map<String, Object> pending;
+
+  /// The handler of each of its events, by lower-case event name: by name,
+  /// by Handles, or by AddHandler (D98). A ProcedureDecl.
+  final handlers = <String, Object>{};
+
+  bool get isForm => component == formComponent;
 
   @override
-  String toString() => name ?? 'Form';
+  String toString() => name ?? (isForm ? form : component.name);
+}
+
+/// The properties a new control of [component] starts with: its
+/// component's defaults.
+Map<String, Object> defaultProperties(ComponentSpec component) => {
+      for (final p in component.properties.values)
+        if (p.isStored) p.name: p.defaultValue,
+    };
+
+/// The controls on a form, `Me.Controls` (D98): what the interpreter keeps
+/// for it.
+class GbControls {
+  GbControls(this.form, this.items);
+
+  /// The form's name.
+  final String form;
+
+  /// In the form file's order, then in the order they were added.
+  final List<GbControl> items;
 }
 
 class GbException {
@@ -77,6 +111,7 @@ String formatValue(Object? value) {
     GbArray a =>
       a.element.displayName == '?' ? '()' : '${a.element.displayName}()',
     GbException e => e.message,
+    GbControls() => 'Controls',
     _ => '$value',
   };
 }
@@ -94,6 +129,7 @@ String typeNameOf(Object? value) {
     GbArray a => '${a.element.displayName}()',
     GbException() => 'Exception',
     GbControl c => c.component.name,
+    GbControls() => 'Controls',
     _ => 'Object',
   };
 }

@@ -52,6 +52,27 @@ Procedure? procedureNamed(String source, String name) {
   return null;
 }
 
+/// The procedure whose `Handles` lists [event] of [control] (`Form` for
+/// the form's own, written `Me.Load`), in any case, or null (D98).
+String? procedureHandling(String source, String control, String event) {
+  final c = control.toLowerCase();
+  final e = event.toLowerCase();
+  for (final member in parse(source).unit.members) {
+    if (member is! ProcedureDecl) continue;
+    for (final h in member.handles?.events ?? const <MemberExpr>[]) {
+      final target = switch (h.target) {
+        MeExpr() => 'form',
+        NameExpr(:final name) => name.toLowerCase(),
+        _ => null,
+      };
+      if (target == c && h.name.name.toLowerCase() == e) {
+        return member.name.name;
+      }
+    }
+  }
+  return null;
+}
+
 /// Where the caret goes in [p]: the end of its first body line.
 int caretIn(String source, Procedure p) {
   if (p.bodyStart >= p.end) return p.bodyStart;

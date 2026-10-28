@@ -1,0 +1,20 @@
+' Going through a form's controls (D98): For Each over Me.Controls, each a
+' Control; TypeOf … Is to tell their types, CType to use one as its type.
+Sub btnClear_Click()
+    Debug.Print(Me.Controls.Count & " controls")
+    For Each c As Control In Me.Controls
+        If TypeOf c Is TextBox Then
+            CType(c, TextBox).Text = ""
+        ElseIf c.Tag <> "" Then
+            Debug.Print(c.Name & " keeps " & c.Tag)
+        End If
+    Next
+    Dim first As Control = Me.Controls(0)
+    Debug.Print("First: " & first.Name & ", a TextBox: " & (TypeOf first Is TextBox))
+    Dim city As TextBox = CType(Me.Controls(2), TextBox)
+    city.Text = "Busan"
+End Sub
+
+Sub txtCity_Changed()
+    Debug.Print("City is now """ & txtCity.Text & """")
+End Sub

@@ -47,7 +47,9 @@ void main() {
         'method List (index As Integer) As String',
         'property ListCount Integer',
         'property ListIndex Integer',
+        'property Name String',
         'method RemoveItem (index As Integer)',
+        'property Tag String',
         'property Text String',
         'property Top Integer',
         'property Width Integer',
@@ -113,10 +115,13 @@ void main() {
       expect(_names('Sub W()\n    Me.|\nEnd Sub\n'), [
         'Caption',
         'Close',
+        'Controls',
         'Height',
         'Hide',
+        'Name',
         'Show',
         'ShowDialog',
+        'Tag',
         'Width'
       ]);
       expect(_names('Sub W()\n    Trim(lblMessage.Caption).Len|\nEnd Sub\n'),

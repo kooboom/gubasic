@@ -45,7 +45,11 @@ sealed class GbType {
       this == exception ||
       this is ListType ||
       this is ArrayType ||
-      this is ControlType;
+      this is ControlType ||
+      this is ControlsType;
+
+  /// `Me.Controls`: the controls on a form (docs/DESIGN.md D98).
+  static const controls = ControlsType._();
 
   @override
   String toString() => displayName;
@@ -115,6 +119,15 @@ final class ControlType extends GbType {
   String get displayName => form?.name ?? component.name;
 }
 
+/// The controls on a form, `Me.Controls` (docs/DESIGN.md D98): counted,
+/// numbered from 0, gone through with For Each, added to and removed from.
+final class ControlsType extends GbType {
+  const ControlsType._();
+
+  @override
+  String get displayName => 'Controls';
+}
+
 /// The type names a program can write after `As` or `New`, besides
 /// `List(Of T)` and control types (see [lookupNamedType]). Looked up
 /// ignoring case.
@@ -131,4 +144,11 @@ const Map<String, GbType> namedTypes = {
 /// A type name written after `As` or `New` (not `List`): a built-in type
 /// or a control type. Null if there is none. [name] is lower case.
 GbType? lookupNamedType(String name) =>
-    namedTypes[name] ?? builtinComponents[name]?.type;
+    namedTypes[name] ??
+    builtinComponents[name]?.type ??
+    (name == 'control' ? controlComponent.type : null);
+
+/// Whether [type] is a control's: a component's other than the form's, or
+/// Control (D98).
+bool isControlType(GbType type) =>
+    type is ControlType && type.component != formComponent;

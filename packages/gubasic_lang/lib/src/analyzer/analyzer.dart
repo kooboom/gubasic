@@ -215,12 +215,14 @@ class _Analyzer {
         ..callable = Callable(member.name.name, parameters, returnType);
     }
 
-    // 2b. Event handlers.
-    if (form != null) {
-      for (final member in unit.members.whereType<ProcedureDecl>()) {
-        if (_result.symbols[member.name]?.procedure == member) {
-          _handler(member);
-        }
+    // 2b. Event handlers: by name, or by Handles (D98).
+    final handled = <String, ProcedureDecl>{};
+    for (final member in unit.members.whereType<ProcedureDecl>()) {
+      if (_result.symbols[member.name]?.procedure != member) continue;
+      if (member.handles != null) {
+        _handles(member, handled);
+      } else if (form != null) {
+        _handler(member, handled);
       }
     }
 
@@ -260,38 +262,195 @@ class _Analyzer {
     return true;
   }
 
-  /// Records [decl] as an event handler if its name is `Control_Event`
-  /// (or `Form_Event`) for an event that exists, and checks that it is
-  /// written as the event expects (A032).
-  void _handler(ProcedureDecl decl) {
-    final name = decl.name.name.toLowerCase();
+  /// The event a procedure's name says it handles, `Control_Event` (or
+  /// `Form_Event`) for an event that exists, or null.
+  (ControlDecl?, String, EventSpec)? _eventNamed(String procedure) {
+    final name = procedure.toLowerCase();
+    final form = this.form;
+    if (form == null) return null;
     final targets = [
       (null as ControlDecl?, 'Form', formComponent),
-      for (final c in form!.controls) (c, c.name, c.component),
+      for (final c in form.controls) (c, c.name, c.component),
     ];
     for (final (control, owner, component) in targets) {
       if (!name.startsWith('${owner.toLowerCase()}_')) continue;
       final event = component.events[name.substring(owner.length + 1)];
-      if (event == null) continue;
-      final callable = _result.symbols[decl.name]!.callable!;
-      final ok = !decl.isFunction &&
-          callable.parameters.length == event.parameters.length &&
-          [
-            for (var i = 0; i < event.parameters.length; i++)
-              callable.parameters[i].type == event.parameters[i].type &&
-                  !callable.parameters[i].optional
-          ].every((same) => same);
-      if (ok) {
-        _result.handlers[decl] = EventHandler(control, event);
-      } else {
-        _reportAt(decl.name, DiagnosticCode.handlerSignature, [
-          decl.name.name,
-          '$owner.${event.name}',
-          'Sub ${event.handlerSignature(owner)}',
-        ]);
+      if (event != null) return (control, owner, event);
+    }
+    return null;
+  }
+
+  /// Records [decl] as an event handler if its name is `Control_Event`
+  /// (or `Form_Event`) for an event that exists, and checks that it is
+  /// written as the event expects (A032).
+  void _handler(ProcedureDecl decl, Map<String, ProcedureDecl> handled) {
+    final (control, owner, event) =
+        _eventNamed(decl.name.name) ?? (null, '', null);
+    if (event == null) return;
+    final type = control?.component.type ?? _formType;
+    if (_handlerFits(
+            decl, event, owner, [(type, '$owner.${event.name}', decl.name)],
+            byName: true) &&
+        _once(handled, owner, event, decl, decl.name)) {
+      _result.handlers[decl] = [EventHandler(control, event)];
+    }
+  }
+
+  /// The type of the form the code belongs to, for `Me` and its events.
+  GbType get _formType {
+    final own = forms?[form!.name.toLowerCase()];
+    return own == null
+        ? formComponent.type
+        : ControlType(formComponent, form: own);
+  }
+
+  /// `Sub X() Handles btnA.Click, Me.Load` (D98): the procedure handles
+  /// exactly the events listed, whatever its name.
+  void _handles(ProcedureDecl decl, Map<String, ProcedureDecl> handled) {
+    final form = this.form;
+    final found = <EventHandler>[];
+    final senders = <(GbType, String, Node)>[];
+    final events = <(EventHandler, String, Node)>[];
+    for (final e in decl.handles!.events) {
+      final target = e.target;
+      if (form == null) {
+        // Code without a form has no controls to handle.
+        _reportAt(
+            target, DiagnosticCode.unknownNameMaybeControl, [_text(target)]);
+        continue;
       }
+      final ControlDecl? control;
+      final String owner;
+      if (target is MeExpr) {
+        control = null;
+        owner = 'Form';
+      } else if (target is NameExpr) {
+        control = form.control(target.name);
+        if (control == null) {
+          _lookupName(target);
+          continue;
+        }
+        owner = control.name;
+        _result.symbols[target] = _controls!.symbols[owner.toLowerCase()]!
+          ..used = true;
+      } else {
+        continue;
+      }
+      final component = control?.component ?? formComponent;
+      if (e.name.name.isEmpty) continue;
+      final event = component.events[e.name.name.toLowerCase()];
+      if (event == null) {
+        _reportAt(e.name, DiagnosticCode.unknownEvent,
+            [_text(target), component.name, e.name.name]);
+        continue;
+      }
+      final handler = EventHandler(control, event);
+      events.add((handler, owner, e));
+      senders.add(
+          (control?.component.type ?? _formType, '$owner.${event.name}', e));
+    }
+    final named = _eventNamed(decl.name.name);
+    if (named != null &&
+        !events
+            .any((e) => e.$1.control == named.$1 && e.$1.event == named.$3)) {
+      _reportAt(decl.name, DiagnosticCode.handlerNameMismatch,
+          [decl.name.name, '${named.$2}.${named.$3.name}']);
+    }
+    if (events.isEmpty) return;
+    final first = events.first;
+    if (!_handlerFits(decl, first.$1.event, first.$2, senders, byName: false)) {
       return;
     }
+    for (final (handler, owner, node) in events) {
+      if (_once(handled, owner, handler.event, decl, node)) found.add(handler);
+    }
+    if (found.isNotEmpty) _result.handlers[decl] = found;
+  }
+
+  /// Whether [event] of [owner] has no handler yet; reports A041 at [at]
+  /// when it has.
+  bool _once(Map<String, ProcedureDecl> handled, String owner, EventSpec event,
+      ProcedureDecl decl, Node at) {
+    final key = '${owner.toLowerCase()}.${event.name.toLowerCase()}';
+    final first = handled[key];
+    if (first != null && first != decl) {
+      _reportAt(at, DiagnosticCode.eventHandledTwice,
+          ['$owner.${event.name}', first.name.name]);
+      return false;
+    }
+    handled[key] = decl;
+    return true;
+  }
+
+  /// Whether [decl] is written as a handler of [event] should be: a Sub
+  /// with the event's parameters, or, for an event without any, nothing or
+  /// one `sender` that can hold each of [senders] (D98). Reports why not
+  /// (A032, A043, A044).
+  bool _handlerFits(ProcedureDecl decl, EventSpec event, String owner,
+      List<(GbType, String, Node)> senders,
+      {required bool byName}) {
+    final callable = _result.symbols[decl.name]!.callable!;
+    final params = callable.parameters;
+    String senderText() {
+      final types = {for (final (t, _, _) in senders) t.displayName};
+      return 'sender As ${types.length == 1 ? types.single : 'Control'}';
+    }
+
+    if (!decl.isFunction && event.parameters.isEmpty && params.length <= 2) {
+      final netStyle = params.isNotEmpty &&
+          (params.first.type == GbType.object ||
+              (params.length == 2 &&
+                  decl.parameters[1].type?.name.name.toLowerCase() ==
+                      'eventargs'));
+      if (netStyle) {
+        _reportAt(decl.name, DiagnosticCode.netHandlerSignature,
+            [decl.name.name, senderText()]);
+        return false;
+      }
+      if (params.isEmpty) return true;
+      final sender = params.length == 1 && !params.first.optional
+          ? params.first.type ?? GbType.unknown
+          : null;
+      // A sender is a control or a form; anything else is not a handler's
+      // parameter (A032).
+      if (sender != null &&
+          (sender is ControlType || sender == GbType.unknown)) {
+        var ok = true;
+        for (final (type, name, at) in senders) {
+          final check = checkConversion(type, sender);
+          final fits = check.isAllowed &&
+              (check.conversion == ImplicitConversion.none ||
+                  check.conversion == ImplicitConversion.unchecked);
+          if (!fits) {
+            _reportAt(at, DiagnosticCode.senderTypeMismatch, [
+              decl.name.name,
+              name,
+              type.displayName,
+              sender.displayName,
+            ]);
+            ok = false;
+          }
+        }
+        return ok;
+      }
+    }
+    final ok = !decl.isFunction &&
+        params.length == event.parameters.length &&
+        [
+          for (var i = 0; i < event.parameters.length; i++)
+            params[i].type == event.parameters[i].type && !params[i].optional
+        ].every((same) => same);
+    if (!ok) {
+      final params = [
+        for (final p in event.parameters) '${p.name} As ${p.type!.displayName}'
+      ].join(', ');
+      _reportAt(decl.name, DiagnosticCode.handlerSignature, [
+        decl.name.name,
+        '$owner.${event.name}',
+        'Sub ${byName ? event.handlerSignature(owner) : '${decl.name.name}($params)'}',
+      ]);
+    }
+    return ok;
   }
 
   GbType _parameterType(Parameter p) {
@@ -470,9 +629,52 @@ class _Analyzer {
         }
       case ReDimStmt():
         _reDim(s);
+      case AddHandlerStmt():
+        _addHandler(s);
       case EndStmt() || ErrorStmt():
         break;
     }
+  }
+
+  /// `AddHandler btn.Click, AddressOf Digit_Click` (D98): the control's
+  /// event exists, and the procedure is a Sub of this code written as its
+  /// handler.
+  void _addHandler(AddHandlerStmt s) {
+    final type = _value(s.event.target);
+    final procedure = s.procedure;
+    final symbol =
+        procedure.name.isEmpty ? null : _scope.lookup(procedure.name);
+    if (procedure.name.isNotEmpty) {
+      if (symbol == null) {
+        _reportAt(procedure, DiagnosticCode.unknownName, [procedure.name]);
+      } else {
+        symbol.used = true;
+        _result.symbols[procedure] = symbol;
+        if (symbol.kind != SymbolKind.procedure) {
+          _reportAt(procedure, DiagnosticCode.notAProcedure, [procedure.name]);
+        }
+      }
+    }
+    if (type is! ControlType) {
+      if (type != GbType.unknown) {
+        _reportAt(s.event.target, DiagnosticCode.typeMismatch,
+            [type.displayName, controlComponent.name]);
+      }
+      return;
+    }
+    final name = s.event.name.name;
+    if (name.isEmpty) return;
+    final event = type.component.events[name.toLowerCase()];
+    if (event == null) {
+      _reportAt(s.event.name, DiagnosticCode.unknownEvent,
+          [_text(s.event.target), type.displayName, name]);
+      return;
+    }
+    final decl = symbol?.procedure;
+    if (decl == null || symbol!.kind != SymbolKind.procedure) return;
+    _handlerFits(decl, event, _text(s.event.target),
+        [(type, '${_text(s.event.target)}.${event.name}', procedure)],
+        byName: false);
   }
 
   void _localDeclaration(LocalDeclStmt s) {
@@ -547,7 +749,8 @@ class _Analyzer {
         if (spec != null && spec.isMethod) {
           _reportAt(target, DiagnosticCode.notAssignable, [_text(target)]);
           targetType = GbType.unknown;
-        } else if (spec != null && spec.readOnly) {
+        } else if (spec != null &&
+            (spec.readOnly || _nameIsFixed(target, spec))) {
           _reportAt(target, DiagnosticCode.readOnlyProperty, [_text(target)]);
           targetType = GbType.unknown;
         } else {
@@ -570,6 +773,19 @@ class _Analyzer {
         targetType = GbType.unknown;
     }
     _expect(s.value, targetType);
+  }
+
+  /// Whether [target] is the Name of a form, or of a control drawn on the
+  /// form, which can only be read: only a control made with New gets a
+  /// Name, before it is added (D98).
+  bool _nameIsFixed(MemberExpr target, MemberSpec spec) {
+    if (spec.name != 'Name') return false;
+    final receiver = target.target;
+    final type = _result.types[receiver];
+    return receiver is MeExpr ||
+        (type is ControlType && type.component == formComponent) ||
+        (receiver is NameExpr &&
+            _result.symbols[receiver]?.kind == SymbolKind.control);
   }
 
   /// Warns when text that names no picture of the project is given to a
@@ -699,6 +915,8 @@ class _Analyzer {
     switch (collection) {
       case ListType(element: final e) || ArrayType(element: final e):
         element = e;
+      case ControlsType():
+        element = controlComponent.type;
       case GbType.object:
         element = GbType.object;
       case GbType.unknown:
@@ -878,10 +1096,51 @@ class _Analyzer {
       UnaryExpr() => _unary(e),
       BinaryExpr() => _binary(e),
       ParenExpr() => _value(e.inner),
+      TypeOfExpr() => _typeOf(e),
+      CastExpr() => _cast(e),
       ErrorExpr() => GbType.unknown,
     };
     _result.types[e] = type;
     return type;
+  }
+
+  /// `TypeOf c Is TextBox` (D98).
+  GbType _typeOf(TypeOfExpr e) {
+    _controlOperand(e.operand);
+    final target = _controlTarget(e, e.type);
+    if (target != null) _result.castTypes[e] = target;
+    return GbType.boolean;
+  }
+
+  /// `CType(c, TextBox)` (D98).
+  GbType _cast(CastExpr e) {
+    _controlOperand(e.operand);
+    final target = _controlTarget(e, e.type);
+    if (target == null) return GbType.unknown;
+    _result.castTypes[e] = target;
+    return target;
+  }
+
+  /// The operand of CType or TypeOf: a control, or what may hold one.
+  void _controlOperand(Expr operand) {
+    final t = _value(operand);
+    if (t == GbType.unknown ||
+        t == GbType.object ||
+        t == GbType.nothing ||
+        isControlType(t)) {
+      return;
+    }
+    _reportAt(operand, DiagnosticCode.typeMismatch,
+        [t.displayName, controlComponent.name]);
+  }
+
+  /// The control type CType or TypeOf names, or null after reporting A045.
+  ControlType? _controlTarget(Expr e, TypeRef ref) {
+    final t = _resolveType(ref);
+    if (t == GbType.unknown) return null;
+    if (isControlType(t)) return t as ControlType;
+    _reportAt(ref, DiagnosticCode.castNeedsControlType, [t.displayName]);
+    return null;
   }
 
   GbType _me(MeExpr e) {
@@ -1062,6 +1321,9 @@ class _Analyzer {
       case ListType(element: final el) || ArrayType(element: final el):
         element = el;
         _result.invokeKinds[e] = InvokeKind.item;
+      case ControlsType():
+        element = controlComponent.type;
+        _result.invokeKinds[e] = InvokeKind.item;
       case GbType.object || GbType.unknown || null:
         // Not known: decided at run time, and nothing more to report.
         _analyzeArguments(e.arguments);
@@ -1167,8 +1429,14 @@ class _Analyzer {
 
   void _newArguments(GbType type, List<Expr> args, Node at) {
     if (type is ControlType) {
-      // Stage 2 (docs/ROADMAP.md): controls created at run time.
-      _reportAt(at, DiagnosticCode.newControlNotAvailable, [type.displayName]);
+      // A control made at run time (D98); forms are used by their names,
+      // and Control is the type of any control.
+      if (!isControlType(type) || type.component == controlComponent) {
+        _reportAt(at, DiagnosticCode.newForm, [type.displayName]);
+      } else if (args.isNotEmpty) {
+        _reportAt(at, DiagnosticCode.wrongArgumentCount,
+            [type.displayName, '0', '${args.length}']);
+      }
       _analyzeArguments(args);
       return;
     }

@@ -1,0 +1,8 @@
+formatVersion: 1
+controls:
+  - { name: btn1, type: Button, properties: { Caption: "1" } }
+  - { name: btn2, type: Button, properties: { Caption: "2", Left: 100 } }
+  - { name: btn3, type: Button, properties: { Caption: "3", Left: 200 } }
+  - { name: lblShow, type: Label, properties: { Top: 48, Tag: shows } }
+  - { name: chkLoud, type: CheckBox, properties: { Caption: Loud, Top: 80, Tag: says } }
+  - { name: btnClear, type: Button, properties: { Caption: Clear, Top: 120 } }

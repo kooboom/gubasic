@@ -114,21 +114,41 @@ class Interpreter {
     for (final f in project.forms) {
       final run = _FormRun(f, LineMap(f.program.parseResult.source));
       _forms[f.name.toLowerCase()] = run;
-      run.controls[null] = GbControl(null, f.file.component, form: f.name);
-      for (final c in f.file.controls) {
-        run.controls[c.name.toLowerCase()] =
-            GbControl(c.name, c.component, form: f.name);
-      }
-      final analysis = f.program.analysis;
-      for (final MapEntry(key: decl, value: h) in analysis.handlers.entries) {
-        _handlers[_eventKey(f.name, h.control?.name, h.event.name)] = decl;
-      }
-      for (final symbol in analysis.fileScope.symbols.values) {
+      _setUpControls(run);
+      for (final symbol in f.program.analysis.fileScope.symbols.values) {
         if (symbol.procedure case final p?) _formOf[p] = run;
       }
     }
     _top = _forms[project.startup.name.toLowerCase()]!;
     _frame = _Frame(null, _top);
+  }
+
+  /// Puts [run]'s form and the controls of its form file on it, as at the
+  /// start, each with the handlers its code gives it by name or by
+  /// Handles (D98); the controls the program added are gone.
+  void _setUpControls(_FormRun run) {
+    final f = run.program!;
+    run.controls.clear();
+    run.designed.clear();
+    run.order.clear();
+    final form =
+        run.controls[null] = GbControl(null, f.file.component, form: f.name);
+    for (final c in f.file.controls) {
+      final control = GbControl(c.name, c.component, form: f.name);
+      run.controls[c.name.toLowerCase()] = control;
+      run.designed[c.name.toLowerCase()] = control;
+      run.order.add(control);
+    }
+    for (final MapEntry(key: decl, value: events)
+        in f.program.analysis.handlers.entries) {
+      for (final h in events) {
+        final target = switch (h.control) {
+          null => form,
+          final c => run.designed[c.name.toLowerCase()]!,
+        };
+        target.handlers[h.event.name.toLowerCase()] = decl;
+      }
+    }
   }
 
   /// The analysis of every form together: the interpreter looks nodes up
@@ -152,6 +172,7 @@ class Interpreter {
       merged.members.addAll(b.members);
       merged.loopVariables.addAll(b.loopVariables);
       merged.handlers.addAll(b.handlers);
+      merged.castTypes.addAll(b.castTypes);
     }
     return merged;
   }
@@ -183,7 +204,6 @@ class Interpreter {
   // Forms and events (D28, D88).
   final _forms = <String, _FormRun>{};
   final _formOf = Map<ProcedureDecl, _FormRun>.identity();
-  final _handlers = <String, ProcedureDecl>{};
 
   /// The startup form, or the code without a form.
   late final _FormRun _top;
@@ -207,12 +227,15 @@ class Interpreter {
   RunResult? _ended;
   Completer<RunResult>? _formRun;
 
-  static String _eventKey(String form, String? control, String event) =>
-      '${form.toLowerCase()}.${(control ?? 'form').toLowerCase()}.'
-      '${event.toLowerCase()}';
-
+  /// The handler of [event] of [control] (null: the form) on [form].
   ProcedureDecl? _handler(_FormRun form, String? control, String event) =>
-      _handlers[_eventKey(form.name, control, event)];
+      form.controls[control?.toLowerCase()]?.handlers[event.toLowerCase()]
+          as ProcedureDecl?;
+
+  /// What a call of [handler] gets: [sender], when it has a `sender`
+  /// parameter (D98).
+  static List<Object?> _senderArgs(ProcedureDecl handler, GbControl? sender) =>
+      handler.parameters.length == 1 ? [sender] : const [];
 
   /// The form in front: the one that takes what the user does.
   _FormRun? get _front => _shown.isEmpty ? null : _shown.last;
@@ -254,7 +277,7 @@ class Interpreter {
         if (closed == null) continue;
         _frame = _Frame(null, f);
         _depth = 0;
-        await _guard(() => _runNow(closed));
+        await _guard(() => _runNow(closed, f.controls[null]));
       }
     } finally {
       _passTurn();
@@ -280,9 +303,10 @@ class Interpreter {
     if (refusal(control, event, form: form) case final refused?) {
       return refused;
     }
-    final handler = _handler(_front!, control, event);
+    final front = _front!;
+    final handler = _handler(front, control, event);
     if (handler == null) return EventOutcome.noHandler;
-    _runHandler(handler);
+    _runHandler(handler, front.controls[control?.toLowerCase()]);
     return EventOutcome.started;
   }
 
@@ -414,20 +438,21 @@ class Interpreter {
     if (loading) {
       if (form.started) {
         _formHost.resetForm(form.name);
+        _setUpControls(form);
         await _initFields(form);
       }
       form
         ..loaded = true
         ..started = true;
       final load = _handler(form, null, 'Load');
-      if (load != null) await _runNow(load);
+      if (load != null) await _runNow(load, form.controls[null]);
       if (_ended != null || !form.loaded) return;
     }
     _shown.add(form);
     if (dialog) _shownAsDialog.add(form);
     _showForms();
     final resize = loading ? _handler(form, null, 'Resize') : null;
-    if (resize != null) await _runNow(resize);
+    if (resize != null) await _runNow(resize, form.controls[null]);
   }
 
   /// `ShowDialog`: shows [form] in front as a dialog and waits until it
@@ -476,7 +501,7 @@ class Interpreter {
     form.loaded = false;
     _takeAway(form);
     final closed = _handler(form, null, 'Closed');
-    if (closed != null) await _runNow(closed);
+    if (closed != null) await _runNow(closed, form.controls[null]);
     _endIfNoneShown();
   }
 
@@ -487,8 +512,8 @@ class Interpreter {
     throw const _Abandoned();
   }
 
-  /// Runs [handler] when it gets the turn (D28).
-  Future<void> _runHandler(ProcedureDecl handler) async {
+  /// Runs [handler] when it gets the turn (D28), for an event of [sender].
+  Future<void> _runHandler(ProcedureDecl handler, GbControl? sender) async {
     _running.add(handler);
     try {
       await _takeTurn();
@@ -496,7 +521,8 @@ class Interpreter {
         if (_ended != null) return;
         _frame = _Frame(null, _formOf[handler] ?? _top);
         _depth = 0;
-        await _guard(() => _callUser(handler, const [], handler));
+        await _guard(
+            () => _callUser(handler, _senderArgs(handler, sender), handler));
       } finally {
         _passTurn();
       }
@@ -637,7 +663,7 @@ class Interpreter {
         // A form of the project, or a control of the form whose code runs.
         null => symbol.kind == SymbolKind.form
             ? _formNamed(symbol.name)!.controls[null]
-            : _frame.form.controls[symbol.name.toLowerCase()],
+            : _frame.form.designed[symbol.name.toLowerCase()],
       };
 
   void _write(Symbol symbol, Object? value) {
@@ -682,6 +708,9 @@ class Interpreter {
 
   Object? _construct(GbType type, List<Object?> args) => switch (type) {
         ListType(:final element) => GbList(element),
+        // A control made at run time, on no form yet (D98).
+        ControlType(:final component) =>
+          GbControl(null, component, attached: false),
         GbType.exception =>
           GbException(args.isEmpty ? '' : args.first as String),
         _ => defaultValue(type),
@@ -829,6 +858,8 @@ class Interpreter {
         if (changed != null) {
           throw StateError('a change event is always run asynchronously');
         }
+      case AddHandlerStmt():
+        _addHandler(s, _valueSync(s.event.target));
       case ExpressionStmt():
         _evalSync(s.expression);
       case IfStmt():
@@ -873,7 +904,9 @@ class Interpreter {
         final value = await _value(s.value);
         final index = await _indexAsync(s.target);
         final changed = _assign(s.target, value, (_) => index);
-        if (changed != null) await _runChangeEvent(changed);
+        if (changed != null) await _runNow(changed.handler, changed.control);
+      case AddHandlerStmt():
+        _addHandler(s, await _value(s.event.target));
       case ExpressionStmt():
         await _eval(s.expression);
       case IfStmt():
@@ -984,6 +1017,7 @@ class Interpreter {
     final List<Object?> items = switch (collection) {
       GbList l => List.of(l.items), // a snapshot: changes do not disturb
       GbArray a => List.of(a.items),
+      GbControls c => List.of(c.items),
       null => _fail(DiagnosticCode.nothingReference, s.collection),
       _ => _fail(DiagnosticCode.memberNotFound, s.collection,
           ['For Each', typeNameOf(collection)]),
@@ -1099,10 +1133,31 @@ class Interpreter {
           ? await _value(target.arguments.first)
           : null;
 
+  /// `AddHandler`: [procedure] handles the event of [target] from now on
+  /// (D98); an event has one handler.
+  void _addHandler(AddHandlerStmt s, Object? target) {
+    if (target is! GbControl) {
+      _fail(
+          target == null
+              ? DiagnosticCode.nothingReference
+              : DiagnosticCode.memberNotFound,
+          s.event,
+          [s.event.name.name, typeNameOf(target)]);
+    }
+    final event = target.component.events[s.event.name.name.toLowerCase()]!;
+    final handler = _a.symbols[s.procedure]!.procedure!;
+    final key = event.name.toLowerCase();
+    final existing = target.handlers[key] as ProcedureDecl?;
+    if (existing != null && existing != handler) {
+      _fail(DiagnosticCode.eventAlreadyHandled, s,
+          ['$target.${event.name}', existing.name.name]);
+    }
+    target.handlers[key] = handler;
+  }
+
   /// Assigns [value]. Returns the handler of a change event the
   /// assignment has to run (TextBox.Text -> txtName_Changed), if any.
-  ProcedureDecl? _assign(
-      Expr target, Object? value, Object? Function(Expr) index) {
+  _Change? _assign(Expr target, Object? value, Object? Function(Expr) index) {
     switch (target) {
       case NameExpr():
         _write(_a.symbols[target]!, value);
@@ -1136,11 +1191,24 @@ class Interpreter {
             DiagnosticCode.memberNotFound, e, [e.name.name, c.component.name]),
       };
 
+  /// A stored property of [c]: from the host while it is on a form, from
+  /// itself while it is not (D98).
+  Object _raw(GbControl c, String property) => c.attached
+      ? _formHost.getProperty(c.form, c.name, property)
+      : c.pending[property]!;
+
+  void _rawSet(GbControl c, String property, Object value) {
+    if (c.attached) {
+      _formHost.setProperty(c.form, c.name, property, value);
+    } else {
+      c.pending[property] = value;
+    }
+  }
+
   Object? _getProperty(GbControl c, MemberExpr e) {
     final spec = _property(c, e);
-    final value = spec.readOnly
-        ? _computedProperty(c, spec)
-        : _formHost.getProperty(c.form, c.name, spec.name);
+    final value =
+        spec.readOnly ? _computedProperty(c, spec) : _raw(c, spec.name);
     if (spec.type == GbType.integer) return GbInt.of(value as int);
     if (spec.type == GbType.double_) return (value as num).toDouble();
     return value;
@@ -1148,9 +1216,13 @@ class Interpreter {
 
   /// Sets a property; returns the handler of its change event if the value
   /// changed and the handler is not already running (D5).
-  ProcedureDecl? _setProperty(GbControl c, MemberExpr e, Object? value) {
+  _Change? _setProperty(GbControl c, MemberExpr e, Object? value) {
     final name = e.name.name.toLowerCase();
-    if (c.name == null && !c.component.properties.containsKey(name)) {
+    if (name == 'name' && !c.component.properties.containsKey(name)) {
+      _setName(c, value, e);
+      return null;
+    }
+    if (c.isForm && !c.component.properties.containsKey(name)) {
       // `Form2.Score = 5`: a variable of another form (D88).
       final symbol = _formSymbol(_formNamed(c.form)!, name);
       if (symbol == null ||
@@ -1182,12 +1254,127 @@ class Interpreter {
         _fail(DiagnosticCode.indexOutOfRange, e, ['$v', '$count']);
       }
     }
-    final old = _formHost.getProperty(c.form, c.name, spec.name);
-    _formHost.setProperty(c.form, c.name, spec.name, v);
+    final old = _raw(c, spec.name);
+    _rawSet(c, spec.name, v);
     final event = spec.changeEvent;
     if (event == null || old == v) return null;
-    final handler = _handlers[_eventKey(c.form, c.name, event)];
-    return handler == null || _running.contains(handler) ? null : handler;
+    return _changeOf(c, event);
+  }
+
+  /// The handler of [c]'s change event [event] to run now, unless it has
+  /// none or it is running (D5).
+  _Change? _changeOf(GbControl c, String event) {
+    final handler = c.handlers[event.toLowerCase()] as ProcedureDecl?;
+    return handler == null || _running.contains(handler)
+        ? null
+        : (handler: handler, control: c);
+  }
+
+  /// `c.Name = value`: only a control made with New that is on no form
+  /// yet takes a Name (D98).
+  void _setName(GbControl c, Object? value, MemberExpr at) {
+    if (c.isForm || c.attached) {
+      _fail(DiagnosticCode.nameOfControlOnForm, at, ['$c']);
+    }
+    final name = value is String
+        ? value
+        : _fail(DiagnosticCode.conversionFailed, at,
+            [formatValue(value), 'String']);
+    if (!RegExp(r'^[A-Za-z][A-Za-z0-9_]*$').hasMatch(name)) {
+      _fail(DiagnosticCode.badControlName, at, [name]);
+    }
+    c.name = name;
+  }
+
+  /// `Me.Controls`: the controls on [form] (D98).
+  GbControls _controlsOf(_FormRun form) => GbControls(form.name, form.order);
+
+  /// `Controls.Add`, `Controls.Remove` and `Controls.Count` (D98).
+  Object? _controlsMember(
+      GbControls cs, String name, List<Object?> args, Node at, MemberExpr e) {
+    final form = _formNamed(cs.form)!;
+    switch (name) {
+      case 'count':
+        return GbInt.of(cs.items.length);
+      case 'add':
+        _addControl(form, args[0], at);
+        return null;
+      case 'remove':
+        _removeControl(form, args[0], at);
+        return null;
+    }
+    _fail(DiagnosticCode.memberNotFound, at, [e.name.name, 'Controls']);
+  }
+
+  /// Puts [value], a control made with New or taken off a form, on [form],
+  /// on top of the others of its layer; it gets a name like `Button1` when
+  /// it has none.
+  void _addControl(_FormRun form, Object? value, Node at) {
+    final c = value as GbControl? ?? _fail(DiagnosticCode.nothingReference, at);
+    if (c.attached) {
+      _fail(DiagnosticCode.controlAlreadyOnForm, at, ['$c', c.form]);
+    }
+    final name = c.name ?? _freeName(form, c.component);
+    if (form.controls.containsKey(name.toLowerCase())) {
+      _fail(DiagnosticCode.controlNameTaken, at, [name, form.name]);
+    }
+    c
+      ..name = name
+      ..form = form.name
+      ..attached = true;
+    _formHost.addControl(form.name, name, c.component.name, Map.of(c.pending));
+    c.pending.clear();
+    form.controls[name.toLowerCase()] = c;
+    form.order.add(c);
+  }
+
+  /// The component's name and the smallest number from 1 that no control
+  /// of [form] has, nor had in its form file: `Button1`.
+  String _freeName(_FormRun form, ComponentSpec component) {
+    for (var n = 1;; n++) {
+      final name = '${component.name}$n';
+      final lower = name.toLowerCase();
+      if (!form.controls.containsKey(lower) &&
+          !form.designed.containsKey(lower)) {
+        return name;
+      }
+    }
+  }
+
+  /// Takes [value] off [form]; it keeps its name and properties, and can
+  /// be added again.
+  void _removeControl(_FormRun form, Object? value, Node at) {
+    final c = value as GbControl? ?? _fail(DiagnosticCode.nothingReference, at);
+    if (!c.attached ||
+        c.isForm ||
+        c.form.toLowerCase() != form.name.toLowerCase()) {
+      _fail(DiagnosticCode.controlNotOnForm, at, ['$c', form.name]);
+    }
+    for (final p in c.component.properties.values) {
+      if (p.isStored) {
+        c.pending[p.name] = _formHost.getProperty(form.name, c.name, p.name);
+      }
+    }
+    _formHost.removeControl(form.name, c.name!);
+    form.controls.remove(c.name!.toLowerCase());
+    form.order.remove(c);
+    c.attached = false;
+  }
+
+  /// `TypeOf value Is T` (D98).
+  bool _isOfType(Object? value, Expr e) {
+    final target = _a.castTypes[e]!;
+    return value is GbControl &&
+        !value.isForm &&
+        (target.component == controlComponent ||
+            value.component == target.component);
+  }
+
+  /// `CType(value, T)` (D98): the same control, which must be a [T].
+  Object? _castTo(Object? value, Expr e) {
+    if (value == null || _isOfType(value, e)) return value;
+    _fail(DiagnosticCode.castFailed, e,
+        [typeNameOf(value), _a.castTypes[e]!.displayName]);
   }
 
   /// [value] as the host stores it. Through an Object variable the
@@ -1234,12 +1421,10 @@ class Interpreter {
       };
 
   /// The change event a control's method left to run, if any.
-  ProcedureDecl? _pendingChange;
+  _Change? _pendingChange;
 
-  List<String> _items(GbControl c) =>
-      _formHost.getProperty(c.form, c.name, 'Items') as List<String>;
-  int _listIndex(GbControl c) =>
-      _formHost.getProperty(c.form, c.name, 'ListIndex') as int;
+  List<String> _items(GbControl c) => _raw(c, 'Items') as List<String>;
+  int _listIndex(GbControl c) => _raw(c, 'ListIndex') as int;
 
   /// A member of form [c] that is not its component's (D88): one of its
   /// controls, a variable or a procedure of its code. A procedure is
@@ -1247,7 +1432,7 @@ class Interpreter {
   Object? _formMember(
       GbControl c, String name, List<Object?> args, Node at, MemberExpr e) {
     final form = _formNamed(c.form)!;
-    final control = form.controls[name];
+    final control = form.designed[name];
     if (args.isEmpty && control != null) return control;
     final symbol = _formSymbol(form, name);
     if (symbol != null && symbol.storage == Storage.field && args.isEmpty) {
@@ -1301,15 +1486,14 @@ class Interpreter {
         };
         return null;
       case ('ListBox', 'AddItem'):
-        _formHost.setProperty(c.form, c.name, 'Items',
+        _rawSet(c, 'Items',
             List<String>.unmodifiable([..._items(c), args[0] as String]));
         return null;
       case ('ListBox', 'RemoveItem'):
         final items = [..._items(c)];
         final i = _itemIndex(items, args[0], at);
         items.removeAt(i);
-        _formHost.setProperty(
-            c.form, c.name, 'Items', List<String>.unmodifiable(items));
+        _rawSet(c, 'Items', List<String>.unmodifiable(items));
         final chosen = _listIndex(c);
         _changeListIndex(
             c,
@@ -1320,7 +1504,7 @@ class Interpreter {
                     : chosen);
         return null;
       case ('ListBox', 'Clear'):
-        _formHost.setProperty(c.form, c.name, 'Items', const <String>[]);
+        _rawSet(c, 'Items', const <String>[]);
         _changeListIndex(c, -1);
         return null;
       case ('ListBox', 'List'):
@@ -1334,24 +1518,18 @@ class Interpreter {
   /// then left to run ([_pendingChange]).
   void _changeListIndex(GbControl c, int index) {
     if (_listIndex(c) == index) return;
-    _formHost.setProperty(c.form, c.name, 'ListIndex', index);
-    final handler = _handlers[_eventKey(c.form, c.name, 'Changed')];
-    if (handler != null && !_running.contains(handler)) {
-      _pendingChange = handler;
-    }
+    _rawSet(c, 'ListIndex', index);
+    _pendingChange = _changeOf(c, 'Changed');
   }
 
-  /// Runs a change event's handler right away, as part of the statement
-  /// that changed the value (docs/LANGUAGE.md §11.1).
-  Future<void> _runChangeEvent(ProcedureDecl handler) => _runNow(handler);
-
   /// Runs [handler] at once, as part of what the running code does: a
-  /// change event, or a form's Load, Resize or Closed when the code shows
-  /// or closes it (D88).
-  Future<void> _runNow(ProcedureDecl handler) async {
+  /// change event (docs/LANGUAGE.md §11.1), or a form's Load, Resize or
+  /// Closed when the code shows or closes it (D88). [sender] is the
+  /// control or form whose event it is.
+  Future<void> _runNow(ProcedureDecl handler, GbControl? sender) async {
     _running.add(handler);
     try {
-      await _callUser(handler, const [], handler);
+      await _callUser(handler, _senderArgs(handler, sender), handler);
     } finally {
       _running.remove(handler);
     }
@@ -1420,6 +1598,10 @@ class Interpreter {
         return _valueSync(e.inner);
       case MeExpr():
         return _frame.form.controls[null];
+      case TypeOfExpr():
+        return _isOfType(_valueSync(e.operand), e);
+      case CastExpr():
+        return _castTo(_valueSync(e.operand), e);
       case ErrorExpr():
         throw StateError('not runnable: $e'); // analyzer reported it
     }
@@ -1456,6 +1638,10 @@ class Interpreter {
         return _binary(e, left, await _value(e.right));
       case ParenExpr():
         return _value(e.inner);
+      case TypeOfExpr():
+        return _isOfType(await _value(e.operand), e);
+      case CastExpr():
+        return _castTo(await _value(e.operand), e);
       default:
         return _evalSync(e);
     }
@@ -1469,10 +1655,10 @@ class Interpreter {
       _pendingCall = null;
       value = await call();
     }
-    final handler = _pendingChange;
-    if (handler != null) {
+    final change = _pendingChange;
+    if (change != null) {
       _pendingChange = null;
-      await _runChangeEvent(handler);
+      await _runNow(change.handler, change.control);
     }
     return value;
   }
@@ -1546,8 +1732,9 @@ class Interpreter {
           membersOf(const ListType(GbType.object))?[name]?.isMethod == true,
         String() => membersOf(GbType.string)?[name]?.isMethod == true,
         GbControl c => c.component.methods.containsKey(name) ||
-            (c.name == null &&
+            (c.isForm &&
                 _formSymbol(_formNamed(c.form)!, name)?.procedure != null),
+        GbControls() => name == 'add' || name == 'remove',
         _ => false,
       };
 
@@ -1564,6 +1751,7 @@ class Interpreter {
       switch (container) {
         GbList l => l.items[_itemIndex(l.items, index, at)],
         GbArray a => a.items[_itemIndex(a.items, index, at)],
+        GbControls c => c.items[_itemIndex(c.items, index, at)],
         null => _fail(DiagnosticCode.nothingReference, at),
         _ => _fail(DiagnosticCode.memberNotFound, at,
             ['(item)', typeNameOf(container)]),
@@ -1714,10 +1902,19 @@ class Interpreter {
         if (c.component.methods[name] case final method?) {
           return _controlMethod(c, method, args, node);
         }
-        if (c.name == null && !c.component.properties.containsKey(name)) {
+        final property = c.component.properties.containsKey(name);
+        if (name == 'name' && !property && args.isEmpty) {
+          return c.isForm ? c.form : c.name ?? '';
+        }
+        if (c.isForm && name == 'controls' && !property && args.isEmpty) {
+          return _controlsOf(_formNamed(c.form)!);
+        }
+        if (c.isForm && !property) {
           return _formMember(c, name, args, node, e);
         }
         if (args.isEmpty) return _getProperty(c, e);
+      case GbControls cs:
+        return _controlsMember(cs, name, args, node, e);
       default:
     }
     _fail(DiagnosticCode.memberNotFound, node,
@@ -2058,6 +2255,9 @@ class Interpreter {
 
 enum _Flow { normal, exitFor, exitDo, exitProcedure }
 
+/// A change event to run: [handler], for [control]'s change.
+typedef _Change = ({ProcedureDecl handler, GbControl control});
+
 class _Frame {
   _Frame(this.procedure, this.form);
 
@@ -2103,8 +2303,15 @@ class _FormRun {
 
   String get name => program?.name ?? '';
 
-  /// The form itself (null) and its controls, by lower-case name.
+  /// The form itself (null) and the controls on it, by lower-case name.
   final controls = <String?, GbControl>{};
+
+  /// The controls of its form file, by lower-case name, which its code
+  /// names: on it or not (D98).
+  final designed = <String, GbControl>{};
+
+  /// The controls on it, in the form file's order, then as added.
+  final order = <GbControl>[];
 
   /// Shown since the start or since it was last closed: its Form_Load has
   /// run.

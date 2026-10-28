@@ -89,6 +89,20 @@ void main() {
     expect(code(tester), hello[codeFile], reason: 'nothing added');
   });
 
+  testWidgets('a double-click goes to the procedure whose Handles lists the '
+      'event (D98)', (tester) async {
+    const shared =
+        'Sub Pressed(sender As Button) Handles btnHello.Click\n'
+        '    lblMessage.Caption = sender.Caption\nEnd Sub\n';
+    await open(tester, code: shared);
+    await tester.tap(explorerItem(formFile));
+    await tester.pumpAndSettle();
+    await doubleClick(tester, const Offset(40, 70));
+    expect(find.byType(CodeEditor), findsOneWidget);
+    expect(caretLine(tester), '    lblMessage.Caption = sender.Caption');
+    expect(code(tester), shared, reason: 'no btnHello_Click added');
+  });
+
   testWidgets('a handler far down the code is scrolled into view (D70)', (
     tester,
   ) async {

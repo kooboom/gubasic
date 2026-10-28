@@ -58,7 +58,7 @@ Three releases, then the rest (D94–D96). The order follows who GuBASIC is for 
 
 ### v0.3 — Like Visual Basic
 
-- [ ] What replaces control arrays, as Visual Basic .NET does it (D95): `Handles` for several controls, the handler told which control raised the event, a loop over a form's controls, controls created at run time
+- [x] What replaces control arrays, as Visual Basic .NET does it (D95, D98): `Handles` for several controls, the handler told which control raised the event, a loop over a form's controls, controls created at run time
 - [ ] Diagnostics for a control array or `On Error`, saying which of these to write instead (D95)
 - [ ] `Timer` control and `KeyDown` / `KeyUp` (D82)
 - [ ] Module files (`Module1.gbas`) and starting at `Sub Main` (D90)

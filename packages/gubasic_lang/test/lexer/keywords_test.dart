@@ -33,6 +33,7 @@ void main() {
           If Then ElseIf Else Select Case For To Step Each In Next Do Loop
           While Until Try Catch Finally Throw New Nothing True False Not And
           Or Xor Mod Me Handles ReDim Preserve Optional Of Is ByVal
+          TypeOf CType AddHandler AddressOf
         '''
             .trim()
             .split(RegExp(r'\s+'))));

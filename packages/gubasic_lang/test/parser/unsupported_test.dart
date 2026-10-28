@@ -104,7 +104,7 @@ void main() {
   test('VB guidance is not limited to one per statement', () {
     final r = parse('Sub F(ByRef a As Integer) Handles b.Click\n'
         'If x AndAlso y Then GoTo Done\nEnd Sub');
-    expect(codesAndLines(r), ['P021@1', 'P022@1', 'P017@2', 'P014@2']);
+    expect(codesAndLines(r), ['P021@1', 'P017@2', 'P014@2']);
   });
 
   test('but a syntax error still allows only one diagnostic', () {

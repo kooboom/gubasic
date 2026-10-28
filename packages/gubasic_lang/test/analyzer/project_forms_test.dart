@@ -89,7 +89,8 @@ End Sub
       (file: form2, source: 'Sub Form_Closed(x As Integer)\nEnd Sub\n'),
     ]);
     expect(
-        project.forms.first.program.analysis.handlers.values.single.event.name,
+        project.forms.first.program.analysis.handlers.values.single.single.event
+            .name,
         'Closed');
     expect(project.forms.last.program.diagnostics.single.code.code, 'A032');
   });

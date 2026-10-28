@@ -1,0 +1,8 @@
+' CType of a control of another type stops the program (R022): check with
+' TypeOf first.
+Sub btnGo_Click()
+    Dim c As Control = lblName
+    Debug.Print("A Label: " & (TypeOf c Is Label))
+    Dim t As TextBox = CType(c, TextBox)
+    Debug.Print("not reached " & t.Text)
+End Sub

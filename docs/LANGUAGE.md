@@ -30,6 +30,7 @@ Dim As Const Static Public Private Sub Function End Exit Return
 If Then ElseIf Else Select Case For To Step Each In Next Do Loop While Until
 Try Catch Finally Throw New Nothing True False Not And Or Xor Mod Is Me
 Handles ReDim Preserve Optional Of ByVal
+TypeOf CType AddHandler AddressOf
 ```
 
 These Visual Basic keywords are **reserved but not supported**, so that the editor can explain what to write instead:
@@ -76,7 +77,7 @@ How the parser recovers:
 - A syntax error is reported **once per statement**; the parser then skips to the next line.
 - A block that is never closed (`If` without `End If`, …) is reported **where it starts**, when the parser meets the end of an enclosing block, a new `Sub`/`Function`, or the end of the file.
 - A line on which the lexer already reported an error gets no syntax diagnostics from the parser.
-- Guidance about Visual Basic features (P013–P022) is always reported, and the code is read the GuBASIC way where possible, so that the rest can still be checked.
+- Guidance about Visual Basic features (P013–P026) is always reported, and the code is read the GuBASIC way where possible, so that the rest can still be checked.
 
 | Code | Problem | What the parser does |
 |---|---|---|
@@ -101,10 +102,11 @@ How the parser recovers:
 | P019 | `Call` | Reads the call without it |
 | P020 | `Set`, `Let` | Reads a plain assignment |
 | P021 | `ByRef` (not available yet) | Reads it normally; the message suggests a `Function` with `Return` |
-| P022 | `Handles` (not available yet; v0.3) | Reads it normally; the message suggests a `ControlName_EventName` Sub |
+| P022 | Retired: `Handles` works since DESIGN.md D98 | — |
 | P023 | A line ends inside an open parenthesis with a value missing (`(1 +`, `f(1,`) | One diagnostic for both the value and `)` |
 | P024 | `Unload Form2` (Visual Basic 6) | GuBASIC closes a form with `Form2.Close` (§11) |
 | P025 | `Load Form2` (Visual Basic 6) | GuBASIC shows a form with `Form2.Show` (§11) |
+| P026 | `DirectCast`, `TryCast` (Visual Basic .NET) | Reads it as `CType` (§11.4) |
 
 **Analyzer**
 
@@ -144,13 +146,22 @@ The analyzer checks names and types (§2.1, §3.2, §5.2). It runs even when the
 | A030 | A form-level variable or procedure with the name of a control (§11) |
 | A031 | **Warning.** A local with the name of a control, which it hides |
 | A032 | An event handler not written as its event expects (§8) |
-| A033 | `New` with a control type: controls cannot be created by code yet (v0.3) |
+| A033 | Retired: controls are made with `New` since DESIGN.md D98 (a form with `New` is A047) |
 | A034 | A value given to a property the program can only read (`lstNames.ListCount = 3`, `names.Count = 0`) |
 | A035 | A member the type does not have, and a similar member it has (`lstCity.ListIndx`: "did you mean ListIndex") |
 | A036 | A member the type does not have, under the name other versions of BASIC use for a member GuBASIC calls differently (`btnOK.Text`: use `Caption`; DESIGN.md D50) |
 | A037 | **Warning.** Text given to a picture property that is not one of the project's pictures (`imgShape.Picture = "tri.png"`); the program would stop there (R013) (§11.1) |
 | A038 | **Warning.** Text given to `Anchor` with a word that is not an edge (`btnOk.Anchor = "Rihgt"`); the program would stop there (R014) (§11.1) |
 | A039 | `Form2.Show vbModal`: `Show` takes no argument; a form the code waits for is shown with `ShowDialog` (§11) |
+| A040 | An event the control does not have, in `Handles` or `AddHandler` (§8) |
+| A041 | Two procedures handle the same event: an event has one handler (§8) |
+| A042 | (warning) A procedure named as one event's handler whose `Handles` does not list that event: it handles only what `Handles` lists (§8) |
+| A043 | A handler's `sender` cannot hold one of the controls it handles (§8) |
+| A044 | A handler written as in Visual Basic .NET, `(sender As Object, e As EventArgs)` (§8) |
+| A045 | `CType` or `TypeOf … Is` with a type that is not a control's (§11.4) |
+| A046 | A `Control` where a particular control type is expected: write `CType` (§11.4) |
+| A047 | `New` with a form, or with `Control` (§11.4) |
+| A048 | `AddressOf` names something that is not a `Sub` of this code (§8) |
 
 **Form and project files**
 
@@ -198,6 +209,13 @@ Errors found while a program runs. Each stops the program and points at its line
 | R013 | A picture property set to a name the project has no picture of (§11.1) |
 | R014 | `Anchor` set to text with a word that is not an edge (§11.1) |
 | R015 | `ShowDialog` of a form that is already shown (§11) |
+| R016 | `Controls.Add` of a control whose name the form already has (§11.4) |
+| R017 | `Controls.Add` of a control that is on a form already (§11.4) |
+| R018 | `Controls.Remove` of a control that is not on that form (§11.4) |
+| R019 | `Name` set on a control that is on a form (§11.4) |
+| R020 | `Name` set to text that is not a name (§11.4) |
+| R021 | `AddHandler` for an event that already has a handler (§8) |
+| R022 | `CType` of a control of another type (§11.4) |
 
 ## 2. Types
 
@@ -216,7 +234,7 @@ Errors found while a program runs. Each stops the program and points at its line
 - **`Nothing` (null) exists only for objects.** Value types always have a value, so beginners rarely meet null errors.
 - **To check whether an object is `Nothing`, compare with `Is`:** `If player Is Nothing Then`. For the opposite, write `If Not player Is Nothing Then`. (`=` compares values, not objects.)
 - There is **no `Variant`**. Use `Object` when a variable really must hold anything.
-- **Control types** (`Form`, `Button`, `Label`, `TextBox`, `CheckBox`, `ListBox`; §11.1) can be written after `As`, and controls are objects: `Dim b As Button = btnSave`, `If b Is Nothing Then`. A control cannot be created with `New` yet (A033); the controls are the ones on the form.
+- **Control types** (`Form`, `Button`, `Label`, `TextBox`, `CheckBox`, `ListBox`; §11.1) can be written after `As`, and controls are objects: `Dim b As Button = btnSave`, `If b Is Nothing Then`. `Control` is the type of any control (§11.4), and a control can be made with `New` and added to a form (§11.4).
 
 ### 2.1 Automatic conversions
 
@@ -482,12 +500,23 @@ End Sub
 - A handler is a `Sub` named `ControlName_EventName`: `btnSave_Click`, `txtName_Changed`. The form's own events use `Form`, whatever the form is called: `Form_Load`. Case does not matter.
 - A procedure is a handler only when the control (or `Form`) has an event of that name; `btnSave_Clicked` is an ordinary procedure. A handler must be a `Sub` with exactly the event's parameters (the events of §11.1 have none). Anything else is reported (A032) instead of being quietly treated as an ordinary procedure that never runs.
 - Double-clicking a control in the designer creates the handler for its default event.
-- Renaming a control renames its handlers.
-- v0.3 (DESIGN.md D95): `Handles` lets one procedure handle several events.
+- Renaming a control renames its handlers, and its name in `Handles` and `AddHandler`.
+- **`Handles`** (DESIGN.md D98): a procedure handles exactly the events it lists, whatever its name; `Me.Load` names the form's own. A procedure named as another event's handler that `Handles` does not list is warned about (A042). A control or event that does not exist is reported (A001, A040).
 
   ```vb
   Sub SaveData() Handles btnSave.Click, mnuSave.Click
   ```
+
+- **`sender`**: a handler of an event without parameters may take one parameter, the control (or form) that raised it, of its type, or `Control` for controls of different types (§11.4). A sender that cannot hold one of them is A043. Visual Basic .NET's `(sender As Object, e As EventArgs)` is A044. A handler by name may take a sender too: `Sub btnClear_Click(sender As Button)`.
+
+  ```vb
+  Sub Digit_Click(sender As Button) Handles btn1.Click, btn2.Click, btn3.Click
+      lblShow.Caption = lblShow.Caption & sender.Caption
+  End Sub
+  ```
+
+- **One event has one handler**: two procedures handling the same event are A041. A handler handles its events one at a time: while `Digit_Click` runs, a click on any of its buttons is ignored, not only on the one that started it (§8.1).
+- **`AddHandler control.Event, AddressOf Procedure`** gives an event a handler while the program runs, typically for a control made with `New` (§11.4). The procedure is a `Sub` of the same code written as the event's handler (A048, A032, A043). An event that already has another handler stops the program (R021); the same handler again changes nothing.
 
 ### 8.1 When handlers run
 
@@ -621,19 +650,13 @@ End Sub
 
   - A variable whose type comes from another form's member is not known to the other forms (`Public n = Form2.Score`): give it a type, `Public n As Integer = Form2.Score`.
   - Visual Basic 6's `Unload Form2` and `Load Form2` are `Form2.Close` and `Form2.Show` (P024, P025), and `Show vbModal` is `ShowDialog` (A039). `ShowDialog` of a form shown already stops the program (R015).
-- v0.3 (DESIGN.md D95): controls can be created at run time.
-
-  ```vb
-  Dim b As New Button
-  b.Caption = "New"
-  Me.Controls.Add(b)
-  ```
+- **Controls as objects** — the type `Control`, `Me.Controls`, `TypeOf`, `CType` and controls made with `New` — are in §11.4.
 
 ### 11.1 Built-in controls
 
 | Control | Properties | Events |
 |---|---|---|
-| `Form` | `Caption` (`String`); `Width`, `Height` (`Integer`) | `Load`, `Resize` |
+| `Form` | `Caption` (`String`); `Width`, `Height` (`Integer`); `Controls` (§11.4) | `Load`, `Resize`, `Closed` |
 | `Button` | `Caption` (`String`); `Left`, `Top`, `Width`, `Height` (`Integer`) | `Click` |
 | `Label` | `Caption` (`String`); `Left`, `Top`, `Width`, `Height` (`Integer`) | `Click` |
 | `TextBox` | `Text` (`String`); `Left`, `Top`, `Width`, `Height` (`Integer`) | `Changed` |
@@ -641,6 +664,7 @@ End Sub
 | `Image` | `Picture` (`String`, the name of one of the project's pictures); `Stretch` (`Boolean`); `Left`, `Top`, `Width`, `Height` (`Integer`) | `Click` |
 | `ListBox` | `ListIndex` (`Integer`, set only in code); `ListCount` (`Integer`), `Text` (`String`), both read only; `Left`, `Top`, `Width`, `Height` (`Integer`). Methods: `AddItem(item)`, `RemoveItem(index)`, `Clear()`, `List(index)` | `Changed` |
 
+- Every control and form also has `Name` and `Tag` (`String`; §11.4).
 - Each control is a component, defined with its default values in `components/NAME/component.yaml` (DESIGN.md §5). The table above lists the events with the default one first: the one a double-click in the designer creates.
 - `Left`, `Top`, `Width` and `Height` are in logical pixels (the same size on screens of different densities), measured from the top-left corner of the inside of the form. A form's `Width` and `Height` are the size of that inside area, without the window's title bar and borders. `Anchor` (below) moves controls when the form changes size; it does not change what these mean (D12).
 - `Integer` properties are 32-bit: from −2147483648 to 2147483647, the same on every platform. `Width` and `Height` cannot be negative. A value outside the range is a run-time error (R010) when the program sets it, and F012 in a form file.
@@ -707,6 +731,35 @@ pictures:
 - `pictures` lists the project's pictures, which are files in its `pictures/` folder: `pictures/triangle.png`. Only PNG, JPEG and GIF pictures are taken (`.png`, `.jpg`, `.jpeg`, `.gif`), and a name cannot have `/ \ : * ? " < > |` (F014). Names are compared without the case of English letters, and Hangul as syllables, the same on every platform: so a project cannot have two pictures whose names differ only in case (F015), as Windows and macOS could not keep both in one folder. A project with pictures is written as `formatVersion: 2`, which an older GuBASIC refuses to open rather than lose its pictures; one without is still version 1 (DESIGN.md D51).
 - `id` is the app ID (DESIGN.md D83): 8 to 32 lowercase letters and digits, made the first time the project is exported as an app and kept, so that the app exported again is the same app and keeps its settings. A copy of the project made with a new name gets a new one. One that is not an app ID is ignored (F018), and the next export makes a new one. Older GuBASICs ignore the key with F004 and drop it when they save the project.
 - [examples/hello](../examples/hello) is the README example as a project.
+
+### 11.4 Controls as objects
+
+GuBASIC has no control arrays (DESIGN.md D95); what Visual Basic 6 did with them is done as Visual Basic .NET does it ([Microsoft](https://learn.microsoft.com/en-us/previous-versions/visualstudio/visual-studio-2008/kxt4418a(v=vs.90))): one handler for several controls (§8), and the following (DESIGN.md D98).
+
+- **`Control`** is the type of any control on a form. Any control can be stored in it; its members are what every control has: `Name`, `Left`, `Top`, `Width`, `Height`, `Anchor` and `Tag`. A `Control` is a particular control again only through `CType` (A046). A form is not a `Control`.
+- **`Name`** gives a control's name, or a form's. It can be set only on a control made with `New` that is on no form yet (A034, R019); it starts with an English letter, then letters, digits or `_` (R020).
+- **`Tag`**, a `String` every control and form has, keeps any text the program wants with it, such as a number in place of a control array's index. GuBASIC does nothing with it.
+- **`Me.Controls`** (or `Form2.Controls`) are the controls on the form: in the form file's order, then in the order they were added. `Me.Controls.Count` counts them, `Me.Controls(0)` is the first, and `For Each c As Control In Me.Controls` goes through them (a snapshot: adding or removing in the loop does not disturb it).
+- **`TypeOf value Is Type`** tells whether a value is a control of that type; `Nothing` is not. **`CType(value, Type)`** gives the same control as that type, and stops the program when it is another (R022); `Nothing` stays `Nothing`. Both take a control type (A045). Visual Basic .NET's `DirectCast` and `TryCast` are read as `CType` (P026).
+
+  ```vb
+  For Each c As Control In Me.Controls
+      If TypeOf c Is TextBox Then
+          CType(c, TextBox).Text = ""
+      End If
+  Next
+  ```
+
+- **`New Button`** (any control type, without arguments) makes a control on no form. Its properties start as its component's defaults and can be set at once. `Me.Controls.Add(b)` puts it on the form, on top of the others of its layer; without a `Name` it is named as the designer names one, `Button1`, `Button2`, …, by the smallest number no control of the form has or had in its form file. A name the form has stops the program (R016), as does adding a control that is on a form (R017). `Me.Controls.Remove(b)` takes a control off the form (R018 when it is not there); it keeps its name, properties and handlers, and can be added again. A form, and `Control` itself, are not made with `New` (A047).
+- A control made with `New` gets its handlers with `AddHandler` (§8), not by its name. A form shown again after `Close` starts with the controls of its form file only, each with the handlers its code gives it.
+
+  ```vb
+  Dim b As New Button
+  b.Caption = "No. " & count
+  b.Top = 40 * count
+  Me.Controls.Add(b)
+  AddHandler b.Click, AddressOf Added_Click
+  ```
 
 ## 12. Open questions
 

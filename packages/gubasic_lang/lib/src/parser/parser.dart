@@ -157,7 +157,12 @@ const _expressionKeywords = {
   Keyword.kwMe,
   Keyword.kwNew,
   Keyword.kwNot,
+  Keyword.kwTypeOf,
+  Keyword.kwCType,
 };
+
+/// Visual Basic .NET's casts other than `CType`, read as `CType` (P026).
+const _otherCasts = {'directcast', 'trycast'};
 
 class _Parser {
   _Parser(String source, this._tokens) : _lines = LineMap(source);
@@ -291,7 +296,7 @@ class _Parser {
     DiagnosticCode.unsupportedCall,
     DiagnosticCode.unsupportedSetLet,
     DiagnosticCode.byRefNotAvailable,
-    DiagnosticCode.handlesNotAvailable,
+    DiagnosticCode.otherCast,
   };
 
   /// Reports at [start]..[end] unless the line has a lexer error or (for
@@ -617,14 +622,20 @@ class _Parser {
 
   HandlesClause _handles() {
     final handlesToken = _advance();
-    _errorAt(handlesToken, DiagnosticCode.handlesNotAvailable);
     final events = <MemberExpr>[];
     do {
-      final control = _name();
-      final target = NameExpr(control.name, control.start, control.end);
+      final Expr target;
+      if (_isKw(Keyword.kwMe)) {
+        // The form's own events: `Handles Me.Load`.
+        final me = _advance();
+        target = MeExpr(me.offset, me.end);
+      } else {
+        final control = _name();
+        target = NameExpr(control.name, control.start, control.end);
+      }
       _expectSymbol(TokenKind.dot, '.');
       final event = _memberName();
-      events.add(MemberExpr(target, event, control.start, _lastEnd));
+      events.add(MemberExpr(target, event, target.start, _lastEnd));
     } while (_is(TokenKind.comma) && _advance().kind == TokenKind.comma);
     return HandlesClause(events, handlesToken.offset, _lastEnd);
   }
@@ -775,6 +786,8 @@ class _Parser {
         return ThrowStmt(value, t.offset, _lastEnd);
       case Keyword.kwReDim:
         return _reDim();
+      case Keyword.kwAddHandler:
+        return _addHandler();
       case Keyword.kwEnd:
         _advance();
         _endOfStatement();
@@ -802,6 +815,23 @@ class _Parser {
         _skipLine();
         return ErrorStmt(t.offset, _lastEnd);
     }
+  }
+
+  /// `AddHandler btn.Click, AddressOf Digit_Click`.
+  Stmt _addHandler() {
+    final start = _advance().offset;
+    final event = _postfix();
+    _expectSymbol(TokenKind.comma, ',');
+    _expectKeyword(Keyword.kwAddressOf);
+    final procedure = _name();
+    _endOfStatement();
+    if (event is! MemberExpr) {
+      if (event is! ErrorExpr) {
+        _error(DiagnosticCode.expectedSymbol, event.end, event.end, ['.']);
+      }
+      return ErrorStmt(start, _lastEnd);
+    }
+    return AddHandlerStmt(event, procedure, start, _lastEnd);
   }
 
   LocalDeclStmt _localDeclaration() {
@@ -1366,6 +1396,23 @@ class _Parser {
     return arguments;
   }
 
+  /// `CType(value, Type)`, and the casts read as it (P026).
+  Expr _cast() {
+    final t = _advance();
+    if (!_is(TokenKind.leftParen)) {
+      _errorHere(DiagnosticCode.expectedSymbol, ['(']);
+      return ErrorExpr(t.offset, _lastEnd);
+    }
+    _advance();
+    _openParens++;
+    final operand = _expression();
+    _expectSymbol(TokenKind.comma, ',');
+    final type = _typeRef();
+    _openParens--;
+    _expectSymbol(TokenKind.rightParen, ')');
+    return CastExpr(operand, type, t.offset, _lastEnd);
+  }
+
   Expr _primary() {
     final t = _tok;
     switch (t.kind) {
@@ -1381,6 +1428,12 @@ class _Parser {
         _advance();
         return StringLiteral(t.value! as String, t.offset, t.end);
       case TokenKind.identifier:
+        if (_otherCasts.contains(t.text.toLowerCase()) &&
+            _peek(1).kind == TokenKind.leftParen) {
+          // `DirectCast(c, TextBox)`: GuBASIC writes CType (P026).
+          _errorAt(t, DiagnosticCode.otherCast, [t.text]);
+          return _cast();
+        }
         _advance();
         return NameExpr(t.text, t.offset, t.end);
       case TokenKind.leftParen:
@@ -1410,6 +1463,14 @@ class _Parser {
             final type = _typeRef();
             final arguments = _is(TokenKind.leftParen) ? _arguments() : null;
             return NewExpr(type, arguments, t.offset, _lastEnd);
+          case Keyword.kwTypeOf:
+            _advance();
+            final operand = _postfix();
+            _expectKeyword(Keyword.kwIs);
+            final type = _typeRef();
+            return TypeOfExpr(operand, type, t.offset, _lastEnd);
+          case Keyword.kwCType:
+            return _cast();
           default:
         }
       default:

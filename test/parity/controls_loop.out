@@ -1,0 +1,11 @@
+> btnClear.Click
+Debug.Print: 4 controls
+Set txtName.Text: 
+Set txtCity.Text: 
+Debug.Print: City is now ""
+Debug.Print: btnClear keeps keep
+Debug.Print: First: txtName, a TextBox: True
+Set txtCity.Text: Busan
+Debug.Print: City is now "Busan"
+> Close
+Closed

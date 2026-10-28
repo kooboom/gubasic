@@ -15,6 +15,8 @@ void main() {
       DiagnosticCode.unknownPictureInCode,
       // The line may never run, as for a picture (D57).
       DiagnosticCode.badAnchorInCode,
+      // The procedure still handles what its Handles lists (D98).
+      DiagnosticCode.handlerNameMismatch,
     };
     for (final code in DiagnosticCode.values) {
       expect(

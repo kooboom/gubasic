@@ -91,9 +91,8 @@ const Map<DiagnosticCode, String> englishMessages = {
   DiagnosticCode.byRefNotAvailable: 'ByRef is not available yet. '
       'To get a changed value back, write a Function and give the value '
       'back with Return.',
-  DiagnosticCode.handlesNotAvailable: 'Handles is not available yet. '
-      'For now, write a Sub named ControlName_EventName, such as '
-      'btnSave_Click.',
+  DiagnosticCode.otherCast: 'GuBASIC turns a control into another type '
+      'with CType: write CType(value, Type) instead of {0}(value, Type).',
   DiagnosticCode.expectedValueAndParen:
       'A value and the symbol ")" are missing here. Write the value, then '
           'close the parenthesis.',
@@ -203,8 +202,31 @@ const Map<DiagnosticCode, String> englishMessages = {
   DiagnosticCode.handlerSignature: '{0} runs for the event {1}, so its first '
       'line must be {2}. Change it to that, or rename the procedure if it is '
       'not meant to handle the event.',
-  DiagnosticCode.newControlNotAvailable: 'A {0} cannot be created by code '
-      'yet. Put the control on the form instead.',
+  DiagnosticCode.unknownEvent: '{0} is a {1}, which has no event named '
+      '"{2}". Check the spelling, or the control.',
+  DiagnosticCode.eventHandledTwice: 'The event {0} is already handled by '
+      '{1}, and an event has one handler. Remove it from one of the two.',
+  DiagnosticCode.handlerNameMismatch: '{0} is named as the handler of {1}, '
+      'but its Handles does not list it, so it does not run for {1}. Add '
+      '{1} to Handles, or rename the procedure.',
+  DiagnosticCode.senderTypeMismatch: '{0} handles {1}, a {2}, but its '
+      'sender is a {3}, which cannot hold it. Write sender As {2}, or '
+      'sender As Control for controls of different types.',
+  DiagnosticCode.netHandlerSignature: 'GuBASIC tells a handler which '
+      'control raised the event with one parameter of its type: write '
+      '({1}), or leave the parentheses empty. {0} cannot take Object and '
+      'EventArgs.',
+  DiagnosticCode.castNeedsControlType: '{0} is not a control type. CType '
+      'and TypeOf work with controls; for numbers and text, use CInt, CDbl '
+      'or CStr.',
+  DiagnosticCode.controlNarrowing: 'A {0} may hold any control, not only '
+      'a {1}. Write CType(value, {1}), after checking with TypeOf value Is '
+      '{1} if it may be another control.',
+  DiagnosticCode.newForm: '{0} is not made with New: a project\'s forms '
+      'are used by their names, as in Form2.Show, and Control is the type '
+      'of any control. Make a particular control, such as New Button.',
+  DiagnosticCode.notAProcedure: '"{0}" is not a Sub of this code, so it '
+      'cannot handle an event. Name a Sub after AddressOf.',
   DiagnosticCode.readOnlyProperty:
       '"{0}" can only be read: the program cannot give it a value.',
 
@@ -279,6 +301,20 @@ const Map<DiagnosticCode, String> englishMessages = {
       'none.',
   DiagnosticCode.dialogAlreadyShown: '{0} is already shown, so it cannot '
       'be shown as a dialog. Hide or close it first, or use {0}.Show.',
+  DiagnosticCode.controlNameTaken: '{1} already has a control named {0}. '
+      'Give the new control another Name before adding it.',
+  DiagnosticCode.controlAlreadyOnForm: '{0} is already on {1}. A control '
+      'is on one form at a time: remove it from there first.',
+  DiagnosticCode.controlNotOnForm: '{0} is not on {1}, so it cannot be '
+      'removed from it. Check which form it was added to.',
+  DiagnosticCode.nameOfControlOnForm: '{0} is on a form, so its Name '
+      'cannot change any more. Set Name before Controls.Add.',
+  DiagnosticCode.badControlName: '"{0}" is not a name: a control\'s Name '
+      'starts with an English letter, then letters, digits or "_".',
+  DiagnosticCode.eventAlreadyHandled: '{0} already has a handler, {1}, and '
+      'an event has one handler. Use that procedure, or another control.',
+  DiagnosticCode.castFailed: 'This value is a {0}, not a {1}, so CType '
+      'cannot turn it into one. Check it first with TypeOf value Is {1}.',
   DiagnosticCode.settingsNotSaved: 'The setting could not be saved ({0}). '
       'There may be no room left where settings are kept.',
   DiagnosticCode.unhandledException: 'An error was thrown and not caught: '

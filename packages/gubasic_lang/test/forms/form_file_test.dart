@@ -159,8 +159,8 @@ controls:
         '  - { name: t, type: TextBox, properties: { Caption: Hi } }\n',
         name: 'F');
     expect(r.diagnostics.map((d) => '${d.code.code}@${d.line} ${d.args}'), [
-      'F009@2 [Left, Form, Caption, Width, Height]',
-      'F009@4 [Caption, TextBox, Text, Left, Top, Width, Height, Anchor]',
+      'F009@2 [Left, Form, Caption, Width, Height, Tag]',
+      'F009@4 [Caption, TextBox, Text, Left, Top, Width, Height, Anchor, Tag]',
     ]);
     expect(r.form.controls.single.properties, isEmpty,
         reason: 'the control is kept without it');

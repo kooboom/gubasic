@@ -1,4 +1,5 @@
 import '../diagnostics/diagnostic.dart';
+import '../forms/component.dart';
 import 'types.dart';
 
 /// How a value of one type is turned into another without the program
@@ -52,6 +53,25 @@ ConversionCheck checkConversion(GbType from, GbType to) {
   }
   if (from == GbType.nothing && to.isReferenceType) {
     return const ConversionCheck.allowed(ImplicitConversion.nothingToReference);
+  }
+  // A project's form (Form2) is a Form (D88, D98).
+  if (to is ControlType &&
+      from is ControlType &&
+      to.form == null &&
+      from.component == to.component) {
+    return const ConversionCheck.allowed(ImplicitConversion.none);
+  }
+  // Any control is a Control; a Control is a particular control only
+  // through CType (D98).
+  if (to is ControlType &&
+      to.component == controlComponent &&
+      isControlType(from)) {
+    return const ConversionCheck.allowed(ImplicitConversion.none);
+  }
+  if (from is ControlType &&
+      from.component == controlComponent &&
+      isControlType(to)) {
+    return const ConversionCheck.refused(DiagnosticCode.controlNarrowing);
   }
   if (from == GbType.integer && to == GbType.double_) {
     return const ConversionCheck.allowed(ImplicitConversion.integerToDouble);

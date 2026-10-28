@@ -1,0 +1,4 @@
+formatVersion: 1
+controls:
+  - { name: lblName, type: Label }
+  - { name: btnGo, type: Button, properties: { Top: 40 } }

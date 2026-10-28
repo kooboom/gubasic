@@ -70,6 +70,12 @@ enum Keyword {
   kwFalse('False'),
   kwMe('Me'),
 
+  // Controls as objects (docs/DESIGN.md D98)
+  kwTypeOf('TypeOf'),
+  kwCType('CType'),
+  kwAddHandler('AddHandler'),
+  kwAddressOf('AddressOf'),
+
   // Operators
   kwNot('Not'),
   kwAnd('And'),

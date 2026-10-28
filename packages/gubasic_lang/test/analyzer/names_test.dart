@@ -130,10 +130,15 @@ void main() {
       expect(inMain('Dim b As Buton'), ['A026', 'A004']);
     });
 
-    test('control types exist; New with one is not available yet (A033)', () {
+    test(
+        'control types exist and are made with New; a form, and Control, '
+        'are not (A047)', () {
       expect(inMain('Dim b As Button\nb = Nothing'), isEmpty);
-      expect(inMain('Dim b As New Button\nb = Nothing'), ['A033']);
-      expect(inMain('Dim b As Label = New Label\nb = Nothing'), ['A033']);
+      expect(inMain('Dim b As New Button\nb = Nothing'), isEmpty);
+      expect(inMain('Dim b As Label = New Label\nb = Nothing'), isEmpty);
+      expect(inMain('Dim f As New Form\nf = Nothing'), ['A047']);
+      expect(inMain('Dim c As New Control\nc = Nothing'), ['A047']);
+      expect(inMain('Dim b As New Button(1)\nb = Nothing'), ['A015']);
     });
 
     test('inferred types', () {

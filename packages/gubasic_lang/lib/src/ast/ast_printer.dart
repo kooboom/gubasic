@@ -46,6 +46,10 @@ String exprToSexp(Expr e) => switch (e) {
       BinaryExpr(:final operator, :final left, :final right) =>
         '(${operator.symbol} ${exprToSexp(left)} ${exprToSexp(right)})',
       ParenExpr(:final inner) => exprToSexp(inner),
+      TypeOfExpr(:final operand, :final type) =>
+        '(typeof ${exprToSexp(operand)} ${_type(type)})',
+      CastExpr(:final operand, :final type) =>
+        '(ctype ${exprToSexp(operand)} ${_type(type)})',
       ErrorExpr() => '<error>',
     };
 

@@ -176,7 +176,9 @@ class TypeRef extends Node {
   List<Node> get children => typeArguments;
 }
 
-/// `Handles btnSave.Click, mnuSave.Click` (stage 2).
+/// `Handles btnSave.Click, mnuSave.Click`: the events a procedure handles
+/// (docs/DESIGN.md D98). Each event's target is a control's name, or `Me`
+/// for the form's own events.
 class HandlesClause extends Node {
   const HandlesClause(this.events, super.start, super.end);
 
@@ -596,6 +598,22 @@ class ReDimStmt extends Stmt {
   List<Node> get children => [bound];
 }
 
+/// `AddHandler btn.Click, AddressOf Digit_Click`: [procedure] handles the
+/// event of a control from now on (docs/DESIGN.md D98).
+class AddHandlerStmt extends Stmt {
+  const AddHandlerStmt(this.event, this.procedure, super.start, super.end);
+
+  /// The control and its event: `btn.Click`.
+  final MemberExpr event;
+  final Identifier procedure;
+
+  @override
+  String get label => 'AddHandler ${procedure.name}';
+
+  @override
+  List<Node> get children => [event];
+}
+
 /// Source the parser skipped while recovering from an error.
 class ErrorStmt extends Stmt {
   const ErrorStmt(super.start, super.end);
@@ -741,6 +759,36 @@ class NewExpr extends Expr {
 
   @override
   List<Node> get children => [type, ...?arguments];
+}
+
+/// `TypeOf c Is TextBox`: whether [operand] is a control of [type]
+/// (docs/DESIGN.md D98).
+class TypeOfExpr extends Expr {
+  const TypeOfExpr(this.operand, this.type, super.start, super.end);
+
+  final Expr operand;
+  final TypeRef type;
+
+  @override
+  String get label => 'TypeOf Is ${type.name.name}';
+
+  @override
+  List<Node> get children => [operand, type];
+}
+
+/// `CType(c, TextBox)`: [operand] as a control of [type], which it must be
+/// (docs/DESIGN.md D98).
+class CastExpr extends Expr {
+  const CastExpr(this.operand, this.type, super.start, super.end);
+
+  final Expr operand;
+  final TypeRef type;
+
+  @override
+  String get label => 'CType ${type.name.name}';
+
+  @override
+  List<Node> get children => [operand, type];
 }
 
 enum UnaryOp {

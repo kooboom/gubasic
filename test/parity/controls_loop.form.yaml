@@ -1,0 +1,6 @@
+formatVersion: 1
+controls:
+  - { name: txtName, type: TextBox, properties: { Text: Kim } }
+  - { name: lblCity, type: Label, properties: { Caption: City, Top: 40 } }
+  - { name: txtCity, type: TextBox, properties: { Text: Seoul, Top: 40, Left: 120 } }
+  - { name: btnClear, type: Button, properties: { Caption: Clear, Top: 80, Tag: keep } }

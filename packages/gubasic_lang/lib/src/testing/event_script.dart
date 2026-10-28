@@ -160,6 +160,14 @@ abstract final class TranscriptLine {
       'Set ${form == null ? '' : '$form.'}${control ?? 'Form'}.$property: '
       '${value is bool ? (value ? 'True' : 'False') : value}';
 
+  /// The program put a control made with New on a form (D98).
+  static String addControl(String control, String component, {String? form}) =>
+      'Add ${form == null ? '' : '$form.'}$control ($component)';
+
+  /// The program took a control off a form (D98).
+  static String removeControl(String control, {String? form}) =>
+      'Remove ${form == null ? '' : '$form.'}$control';
+
   /// The forms shown changed, in a program with several forms (D88): from
   /// the back to the front.
   static String forms(List<ShownForm> forms) =>
@@ -367,7 +375,35 @@ class ScriptedHost implements FormHost {
   }
 
   @override
-  void resetForm(String form) => _start(_files[form.toLowerCase()]!);
+  void resetForm(String form) {
+    final prefix = '${form.toLowerCase()}.';
+    for (final map in [_properties, _components, _bases]) {
+      map.removeWhere((key, _) => key.startsWith(prefix));
+    }
+    _start(_files[form.toLowerCase()]!);
+  }
+
+  @override
+  void addControl(String form, String control, String component,
+      Map<String, Object> properties) {
+    _components[_key(form, control, '')] = component;
+    for (final MapEntry(:key, :value) in properties.entries) {
+      _properties[_key(form, control, key)] = value;
+    }
+    if (properties.containsKey('Anchor')) _rebase(form, control);
+    transcript.add(TranscriptLine.addControl(control, component,
+        form: _several ? form : null));
+  }
+
+  @override
+  void removeControl(String form, String control) {
+    final prefix = '${form.toLowerCase()}.${control.toLowerCase()}.';
+    for (final map in [_properties, _components, _bases]) {
+      map.removeWhere((key, _) => key.startsWith(prefix));
+    }
+    transcript.add(
+        TranscriptLine.removeControl(control, form: _several ? form : null));
+  }
 
   @override
   void endProgram() {

@@ -32,9 +32,7 @@ void main() {
         final src =
             hasProcedure ? _complete(block) : 'Sub T()\n$block\nEnd Sub\n';
         final r = parse(src);
-        final unexpected = r.diagnostics
-            .where((d) => d.code != DiagnosticCode.handlesNotAvailable)
-            .toList();
+        final unexpected = r.diagnostics;
         expect(unexpected, isEmpty, reason: src);
       }
     });

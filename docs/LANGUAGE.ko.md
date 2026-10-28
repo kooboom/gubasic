@@ -30,6 +30,7 @@ Dim As Const Static Public Private Sub Function End Exit Return
 If Then ElseIf Else Select Case For To Step Each In Next Do Loop While Until
 Try Catch Finally Throw New Nothing True False Not And Or Xor Mod Is Me
 Handles ReDim Preserve Optional Of ByVal
+TypeOf CType AddHandler AddressOf
 ```
 
 다음 Visual Basic 키워드는 **예약만 되어 있고 지원하지 않습니다.** 편집기가 대신 쓸 방법을 안내할 수 있게 하기 위해서입니다.
@@ -76,7 +77,7 @@ Handles ReDim Preserve Optional Of ByVal
 - 문법 오류는 **문장 하나에 하나만** 알리고, 다음 줄로 넘어갑니다.
 - 닫히지 않은 블록(`End If`가 없는 `If` 등)은 바깥 블록의 끝, 새 `Sub`/`Function`, 파일 끝을 만났을 때 **블록이 시작한 줄**에 알립니다.
 - 렉서가 이미 오류를 알린 줄에는 파서가 문법 진단을 덧붙이지 않습니다.
-- Visual Basic 기능에 대한 안내(P013~P022)는 항상 알리고, 가능하면 GuBASIC 방식으로 읽어서 나머지 부분도 계속 검사합니다.
+- Visual Basic 기능에 대한 안내(P013~P026)는 항상 알리고, 가능하면 GuBASIC 방식으로 읽어서 나머지 부분도 계속 검사합니다.
 
 | 코드 | 문제 | 파서의 처리 |
 |---|---|---|
@@ -101,10 +102,11 @@ Handles ReDim Preserve Optional Of ByVal
 | P019 | `Call` | `Call` 없이 호출로 읽음 |
 | P020 | `Set`, `Let` | 그냥 대입으로 읽음 |
 | P021 | `ByRef` (아직 준비 중) | 정상으로 읽음. 메시지는 `Return`을 쓰는 `Function`을 안내 |
-| P022 | `Handles` (아직 준비 중, v0.3) | 정상으로 읽음. 메시지는 `컨트롤이름_이벤트이름` 형태의 Sub 프로시저를 안내 |
+| P022 | 폐기: DESIGN.ko.md D98부터 `Handles`를 씀 | — |
 | P023 | 열린 괄호 안에서 값이 빠진 채 줄이 끝남 (`(1 +`, `f(1,`) | 값과 `)` 누락을 진단 하나로 알림 |
 | P024 | `Unload Form2`(Visual Basic 6) | GuBASIC에서는 `Form2.Close`로 폼을 닫음(11절) |
 | P025 | `Load Form2`(Visual Basic 6) | GuBASIC에서는 `Form2.Show`로 폼을 보임(11절) |
+| P026 | `DirectCast`, `TryCast`(Visual Basic .NET) | `CType`으로 읽음(11.4절) |
 
 **분석기**
 
@@ -144,13 +146,22 @@ Handles ReDim Preserve Optional Of ByVal
 | A030 | 컨트롤과 같은 이름의 폼 변수나 프로시저(11절) |
 | A031 | **경고.** 컨트롤과 같은 이름이라서 그 컨트롤을 가리는 지역 변수 |
 | A032 | 이벤트가 정한 형태와 다르게 쓴 이벤트 처리기(8절) |
-| A033 | 컨트롤 타입에 쓴 `New`: 컨트롤은 아직 코드로 만들 수 없음(v0.3) |
+| A033 | 폐기: DESIGN.ko.md D98부터 컨트롤은 `New`로 만듦(폼에 쓴 `New`는 A047) |
 | A034 | 프로그램이 읽기만 할 수 있는 속성에 값을 넣음(`lstNames.ListCount = 3`, `names.Count = 0`) |
 | A035 | 타입에 없는 멤버. 철자가 비슷한 멤버가 있음(`lstCity.ListIndx`: "혹시 ListIndex인가요") |
 | A036 | 타입에 없는 멤버. 다른 버전의 BASIC에서 쓰는 이름이고, GuBASIC에서는 이름이 다름(`btnOK.Text`: `Caption`을 씀. DESIGN.ko.md D50) |
 | A037 | **경고.** 그림 속성에 프로젝트에 없는 그림 이름을 글자로 넣음(`imgShape.Picture = "tri.png"`). 실행하면 거기서 멈춤(R013)(11.1절) |
 | A038 | **경고.** `Anchor`에 가장자리가 아닌 단어가 있는 글자를 넣음(`btnOk.Anchor = "Rihgt"`). 실행하면 거기서 멈춤(R014)(11.1절) |
 | A039 | `Form2.Show vbModal`: `Show`에는 인자가 없음. 코드가 기다리는 폼은 `ShowDialog`로 보임(11절) |
+| A040 | `Handles`나 `AddHandler`에 쓴, 컨트롤에 없는 이벤트(8절) |
+| A041 | 두 프로시저가 같은 이벤트를 처리함: 이벤트 하나는 처리기 하나가 처리(8절) |
+| A042 | (경고) 이름은 어떤 이벤트의 처리기 같은데 `Handles`에 그 이벤트가 없는 프로시저: `Handles`에 적은 것만 처리함(8절) |
+| A043 | 처리기의 `sender`가 처리하는 컨트롤 하나를 담을 수 없음(8절) |
+| A044 | Visual Basic .NET처럼 `(sender As Object, e As EventArgs)`로 쓴 처리기(8절) |
+| A045 | 컨트롤 타입이 아닌 타입에 쓴 `CType`이나 `TypeOf … Is`(11.4절) |
+| A046 | 특정한 컨트롤 타입이 와야 할 곳에 온 `Control`: `CType`을 씀(11.4절) |
+| A047 | 폼이나 `Control`에 쓴 `New`(11.4절) |
+| A048 | `AddressOf` 뒤의 이름이 이 코드의 `Sub` 프로시저가 아님(8절) |
 
 **폼·프로젝트 파일**
 
@@ -198,6 +209,13 @@ Handles ReDim Preserve Optional Of ByVal
 | R013 | 그림 속성에 프로젝트에 없는 그림 이름을 넣음(11.1절) |
 | R014 | `Anchor`에 가장자리가 아닌 단어가 있는 글자를 넣음(11.1절) |
 | R015 | 이미 보이는 폼에 `ShowDialog`를 부름(11절) |
+| R016 | 폼에 이미 있는 이름의 컨트롤을 `Controls.Add`로 넣음(11.4절) |
+| R017 | 이미 폼에 있는 컨트롤을 `Controls.Add`로 넣음(11.4절) |
+| R018 | 그 폼에 없는 컨트롤을 `Controls.Remove`로 뺌(11.4절) |
+| R019 | 폼에 있는 컨트롤의 `Name`을 바꿈(11.4절) |
+| R020 | `Name`에 이름이 아닌 글을 넣음(11.4절) |
+| R021 | 이미 처리기가 있는 이벤트에 `AddHandler`(8절) |
+| R022 | 다른 타입의 컨트롤에 쓴 `CType`(11.4절) |
 
 ## 2. 타입
 
@@ -216,7 +234,7 @@ Handles ReDim Preserve Optional Of ByVal
 - **`Nothing`(null)은 객체에만 있습니다.** 값 타입은 항상 값이 있으므로 초보자가 null 오류를 만날 일이 거의 없습니다.
 - **객체가 `Nothing`인지는 `Is`로 비교합니다:** `If player Is Nothing Then`. 반대는 `If Not player Is Nothing Then`으로 씁니다. (`=`는 객체가 아니라 값을 비교합니다.)
 - **`Variant`는 없습니다.** 정말 아무 값이나 담아야 하면 `Object`를 씁니다.
-- **컨트롤 타입**(`Form`, `Button`, `Label`, `TextBox`, `CheckBox`, `ListBox`. 11.1절)은 `As` 뒤에 쓸 수 있고, 컨트롤은 객체입니다: `Dim b As Button = btnSave`, `If b Is Nothing Then`. 컨트롤은 아직 `New`로 만들 수 없으며(A033), 컨트롤은 폼에 있는 것들입니다.
+- **컨트롤 타입**(`Form`, `Button`, `Label`, `TextBox`, `CheckBox`, `ListBox`. 11.1절)은 `As` 뒤에 쓸 수 있고, 컨트롤은 객체입니다: `Dim b As Button = btnSave`, `If b Is Nothing Then`. `Control`은 어떤 컨트롤이든 담는 타입이고(11.4절), 컨트롤은 `New`로 만들어 폼에 넣을 수 있습니다(11.4절).
 
 ### 2.1 자동 변환
 
@@ -482,12 +500,23 @@ End Sub
 - 처리기는 `컨트롤이름_이벤트이름` 형식의 `Sub`입니다: `btnSave_Click`, `txtName_Changed`. 폼 자신의 이벤트는 폼 이름과 상관없이 `Form`을 씁니다: `Form_Load`. 대소문자는 가리지 않습니다.
 - 그 컨트롤(또는 `Form`)에 그 이름의 이벤트가 있을 때만 처리기입니다. `btnSave_Clicked`는 보통 프로시저입니다. 처리기는 이벤트의 매개변수와 똑같은 매개변수를 가진 `Sub`여야 합니다(11.1절의 이벤트에는 매개변수가 없습니다). 그렇지 않으면 실행되지 않는 보통 프로시저로 조용히 넘기지 않고 알립니다(A032).
 - 디자이너에서 컨트롤을 더블클릭하면 기본 이벤트의 처리기가 생깁니다.
-- 컨트롤 이름을 바꾸면 처리기 이름도 바뀝니다.
-- v0.3(DESIGN.ko.md D95): `Handles`로 프로시저 하나가 여러 이벤트를 처리할 수 있습니다.
+- 컨트롤 이름을 바꾸면 처리기 이름과 `Handles`, `AddHandler`에 쓴 이름도 바뀝니다.
+- **`Handles`**(DESIGN.ko.md D98): 프로시저는 이름과 상관없이 거기 적은 이벤트만 처리합니다. 폼 자신의 이벤트는 `Me.Load`처럼 씁니다. 이름은 다른 이벤트의 처리기 같은데 `Handles`에 그 이벤트가 없으면 경고합니다(A042). 없는 컨트롤이나 이벤트는 알립니다(A001, A040).
 
   ```vb
   Sub SaveData() Handles btnSave.Click, mnuSave.Click
   ```
+
+- **`sender`**: 매개변수가 없는 이벤트의 처리기는 매개변수 하나로 그 이벤트를 낸 컨트롤(또는 폼)을 받을 수 있습니다. 타입은 그 컨트롤의 타입이고, 종류가 다른 컨트롤을 함께 처리하면 `Control`입니다(11.4절). 처리하는 컨트롤 하나라도 담지 못하는 sender는 A043입니다. Visual Basic .NET의 `(sender As Object, e As EventArgs)`는 A044입니다. 이름으로 정한 처리기도 `Sub btnClear_Click(sender As Button)`처럼 sender를 받을 수 있습니다.
+
+  ```vb
+  Sub Digit_Click(sender As Button) Handles btn1.Click, btn2.Click, btn3.Click
+      lblShow.Caption = lblShow.Caption & sender.Caption
+  End Sub
+  ```
+
+- **이벤트 하나에 처리기 하나**: 두 프로시저가 같은 이벤트를 처리하면 A041입니다. 처리기는 자기 이벤트를 한 번에 하나씩 처리합니다. `Digit_Click`이 도는 동안에는 그것을 시작한 단추뿐 아니라 그 처리기의 어느 단추를 눌러도 무시됩니다(8.1절).
+- **`AddHandler 컨트롤.이벤트, AddressOf 프로시저`**는 프로그램이 도는 동안 이벤트에 처리기를 줍니다. 주로 `New`로 만든 컨트롤에 씁니다(11.4절). 프로시저는 같은 코드에 있는, 그 이벤트의 처리기 형태로 쓴 `Sub`입니다(A048, A032, A043). 이미 다른 처리기가 있는 이벤트면 프로그램이 멈추고(R021), 같은 처리기를 다시 주면 아무것도 바뀌지 않습니다.
 
 ### 8.1 처리기가 실행되는 순서
 
@@ -621,19 +650,13 @@ End Sub
 
   - 다른 폼의 멤버에서 타입을 얻는 변수(`Public n = Form2.Score`)는 다른 폼에서 타입을 모릅니다. `Public n As Integer = Form2.Score`처럼 타입을 적어 주세요.
   - Visual Basic 6의 `Unload Form2`와 `Load Form2`는 `Form2.Close`와 `Form2.Show`이고(P024, P025), `Show vbModal`은 `ShowDialog`입니다(A039). 이미 보이는 폼에 `ShowDialog`를 부르면 프로그램이 멈춥니다(R015).
-- v0.3(DESIGN.ko.md D95): 실행 중에 컨트롤을 만들 수 있습니다.
-
-  ```vb
-  Dim b As New Button
-  b.Caption = "새 버튼"
-  Me.Controls.Add(b)
-  ```
+- **객체로서의 컨트롤**, 곧 `Control` 타입, `Me.Controls`, `TypeOf`, `CType`, `New`로 만드는 컨트롤은 11.4절에 있습니다.
 
 ### 11.1 기본 컨트롤
 
 | 컨트롤 | 속성 | 이벤트 |
 |---|---|---|
-| `Form` | `Caption` (`String`), `Width`, `Height` (`Integer`) | `Load`, `Resize` |
+| `Form` | `Caption` (`String`), `Width`, `Height` (`Integer`), `Controls`(11.4절) | `Load`, `Resize`, `Closed` |
 | `Button` | `Caption` (`String`), `Left`, `Top`, `Width`, `Height` (`Integer`) | `Click` |
 | `Label` | `Caption` (`String`), `Left`, `Top`, `Width`, `Height` (`Integer`) | `Click` |
 | `TextBox` | `Text` (`String`), `Left`, `Top`, `Width`, `Height` (`Integer`) | `Changed` |
@@ -641,6 +664,7 @@ End Sub
 | `Image` | `Picture` (`String`, 프로젝트 그림 가운데 하나의 이름), `Stretch` (`Boolean`), `Left`, `Top`, `Width`, `Height` (`Integer`) | `Click` |
 | `ListBox` | `ListIndex` (`Integer`, 코드에서만 정함), `ListCount` (`Integer`)와 `Text` (`String`)는 읽기만 함, `Left`, `Top`, `Width`, `Height` (`Integer`). 메서드: `AddItem(item)`, `RemoveItem(index)`, `Clear()`, `List(index)` | `Changed` |
 
+- 모든 컨트롤과 폼에는 `Name`과 `Tag`(`String`, 11.4절)도 있습니다.
 - 컨트롤은 모두 컴포넌트이며, 기본값과 함께 `components/이름/component.yaml`에 정의되어 있습니다(DESIGN.ko.md 5절). 위 표의 이벤트는 기본 이벤트, 곧 디자이너에서 더블클릭하면 만들어지는 이벤트를 먼저 적었습니다.
 - `Left`, `Top`, `Width`, `Height`는 논리 픽셀(화면 밀도가 달라도 같은 크기) 단위이며, 폼 안쪽의 왼쪽 위 모서리부터 잽니다. 폼의 `Width`와 `Height`는 창의 제목 표시줄과 테두리를 뺀 안쪽 크기입니다. `Anchor`(아래)는 폼 크기가 바뀔 때 컨트롤을 옮길 뿐, 이 속성들의 뜻을 바꾸지 않습니다(D12).
 - `Integer` 속성은 32비트입니다: −2147483648부터 2147483647까지이며 모든 플랫폼에서 같습니다. `Width`와 `Height`는 음수가 될 수 없습니다. 범위를 벗어난 값은 프로그램이 넣을 때 실행 중 오류(R010), 폼 파일에서는 F012입니다.
@@ -707,6 +731,35 @@ pictures:
 - `pictures`에는 프로젝트의 그림을 적습니다. 그림은 프로젝트 폴더의 `pictures/` 안에 있는 파일입니다(`pictures/triangle.png`). PNG, JPEG, GIF 그림만 받으며(`.png`, `.jpg`, `.jpeg`, `.gif`), 이름에 `/ \ : * ? " < > |`를 쓸 수 없습니다(F014). 이름은 영문 대소문자를 가리지 않고 한글은 음절로 비교하며, 모든 플랫폼에서 같습니다. 그래서 대소문자만 다른 두 그림은 한 프로젝트에 둘 수 없습니다(F015). Windows와 macOS도 한 폴더에 둘 다 둘 수 없습니다. 그림이 있는 프로젝트는 `formatVersion: 2`로 쓰고, 예전 GuBASIC은 그림을 잃는 대신 열지 않습니다. 그림이 없으면 여전히 버전 1입니다(DESIGN.ko.md D51).
 - `id`는 앱 ID입니다(DESIGN.md D83). 영어 소문자와 숫자 8~32자이고, 프로젝트를 처음 앱으로 내보낼 때 만들어 간직하므로 다시 내보낸 앱도 같은 앱이 되어 설정이 남습니다. 새 이름으로 복사한 프로젝트는 새 ID를 받습니다. 앱 ID가 아닌 값은 무시하고(F018), 다음에 내보낼 때 새로 만듭니다. 예전 GuBASIC은 이 키를 F004와 함께 무시하고, 프로젝트를 저장할 때 버립니다.
 - [examples/hello](../examples/hello)는 README 예제를 프로젝트로 만든 것입니다.
+
+### 11.4 객체로서의 컨트롤
+
+GuBASIC에는 컨트롤 배열이 없습니다(DESIGN.ko.md D95). Visual Basic 6이 컨트롤 배열로 하던 일은 Visual Basic .NET처럼 합니다([Microsoft](https://learn.microsoft.com/en-us/previous-versions/visualstudio/visual-studio-2008/kxt4418a(v=vs.90))). 처리기 하나로 여러 컨트롤 처리하기(8절)와 아래의 것들입니다(DESIGN.ko.md D98).
+
+- **`Control`**은 폼에 있는 어떤 컨트롤이든 담는 타입입니다. 멤버는 모든 컨트롤이 가진 `Name`, `Left`, `Top`, `Width`, `Height`, `Anchor`, `Tag`입니다. `Control`을 다시 특정한 컨트롤로 쓰려면 `CType`을 씁니다(A046). 폼은 `Control`이 아닙니다.
+- **`Name`**은 컨트롤이나 폼의 이름입니다. `New`로 만들어 아직 폼에 넣지 않은 컨트롤만 이름을 정할 수 있습니다(A034, R019). 이름은 영어 글자로 시작하고, 그다음에 글자, 숫자, `_`만 씁니다(R020).
+- **`Tag`**는 모든 컨트롤과 폼에 있는 `String` 속성으로, 프로그램이 원하는 글을 담아 둡니다. 컨트롤 배열의 번호 대신 숫자를 담는 데 씁니다. GuBASIC은 이 값으로 아무것도 하지 않습니다.
+- **`Me.Controls`**(또는 `Form2.Controls`)는 그 폼에 있는 컨트롤입니다. 순서는 폼 파일의 순서, 그다음 넣은 순서입니다. `Me.Controls.Count`는 개수, `Me.Controls(0)`은 첫 컨트롤이고, `For Each c As Control In Me.Controls`로 차례로 돕니다(그때의 목록을 돌므로, 도는 동안 넣거나 빼도 흐트러지지 않습니다).
+- **`TypeOf 값 Is 타입`**은 값이 그 타입의 컨트롤인지 알려 줍니다. `Nothing`은 아닙니다. **`CType(값, 타입)`**은 같은 컨트롤을 그 타입으로 주고, 다른 타입이면 프로그램이 멈춥니다(R022). `Nothing`은 `Nothing` 그대로입니다. 둘 다 컨트롤 타입에 씁니다(A045). Visual Basic .NET의 `DirectCast`와 `TryCast`는 `CType`으로 읽습니다(P026).
+
+  ```vb
+  For Each c As Control In Me.Controls
+      If TypeOf c Is TextBox Then
+          CType(c, TextBox).Text = ""
+      End If
+  Next
+  ```
+
+- **`New Button`**(어떤 컨트롤 타입이든, 인자 없이)은 어느 폼에도 없는 컨트롤을 만듭니다. 속성은 컴포넌트의 기본값으로 시작하고, 바로 바꿀 수 있습니다. `Me.Controls.Add(b)`는 컨트롤을 폼에 넣고, 같은 층의 다른 컨트롤 위에 놓습니다. `Name`이 없으면 디자이너처럼 `Button1`, `Button2` … 가운데 그 폼의 어떤 컨트롤도 쓰지 않았고 폼 파일에도 없는 가장 작은 번호로 이름을 붙입니다. 폼에 이미 있는 이름이면 프로그램이 멈추고(R016), 이미 폼에 있는 컨트롤을 넣어도 멈춥니다(R017). `Me.Controls.Remove(b)`는 컨트롤을 폼에서 뺍니다(그 폼에 없으면 R018). 뺀 컨트롤은 이름, 속성, 처리기를 그대로 지니고, 다시 넣을 수 있습니다. 폼과 `Control` 자체는 `New`로 만들지 않습니다(A047).
+- `New`로 만든 컨트롤은 이름이 아니라 `AddHandler`로 처리기를 받습니다(8절). `Close` 뒤에 다시 보이는 폼은 폼 파일의 컨트롤만 가지고 시작하고, 각 컨트롤은 코드가 주는 처리기를 가집니다.
+
+  ```vb
+  Dim b As New Button
+  b.Caption = "No. " & count
+  b.Top = 40 * count
+  Me.Controls.Add(b)
+  AddHandler b.Click, AddressOf Added_Click
+  ```
 
 ## 12. 열린 질문
 

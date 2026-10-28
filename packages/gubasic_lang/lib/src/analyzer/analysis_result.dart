@@ -70,8 +70,12 @@ class AnalysisResult {
   final Map<Stmt, Symbol> loopVariables = Map.identity();
 
   /// The procedures that handle events of the form and its controls, when
-  /// they are written as the event expects.
-  final Map<ProcedureDecl, EventHandler> handlers = Map.identity();
+  /// they are written as the event expects: each the events its name or
+  /// its `Handles` names (D98).
+  final Map<ProcedureDecl, List<EventHandler>> handlers = Map.identity();
+
+  /// The type each `CType` and `TypeOf … Is` names, when it is a control's.
+  final Map<Expr, ControlType> castTypes = Map.identity();
 
   bool get hasErrors => diagnostics.any((d) => d.isError);
 }

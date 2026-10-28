@@ -1,0 +1,19 @@
+> btnAdd.Click
+Add Button1 (Button)
+Debug.Print: Button1 added: 2 controls
+> btnAdd.Click
+Add btnSecond (Button)
+Debug.Print: btnSecond added: 3 controls
+> btnSecond.Click
+Debug.Print: Clicked btnSecond (2)
+> Button1.Click
+Debug.Print: Clicked Button1 (1)
+Remove Button1
+Debug.Print: Button1 removed, still gone: 2 controls
+> btnAdd.Click
+Add Button1 (Button)
+Debug.Print: Button1 added: 3 controls
+> Button1.Click
+Debug.Print: Clicked Button1 (3)
+> Close
+Closed

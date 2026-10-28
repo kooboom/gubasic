@@ -18,23 +18,31 @@ GbFormModel formModelOf(
   },
   controls: [
     for (final c in form.controls)
-      GbControlState(
-        c.name,
-        _kind(c.component.name),
-        {
-          for (final p in c.component.properties.values)
-            if (p.isStored) p.name: c.valueOf(p.name),
-        },
-        layer: switch (c.component.layer) {
-          ComponentLayer.graphic => GbLayer.graphic,
-          ComponentLayer.control => GbLayer.control,
-        },
-      ),
+      controlStateOf(c.name, c.component, {
+        for (final p in c.component.properties.values)
+          if (p.isStored) p.name: c.valueOf(p.name),
+      }),
   ],
   onEvent: onEvent,
   accepts: accepts,
   designing: designing,
   pictures: pictures,
+);
+
+/// The state of control [name], a [component], with [properties]: one of a
+/// form file, or one the program made with New (docs/DESIGN.md D98).
+GbControlState controlStateOf(
+  String name,
+  ComponentSpec component,
+  Map<String, Object> properties,
+) => GbControlState(
+  name,
+  _kind(component.name),
+  properties,
+  layer: switch (component.layer) {
+    ComponentLayer.graphic => GbLayer.graphic,
+    ComponentLayer.control => GbLayer.control,
+  },
 );
 
 GbControlKind _kind(String component) => switch (component.toLowerCase()) {

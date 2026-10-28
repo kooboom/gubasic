@@ -46,31 +46,31 @@ void main() {
 
     expect(
         describe('Form'),
-        'Caption As String = , Width As Integer = 480, Height As Integer = 360'
-        ' | x_Load(), x_Resize(), x_Closed() | default Load');
+        'Caption As String = , Width As Integer = 480, Height As Integer = 360, '
+        'Tag As String =  | x_Load(), x_Resize(), x_Closed() | default Load');
     expect(
         describe('Button'),
         'Caption As String = , Left As Integer = 0, Top As Integer = 0, '
-        'Width As Integer = 96, Height As Integer = 32, Anchor As String = Left Top | '
+        'Width As Integer = 96, Height As Integer = 32, Anchor As String = Left Top, Tag As String =  | '
         'x_Click() | '
         'default Click');
     expect(
         describe('Label'),
         'Caption As String = , Left As Integer = 0, Top As Integer = 0, '
-        'Width As Integer = 120, Height As Integer = 24, Anchor As String = Left Top | '
+        'Width As Integer = 120, Height As Integer = 24, Anchor As String = Left Top, Tag As String =  | '
         'x_Click() | '
         'default Click');
     expect(
         describe('TextBox'),
         'Text As String = , Left As Integer = 0, Top As Integer = 0, '
-        'Width As Integer = 160, Height As Integer = 32, Anchor As String = Left Top | '
+        'Width As Integer = 160, Height As Integer = 32, Anchor As String = Left Top, Tag As String =  | '
         'x_Changed() | '
         'default Changed');
     expect(
         describe('CheckBox'),
         'Caption As String = , Checked As Boolean = false, '
         'Left As Integer = 0, Top As Integer = 0, '
-        'Width As Integer = 120, Height As Integer = 32, Anchor As String = Left Top | '
+        'Width As Integer = 120, Height As Integer = 32, Anchor As String = Left Top, Tag As String =  | '
         'x_Changed() | '
         'default Changed');
     expect(builtinComponents['checkbox']!.properties['checked']!.changeEvent,

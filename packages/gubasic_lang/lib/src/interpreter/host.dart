@@ -71,8 +71,17 @@ abstract interface class FormHost implements Host {
   void showForms(List<ShownForm> forms);
 
   /// [form] starts again, shown after it was closed (D88): its properties
-  /// are as in its form file again.
+  /// are as in its form file again, and only its controls are on it.
   void resetForm(String form);
+
+  /// The program puts a control made with New on [form] (D98): [control],
+  /// a [component] (`Button`), with [properties] (every stored one). It is
+  /// drawn on top of the others of its layer.
+  void addControl(String form, String control, String component,
+      Map<String, Object> properties);
+
+  /// The program takes [control] off [form] (D98).
+  void removeControl(String form, String control);
 
   /// The program has ended: close the forms, and close any open dialog as
   /// if it was cancelled.

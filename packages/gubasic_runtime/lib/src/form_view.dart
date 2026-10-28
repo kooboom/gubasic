@@ -22,7 +22,7 @@ class GbFormView extends StatelessWidget {
   );
 
   Widget _form(BuildContext context) => ListenableBuilder(
-    listenable: model.form,
+    listenable: Listenable.merge([model.form, model.layout]),
     builder: (context, _) => SizedBox(
       width: model.form.integer('Width').toDouble(),
       height: model.form.integer('Height').toDouble(),

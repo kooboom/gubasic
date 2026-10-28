@@ -174,6 +174,31 @@ class _RecordingHost extends RunHost {
     if (_several) transcript.add(TranscriptLine.forms(forms));
     super.showForms(forms);
   }
+
+  @override
+  void addControl(
+    String form,
+    String control,
+    String component,
+    Map<String, Object> properties,
+  ) {
+    transcript.add(
+      TranscriptLine.addControl(
+        control,
+        component,
+        form: _several ? form : null,
+      ),
+    );
+    super.addControl(form, control, component, properties);
+  }
+
+  @override
+  void removeControl(String form, String control) {
+    transcript.add(
+      TranscriptLine.removeControl(control, form: _several ? form : null),
+    );
+    super.removeControl(form, control);
+  }
 }
 
 /// Does what the script says on the screen. A step whose widget is covered

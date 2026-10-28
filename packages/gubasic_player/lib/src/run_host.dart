@@ -171,5 +171,23 @@ class RunHost implements FormHost {
   }
 
   @override
+  void addControl(
+    String form,
+    String control,
+    String component,
+    Map<String, Object> properties,
+  ) => modelOf(form).addControl(
+    controlStateOf(
+      control,
+      builtinComponents[component.toLowerCase()]!,
+      properties,
+    ),
+  );
+
+  @override
+  void removeControl(String form, String control) =>
+      modelOf(form).removeControl(control);
+
+  @override
   void endProgram() => dialogs.closeAll();
 }

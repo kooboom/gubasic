@@ -800,8 +800,11 @@ class _IdeShellState extends State<IdeShell> {
     final name = decl?.name ?? 'Form';
     final component = decl?.component ?? formComponent;
     final event = component.events[component.defaultEvent.toLowerCase()]!;
-    final handler = '${name}_${event.name}';
     final code = _project.files[codeFile] ?? '';
+    // The procedure that handles the event by Handles (D98), or the one
+    // named for it.
+    final handler =
+        procedureHandling(code, name, event.name) ?? '${name}_${event.name}';
     if (_running && procedureNamed(code, handler) == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

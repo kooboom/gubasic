@@ -1,0 +1,16 @@
+Debug.Print: Loaded Form1 (Form1)
+> btn1.Click
+Set lblShow.Caption: 1
+> btn3.Click
+Set lblShow.Caption: 13
+> btn2.Click
+Set lblShow.Caption: 132
+> lblShow.Click
+Debug.Print: lblShow shows at 48
+> chkLoud.Click
+Debug.Print: chkLoud says at 80
+> btnClear.Click
+Set lblShow.Caption: 
+Debug.Print: btnClear cleared
+> Close
+Closed

@@ -75,16 +75,23 @@ class GbFormModel {
   }) : pictures = pictures ?? _noPictures,
        accepts = accepts ?? _acceptAll,
        form = GbControlState(null, GbControlKind.form, form),
-       controls = List.unmodifiable(controls) {
-    for (final c in this.controls) {
+       _controls = List.of(controls) {
+    for (final c in _controls) {
       if (c.has('Anchor')) _bases[c] = _baseOf(c);
     }
   }
 
   final GbControlState form;
 
-  /// In the form file's order.
-  final List<GbControlState> controls;
+  final List<GbControlState> _controls;
+
+  /// In the form file's order, then the ones the program added
+  /// (docs/DESIGN.md D98).
+  List<GbControlState> get controls => List.unmodifiable(_controls);
+
+  /// Tells the form's view when a control is added or removed.
+  Listenable get layout => _layout;
+  final _layout = _Signal();
   final GbEventSink onEvent;
   final GbEventFilter accepts;
 
@@ -100,11 +107,30 @@ class GbFormModel {
 
   /// [controls] in the order they are drawn, the last on top: the
   /// graphic layer first, each layer in the form file's order (D41).
-  late final List<GbControlState> drawingOrder = List.unmodifiable([
+  List<GbControlState> get drawingOrder => _drawingOrder ??= List.unmodifiable([
     for (final layer in GbLayer.values)
-      for (final c in controls)
+      for (final c in _controls)
         if (c.layer == layer) c,
   ]);
+  List<GbControlState>? _drawingOrder;
+
+  /// Puts [control] on the form, on top of the others of its layer, for
+  /// the program (D98).
+  void addControl(GbControlState control) {
+    _controls.add(control);
+    if (control.has('Anchor')) _bases[control] = _baseOf(control);
+    _drawingOrder = null;
+    _layout.ping();
+  }
+
+  /// Takes the control named [name] off the form, for the program (D98).
+  void removeControl(String name) {
+    final c = control(name) ?? (throw ArgumentError('no control $name'));
+    _controls.remove(c);
+    _bases.remove(c);
+    _drawingOrder = null;
+    _layout.ping();
+  }
 
   final _committers = <VoidCallback>[];
 
@@ -179,7 +205,7 @@ class GbFormModel {
   GbControlState? control(String? name) {
     if (name == null) return form;
     final lower = name.toLowerCase();
-    for (final c in controls) {
+    for (final c in _controls) {
       if (c.name!.toLowerCase() == lower) return c;
     }
     return null;
@@ -205,4 +231,9 @@ class GbFormModel {
       commit();
     }
   }
+}
+
+/// A [ChangeNotifier] that only says that something changed.
+class _Signal extends ChangeNotifier {
+  void ping() => notifyListeners();
 }

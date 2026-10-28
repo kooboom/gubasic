@@ -151,8 +151,9 @@ void main() {
         .analysis
         .handlers
         .entries
-        .map((e) => '${e.key.name.name}: ${e.value.control?.name ?? 'Form'}.'
-            '${e.value.event.name}')
+        .expand((e) => e.value
+            .map((h) => '${e.key.name.name}: ${h.control?.name ?? 'Form'}.'
+                '${h.event.name}'))
         .join(', ');
 
     test('Control_Event and Form_Event, in any case', () {
