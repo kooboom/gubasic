@@ -66,19 +66,29 @@ class GbDialogs {
         (context, close) => _box(
           context,
           title: title,
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(prompt),
-              const SizedBox(height: 12),
-              TextField(
-                controller: field,
-                autofocus: true,
-                onSubmitted: (_) => close(field.text),
-              ),
-            ],
-          ),
+          // In a small window the prompt is the field's label: a line
+          // above the field would scroll out of sight as the field takes
+          // the focus (D109).
+          content: _isCompact(context)
+              ? TextField(
+                  controller: field,
+                  autofocus: true,
+                  decoration: InputDecoration(labelText: prompt),
+                  onSubmitted: (_) => close(field.text),
+                )
+              : Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(prompt),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: field,
+                      autofocus: true,
+                      onSubmitted: (_) => close(field.text),
+                    ),
+                  ],
+                ),
           actions: [
             TextButton(
               onPressed: () => close(null),
@@ -186,8 +196,7 @@ class GbDialogs {
     required Widget content,
     required List<Widget> actions,
   }) {
-    final size = MediaQuery.sizeOf(context);
-    final compact = size.width < 400 || size.height < 300;
+    final compact = _isCompact(context);
     final theme = Theme.of(context);
     final dialog = AlertDialog(
       title: title.isEmpty ? null : Text(title),
@@ -206,6 +215,12 @@ class GbDialogs {
             child: dialog,
           )
         : dialog;
+  }
+
+  /// Whether the window is too small for Material's dialog as it is (D109).
+  static bool _isCompact(BuildContext context) {
+    final size = MediaQuery.sizeOf(context);
+    return size.width < 400 || size.height < 300;
   }
 
   Future<String?> _show(

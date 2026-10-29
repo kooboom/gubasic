@@ -238,6 +238,26 @@ void main() {
       expect(dialogs.hasOpenDialog, isFalse);
     });
 
+    testWidgets('InputBox fits a 320 x 120 window, its prompt in sight as the '
+        "field's label (D109)", (tester) async {
+      tester.view.physicalSize = const Size(320, 120);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      await app(tester, GbStrings.en);
+      const screen = Rect.fromLTWH(0, 0, 320, 120);
+      final answer = dialogs.inputBox(context, 'What is your name?', '', '');
+      await tester.pumpAndSettle();
+      for (final text in ['What is your name?', 'OK', 'Cancel']) {
+        final rect = tester.getRect(find.text(text));
+        expect(screen.contains(rect.topLeft), isTrue, reason: text);
+        expect(screen.contains(rect.bottomRight), isTrue, reason: text);
+      }
+      await tester.enterText(find.byType(TextField), 'Gu');
+      await tester.tap(find.text('OK'));
+      await tester.pumpAndSettle();
+      expect(await answer, 'Gu');
+    });
+
     testWidgets('InputBox: the answer, or "" when cancelled', (tester) async {
       await app(tester, GbStrings.ko);
       final answer = dialogs.inputBox(context, '이름은?', '', '');
