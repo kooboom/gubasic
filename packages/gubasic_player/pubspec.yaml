@@ -3,7 +3,7 @@ description: >-
   Runs a GuBASIC project's form: the run window and the host that connects
   the interpreter to gubasic_runtime. Shared by the IDE's run window and the
   player app (docs/DESIGN.md D79).
-version: 0.3.0
+version: 0.3.1
 publish_to: none
 
 environment:

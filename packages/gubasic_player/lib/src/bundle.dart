@@ -14,7 +14,7 @@ const bundleFormatVersion = 1;
 const bundleFileName = 'project.gbz';
 
 /// This GuBASIC's version, written into the bundles it makes.
-const gubasicVersion = '0.3.0';
+const gubasicVersion = '0.3.1';
 
 /// A project as an exported app carries it (D83): a `.gbz` file, a zip
 /// with `bundle.yaml` (the layout's version, the GuBASIC that made it, the

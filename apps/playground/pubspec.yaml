@@ -1,6 +1,6 @@
 name: gubasic_playground
 description: Development playground for GuBASIC, running in the browser.
-version: 0.3.0
+version: 0.3.1
 publish_to: none
 
 environment:

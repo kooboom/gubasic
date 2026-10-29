@@ -7,7 +7,7 @@
 
 [English](README.md)
 
-> **상태: 3단계 v0.3 "VB처럼 쓰기" 완료**([v0.3.0](https://github.com/kooboom/gubasic/releases/tag/v0.3.0), 개발판). 폼을 그리고, 컨트롤을 더블클릭하고, BASIC을 쓰고, F5를 누르는 일이 모두 IDE 안에서 되며, Flutter를 설치하지 않아도 됩니다. 만든 프로젝트는 웹, Windows, macOS 앱으로 내보냅니다. Visual Basic의 작업 방식이 들어왔습니다: 여러 컨트롤을 처리기 하나로, `Timer`, 키 이벤트, 모듈과 `Sub Main`, `OptionButton`, `ComboBox`, `Frame`, 메뉴 편집기로 만드는 메뉴. 다음 계획: [로드맵](docs/ROADMAP.ko.md).
+> **상태: 3단계 v0.3 "VB처럼 쓰기" 완료**([v0.3.1](https://github.com/kooboom/gubasic/releases/tag/v0.3.1), 개발판). 폼을 그리고, 컨트롤을 더블클릭하고, BASIC을 쓰고, F5를 누르는 일이 모두 IDE 안에서 되며, Flutter를 설치하지 않아도 됩니다. 만든 프로젝트는 웹, Windows, macOS 앱으로 내보냅니다. Visual Basic의 작업 방식이 들어왔습니다: 여러 컨트롤을 처리기 하나로, `Timer`, 키 이벤트, 모듈과 `Sub Main`, `OptionButton`, `ComboBox`, `Frame`, 메뉴 편집기로 만드는 메뉴. 다음 계획: [로드맵](docs/ROADMAP.ko.md).
 >
 > - **웹 IDE:** https://kooboom.github.io/gubasic/ide/ (macOS·Windows 앱도 있음: [apps/ide](apps/ide))
 > - **놀이터:** https://kooboom.github.io/gubasic (개발용으로 언어만 따로 실행)
