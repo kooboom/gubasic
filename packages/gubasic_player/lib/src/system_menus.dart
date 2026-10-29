@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:gubasic_runtime/gubasic_runtime.dart';
 
 import 'player_strings.dart';
@@ -19,10 +20,15 @@ class SystemMenus extends StatefulWidget {
     required this.strings,
     required this.child,
     this.session,
+    this.editMenu = false,
   });
 
   /// The app's name, the label of its own menu.
   final String appName;
+
+  /// Whether the standard Edit menu is there while no program runs: the
+  /// IDE's, so that ⌘C and the rest are where a Mac user looks (D110).
+  final bool editMenu;
   final PlayerStrings strings;
   final RunSession? session;
   final Widget child;
@@ -84,8 +90,71 @@ class _SystemMenusState extends State<SystemMenus> {
   Widget build(BuildContext context) {
     if (!gbUsesSystemMenus) return widget.child;
     final s = widget.session;
+    final runs = s != null && _programRuns(s);
     return _bar(
-      s != null && _programRuns(s) ? gbPlatformMenus(s.host.model) : const [],
+      runs
+          ? gbPlatformMenus(s.host.model)
+          : [if (widget.editMenu) _edit(widget.strings.editMenu)],
+    );
+  }
+
+  /// The standard Edit menu, its items sent to what has the focus as the
+  /// keys would send them: a text field, the code editor, the designer.
+  static PlatformMenu _edit(List<String> words) {
+    PlatformMenuItem item(
+      String label,
+      LogicalKeyboardKey key,
+      Intent intent, {
+      bool shift = false,
+    }) => PlatformMenuItem(
+      label: label,
+      shortcut: SingleActivator(key, meta: true, shift: shift),
+      onSelectedIntent: intent,
+    );
+    const cause = SelectionChangedCause.keyboard;
+    return PlatformMenu(
+      label: words[0],
+      menus: [
+        PlatformMenuItemGroup(
+          members: [
+            item(
+              words[1],
+              LogicalKeyboardKey.keyZ,
+              const UndoTextIntent(cause),
+            ),
+            item(
+              words[2],
+              LogicalKeyboardKey.keyZ,
+              const RedoTextIntent(cause),
+              shift: true,
+            ),
+          ],
+        ),
+        PlatformMenuItemGroup(
+          members: [
+            item(
+              words[3],
+              LogicalKeyboardKey.keyX,
+              const CopySelectionTextIntent.cut(cause),
+            ),
+            item(
+              words[4],
+              LogicalKeyboardKey.keyC,
+              CopySelectionTextIntent.copy,
+            ),
+            item(
+              words[5],
+              LogicalKeyboardKey.keyV,
+              const PasteTextIntent(cause),
+            ),
+            item(
+              words[6],
+              LogicalKeyboardKey.keyA,
+              const SelectAllTextIntent(cause),
+            ),
+          ],
+        ),
+      ],
     );
   }
 

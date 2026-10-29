@@ -317,6 +317,11 @@ jobs:
       - name: The toolbox in the IDE's own window
         working-directory: apps/ide
         run: flutter test integration_test/toolbox_test.dart -d macos --dart-define=SHOTS=${{ runner.temp }}/toolbox
+      # The IDE's Edit menu on the system's menu bar while no program runs
+      # (D110), set through the engine.
+      - name: The IDE's Edit menu on macOS
+        working-directory: apps/ide
+        run: flutter test integration_test/edit_menu_test.dart -d macos
       - uses: actions/upload-artifact@v4
         if: always()
         with:

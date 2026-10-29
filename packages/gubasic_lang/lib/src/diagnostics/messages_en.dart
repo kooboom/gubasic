@@ -112,6 +112,10 @@ const Map<DiagnosticCode, String> englishMessages = {
   // Analyzer: names
   DiagnosticCode.unknownName: '"{0}" is not declared. '
       'Declare it with Dim first, or check the spelling.',
+  DiagnosticCode.formMethodWithoutMe: '{0} is a method of the form: write '
+      'Me.{0}, as GuBASIC writes every form method.',
+  DiagnosticCode.popupMenuStatement: 'GuBASIC calls PopupMenu as a method '
+      'of the form, with parentheses: write Me.PopupMenu({0}).',
   DiagnosticCode.unknownNameDidYouMean: '"{0}" is not declared. '
       'There is a similar name, "{1}"; check the spelling.',
   DiagnosticCode.unknownNameMaybeControl: '"{0}" is not declared. '

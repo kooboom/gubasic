@@ -199,4 +199,23 @@ void main() {
     await tester.pumpAndSettle();
     expect(await chosen, isNull, reason: 'a tap outside closes it');
   });
+
+  test('gbShortcutLabel: the keys as each platform writes them (D110)', () {
+    String on(TargetPlatform platform, String shortcut) {
+      debugDefaultTargetPlatformOverride = platform;
+      try {
+        return gbShortcutLabel(shortcut);
+      } finally {
+        debugDefaultTargetPlatformOverride = null;
+      }
+    }
+
+    expect(on(TargetPlatform.windows, 'Ctrl+Shift+L'), 'Ctrl+Shift+L');
+    expect(on(TargetPlatform.linux, 'F5'), 'F5');
+    // A macOS app, where Ctrl is the Command key (not the web: kIsWeb is
+    // false in tests).
+    expect(on(TargetPlatform.macOS, 'Ctrl+L'), '⌘L');
+    expect(on(TargetPlatform.macOS, 'Ctrl+Shift+Alt+Delete'), '⌥⇧⌘⌦');
+    expect(on(TargetPlatform.macOS, ''), '');
+  });
 }

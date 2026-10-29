@@ -220,6 +220,8 @@ class _IdeShellState extends State<IdeShell> {
       appName: 'GuBASIC',
       strings: s.player,
       session: session,
+      // While no program runs, the standard Edit menu (D110).
+      editMenu: true,
       child: _shell(context, s, session, controller, files),
     );
   }

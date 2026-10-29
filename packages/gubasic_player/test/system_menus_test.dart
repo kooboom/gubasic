@@ -85,4 +85,56 @@ void main() {
     await tester.pumpAndSettle();
     expect(session.output, ['New']);
   });
+
+  testWidgets('the IDE on macOS: the Edit menu while no program runs, gone '
+      'while one does, back when it ends (D110)', (tester) async {
+    debugDefaultTargetPlatformOverride = TargetPlatform.macOS;
+    try {
+      Widget ide(RunSession? session) => MaterialApp(
+        home: SystemMenus(
+          appName: 'GuBASIC',
+          strings: PlayerStrings.ko,
+          session: session,
+          editMenu: true,
+          child: Scaffold(
+            body: session == null ? null : RunWindow(session: session),
+          ),
+        ),
+      );
+      List<String> labels() => [
+        for (final m
+            in tester
+                .widget<PlatformMenuBar>(find.byType(PlatformMenuBar))
+                .menus)
+          m.label,
+      ];
+      await tester.pumpWidget(ide(null));
+      expect(labels(), ['GuBASIC', '편집', '윈도우']);
+      final edit =
+          tester.widget<PlatformMenuBar>(find.byType(PlatformMenuBar)).menus[1]
+              as PlatformMenu;
+      expect(
+        [
+          for (final g in edit.menus)
+            for (final i in (g as PlatformMenuItemGroup).members) i.label,
+        ],
+        ['실행 취소', '다시 실행', '잘라내기', '복사', '붙여넣기', '모두 선택'],
+      );
+
+      final session = RunSession(
+        Project.read(files).startup!,
+        strings: PlayerStrings.ko,
+        settings: GbMemorySettings(),
+      );
+      addTearDown(session.stop);
+      await tester.pumpWidget(ide(session));
+      await tester.pumpAndSettle();
+      expect(labels(), ['GuBASIC', 'File', '윈도우']);
+      session.closeForm();
+      await tester.pumpAndSettle();
+      expect(labels(), ['GuBASIC', '편집', '윈도우']);
+    } finally {
+      debugDefaultTargetPlatformOverride = null;
+    }
+  });
 }

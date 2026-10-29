@@ -49,6 +49,32 @@ SingleActivator? gbShortcut(String shortcut, {bool apple = false}) {
   );
 }
 
+/// [shortcut] as the platform writes keys (D110): `⌃⇧L` on a Mac, `⌘⇧L`
+/// in a macOS app, where Ctrl is the Command key; `Ctrl+Shift+L` on
+/// Windows, Linux and the web elsewhere. "" for "".
+String gbShortcutLabel(String shortcut) {
+  if (shortcut.isEmpty) return '';
+  final words = shortcut.split('+');
+  final key = words.last;
+  final apple = switch (defaultTargetPlatform) {
+    TargetPlatform.macOS || TargetPlatform.iOS => true,
+    _ => false,
+  };
+  if (!apple) return shortcut;
+  // In Apple's order: Control, Option, Shift, Command.
+  final ctrl = words.contains('Ctrl');
+  return [
+    if (ctrl && !gbUsesSystemMenus) '⌃',
+    if (words.contains('Alt')) '⌥',
+    if (words.contains('Shift')) '⇧',
+    if (ctrl && gbUsesSystemMenus) '⌘',
+    switch (key) {
+      'Delete' => '⌦',
+      final k => k,
+    },
+  ].join();
+}
+
 const _functionKeys = [
   LogicalKeyboardKey.f1,
   LogicalKeyboardKey.f2,
@@ -147,7 +173,10 @@ class GbMenuBar extends StatelessWidget {
       leadingIcon: m['Checked'] == true
           ? const Icon(Icons.check, size: 16)
           : null,
-      shortcut: gbShortcut(m.text('Shortcut')),
+      // Shown as the platform shows its keys (D110): ⌘L in a designer on
+      // macOS, where the app's menu takes Command; ⌃L in a Mac's browser;
+      // Ctrl+L elsewhere.
+      shortcut: gbShortcut(m.text('Shortcut'), apple: gbUsesSystemMenus),
       child: label,
     );
   }

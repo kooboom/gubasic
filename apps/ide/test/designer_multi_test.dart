@@ -298,4 +298,24 @@ void main() {
     expect(find.text('컨트롤 3개를 골랐습니다'), findsNWidgets(2));
     expect(find.text('속성을 보고 바꾸려면 컨트롤을 하나만 고릅니다.'), findsOneWidget);
   });
+
+  testWidgets('the Edit menu\'s Copy, Paste, Select All and Undo, sent as '
+      'intents, reach the designer (D110)', (tester) async {
+    await open(tester);
+    await click(tester, const Offset(40, 30)); // btnA
+    void send(Intent intent) {
+      Actions.invoke(FocusManager.instance.primaryFocus!.context!, intent);
+    }
+
+    send(CopySelectionTextIntent.copy);
+    send(const PasteTextIntent(SelectionChangedCause.keyboard));
+    await tester.pumpAndSettle();
+    expect(text(tester), contains('name: Button1'));
+    send(const SelectAllTextIntent(SelectionChangedCause.keyboard));
+    await tester.pumpAndSettle();
+    expect(status(s.chosenControls.replaceAll('{0}', '4')), findsWidgets);
+    send(const UndoTextIntent(SelectionChangedCause.keyboard));
+    await tester.pumpAndSettle();
+    expect(text(tester), isNot(contains('name: Button1')));
+  });
 }

@@ -1300,6 +1300,14 @@ class _Analyzer {
       _reportAt(e, DiagnosticCode.unknownNameMaybeControl, [e.name]);
       return;
     }
+    if (form != null && !beforeDot) {
+      // `Hide`, `PopupMenu(mnuEdit)`: a form's method needs `Me.` (D110).
+      if (formComponent.methods[e.name.toLowerCase()] case final m?) {
+        _reportAt(
+            e, DiagnosticCode.formMethodWithoutMe, [m.name], ['Me.${m.name}']);
+        return;
+      }
+    }
     final suggestion =
         closestName(e.name, _scope.visible.map((s) => s.name).toSet());
     if (suggestion != null) {

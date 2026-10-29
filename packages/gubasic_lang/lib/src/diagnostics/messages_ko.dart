@@ -99,6 +99,10 @@ const Map<DiagnosticCode, String> koreanMessages = {
 
   // Analyzer: names
   DiagnosticCode.unknownName: '{0} 이름이 선언되지 않았습니다. 먼저 Dim으로 선언하거나 철자를 확인해 주세요.',
+  DiagnosticCode.formMethodWithoutMe:
+      '{0} 메서드는 폼의 메서드입니다. GuBASIC에서는 폼 메서드를 모두 Me.{0} 형태로 씁니다.',
+  DiagnosticCode.popupMenuStatement:
+      'GuBASIC에서 PopupMenu는 괄호를 쓰는 폼 메서드입니다. Me.PopupMenu({0}) 형태로 써 주세요.',
   DiagnosticCode.unknownNameDidYouMean:
       '{0} 이름이 선언되지 않았습니다. 비슷한 이름으로 {1} 이름이 있으니 철자를 확인해 주세요.',
   DiagnosticCode.unknownNameMaybeControl: '{0} 이름이 선언되지 않았습니다. '

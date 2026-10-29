@@ -1320,29 +1320,51 @@ class _FormDesignerState extends State<FormDesigner> {
         },
         const SingleActivator(LogicalKeyboardKey.escape): _escape,
       },
-      child: Focus(
-        focusNode: _focus,
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Toolbox(
-              tool: _tool,
-              enabled: editable,
-              strings: s,
-              onChoose: _chooseTool,
-              onPlace: _placeInMiddle,
-            ),
-            const VerticalDivider(width: 1),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Expanded(child: _canvas(context, form, editable)),
-                  ?_tray(context, form),
-                ],
+      // The Edit menu on macOS's menu bar sends these (D110); a field of
+      // the Properties window, below, takes them first as text.
+      child: Actions(
+        actions: {
+          UndoTextIntent: CallbackAction<UndoTextIntent>(
+            onInvoke: (_) => editable ? _undo() : null,
+          ),
+          RedoTextIntent: CallbackAction<RedoTextIntent>(
+            onInvoke: (_) => editable ? _redo() : null,
+          ),
+          CopySelectionTextIntent: CallbackAction<CopySelectionTextIntent>(
+            onInvoke: (intent) =>
+                intent.collapseSelection ? (editable ? _cut() : null) : _copy(),
+          ),
+          PasteTextIntent: CallbackAction<PasteTextIntent>(
+            onInvoke: (_) => editable ? _paste() : null,
+          ),
+          SelectAllTextIntent: CallbackAction<SelectAllTextIntent>(
+            onInvoke: (_) => _chooseAll(),
+          ),
+        },
+        child: Focus(
+          focusNode: _focus,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Toolbox(
+                tool: _tool,
+                enabled: editable,
+                strings: s,
+                onChoose: _chooseTool,
+                onPlace: _placeInMiddle,
               ),
-            ),
-          ],
+              const VerticalDivider(width: 1),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Expanded(child: _canvas(context, form, editable)),
+                    ?_tray(context, form),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

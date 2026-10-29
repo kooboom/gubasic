@@ -174,4 +174,34 @@ menus:
         ], 'btnOk.Click\nForm2.btnGo.Click'),
         contains('Error R026 @ Form2.gbas:2'));
   });
+
+  test('A058 and P029: a form method without Me., VB6\'s PopupMenu mnuEdit',
+      () {
+    final form = readFormFile(_menus, name: 'Form1').form;
+    List<String> codes(String line) => [
+          for (final d
+              in compile('Sub btnOk_Click()\n$line\nEnd Sub\n', form: form)
+                  .diagnostics)
+            '${d.code.code} ${d.replacements}'
+        ];
+    expect(codes('Hide'), ['A058 [Me.Hide]']);
+    expect(codes('PopupMenu(mnuFile)'), ['A058 [Me.PopupMenu]']);
+    expect(codes('PopupMenu mnuFile'), ['P029 []']);
+    expect(codes('Me.PopupMenu(mnuFile)'), isEmpty);
+    final d =
+        compile('Sub btnOk_Click()\nPopupMenu mnuFile\nEnd Sub\n', form: form)
+            .diagnostics
+            .single;
+    expect(
+        d.message,
+        'GuBASIC calls PopupMenu as a method of the form, with parentheses: '
+        'write Me.PopupMenu(mnuFile).');
+    expect(
+        compile('Sub btnOk_Click()\nHide\nEnd Sub\n', form: form)
+            .diagnostics
+            .single
+            .message,
+        'Hide is a method of the form: write Me.Hide, as GuBASIC writes '
+        'every form method.');
+  });
 }

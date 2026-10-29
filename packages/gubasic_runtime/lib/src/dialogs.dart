@@ -418,7 +418,7 @@ class _PopupMenuState extends State<_PopupMenu> {
                     : null,
               ),
               Expanded(child: Text(item.text('Caption'))),
-              if (shortcut.isNotEmpty) Text(shortcut),
+              if (shortcut.isNotEmpty) Text(gbShortcutLabel(shortcut)),
               if (opens) const Icon(Icons.chevron_right, size: 16),
             ],
           ),

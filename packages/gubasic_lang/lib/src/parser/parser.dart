@@ -889,6 +889,9 @@ class _Parser {
               (false, true) => DiagnosticCode.loadControl,
             },
             [_tok.text]);
+      } else if (statement == 'popupmenu') {
+        // VB6's `PopupMenu mnuEdit`: `Me.PopupMenu(mnuEdit)` (P029, D110).
+        _errorAt(_tok, DiagnosticCode.popupMenuStatement, [_tok.text]);
       } else if (target is! MemberExpr ||
           target.name.name.toLowerCase() != 'show') {
         // `Form2.Show vbModal` is reported by the analyzer (A039).
@@ -898,6 +901,14 @@ class _Parser {
       while (_is(TokenKind.comma)) {
         _advance();
         arguments.add(_expression());
+      }
+      if (statement == 'popupmenu' && target is NameExpr) {
+        // Read as what it should be, so that only P029 says so.
+        target = MemberExpr(
+            MeExpr(target.start, target.start),
+            Identifier(target.name, target.start, target.end),
+            target.start,
+            target.end);
       }
       target = InvokeExpr(target, arguments, target.start, _lastEnd);
     }

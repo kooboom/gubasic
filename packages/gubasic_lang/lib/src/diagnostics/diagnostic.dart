@@ -138,6 +138,9 @@ enum DiagnosticCode {
   /// its form with Controls.Remove (D99).
   unloadControl('P028'),
 
+  /// Visual Basic 6's `PopupMenu mnuEdit` (D110). Args: the menu.
+  popupMenuStatement('P029'),
+
   // Analyzer: names
 
   /// A name that is not declared. Args: the name.
@@ -287,6 +290,10 @@ enum DiagnosticCode {
   /// Text that is not a shortcut given to a Shortcut (D106): R024 when
   /// it runs. Args: the text.
   badShortcutInCode('A057', DiagnosticSeverity.warning),
+
+  /// A method of the form called without `Me.` (`Hide`, D110). Args: the
+  /// method.
+  formMethodWithoutMe('A058'),
 
   /// `Form2.Show vbModal` (Visual Basic 6): Show takes no argument; a form
   /// that the code waits for is shown with ShowDialog (D88). Args: the
