@@ -56,7 +56,7 @@ The plan, its steps and decisions: [STAGE2_PLAN.md](STAGE2_PLAN.md) (D79–D91).
 
 Three releases, then the rest (D94–D96). The order follows who GuBASIC is for (D92): Visual Basic's own ways of working first, then work with files and data, then the tools of a real development environment.
 
-### v0.3 — Like Visual Basic
+### v0.3 — Like Visual Basic (done, v0.3.0)
 
 - [x] What replaces control arrays, as Visual Basic .NET does it (D95, D98): `Handles` for several controls, the handler told which control raised the event, a loop over a form's controls, controls created at run time (example: [calculator](../examples/calculator), ten digit buttons in one handler)
 - [x] Diagnostics for a control array or `On Error`, saying which of these to write instead (D95, D99)

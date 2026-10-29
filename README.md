@@ -7,7 +7,7 @@ Draw your interface, double-click a control, write a few lines of BASIC — and 
 
 [한국어](README.ko.md)
 
-> **Status: stage 2 complete** ([v0.2.0](https://github.com/kooboom/gubasic/releases/tag/v0.2.0), a development build). Draw forms, double-click a control, write BASIC and press F5, all inside the IDE, with no Flutter installed; then export the project as a web, Windows or macOS app. A project can have several forms. What comes next: [ROADMAP](docs/ROADMAP.md).
+> **Status: stage 3, v0.3 "Like Visual Basic" complete** ([v0.3.0](https://github.com/kooboom/gubasic/releases/tag/v0.3.0), a development build). Draw forms, double-click a control, write BASIC and press F5, all inside the IDE, with no Flutter installed; then export the project as a web, Windows or macOS app. Visual Basic's ways of working are in: one handler for several controls, `Timer`, key events, modules and `Sub Main`, `OptionButton`, `ComboBox`, `Frame`, and menus made in a menu editor. What comes next: [ROADMAP](docs/ROADMAP.md).
 >
 > - **Web IDE:** https://kooboom.github.io/gubasic/ide/ (also as an app for macOS and Windows: [apps/ide](apps/ide))
 > - **Playground:** https://kooboom.github.io/gubasic (the language on its own, for development)

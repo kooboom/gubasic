@@ -2,7 +2,7 @@ name: gubasic_player_app
 description: >-
   The player: runs one GuBASIC project as an app of its own, with the same
   interpreter and run window as the IDE's F5 (docs/DESIGN.md D79, D80).
-version: 0.2.0
+version: 0.3.0
 publish_to: none
 
 environment:
