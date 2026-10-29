@@ -6,9 +6,11 @@ import '../strings.dart';
 import 'form_edit.dart';
 
 /// The designer's toolbox: the pointer, then a tool for each control
-/// type. Choosing a tool lets the user draw that control on the form; a
-/// double-click places one in the middle of the form at once, and a tool
-/// dragged onto the form places one where it is dropped (D69).
+/// type, as icons in two columns like Visual Basic 6's toolbox; a tool's
+/// name and what it does are in its tooltip (D107). Choosing a tool lets
+/// the user draw that control on the form; a double-click places one in
+/// the middle of the form at once, and a tool dragged onto the form
+/// places one where it is dropped (D69).
 class Toolbox extends StatelessWidget {
   const Toolbox({
     super.key,
@@ -28,36 +30,47 @@ class Toolbox extends StatelessWidget {
   final void Function(ComponentSpec? tool) onChoose;
   final void Function(ComponentSpec type) onPlace;
 
+  /// The tools in a row, and a tool's cell.
+  static const columns = 2;
+  static const cellWidth = 36.0;
+  static const cellHeight = 32.0;
+  static const _padding = 6.0;
+
+  /// The toolbox's width: the columns and the padding at both sides.
+  static const width = columns * cellWidth + 2 * _padding;
+
   @override
   Widget build(BuildContext context) => SizedBox(
-    width: 128,
-    child: ListView(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      children: [
-        _item(
-          context,
-          key: const ValueKey('toolbox.pointer'),
-          icon: Icons.north_west,
-          label: strings.pointerTool,
-          tip: strings.pointerTip,
-          selected: tool == null,
-          enabled: true,
-          onPress: () => onChoose(null),
-        ),
-        for (final type in toolboxComponents)
+    width: width,
+    child: SingleChildScrollView(
+      padding: const EdgeInsets.all(_padding),
+      child: Wrap(
+        children: [
           _item(
             context,
-            key: ValueKey('toolbox.${type.name}'),
-            icon: componentIcon(type),
-            label: type.name,
-            tip: strings.placeTip.replaceAll('{0}', type.name),
-            selected: tool == type,
-            enabled: enabled,
-            onPress: () => onChoose(type),
-            onDoubleTap: () => onPlace(type),
-            type: type,
+            key: const ValueKey('toolbox.pointer'),
+            icon: Icons.north_west,
+            label: strings.pointerTool,
+            tip: strings.pointerTip,
+            selected: tool == null,
+            enabled: true,
+            onPress: () => onChoose(null),
           ),
-      ],
+          for (final type in toolboxComponents)
+            _item(
+              context,
+              key: ValueKey('toolbox.${type.name}'),
+              icon: componentIcon(type),
+              label: type.name,
+              tip: strings.placeTip.replaceAll('{0}', type.name),
+              selected: tool == type,
+              enabled: enabled,
+              onPress: () => onChoose(type),
+              onDoubleTap: () => onPlace(type),
+              type: type,
+            ),
+        ],
+      ),
     ),
   );
 
@@ -78,29 +91,19 @@ class Toolbox extends StatelessWidget {
         ? (selected ? scheme.onSecondaryContainer : scheme.onSurface)
         : scheme.onSurface.withValues(alpha: 0.38);
     final item = Container(
-      height: 26,
-      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 1),
-      padding: const EdgeInsets.symmetric(horizontal: 8),
+      width: cellWidth,
+      height: cellHeight,
+      alignment: Alignment.center,
       decoration: BoxDecoration(
         color: selected && enabled ? scheme.secondaryContainer : null,
         borderRadius: BorderRadius.circular(4),
       ),
-      child: Row(
-        children: [
-          Icon(icon, size: 18, color: color),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              label,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(color: color),
-            ),
-          ),
-        ],
-      ),
+      child: Icon(icon, size: 20, color: color),
     );
     return Tooltip(
-      message: tip,
+      // The name first, as the toolbox shows only the icon; what the tool
+      // does on the next line.
+      message: '$label\n$tip',
       waitDuration: const Duration(milliseconds: 600),
       // The tool is chosen as the button goes down: a tap would wait to
       // see whether a double-click follows, and a drag on the form begun

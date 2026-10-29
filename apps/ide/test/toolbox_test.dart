@@ -66,6 +66,38 @@ void main() {
     await tester.pump(quick);
   }
 
+  testWidgets('the tools are icons in two columns, the pointer first, named '
+      'in their tooltips (D107)', (tester) async {
+    await open(tester);
+    final pointer = tester.getTopLeft(
+      find.byKey(const ValueKey('toolbox.pointer')),
+    );
+    final button = tester.getTopLeft(
+      find.byKey(const ValueKey('toolbox.Button')),
+    );
+    final label = tester.getTopLeft(
+      find.byKey(const ValueKey('toolbox.Label')),
+    );
+    expect(button.dy, pointer.dy, reason: 'beside the pointer');
+    expect(button.dx, greaterThan(pointer.dx));
+    expect(label.dx, pointer.dx, reason: 'the next row starts at the left');
+    expect(label.dy, greaterThan(pointer.dy));
+    expect(tester.getSize(find.byType(Toolbox)).width, Toolbox.width);
+    // No name beside an icon: the name is the tooltip's first line.
+    expect(
+      find.descendant(of: find.byType(Toolbox), matching: find.text('Button')),
+      findsNothing,
+    );
+    final tip = tester.widget<Tooltip>(
+      find.ancestor(
+        of: find.byKey(const ValueKey('toolbox.Button')),
+        matching: find.byType(Tooltip),
+      ),
+    );
+    expect(tip.message, startsWith('Button\n'));
+    expect(tip.message, endsWith(s.placeTip.replaceAll('{0}', 'Button')));
+  });
+
   testWidgets('a quick click chooses the tool at once: a drag on the form '
       'straight after draws the control', (tester) async {
     await open(tester);

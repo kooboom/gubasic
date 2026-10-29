@@ -81,8 +81,13 @@ void main() {
     await open(tester);
     expect(find.byType(FormDesigner), findsOneWidget);
     expect(find.text('Say hello'), findsOneWidget, reason: 'btnHello');
-    for (final tool in ['Pointer', 'Button', 'Label', 'TextBox']) {
-      expect(find.text(tool), findsOneWidget, reason: tool);
+    // The tools are icons, named in their tooltips (D107).
+    for (final tool in ['pointer', 'Button', 'Label', 'TextBox']) {
+      expect(
+        find.byKey(ValueKey('toolbox.$tool')),
+        findsOneWidget,
+        reason: tool,
+      );
     }
     expect(find.text('Form1 (Form) · 320×120'), findsOneWidget);
 
@@ -676,7 +681,13 @@ void main() {
     );
     await tester.tap(explorerItem(formFile));
     await tester.pumpAndSettle();
-    expect(find.text('포인터'), findsOneWidget);
+    final pointerTip = tester.widget<Tooltip>(
+      find.ancestor(
+        of: find.byKey(const ValueKey('toolbox.pointer')),
+        matching: find.byType(Tooltip),
+      ),
+    );
+    expect(pointerTip.message, startsWith('포인터\n'));
     expect(find.text('격자'), findsOneWidget);
     expect(find.text('폼 파일 보기'), findsOneWidget);
   });
