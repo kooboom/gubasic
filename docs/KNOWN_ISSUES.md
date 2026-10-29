@@ -111,12 +111,6 @@ Problems we know about and have **deliberately** left unfixed for now. Each entr
 - **Why deferred:** a Frame's own `Controls`, and dragging into and out of Frames, add rules (which Frame a drop means, what happens to the Anchor) that the first programs with Frames do not need.
 - **Revisit:** when programs make Frames' contents at run time, or users ask to drag controls into Frames.
 
-## A popup menu is shown from code only
-
-- **What:** `Me.PopupMenu(mnuEdit)` (D106) is called from a handler, such as a Button's Click; GuBASIC has no event for a right click on a control or the form yet, so a menu cannot open where the user right-clicks, as context menus usually do.
-- **Why deferred:** a right click needs mouse events with the button and the place (Visual Basic 6's MouseDown and MouseUp), a language change of its own with parity on every platform and a long press on touch screens.
-- **Revisit:** first in v0.4: MouseDown and MouseUp with `e.Button`, `e.X`, `e.Y`, a long press counting as the right button on touch screens (the author's decision, D110).
-
 ## Menus on macOS show ✓ for Checked, and the menu editor renames no handlers
 
 - **What:** on macOS's menu bar (D106) a Checked item shows ✓ before its Caption rather than in the system's own place for check marks. Renaming an item in the menu editor does not rename its handlers in the code, as renaming a control in the Properties window does (D39). A `&` in a Caption is shown as it is: there are no access keys (Alt and a letter) yet.

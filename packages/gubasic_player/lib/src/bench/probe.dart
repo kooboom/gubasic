@@ -3,7 +3,8 @@ import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/scheduler.dart';
-import 'package:gubasic_lang/gubasic_lang.dart' show GbKeyEvent, keyCodes;
+import 'package:gubasic_lang/gubasic_lang.dart'
+    show GbKeyEvent, GbMouseEvent, keyCodes, mouseButtons;
 import 'package:gubasic_lang/testing.dart';
 
 import '../run_session.dart';
@@ -129,6 +130,12 @@ class BenchProbe {
           interpreter.closeForm();
         case KeyStep(:final event, :final key):
           interpreter.raiseKey(event, GbKeyEvent(keyCodes[key]!));
+        case MouseStep(:final control, :final event, :final button):
+          interpreter.raiseMouse(
+            control,
+            event,
+            GbMouseEvent(mouseButtons[button]!, step.x, step.y),
+          );
         case ResizeStep():
           break;
       }

@@ -1,0 +1,33 @@
+' MouseDown and MouseUp (D111): the button and the place, from the top
+' left corner of the control, or of the form where no control is. A right
+' button let go on the label shows a popup menu there. A click is a left
+' button pressed and let go in the control's middle, then Click.
+Function ButtonName(button As Integer) As String
+    If button = MouseButtons.Left Then Return "Left"
+    If button = MouseButtons.Right Then Return "Right"
+    Return "Middle"
+End Function
+
+Sub Form_MouseDown(e As MouseEventArgs)
+    Debug.Print("form down " & ButtonName(e.Button) & " " & e.X & "," & e.Y)
+End Sub
+
+Sub lblTarget_MouseUp(e As MouseEventArgs)
+    If e.Button = MouseButtons.Right Then
+        Me.PopupMenu(mnuEdit)
+    Else
+        Debug.Print("label up " & e.X & "," & e.Y)
+    End If
+End Sub
+
+Sub btnOk_MouseDown(e As MouseEventArgs)
+    Debug.Print("button down " & ButtonName(e.Button) & " " & e.X & "," & e.Y)
+End Sub
+
+Sub btnOk_Click()
+    Debug.Print("click")
+End Sub
+
+Sub mnuEditCopy_Click()
+    Debug.Print("Copy")
+End Sub

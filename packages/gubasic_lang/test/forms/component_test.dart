@@ -50,31 +50,36 @@ void main() {
         'Tag As String = , KeyPreview As Boolean = false, '
         'DialogResult As Integer = 0 | x_Load(), '
         'x_Resize(), x_Closed(), x_KeyDown(e As KeyEventArgs), '
-        'x_KeyUp(e As KeyEventArgs) | default Load');
+        'x_KeyUp(e As KeyEventArgs), x_MouseDown(e As MouseEventArgs), '
+        'x_MouseUp(e As MouseEventArgs) | default Load');
     expect(
         describe('Button'),
         'Caption As String = , Left As Integer = 0, Top As Integer = 0, '
         'Width As Integer = 96, Height As Integer = 32, Anchor As String = Left Top, Tag As String =  | '
-        'x_Click() | '
+        'x_Click(), x_MouseDown(e As MouseEventArgs), '
+        'x_MouseUp(e As MouseEventArgs) | '
         'default Click');
     expect(
         describe('Label'),
         'Caption As String = , Left As Integer = 0, Top As Integer = 0, '
         'Width As Integer = 120, Height As Integer = 24, Anchor As String = Left Top, Tag As String =  | '
-        'x_Click() | '
+        'x_Click(), x_MouseDown(e As MouseEventArgs), '
+        'x_MouseUp(e As MouseEventArgs) | '
         'default Click');
     expect(
         describe('TextBox'),
         'Text As String = , Left As Integer = 0, Top As Integer = 0, '
         'Width As Integer = 160, Height As Integer = 32, Anchor As String = Left Top, Tag As String =  | '
-        'x_Changed() | '
+        'x_Changed(), x_MouseDown(e As MouseEventArgs), '
+        'x_MouseUp(e As MouseEventArgs) | '
         'default Changed');
     expect(
         describe('CheckBox'),
         'Caption As String = , Checked As Boolean = false, '
         'Left As Integer = 0, Top As Integer = 0, '
         'Width As Integer = 120, Height As Integer = 32, Anchor As String = Left Top, Tag As String =  | '
-        'x_Changed() | '
+        'x_Changed(), x_MouseDown(e As MouseEventArgs), '
+        'x_MouseUp(e As MouseEventArgs) | '
         'default Changed');
     expect(builtinComponents['checkbox']!.properties['checked']!.changeEvent,
         'Changed');

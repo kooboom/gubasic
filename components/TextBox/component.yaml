@@ -20,6 +20,9 @@ properties:
   - { name: Tag, type: String, default: "" }
 events:
   - Changed()
+  # A mouse button pressed and let go on it (D111).
+  - MouseDown(e As MouseEventArgs)
+  - MouseUp(e As MouseEventArgs)
 methods: []
 # Names other versions of BASIC use, pointed to GuBASIC's (A036,
 # docs/DESIGN.md D50).

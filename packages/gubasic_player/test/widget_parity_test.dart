@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -514,6 +515,44 @@ class _WidgetDriver implements ScriptDriver {
         matching: find.text(value == null ? strings.cancel : strings.ok),
       ),
     );
+  }
+
+  /// The mouse buttons held down since their MouseDown step, by control.
+  final _mice = <String?, TestGesture>{};
+
+  /// A mouse button pressed on the control, or the form, at its place on
+  /// it, or let go there (D111): a real pointer on the run window.
+  @override
+  Future<EventOutcome> mouse(MouseStep step) async {
+    if (!session.formShown) return EventOutcome.blocked;
+    final target = step.control == null
+        ? find.byKey(runFormKey(host.front!.name))
+        : _control(step.control!);
+    final at =
+        tester.getTopLeft(target) +
+        Offset(step.x.toDouble(), step.y.toDouble());
+    host.lastOutcome = null;
+    if (step.event == 'MouseDown') {
+      // An open dialog's barrier takes it.
+      if (host.dialogs.hasOpenDialog) return EventOutcome.blocked;
+      _mice[step.control] = await tester.startGesture(
+        at,
+        kind: PointerDeviceKind.mouse,
+        buttons: switch (step.button) {
+          'Right' => kSecondaryMouseButton,
+          'Middle' => kMiddleMouseButton,
+          _ => kPrimaryMouseButton,
+        },
+      );
+    } else {
+      final held =
+          _mice.remove(step.control) ??
+          (throw StateError('${step.text} without a MouseDown'));
+      await held.moveTo(at);
+      await held.up();
+    }
+    await tester.pump();
+    return host.lastOutcome ?? EventOutcome.noHandler;
   }
 
   /// Chooses [item] in the open popup menu (D106), opening the items it

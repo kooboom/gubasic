@@ -177,4 +177,5 @@ const Map<String, String> builtinObjects = {
   'integer': 'Integer',
   'keys': 'Keys',
   'dialogresult': 'DialogResult',
+  'mousebuttons': 'MouseButtons',
 };

@@ -26,7 +26,7 @@ class GbListBox extends StatelessWidget {
   void _choose(int index) {
     model.commitComposing();
     if (state['ListIndex'] == index) return;
-    if (!model.accepts(state.name, 'Changed')) return;
+    if (!model.takes(state.name, 'Changed')) return;
     state.set('ListIndex', index);
     model.raise(state.name, 'Changed');
   }

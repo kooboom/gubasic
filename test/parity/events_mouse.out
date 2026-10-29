@@ -1,0 +1,19 @@
+> Form.MouseDown Left 200 150
+Debug.Print: form down Left 200,150
+> Form.MouseUp Left 200 150
+> lblTarget.MouseDown Left 5 6
+> lblTarget.MouseUp Left 7 8
+Debug.Print: label up 7,8
+> lblTarget.MouseDown Right 10 12
+> lblTarget.MouseUp Right 10 12
+PopupMenu: mnuEdit
+> Choose mnuEditCopy
+Debug.Print: Copy
+> btnOk.Click
+Debug.Print: button down Left 48,16
+Debug.Print: click
+> btnOk.MouseDown Middle 3 4
+Debug.Print: button down Middle 3,4
+> btnOk.MouseUp Middle 3 4
+> Close
+Closed

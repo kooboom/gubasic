@@ -28,6 +28,15 @@ final Map<String, int> keyCodes = {
 
 /// The answers a dialog form gives (docs/DESIGN.md D103), by name, with
 /// Visual Basic .NET's numbers: `DialogResult.OK` is 1.
+/// The mouse's buttons MouseDown and MouseUp tell apart (docs/DESIGN.md
+/// D111), by name, with Visual Basic .NET's numbers: `MouseButtons.Left`
+/// is 1048576. On a touch screen a press is Left, and a long press Right.
+const Map<String, int> mouseButtons = {
+  'Left': 1048576,
+  'Right': 2097152,
+  'Middle': 4194304,
+};
+
 const Map<String, int> dialogResults = {
   'None': 0,
   'OK': 1,

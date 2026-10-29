@@ -106,6 +106,16 @@ class GbKeyEvent {
   final bool alt;
 }
 
+/// What a control's MouseDown and MouseUp are told (D111): the button, as
+/// in MouseButtons, and where, from the control's top left corner.
+class GbMouseEvent {
+  const GbMouseEvent(this.button, this.x, this.y);
+
+  final int button;
+  final int x;
+  final int y;
+}
+
 class GbException {
   GbException(this.message);
 
@@ -137,6 +147,7 @@ String formatValue(Object? value) {
     GbException e => e.message,
     GbControls() => 'Controls',
     GbKeyEvent() => 'KeyEventArgs',
+    GbMouseEvent() => 'MouseEventArgs',
     GbModule m => m.name,
     _ => '$value',
   };
@@ -157,6 +168,7 @@ String typeNameOf(Object? value) {
     GbControl c => c.component.name,
     GbControls() => 'Controls',
     GbKeyEvent() => 'KeyEventArgs',
+    GbMouseEvent() => 'MouseEventArgs',
     GbModule m => m.name,
     _ => 'Object',
   };

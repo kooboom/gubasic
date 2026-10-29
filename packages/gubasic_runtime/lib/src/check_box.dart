@@ -16,7 +16,7 @@ class GbCheckBox extends StatelessWidget {
 
   void _click() {
     model.commitComposing();
-    if (!model.accepts(state.name, 'Changed')) return;
+    if (!model.takes(state.name, 'Changed')) return;
     state.set('Checked', !(state['Checked'] as bool));
     model.raise(state.name, 'Changed');
   }

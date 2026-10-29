@@ -46,7 +46,7 @@ class GbComboBox extends StatelessWidget {
       ],
     );
     if (picked == null || picked == state['ListIndex']) return;
-    if (!model.accepts(state.name, 'Changed')) return;
+    if (!model.takes(state.name, 'Changed')) return;
     state.set('ListIndex', picked);
     model.raise(state.name, 'Changed');
   }

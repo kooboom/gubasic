@@ -461,7 +461,11 @@ ComponentSpec readComponentFile(String text) {
 
 /// The types an event's or a method's parameter can have: the values, and
 /// a key event's (D101).
-const _parameterTypes = {..._valueTypes, 'keyeventargs': GbType.keyEventArgs};
+const _parameterTypes = {
+  ..._valueTypes,
+  'keyeventargs': GbType.keyEventArgs,
+  'mouseeventargs': GbType.mouseEventArgs,
+};
 
 /// `a As Integer, b As String`: the parameters of an event or a method.
 List<ParamSpec> _parameters(String text) {

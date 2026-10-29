@@ -365,6 +365,11 @@ enum DiagnosticCode {
   /// procedure, the line to write (D101).
   vb6KeyHandler('A053'),
 
+  /// `Sub Form_MouseDown(Button As Integer, Shift As Integer, X As Single,
+  /// Y As Single)` (Visual Basic 6): GuBASIC's mouse events take a
+  /// MouseEventArgs. Args: the procedure, the line to write (D111).
+  vb6MouseHandler('A059'),
+
   /// A name two modules make Public, written without its module's name.
   /// Args: the name, the modules, the name with the first module's
   /// (D102).

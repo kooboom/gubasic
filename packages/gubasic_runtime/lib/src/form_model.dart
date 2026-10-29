@@ -3,6 +3,7 @@ import 'dart:ui' show Offset;
 import 'package:flutter/foundation.dart';
 
 import 'anchor.dart';
+import 'mouse.dart';
 
 /// The kinds of built-in controls (components/NAME/component.yaml).
 enum GbControlKind {
@@ -107,7 +108,9 @@ class GbFormModel {
     this.designing = false,
     GbPictureSource? pictures,
     this.onKey,
-  }) : pictures = pictures ?? _noPictures,
+    GbMouseSink? onMouse,
+  }) : mouse = onMouse == null ? null : GbMouseTracker(onMouse),
+       pictures = pictures ?? _noPictures,
        accepts = accepts ?? _acceptAll,
        form = GbControlState(null, GbControlKind.form, form),
        _controls = List.of(controls) {
@@ -133,6 +136,10 @@ class GbFormModel {
   /// Where the form's keys go (D101); null: nowhere.
   final GbKeySink? onKey;
 
+  /// What makes the mouse's buttons MouseDown and MouseUp (D111); null:
+  /// they go nowhere.
+  final GbMouseTracker? mouse;
+
   /// Gives the form the keyboard's focus, set by its view: so that its
   /// keys come to [onKey].
   VoidCallback? requestFocus;
@@ -149,6 +156,16 @@ class GbFormModel {
   final GbPictureSource pictures;
 
   static bool _acceptAll(String? control, String event) => true;
+
+  bool _swallowed(String? control) {
+    final s = mouse?.swallowed;
+    return s != null && s.toLowerCase() == (control ?? '').toLowerCase();
+  }
+
+  /// Whether the program would take [event] of [control] now: [accepts],
+  /// unless a long press made the click (D111).
+  bool takes(String? control, String event) =>
+      !_swallowed(control) && accepts(control, event);
   static Uint8List? _noPictures(String name) => null;
 
   /// The controls on the form itself in the order they are drawn, the last
@@ -302,6 +319,8 @@ class GbFormModel {
   /// still being composed in any TextBox is committed, so the order is
   /// always: commit, TextBox.Changed, then Click (docs/LANGUAGE.md §11.1).
   void raise(String? control, String event) {
+    // A long press is a right button, not a click (D111).
+    if (_swallowed(control)) return;
     if (event == 'Click') commitComposing();
     onEvent(control, event);
   }

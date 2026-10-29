@@ -304,6 +304,18 @@ const parityCases = <(
     false,
   ),
   (
+    "events_mouse",
+    "' MouseDown and MouseUp (D111): the button and the place, from the top\n' left corner of the control, or of the form where no control is. A right\n' button let go on the label shows a popup menu there. A click is a left\n' button pressed and let go in the control's middle, then Click.\nFunction ButtonName(button As Integer) As String\n    If button = MouseButtons.Left Then Return \"Left\"\n    If button = MouseButtons.Right Then Return \"Right\"\n    Return \"Middle\"\nEnd Function\n\nSub Form_MouseDown(e As MouseEventArgs)\n    Debug.Print(\"form down \" & ButtonName(e.Button) & \" \" & e.X & \",\" & e.Y)\nEnd Sub\n\nSub lblTarget_MouseUp(e As MouseEventArgs)\n    If e.Button = MouseButtons.Right Then\n        Me.PopupMenu(mnuEdit)\n    Else\n        Debug.Print(\"label up \" & e.X & \",\" & e.Y)\n    End If\nEnd Sub\n\nSub btnOk_MouseDown(e As MouseEventArgs)\n    Debug.Print(\"button down \" & ButtonName(e.Button) & \" \" & e.X & \",\" & e.Y)\nEnd Sub\n\nSub btnOk_Click()\n    Debug.Print(\"click\")\nEnd Sub\n\nSub mnuEditCopy_Click()\n    Debug.Print(\"Copy\")\nEnd Sub\n",
+    [],
+    "> Form.MouseDown Left 200 150\nDebug.Print: form down Left 200,150\n> Form.MouseUp Left 200 150\n> lblTarget.MouseDown Left 5 6\n> lblTarget.MouseUp Left 7 8\nDebug.Print: label up 7,8\n> lblTarget.MouseDown Right 10 12\n> lblTarget.MouseUp Right 10 12\nPopupMenu: mnuEdit\n> Choose mnuEditCopy\nDebug.Print: Copy\n> btnOk.Click\nDebug.Print: button down Left 48,16\nDebug.Print: click\n> btnOk.MouseDown Middle 3 4\nDebug.Print: button down Middle 3,4\n> btnOk.MouseUp Middle 3 4\n> Close\nClosed\n",
+    "formatVersion: 3\nproperties: { Caption: Mouse, Width: 320, Height: 200 }\ncontrols:\n  - { name: lblTarget, type: Label, properties: { Caption: Right-click me, Left: 16, Top: 16, Width: 160, Height: 40 } }\n  - { name: btnOk, type: Button, properties: { Caption: OK, Left: 16, Top: 72, Width: 96, Height: 32 } }\nmenus:\n  - name: mnuEdit\n    properties: { Caption: Edit, Visible: false }\n    menus:\n      - { name: mnuEditCopy, properties: { Caption: Copy } }\n",
+    "Form.MouseDown Left 200 150\nForm.MouseUp Left 200 150\nlblTarget.MouseDown Left 5 6\nlblTarget.MouseUp Left 7 8\nlblTarget.MouseDown Right 10 12\nlblTarget.MouseUp Right 10 12\nChoose mnuEditCopy\nbtnOk.Click\nbtnOk.MouseDown Middle 3 4\nbtnOk.MouseUp Middle 3 4\nClose\n",
+    null,
+    [],
+    [],
+    false,
+  ),
+  (
     "events_option",
     "' The OptionButtons of a form are one group (D104): checking one, by a\n' click or in code, unchecks the others. Changed runs for the one that\n' becomes checked, so one handler for the group runs once.\nSub Size_Changed(sender As OptionButton) Handles optSmall.Changed, optMedium.Changed, optLarge.Changed\n    Debug.Print(sender.Caption & \" chosen; Small \" & optSmall.Checked & \", Medium \" & optMedium.Checked & \", Large \" & optLarge.Checked)\nEnd Sub\n\nSub btnLarge_Click()\n    optLarge.Checked = True\nEnd Sub\n\nSub btnNone_Click()\n    optLarge.Checked = False\n    Debug.Print(\"None chosen: \" & (Not optSmall.Checked And Not optMedium.Checked And Not optLarge.Checked))\nEnd Sub\n",
     [],

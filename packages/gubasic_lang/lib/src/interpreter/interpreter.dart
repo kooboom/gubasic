@@ -399,6 +399,22 @@ class Interpreter {
     return EventOutcome.started;
   }
 
+  /// The user presses or lets go a mouse button on [control] (null: the
+  /// form) of the form in front (D111): its MouseDown or MouseUp, told
+  /// [mouse]. Refused, as a click is, while a dialog is open or the
+  /// handler runs (D5, D28).
+  EventOutcome raiseMouse(String? control, String event, GbMouseEvent mouse,
+      {String? form}) {
+    if (refusal(control, event, form: form) case final refused?) {
+      return refused;
+    }
+    final front = _front!;
+    final handler = _handler(front, control, event);
+    if (handler == null) return EventOutcome.noHandler;
+    _runHandler(handler, front.controls[control?.toLowerCase()], args: [mouse]);
+    return EventOutcome.started;
+  }
+
   /// The procedure a run starts with: `Sub Main()`, or else
   /// `Sub Form_Load()`. Null if there is neither.
   ProcedureDecl? get startProcedure {
@@ -2118,6 +2134,16 @@ class Interpreter {
         return name == 'maxvalue' ? GbInt.maxValue : GbInt.minValue;
       case _BuiltinObject(name: 'Keys'):
         return GbInt.of(keyCodesByLowerName[name]!.$2);
+      case _BuiltinObject(name: 'MouseButtons'):
+        return GbInt.of(mouseButtons.entries
+            .firstWhere((e) => e.key.toLowerCase() == name)
+            .value);
+      case GbMouseEvent m:
+        return GbInt.of(switch (name) {
+          'button' => m.button,
+          'x' => m.x,
+          _ => m.y,
+        });
       case _BuiltinObject(name: 'DialogResult'):
         return GbInt.of(dialogResults.entries
             .firstWhere((e) => e.key.toLowerCase() == name)

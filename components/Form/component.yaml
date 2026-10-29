@@ -32,6 +32,9 @@ events:
   # front (D101).
   - KeyDown(e As KeyEventArgs)
   - KeyUp(e As KeyEventArgs)
+  # A mouse button pressed and let go where no control is (D111).
+  - MouseDown(e As MouseEventArgs)
+  - MouseUp(e As MouseEventArgs)
 methods:
   - Show()
   - ShowDialog() As Integer

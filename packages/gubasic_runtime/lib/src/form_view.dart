@@ -120,7 +120,13 @@ class _GbFormViewState extends State<GbFormView> {
   Widget _form(BuildContext context) => ListenableBuilder(
     listenable: Listenable.merge([model.form, model.layout]),
     builder: (context, _) => Listener(
-      onPointerDown: (e) => model.lastPointer = e.position,
+      onPointerDown: (e) {
+        model.lastPointer = e.position;
+        model.mouse?.down(e, e.localPosition);
+      },
+      onPointerMove: (e) => model.mouse?.move(e, e.localPosition),
+      onPointerUp: (e) => model.mouse?.up(e, e.localPosition),
+      onPointerCancel: (e) => model.mouse?.cancel(e),
       child: SizedBox(
         width: model.form.integer('Width').toDouble(),
         height: model.form.integer('Height').toDouble(),
@@ -156,7 +162,13 @@ class _GbPlaced extends StatelessWidget {
       top: state.integer('Top').toDouble(),
       width: state.integer('Width').toDouble(),
       height: state.integer('Height').toDouble(),
-      child: child!,
+      // The innermost control under the pointer takes its MouseDown and
+      // MouseUp (D111).
+      child: Listener(
+        onPointerDown: (e) =>
+            model.mouse?.claim(e, state.name!, e.localPosition),
+        child: child,
+      ),
     ),
     child: switch (state.kind) {
       GbControlKind.button => GbButton(model: model, state: state),

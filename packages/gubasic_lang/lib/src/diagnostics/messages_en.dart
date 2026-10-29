@@ -262,6 +262,9 @@ const Map<DiagnosticCode, String> englishMessages = {
   DiagnosticCode.vb6KeyHandler: 'GuBASIC tells a key event its key in one '
       'parameter: write {1}, then read e.KeyCode (as in e.KeyCode = '
       'Keys.Left) and e.Shift, e.Control and e.Alt.',
+  DiagnosticCode.vb6MouseHandler: 'GuBASIC tells a mouse event its button '
+      'and place in one parameter: write {1}, then read e.Button (as in '
+      'e.Button = MouseButtons.Right), e.X and e.Y.',
   DiagnosticCode.ambiguousName: '{0} is Public in {1}, so it is not clear '
       'which is meant here. Write it with its module\'s name, as in {2}.',
   DiagnosticCode.mainTwice: '{0} has a Sub Main too, and a program starts '

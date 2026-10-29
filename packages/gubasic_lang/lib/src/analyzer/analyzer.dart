@@ -520,6 +520,15 @@ class _Analyzer {
           [decl.name.name, 'Sub $head(e As KeyEventArgs)']);
       return false;
     }
+    if (event.parameters.length == 1 &&
+        event.parameters.single.type == GbType.mouseEventArgs &&
+        params.length == 4) {
+      // Visual Basic 6's (Button, Shift, X, Y) (D111).
+      final head = byName ? '${owner}_${event.name}' : decl.name.name;
+      _reportAt(decl.name, DiagnosticCode.vb6MouseHandler,
+          [decl.name.name, 'Sub $head(e As MouseEventArgs)']);
+      return false;
+    }
     if (byName &&
         event.parameters.isEmpty &&
         params.length == 1 &&

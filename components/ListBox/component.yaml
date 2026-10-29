@@ -30,6 +30,9 @@ properties:
   - { name: Items, type: List(Of String), default: [], internal: true }
 events:
   - Changed()
+  # A mouse button pressed and let go on it (D111).
+  - MouseDown(e As MouseEventArgs)
+  - MouseUp(e As MouseEventArgs)
 methods:
   - AddItem(item As String)
   - RemoveItem(index As Integer)

@@ -70,6 +70,24 @@ class KeyStep extends ScriptStep {
   final bool alt;
 }
 
+/// `lblName.MouseDown Right 10 5` or `Form.MouseUp Left 30 40`: the user
+/// presses or lets go a mouse button on a control, or the form, at a
+/// place from its top left corner (D111).
+class MouseStep extends ScriptStep {
+  const MouseStep(super.text, this.event, this.button, this.x, this.y,
+      {this.control});
+
+  final String? control;
+
+  /// `MouseDown` or `MouseUp`.
+  final String event;
+
+  /// `Left`, `Right` or `Middle`.
+  final String button;
+  final int x;
+  final int y;
+}
+
 /// `OK`: closes the open MsgBox.
 class OkStep extends ScriptStep {
   const OkStep(super.text);
@@ -116,6 +134,8 @@ final _answer = RegExp(r'^Answer\s+"((?:[^"]|"")*)"$');
 final _choose = RegExp(r'^Choose\s+([A-Za-z][A-Za-z0-9_]*)$');
 final _key = RegExp(
     r'^([A-Za-z][A-Za-z0-9_]*)\.(KeyDown|KeyUp)\s+((?:(?:Shift|Ctrl|Alt)\+)*)([A-Za-z0-9]+)$');
+final _mouse = RegExp(
+    r'^([A-Za-z][A-Za-z0-9_]*)\.(MouseDown|MouseUp)\s+(Left|Right|Middle)\s+(\d+)\s+(\d+)$');
 final _resize = RegExp(r'^Form\.Resize\s+(\d+)\s+(\d+)$', caseSensitive: false);
 
 /// Reads an event script. Each line is one step; `'` starts a comment.
@@ -151,6 +171,11 @@ List<ScriptStep> parseEventScript(String text) {
           shift: modifiers.contains('Shift'),
           ctrl: modifiers.contains('Ctrl'),
           alt: modifiers.contains('Alt')));
+    } else if ((m = _mouse.firstMatch(line)) != null) {
+      final target = m![1]!;
+      steps.add(MouseStep(
+          line, m[2]!, m[3]!, int.parse(m[4]!), int.parse(m[5]!),
+          control: target.toLowerCase() == 'form' ? null : target));
     } else if ((m = _resize.firstMatch(line)) != null) {
       steps.add(ResizeStep(line, int.parse(m![1]!), int.parse(m[2]!)));
     } else if ((m = _select.firstMatch(line)) != null) {
@@ -597,6 +622,9 @@ abstract interface class ScriptDriver {
   /// The user presses or lets go a key (D101), as [step] says.
   Future<EventOutcome> key(KeyStep step);
 
+  /// The user presses or lets go a mouse button (D111), as [step] says.
+  Future<EventOutcome> mouse(MouseStep step);
+
   /// Closes the open MsgBox; false if there is none.
   Future<bool> ok();
 
@@ -733,6 +761,8 @@ Future<List<String>> driveEventScript(
         if (outcome != null) _record(out, step.text, outcome);
       case KeyStep():
         _record(out, step.text, await driver.key(step));
+      case MouseStep():
+        _record(out, step.text, await driver.mouse(step));
     }
   }
   await settle();
@@ -784,6 +814,20 @@ class _HostDriver implements ScriptDriver {
     }
     if (form != null && form.toLowerCase() != host.front.toLowerCase()) {
       return EventOutcome.blocked;
+    }
+    if (control != null &&
+        event == 'Click' &&
+        host.componentOf(control) != 'Menu' &&
+        !host.hasOpenDialog) {
+      // A click is a left button pressed and let go in its middle, as the
+      // run window's widgets make it (D111).
+      final mouse = GbMouseEvent(
+          mouseButtons['Left']!,
+          (host.frontProperty(control, 'Width') as int) ~/ 2,
+          (host.frontProperty(control, 'Height') as int) ~/ 2);
+      interpreter
+        ..raiseMouse(control, 'MouseDown', mouse)
+        ..raiseMouse(control, 'MouseUp', mouse);
     }
     if (control != null &&
         event == 'Click' &&
@@ -857,6 +901,13 @@ class _HostDriver implements ScriptDriver {
   @override
   Future<bool> answer(String? value) async =>
       host.answer(inputBox: true, value: value ?? '');
+
+  @override
+  Future<EventOutcome> mouse(MouseStep step) async {
+    if (host.hasOpenDialog) return EventOutcome.blocked;
+    return interpreter.raiseMouse(step.control, step.event,
+        GbMouseEvent(mouseButtons[step.button]!, step.x, step.y));
+  }
 
   @override
   Future<bool> choose(String? item) async => host.choose(item);

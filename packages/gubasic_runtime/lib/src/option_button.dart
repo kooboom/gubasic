@@ -19,7 +19,7 @@ class GbOptionButton extends StatelessWidget {
   void _click() {
     model.commitComposing();
     if (state['Checked'] == true) return;
-    if (!model.accepts(state.name, 'Changed')) return;
+    if (!model.takes(state.name, 'Changed')) return;
     for (final other in model.controls) {
       if (other.kind == GbControlKind.optionButton &&
           other != state &&

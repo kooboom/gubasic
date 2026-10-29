@@ -85,6 +85,14 @@ Map<String, MemberSpec>? membersOf(GbType type) {
         MemberSpec.property('Control', _b),
         MemberSpec.property('Alt', _b),
       ];
+    case GbType.mouseEventArgs:
+      // The button, as a number of MouseButtons, and where it went down or
+      // up, from the control's top left corner (D111).
+      list = const [
+        MemberSpec.property('Button', _i),
+        MemberSpec.property('X', _i),
+        MemberSpec.property('Y', _i),
+      ];
     case ModuleType(:final module):
       list = [
         for (final v in module.variables.values)
@@ -157,6 +165,11 @@ Map<String, MemberSpec> builtinObjectMembers(String name) => switch (name) {
       // The keys KeyDown and KeyUp tell apart (D101): Keys.Left is 37.
       'Keys' => {
           for (final name in keyCodes.keys)
+            name.toLowerCase(): MemberSpec.property(name, _i),
+        },
+      // The mouse's buttons (D111): MouseButtons.Left is 1048576.
+      'MouseButtons' => {
+          for (final name in mouseButtons.keys)
             name.toLowerCase(): MemberSpec.property(name, _i),
         },
       _ => const {},

@@ -12,6 +12,7 @@ GbFormModel formModelOf(
   bool designing = false,
   GbPictureSource? pictures,
   GbKeySink? onKey,
+  GbMouseSink? onMouse,
 }) => GbFormModel(
   form: {
     for (final p in form.component.properties.values)
@@ -33,6 +34,7 @@ GbFormModel formModelOf(
   designing: designing,
   pictures: pictures,
   onKey: onKey,
+  onMouse: onMouse,
 );
 
 /// The state of control [name], a [component], with [properties]: one of a

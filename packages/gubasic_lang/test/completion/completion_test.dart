@@ -213,6 +213,7 @@ void main() {
         'List',
         'ListBox',
         'Menu',
+        'MouseEventArgs',
         'Object',
         'OptionButton',
         'String',

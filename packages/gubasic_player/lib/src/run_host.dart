@@ -114,6 +114,13 @@ class RunHost implements FormHost {
           form: form.name,
           inTextBox: inTextBox,
         ),
+    onMouse: (control, event, button, x, y) =>
+        lastOutcome = interpreter.raiseMouse(
+          control,
+          event,
+          GbMouseEvent(button, x, y),
+          form: form.name,
+        ),
   );
 
   /// The model of [form], shown or not.
