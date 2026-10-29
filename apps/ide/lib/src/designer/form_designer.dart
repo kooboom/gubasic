@@ -13,6 +13,7 @@ import 'package:gubasic_player/gubasic_player.dart';
 import '../project/open_project.dart';
 import '../strings.dart';
 import '../theme.dart';
+import 'control_icons.dart';
 import 'form_edit.dart';
 import 'menu_editor.dart';
 import 'properties_panel.dart';
@@ -1955,7 +1956,7 @@ class _FormDesignerState extends State<FormDesigner> {
             _TrayChip(
               key: ValueKey('designer.tray.${c.name}'),
               name: c.name,
-              icon: componentIcon(c.component),
+              icon: ControlIcon.of(c.component, size: 16),
               chosen: _isChosen(c.name),
               onTap: () {
                 _focus.requestFocus();
@@ -2304,7 +2305,7 @@ class _TrayChip extends StatelessWidget {
   });
 
   final String name;
-  final IconData icon;
+  final Widget icon;
   final bool chosen;
   final VoidCallback onTap;
   final VoidCallback onDoubleTap;
@@ -2325,11 +2326,7 @@ class _TrayChip extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
           child: Row(
             mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(icon, size: 16),
-              const SizedBox(width: 6),
-              Text(name),
-            ],
+            children: [icon, const SizedBox(width: 6), Text(name)],
           ),
         ),
       ),

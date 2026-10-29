@@ -687,7 +687,7 @@ void main() {
         matching: find.byType(Tooltip),
       ),
     );
-    expect(pointerTip.message, startsWith('포인터\n'));
+    expect(pointerTip.message, '포인터');
     expect(find.text('격자'), findsOneWidget);
     expect(find.text('폼 파일 보기'), findsOneWidget);
   });

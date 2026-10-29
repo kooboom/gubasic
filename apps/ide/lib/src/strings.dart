@@ -101,8 +101,6 @@ class IdeStrings {
     required this.zipNotText,
     required this.zipIgnored,
     required this.pointerTool,
-    required this.pointerTip,
-    required this.placeTip,
     required this.undo,
     required this.redo,
     required this.grid,
@@ -440,10 +438,6 @@ class IdeStrings {
 
   // The form designer (D34).
   final String pointerTool;
-  final String pointerTip;
-
-  /// `{0}` the control type.
-  final String placeTip;
   final String undo;
   final String redo;
   final String grid;
@@ -926,8 +920,6 @@ class IdeStrings {
     zipNotText: 'The file {0} in the .zip is not UTF-8 text.',
     zipIgnored: 'These files are not GuBASIC files and were left out: {0}',
     pointerTool: 'Pointer',
-    pointerTip: 'Select a control on the form.',
-    placeTip: 'Drag on the form to draw a {0}, or click for the default size. Double-click here to put one in the middle of the form.',
     undo: 'Undo',
     redo: 'Redo',
     grid: 'Grid',
@@ -1256,9 +1248,6 @@ class IdeStrings {
     zipNotText: '.zip 안의 {0} 파일은 UTF-8 텍스트가 아닙니다.',
     zipIgnored: '다음 파일은 GuBASIC 파일이 아니라서 넣지 않았습니다: {0}',
     pointerTool: '포인터',
-    pointerTip: '폼 위의 컨트롤을 선택합니다.',
-    placeTip:
-        '폼 위에서 끌어 {0} 컨트롤을 그리거나, 클릭해서 기본 크기로 놓습니다. 여기를 더블클릭하면 폼 가운데에 놓습니다.',
     undo: '되돌리기',
     redo: '다시 하기',
     grid: '격자',

@@ -3,11 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:gubasic_lang/gubasic_lang.dart';
 
 import '../strings.dart';
+import 'control_icons.dart';
 import 'form_edit.dart';
 
 /// The designer's toolbox: the pointer, then a tool for each control
-/// type, as icons in two columns like Visual Basic 6's toolbox; a tool's
-/// name and what it does are in its tooltip (D107). Choosing a tool lets
+/// type, as icons in two columns like Visual Basic 6's toolbox, each the
+/// control drawn small; a tool's name is its tooltip (D107). Choosing a
+/// tool lets
 /// the user draw that control on the form; a double-click places one in
 /// the middle of the form at once, and a tool dragged onto the form
 /// places one where it is dropped (D69).
@@ -33,7 +35,7 @@ class Toolbox extends StatelessWidget {
   /// The tools in a row, and a tool's cell.
   static const columns = 2;
   static const cellWidth = 36.0;
-  static const cellHeight = 32.0;
+  static const cellHeight = 36.0;
   static const _padding = 6.0;
 
   /// The toolbox's width: the columns and the padding at both sides.
@@ -49,9 +51,8 @@ class Toolbox extends StatelessWidget {
           _item(
             context,
             key: const ValueKey('toolbox.pointer'),
-            icon: Icons.north_west,
+            icon: 'pointer',
             label: strings.pointerTool,
-            tip: strings.pointerTip,
             selected: tool == null,
             enabled: true,
             onPress: () => onChoose(null),
@@ -60,9 +61,8 @@ class Toolbox extends StatelessWidget {
             _item(
               context,
               key: ValueKey('toolbox.${type.name}'),
-              icon: componentIcon(type),
+              icon: type.name.toLowerCase(),
               label: type.name,
-              tip: strings.placeTip.replaceAll('{0}', type.name),
               selected: tool == type,
               enabled: enabled,
               onPress: () => onChoose(type),
@@ -77,9 +77,8 @@ class Toolbox extends StatelessWidget {
   Widget _item(
     BuildContext context, {
     required Key key,
-    required IconData icon,
+    required String icon,
     required String label,
-    required String tip,
     required bool selected,
     required bool enabled,
     required VoidCallback onPress,
@@ -87,9 +86,6 @@ class Toolbox extends StatelessWidget {
     ComponentSpec? type,
   }) {
     final scheme = Theme.of(context).colorScheme;
-    final color = enabled
-        ? (selected ? scheme.onSecondaryContainer : scheme.onSurface)
-        : scheme.onSurface.withValues(alpha: 0.38);
     final item = Container(
       width: cellWidth,
       height: cellHeight,
@@ -98,12 +94,11 @@ class Toolbox extends StatelessWidget {
         color: selected && enabled ? scheme.secondaryContainer : null,
         borderRadius: BorderRadius.circular(4),
       ),
-      child: Icon(icon, size: 20, color: color),
+      child: ControlIcon(icon, size: 22, enabled: enabled),
     );
     return Tooltip(
-      // The name first, as the toolbox shows only the icon; what the tool
-      // does on the next line.
-      message: '$label\n$tip',
+      // The toolbox shows only the icon: its name is here.
+      message: label,
       waitDuration: const Duration(milliseconds: 600),
       // The tool is chosen as the button goes down: a tap would wait to
       // see whether a double-click follows, and a drag on the form begun
@@ -137,7 +132,7 @@ class Toolbox extends StatelessWidget {
 class _DragFeedback extends StatelessWidget {
   const _DragFeedback({required this.icon, required this.label});
 
-  final IconData icon;
+  final String icon;
   final String label;
 
   @override
@@ -153,7 +148,7 @@ class _DragFeedback extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(icon, size: 18, color: scheme.onSecondaryContainer),
+              ControlIcon(icon, size: 18),
               const SizedBox(width: 6),
               Text(label, style: TextStyle(color: scheme.onSecondaryContainer)),
             ],
@@ -163,18 +158,3 @@ class _DragFeedback extends StatelessWidget {
     );
   }
 }
-
-/// The icon of controls of [type], in the toolbox and the tray.
-IconData componentIcon(ComponentSpec type) => switch (type.name.toLowerCase()) {
-  'button' => Icons.smart_button_outlined,
-  'label' => Icons.title,
-  'textbox' => Icons.text_fields,
-  'checkbox' => Icons.check_box_outlined,
-  'listbox' => Icons.list_alt,
-  'image' => Icons.image_outlined,
-  'timer' => Icons.timer_outlined,
-  'optionbutton' => Icons.radio_button_checked,
-  'combobox' => Icons.arrow_drop_down_circle_outlined,
-  'frame' => Icons.crop_square,
-  _ => Icons.widgets_outlined,
-};

@@ -83,7 +83,7 @@ void main() {
     expect(label.dx, pointer.dx, reason: 'the next row starts at the left');
     expect(label.dy, greaterThan(pointer.dy));
     expect(tester.getSize(find.byType(Toolbox)).width, Toolbox.width);
-    // No name beside an icon: the name is the tooltip's first line.
+    // No name beside an icon: the name is the tooltip.
     expect(
       find.descendant(of: find.byType(Toolbox), matching: find.text('Button')),
       findsNothing,
@@ -94,8 +94,7 @@ void main() {
         matching: find.byType(Tooltip),
       ),
     );
-    expect(tip.message, startsWith('Button\n'));
-    expect(tip.message, endsWith(s.placeTip.replaceAll('{0}', 'Button')));
+    expect(tip.message, 'Button');
   });
 
   testWidgets('a quick click chooses the tool at once: a drag on the form '

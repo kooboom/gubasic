@@ -214,6 +214,18 @@ jobs:
       - name: Menus in the player's own window
         working-directory: apps/player
         run: flutter test integration_test/menus_test.dart -d windows
+      # The IDE's toolbox in its own window (D107): two columns of drawn
+      # controls, the name in the tooltip; pictures of it in the Artifacts.
+      - name: The toolbox in the IDE's own window
+        working-directory: apps/ide
+        run: flutter test integration_test/toolbox_test.dart -d windows --dart-define=SHOTS=${{ runner.temp }}/toolbox
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: toolbox-windows
+          path: ${{ runner.temp }}/toolbox/*.png
+          retention-days: 30
+          if-no-files-found: warn
       - name: The Windows template (D86), with every file a PC needs
         working-directory: apps/player
         run: dart run tool/windows_template.dart
@@ -300,6 +312,18 @@ jobs:
       - name: Menus in the player's own window
         working-directory: apps/player
         run: flutter test integration_test/menus_test.dart -d macos
+      # The IDE's toolbox in its own window (D107): two columns of drawn
+      # controls, the name in the tooltip; pictures of it in the Artifacts.
+      - name: The toolbox in the IDE's own window
+        working-directory: apps/ide
+        run: flutter test integration_test/toolbox_test.dart -d macos --dart-define=SHOTS=${{ runner.temp }}/toolbox
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: toolbox-macos
+          path: ${{ runner.temp }}/toolbox/*.png
+          retention-days: 30
+          if-no-files-found: warn
       - name: The macOS template (D87), with every file the app needs
         run: dart run tool/macos_template.dart
         working-directory: apps/player
