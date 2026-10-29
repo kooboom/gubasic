@@ -205,6 +205,39 @@ void main() {
       expect(dialogs.hasOpenDialog, isFalse);
     });
 
+    testWidgets('MsgBox fits a window as small as the hello form, 320 x 120, '
+        'and its text scrolls (D109)', (tester) async {
+      tester.view.physicalSize = const Size(320, 120);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      await app(tester, GbStrings.en);
+      const screen = Rect.fromLTWH(0, 0, 320, 120);
+      final lines = List.generate(6, (i) => 'Line ${i + 1}').join('\n');
+      final closed = dialogs.msgBox(context, lines, 'Saved');
+      await tester.pumpAndSettle();
+      expect(
+        screen.contains(tester.getRect(find.text('Saved')).bottomRight),
+        isTrue,
+      );
+      expect(
+        screen.contains(tester.getRect(find.text('OK')).bottomRight),
+        isTrue,
+      );
+      expect(screen.contains(tester.getRect(find.text('OK')).topLeft), isTrue);
+      // The text is taller than the room left for it, so it scrolls.
+      final text = find.text(lines);
+      expect(screen.contains(tester.getRect(text).topLeft), isTrue);
+      expect(tester.getRect(text).bottom, greaterThan(screen.bottom));
+      // A drag inside the scrolled part, which the title is in too.
+      await tester.dragFrom(const Offset(160, 30), const Offset(0, -80));
+      await tester.pumpAndSettle();
+      expect(tester.getRect(text).top, lessThan(0));
+      await tester.tap(find.text('OK'));
+      await tester.pumpAndSettle();
+      await closed;
+      expect(dialogs.hasOpenDialog, isFalse);
+    });
+
     testWidgets('InputBox: the answer, or "" when cancelled', (tester) async {
       await app(tester, GbStrings.ko);
       final answer = dialogs.inputBox(context, '이름은?', '', '');

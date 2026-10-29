@@ -34,8 +34,9 @@ class GbDialogs {
   Future<void> msgBox(BuildContext context, String prompt, String title) =>
       _show(
         context,
-        (close) => AlertDialog(
-          title: title.isEmpty ? null : Text(title),
+        (context, close) => _box(
+          context,
+          title: title,
           content: Text(prompt),
           actions: [
             FilledButton(
@@ -62,8 +63,9 @@ class GbDialogs {
     try {
       final answer = await _show(
         context,
-        (close) => AlertDialog(
-          title: title.isEmpty ? null : Text(title),
+        (context, close) => _box(
+          context,
+          title: title,
           content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -174,9 +176,41 @@ class GbDialogs {
     _closers.clear();
   }
 
+  /// A MsgBox or an InputBox: Material's dialog, which can take the whole
+  /// window; made compact where the window is small, as an exported app's
+  /// is when its form is (D109): a narrow margin, less padding, smaller
+  /// title and buttons, and its text scrolls when it does not fit.
+  Widget _box(
+    BuildContext context, {
+    required String title,
+    required Widget content,
+    required List<Widget> actions,
+  }) {
+    final size = MediaQuery.sizeOf(context);
+    final compact = size.width < 400 || size.height < 300;
+    final theme = Theme.of(context);
+    final dialog = AlertDialog(
+      title: title.isEmpty ? null : Text(title),
+      content: content,
+      actions: actions,
+      scrollable: true,
+      insetPadding: compact ? const EdgeInsets.all(8) : null,
+      titlePadding: compact ? const EdgeInsets.fromLTRB(12, 8, 12, 0) : null,
+      titleTextStyle: compact ? theme.textTheme.titleMedium : null,
+      contentPadding: compact ? const EdgeInsets.fromLTRB(12, 4, 12, 0) : null,
+      actionsPadding: compact ? const EdgeInsets.fromLTRB(6, 4, 6, 6) : null,
+    );
+    return compact
+        ? Theme(
+            data: theme.copyWith(visualDensity: VisualDensity.compact),
+            child: dialog,
+          )
+        : dialog;
+  }
+
   Future<String?> _show(
     BuildContext context,
-    Widget Function(void Function(String?)) build,
+    Widget Function(BuildContext, void Function(String?)) build,
   ) {
     final answer = Completer<String?>();
     late final Route<void> route;
@@ -194,7 +228,7 @@ class GbDialogs {
       // Escape (DismissIntent) and Back count as Cancel. A dialog that the
       // barrier cannot dismiss gets no Escape handling from Flutter, so it
       // is handled here.
-      builder: (_) => Actions(
+      builder: (context) => Actions(
         actions: {
           DismissIntent: CallbackAction<DismissIntent>(
             onInvoke: (_) {
@@ -208,7 +242,7 @@ class GbDialogs {
           onPopInvokedWithResult: (didPop, _) {
             if (!didPop) close(null);
           },
-          child: build(close),
+          child: build(context, close),
         ),
       ),
     );
