@@ -29,7 +29,15 @@ void main() {
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
     final browser = FakeBrowser();
-    final kept = await BrowserProjects.open(browser.projects, browser.storage);
+    // A clock that moves a second at each save: on Windows, DateTime.now
+    // changes only every millisecond or so, and two saves in a row would
+    // be kept at the same time, in no order.
+    var now = DateTime(2026, 10, 17, 9);
+    final kept = await BrowserProjects.open(
+      browser.projects,
+      browser.storage,
+      now: () => now = now.add(const Duration(seconds: 1)),
+    );
     for (final name in names) {
       await kept.save(name, {
         ...hello,
