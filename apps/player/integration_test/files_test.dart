@@ -27,7 +27,8 @@ void main() {
           '  - name: btnGo\n    type: Button\n    properties:\n'
           '      Caption: Go\n'
           '  - name: lblPath\n    type: Label\n    properties:\n'
-          '      Caption: "$path"\n      Top: 40\n      Width: 300\n',
+          // Single quotes: a Windows path's backslashes stay as they are.
+          "      Caption: '$path'\n      Top: 40\n      Width: 300\n",
       'Form1.gbas':
           'Sub btnGo_Click()\n'
           '    File.WriteAllText(lblPath.Caption, "이름,점수" & vbCrLf)\n'
