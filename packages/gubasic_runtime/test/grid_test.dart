@@ -88,6 +88,47 @@ void main() {
     expect(events, ['grd.Click']);
   });
 
+  testWidgets('Hangul still being composed is kept by Enter, and by a '
+      'click elsewhere', (tester) async {
+    final g = await show(tester, model());
+    await tester.tap(cell(0, 0));
+    await tester.pump();
+    await tester.tap(cell(0, 0));
+    await tester.pump();
+    tester.testTextInput.updateEditingValue(
+      const TextEditingValue(
+        text: '김',
+        selection: TextSelection.collapsed(offset: 1),
+        composing: TextRange(start: 0, end: 1),
+      ),
+    );
+    await tester.testTextInput.receiveAction(TextInputAction.done);
+    await tester.pump();
+    expect((g['Cells'] as List)[0], '김');
+    await tester.tap(cell(1, 0));
+    await tester.pump();
+    await tester.tap(cell(1, 0));
+    await tester.pump();
+    tester.testTextInput.updateEditingValue(
+      const TextEditingValue(
+        text: '박',
+        selection: TextSelection.collapsed(offset: 1),
+        composing: TextRange(start: 0, end: 1),
+      ),
+    );
+    await tester.pump();
+    await tester.tap(cell(2, 1));
+    await tester.pump();
+    expect((g['Cells'] as List)[4], '박');
+    expect(events, [
+      'grd.Click',
+      'grd.Changed',
+      'grd.Click',
+      'grd.Changed',
+      'grd.Click',
+    ]);
+  });
+
   testWidgets('ReadOnly: chosen, never edited', (tester) async {
     await show(tester, model(readOnly: true));
     await tester.tap(cell(0, 1));
