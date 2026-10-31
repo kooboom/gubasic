@@ -66,6 +66,7 @@ GbControlKind _kind(String component) => switch (component.toLowerCase()) {
   'optionbutton' => GbControlKind.optionButton,
   'combobox' => GbControlKind.comboBox,
   'frame' => GbControlKind.frame,
+  'grid' => GbControlKind.grid,
   'menu' => GbControlKind.menu,
   _ => throw ArgumentError('no widget for component $component'),
 };

@@ -17,6 +17,7 @@ enum GbControlKind {
   optionButton,
   comboBox,
   frame,
+  grid,
   menu,
 }
 

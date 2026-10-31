@@ -598,6 +598,22 @@ const parityCases = <(
     {},
   ),
   (
+    "grid_scores",
+    "' A Grid (D116): a CSV file shown, a cell chosen and changed by the user,\n' the total and the average worked out again, a row added and saved.\nSub btnLoad_Click()\n    grdScores.LoadCsv(\"명단.csv\")\n    Debug.Print(grdScores.RowCount & \" rows, \" & grdScores.ColumnCount & \" columns, row \" & grdScores.Row)\n    ShowTotal()\nEnd Sub\n\nSub ShowTotal()\n    Dim total As Integer = 0\n    For i As Integer = 0 To grdScores.RowCount - 1\n        total = total + CInt(grdScores.Cell(i, \"점수\"))\n    Next\n    lblTotal.Caption = \"합계 \" & total & \", 평균 \" & Format(total / grdScores.RowCount, \"0.0\")\nEnd Sub\n\nSub grdScores_Click()\n    Debug.Print(\"chose \" & grdScores.Row & \",\" & grdScores.Col & \": \" & grdScores.Cell(grdScores.Row, grdScores.Col))\nEnd Sub\n\nSub grdScores_Changed()\n    Debug.Print(\"changed \" & grdScores.Row & \",\" & grdScores.Col & \" to \" & grdScores.Cell(grdScores.Row, grdScores.Col))\n    ShowTotal()\nEnd Sub\n\nSub btnAdd_Click()\n    Dim r As Integer = grdScores.AddRow()\n    grdScores.Cell(r, 0) = \"새 학생\"\n    grdScores.Cell(r, \"점수\") = 0\n    grdScores.Header(1) = \"학급\"\n    grdScores.SaveCsv(\"결과.csv\")\n    ShowTotal()\nEnd Sub\n",
+    [],
+    "> btnLoad.Click\nSet grdScores.Headers: [이름, 반, 점수]\nSet grdScores.Cells: [김하나, 1반, 90, 박둘, 2반, 85, 이셋, 1반, 70]\nSet grdScores.Row: -1\nSet grdScores.Col: -1\nDebug.Print: 3 rows, 3 columns, row -1\nSet lblTotal.Caption: 합계 245, 평균 81.7\n> grdScores.Click 1 2\nDebug.Print: chose 1,2: 85\n> grdScores.Edit 1 2 \"95\"\nDebug.Print: changed 1,2 to 95\nSet lblTotal.Caption: 합계 255, 평균 85.0\n> grdScores.Edit 1 2 \"95\"\n> btnAdd.Click\nSet grdScores.Cells: [김하나, 1반, 90, 박둘, 2반, 95, 이셋, 1반, 70, , , ]\nSet grdScores.Cells: [김하나, 1반, 90, 박둘, 2반, 95, 이셋, 1반, 70, 새 학생, , ]\nSet grdScores.Cells: [김하나, 1반, 90, 박둘, 2반, 95, 이셋, 1반, 70, 새 학생, , 0]\nSet grdScores.Headers: [이름, 학급, 점수]\nWrote 결과.csv: (BOM) 이름,학급,점수\\r\\n김하나,1반,90\\r\\n박둘,2반,95\\r\\n이셋,1반,70\\r\\n새 학생,,0\\r\\n\nSet lblTotal.Caption: 합계 255, 평균 63.8\n> Close\nClosed\n",
+    "formatVersion: 1\nproperties: { Caption: Scores, Width: 400, Height: 260 }\ncontrols:\n  - { name: grdScores, type: Grid, properties: { Left: 16, Top: 16, Width: 368, Height: 160 } }\n  - { name: btnLoad, type: Button, properties: { Caption: Load, Left: 16, Top: 192 } }\n  - { name: btnAdd, type: Button, properties: { Caption: Add, Left: 120, Top: 192 } }\n  - { name: lblTotal, type: Label, properties: { Left: 224, Top: 196, Width: 160 } }\n",
+    "btnLoad.Click\ngrdScores.Click 1 2\ngrdScores.Edit 1 2 \"95\"\ngrdScores.Edit 1 2 \"95\"    ' no change: nothing\nbtnAdd.Click\nClose\n",
+    null,
+    [],
+    [],
+    false,
+    {
+      "명단.csv":
+          "wMy4pyy53SzBobz2DQqx6MfPs6osMbndLDkwDQq52rXRLDK53Sw4NQ0KwMy8wiwxud0sNzANCg==",
+    },
+  ),
+  (
     "handles_shared",
     "' One handler for several controls, told which one raised the event\n' (D98): Handles with a sender of the controls' type, or Control for\n' controls of different types; Handles Me.Load for the form's own event;\n' a handler by name may take a sender too.\nSub Started(sender As Form) Handles Me.Load\n    Debug.Print(\"Loaded \" & sender.Name & \" (\" & Me.Name & \")\")\nEnd Sub\n\nSub Digit_Click(sender As Button) Handles btn1.Click, btn2.Click, btn3.Click\n    lblShow.Caption = lblShow.Caption & sender.Caption\nEnd Sub\n\nSub Other(sender As Control) Handles lblShow.Click, chkLoud.Changed\n    Debug.Print(sender.Name & \" \" & sender.Tag & \" at \" & sender.Top)\nEnd Sub\n\nSub btnClear_Click(sender As Button)\n    lblShow.Caption = \"\"\n    Debug.Print(sender.Name & \" cleared\")\nEnd Sub\n",
     [],

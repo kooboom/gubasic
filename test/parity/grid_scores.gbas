@@ -1,0 +1,33 @@
+' A Grid (D116): a CSV file shown, a cell chosen and changed by the user,
+' the total and the average worked out again, a row added and saved.
+Sub btnLoad_Click()
+    grdScores.LoadCsv("명단.csv")
+    Debug.Print(grdScores.RowCount & " rows, " & grdScores.ColumnCount & " columns, row " & grdScores.Row)
+    ShowTotal()
+End Sub
+
+Sub ShowTotal()
+    Dim total As Integer = 0
+    For i As Integer = 0 To grdScores.RowCount - 1
+        total = total + CInt(grdScores.Cell(i, "점수"))
+    Next
+    lblTotal.Caption = "합계 " & total & ", 평균 " & Format(total / grdScores.RowCount, "0.0")
+End Sub
+
+Sub grdScores_Click()
+    Debug.Print("chose " & grdScores.Row & "," & grdScores.Col & ": " & grdScores.Cell(grdScores.Row, grdScores.Col))
+End Sub
+
+Sub grdScores_Changed()
+    Debug.Print("changed " & grdScores.Row & "," & grdScores.Col & " to " & grdScores.Cell(grdScores.Row, grdScores.Col))
+    ShowTotal()
+End Sub
+
+Sub btnAdd_Click()
+    Dim r As Integer = grdScores.AddRow()
+    grdScores.Cell(r, 0) = "새 학생"
+    grdScores.Cell(r, "점수") = 0
+    grdScores.Header(1) = "학급"
+    grdScores.SaveCsv("결과.csv")
+    ShowTotal()
+End Sub

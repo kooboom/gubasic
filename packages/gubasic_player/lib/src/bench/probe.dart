@@ -136,6 +136,21 @@ class BenchProbe {
             event,
             GbMouseEvent(mouseButtons[button]!, step.x, step.y),
           );
+        case GridStep(:final control, :final row, :final col, :final value):
+          final grid = host.model.control(control)!
+            ..set('Row', row)
+            ..set('Col', col);
+          if (value == null) {
+            interpreter.raiseEvent(control, 'Click');
+          } else {
+            final columns = (grid['Headers'] as List).length;
+            grid.set(
+              'Cells',
+              [...(grid['Cells'] as List<String>)]
+                ..[row * columns + col] = value,
+            );
+            interpreter.raiseEvent(control, 'Changed');
+          }
         case ResizeStep() || PickStep():
           break;
       }

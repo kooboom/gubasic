@@ -378,6 +378,7 @@ class _WidgetDriver implements ScriptDriver {
         GbOptionButton(:final state) ||
         GbComboBox(:final state) ||
         GbFrame(:final state) ||
+        GbGrid(:final state) ||
         GbImage(
           :final state,
         ) => state.name?.toLowerCase() == name.toLowerCase(),
@@ -655,6 +656,33 @@ class _WidgetDriver implements ScriptDriver {
     }
     await tester.pump();
     return host.lastOutcome ?? EventOutcome.noHandler;
+  }
+
+  /// The user clicks a Grid's cell, or edits the cell chosen with a second
+  /// click on it, typing and Enter (D116), through the Grid on the run
+  /// window.
+  @override
+  Future<EventOutcome?> grid(GridStep step) async {
+    if (!session.formShown) return EventOutcome.blocked;
+    final name = tester.widget<GbGrid>(_control(step.control)).state.name!;
+    final cell = find.byKey(gbGridCellKey(name, step.row, step.col));
+    if (cell.evaluate().isEmpty) {
+      throw StateError('${step.control} has no cell ${step.row} ${step.col}');
+    }
+    await tester.ensureVisible(cell);
+    await tester.pump();
+    host.lastOutcome = null;
+    if (step.value == null) {
+      if (!await _tap(cell)) return EventOutcome.blocked;
+      return host.lastOutcome;
+    }
+    if (!await _tap(cell)) return EventOutcome.blocked;
+    final editor = find.byKey(gbGridEditorKey(name));
+    if (editor.evaluate().isEmpty) return EventOutcome.disabled;
+    await tester.enterText(editor, step.value!);
+    await tester.testTextInput.receiveAction(TextInputAction.done);
+    await tester.pump();
+    return host.lastOutcome;
   }
 
   /// The user picks a file in the open or save dialog (D113): the

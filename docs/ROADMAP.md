@@ -75,7 +75,7 @@ Three releases, then the rest (D94–D96). The order follows who GuBASIC is for 
 - [x] Open and save dialogs; reading and writing text files (D113)
 - [x] CSV files (D114)
 - [x] Date and format functions (`DateAdd`, `DateDiff`, `Format`) (D115)
-- [ ] A grid control (DataGrid)
+- [x] A grid control (D116)
 - [ ] PDF export
 - [ ] An example of work automation: reading a CSV file and adding it up (D95)
 

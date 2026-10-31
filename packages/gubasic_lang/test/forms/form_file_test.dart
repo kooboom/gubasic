@@ -150,7 +150,7 @@ controls:
         ['F008@3', 'F008@4']);
     expect(r.diagnostics.first.args, [
       'Buton',
-      'Button, CheckBox, ComboBox, Frame, Image, Label, ListBox, OpenFileDialog, OptionButton, '
+      'Button, CheckBox, ComboBox, Frame, Grid, Image, Label, ListBox, OpenFileDialog, OptionButton, '
           'SaveFileDialog, TextBox, Timer',
     ]);
     expect(r.form.controls, isEmpty);

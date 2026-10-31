@@ -1629,6 +1629,8 @@ class Interpreter {
   Object _computedProperty(GbControl c, PropertySpec spec) =>
       switch ((_isList(c) ? 'ListBox' : c.component.name, spec.name)) {
         ('ListBox', 'ListCount') => _items(c).length,
+        ('Grid', 'RowCount') => _gridTable(c).rows.length,
+        ('Grid', 'ColumnCount') => _gridTable(c).headers.length,
         ('ListBox', 'Text') => switch (_listIndex(c)) {
             -1 => '',
             final i => _items(c)[i],
@@ -1770,6 +1772,31 @@ class Interpreter {
       case ('ListBox', 'List'):
         final items = _items(c);
         return items[_itemIndex(items, args[0], at)];
+      // A Grid is a Table on the screen (D116).
+      case ('Grid', 'LoadCsv'):
+        _pendingCall = () async {
+          final t = await _csv('read', args, at) as GbTable;
+          _setGridTable(c, t);
+          _rawSet(c, 'Row', -1);
+          _rawSet(c, 'Col', -1);
+          return null;
+        };
+        return null;
+      case ('Grid', 'SaveCsv'):
+        final t = _gridTable(c);
+        _pendingCall = () => _csv('write', [args[0], t], at);
+        return null;
+      case ('Grid', _):
+        final t = _gridTable(c);
+        final result = _tableMember(t, method.name.toLowerCase(), args, at);
+        if (const {'AddRow', 'AddColumn', 'Clear'}.contains(method.name)) {
+          _setGridTable(c, t);
+          if (method.name == 'Clear') {
+            _rawSet(c, 'Row', -1);
+            _rawSet(c, 'Col', -1);
+          }
+        }
+        return result;
     }
     throw StateError('no code for ${c.component.name}.${method.name}');
   }
@@ -1921,6 +1948,35 @@ class Interpreter {
     }
   }
 
+  /// A Grid's cells as a Table (D116): a copy, which [_setGridTable] puts
+  /// back.
+  GbTable _gridTable(GbControl c) {
+    final headers =
+        List<String>.of((_raw(c, 'Headers') as List).cast<String>());
+    final cells = _raw(c, 'Cells') as List;
+    final width = headers.length;
+    return GbTable(headers, [
+      if (width > 0)
+        for (var i = 0; i + width <= cells.length; i += width)
+          List<String>.of(cells.sublist(i, i + width).cast<String>()),
+    ]);
+  }
+
+  /// Puts [t] back into the Grid [c]: only the list that changed.
+  void _setGridTable(GbControl c, GbTable t) {
+    bool same(Object a, List<String> b) =>
+        a is List &&
+        a.length == b.length &&
+        Iterable<int>.generate(b.length).every((i) => a[i] == b[i]);
+    final cells = [for (final r in t.rows) ...r];
+    if (!same(_raw(c, 'Headers'), t.headers)) {
+      _rawSet(c, 'Headers', List<String>.unmodifiable(t.headers));
+    }
+    if (!same(_raw(c, 'Cells'), cells)) {
+      _rawSet(c, 'Cells', List<String>.unmodifiable(cells));
+    }
+  }
+
   /// `t.Cell(0, 1) = "90"`, `t.Header(0) = "이름"` (D114).
   void _setByCall(Object? receiver, String name, List<Object?> args,
       Object? value, Node at) {
@@ -1930,6 +1986,11 @@ class Interpreter {
         t.rows[_tableRow(t, args[0], at)][_tableColumn(t, args[1], at)] = text;
       case GbTable t:
         t.headers[_tableColumn(t, args[0], at)] = text;
+      case GbControl c when c.component.name == 'Grid':
+        // The program's change runs nothing (D116).
+        final t = _gridTable(c);
+        _setByCall(t, name, args, value, at);
+        _setGridTable(c, t);
       case null:
         _fail(DiagnosticCode.nothingReference, at);
       default:

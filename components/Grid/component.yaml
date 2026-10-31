@@ -1,0 +1,62 @@
+# A table of text the user reads and edits (docs/DESIGN.md D116), as
+# Visual Basic's grids: named columns, rows and columns counted from 0,
+# the header row not among them. A click chooses a cell (Row, Col) and
+# runs Click; a second click on it, Enter, F2 or typing edits it unless
+# ReadOnly, and Changed runs when the user has changed it, Row and Col on
+# that cell. The program's
+# own changes run nothing. LoadCsv and SaveCsv read and write it as a
+# CSV file, as Csv.Read and Csv.Write do (D114).
+name: Grid
+version: 1
+visual: true
+defaultEvent: Changed
+properties:
+  - { name: Left, type: Integer, default: 0 }
+  - { name: Top, type: Integer, default: 0 }
+  - { name: Width, type: Integer, min: 0, default: 320 }
+  - { name: Height, type: Integer, min: 0, default: 160 }
+  # The edges of the form, or of the Frame it is in, whose distance it
+  # keeps (D57, D105).
+  - { name: Anchor, type: String, default: "Left Top", anchor: true }
+  - { name: ReadOnly, type: Boolean, default: false }
+  # Any text the program keeps with it, as in Visual Basic; GuBASIC does
+  # nothing with it (D98).
+  - { name: Tag, type: String, default: "" }
+  # The chosen cell; -1 when none. Set only while the program runs.
+  - { name: Row, type: Integer, default: -1, min: -1, designTime: false }
+  - { name: Col, type: Integer, default: -1, min: -1, designTime: false }
+  - { name: RowCount, type: Integer, default: 0, readOnly: true }
+  - { name: ColumnCount, type: Integer, default: 0, readOnly: true }
+  # The column names, and the cells row by row.
+  - { name: Headers, type: List(Of String), default: [], internal: true }
+  - { name: Cells, type: List(Of String), default: [], internal: true }
+events:
+  - Changed()
+  - Click()
+  # A mouse button pressed and let go on it (D111).
+  - MouseDown(e As MouseEventArgs)
+  - MouseUp(e As MouseEventArgs)
+methods:
+  - Cell(row As Integer, column As Column) As String Settable
+  - Header(column As Integer) As String Settable
+  - Column(name As String) As Integer
+  - AddRow() As Integer
+  - AddColumn(name As String)
+  - Clear()
+  - LoadCsv(path As String)
+  - SaveCsv(path As String)
+# Names other versions of BASIC use, pointed to GuBASIC's (A036,
+# docs/DESIGN.md D50).
+otherNames:
+  # Visual Basic 6's control arrays numbered controls; a Tag can (D99).
+  Index: Tag
+  TextMatrix: Cell
+  Rows: RowCount
+  Cols: ColumnCount
+  CurrentRow: Row
+# Events other versions of BASIC name differently (A051, D100).
+otherEvents:
+  CellValueChanged: Changed
+  CellClick: Click
+# The names of Visual Basic .NET's and Visual Basic 6's grids (A056, F020).
+aliases: [DataGridView, MSFlexGrid]

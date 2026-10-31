@@ -12,6 +12,7 @@ export 'src/files.dart';
 export 'src/form_model.dart';
 export 'src/keys.dart';
 export 'src/form_view.dart';
+export 'src/grid.dart';
 export 'src/image.dart';
 export 'src/list_box.dart';
 export 'src/menus.dart';

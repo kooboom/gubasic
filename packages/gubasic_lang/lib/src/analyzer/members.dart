@@ -148,7 +148,8 @@ Map<String, MemberSpec>? membersOf(GbType type) {
           if (!p.internal)
             MemberSpec.property(p.name, p.type, readOnly: p.readOnly),
         for (final m in component.methods.values)
-          MemberSpec.method(m.name, m.parameters, m.returnType),
+          MemberSpec.method(m.name, m.parameters, m.returnType,
+              settable: m.settable),
         // A project's form: its controls, Public variables and procedures
         // (D88).
         if (form != null) ...[

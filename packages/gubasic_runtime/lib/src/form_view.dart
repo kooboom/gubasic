@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'check_box.dart';
 import 'combo_box.dart';
 import 'form_model.dart';
+import 'grid.dart';
 import 'keys.dart';
 import 'image.dart';
 import 'list_box.dart';
@@ -180,6 +181,7 @@ class _GbPlaced extends StatelessWidget {
       GbControlKind.optionButton => GbOptionButton(model: model, state: state),
       GbControlKind.comboBox => GbComboBox(model: model, state: state),
       GbControlKind.frame => GbFrame(model: model, state: state),
+      GbControlKind.grid => GbGrid(model: model, state: state),
       GbControlKind.form => throw ArgumentError('a form inside a form'),
       GbControlKind.menu => throw ArgumentError('a menu on the form'),
     },

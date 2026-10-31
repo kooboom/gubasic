@@ -31,6 +31,7 @@ List<ComponentSpec> get toolboxComponents => [
     'combobox',
     'optionbutton',
     'frame',
+    'grid',
     'image',
     'timer',
     'openfiledialog',

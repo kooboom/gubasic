@@ -89,6 +89,20 @@ class MouseStep extends ScriptStep {
   final int y;
 }
 
+/// `grdScores.Click 0 1`, or `grdScores.Edit 0 1 "95"`: the user chooses
+/// a Grid's cell (row, column) and its Click runs; or changes the text of
+/// the cell chosen, and its Changed runs (D116).
+class GridStep extends ScriptStep {
+  const GridStep(super.text, this.control, this.row, this.col, this.value);
+
+  final String control;
+  final int row;
+  final int col;
+
+  /// Null for a click.
+  final String? value;
+}
+
 /// `OK`: closes the open MsgBox.
 class OkStep extends ScriptStep {
   const OkStep(super.text);
@@ -146,6 +160,8 @@ final _key = RegExp(
     r'^([A-Za-z][A-Za-z0-9_]*)\.(KeyDown|KeyUp)\s+((?:(?:Shift|Ctrl|Alt)\+)*)([A-Za-z0-9]+)$');
 final _mouse = RegExp(
     r'^([A-Za-z][A-Za-z0-9_]*)\.(MouseDown|MouseUp)\s+(Left|Right|Middle)\s+(\d+)\s+(\d+)$');
+final _gridStep = RegExp(
+    r'^([A-Za-z][A-Za-z0-9_]*)\.(Click|Edit)\s+(\d+)\s+(\d+)(?:\s+"((?:[^"]|"")*)")?$');
 final _resize = RegExp(r'^Form\.Resize\s+(\d+)\s+(\d+)$', caseSensitive: false);
 
 /// Reads an event script. Each line is one step; `'` starts a comment.
@@ -183,6 +199,10 @@ List<ScriptStep> parseEventScript(String text) {
           shift: modifiers.contains('Shift'),
           ctrl: modifiers.contains('Ctrl'),
           alt: modifiers.contains('Alt')));
+    } else if ((m = _gridStep.firstMatch(line)) != null &&
+        (m![2] == 'Click') == (m[5] == null)) {
+      steps.add(GridStep(line, m[1]!, int.parse(m[3]!), int.parse(m[4]!),
+          m[5]?.replaceAll('""', '"')));
     } else if ((m = _mouse.firstMatch(line)) != null) {
       final target = m![1]!;
       steps.add(MouseStep(
@@ -703,6 +723,10 @@ abstract interface class ScriptDriver {
   /// The user presses or lets go a mouse button (D111), as [step] says.
   Future<EventOutcome> mouse(MouseStep step);
 
+  /// The user chooses a Grid's cell, or changes it (D116), as [step]
+  /// says. Null when the text was already that, so that nothing happens.
+  Future<EventOutcome?> grid(GridStep step);
+
   /// Closes the open MsgBox; false if there is none.
   Future<bool> ok();
 
@@ -853,6 +877,9 @@ Future<List<String>> driveEventScript(
         _record(out, step.text, await driver.key(step));
       case MouseStep():
         _record(out, step.text, await driver.mouse(step));
+      case GridStep():
+        final outcome = await driver.grid(step);
+        if (outcome != null) _record(out, step.text, outcome);
     }
   }
   await settle();
@@ -997,6 +1024,46 @@ class _HostDriver implements ScriptDriver {
     if (host.hasOpenDialog) return EventOutcome.blocked;
     return interpreter.raiseMouse(step.control, step.event,
         GbMouseEvent(mouseButtons[step.button]!, step.x, step.y));
+  }
+
+  @override
+  Future<EventOutcome?> grid(GridStep step) async {
+    if (host.hasOpenDialog) return EventOutcome.blocked;
+    final c = step.control;
+    final headers = host.frontProperty(c, 'Headers') as List;
+    final cells = List<String>.of(
+        (host.frontProperty(c, 'Cells') as List).cast<String>());
+    final i = step.row * headers.length + step.col;
+    if (step.col >= headers.length || i >= cells.length) {
+      throw StateError('$c has no cell ${step.row} ${step.col}');
+    }
+    final chosen = host.frontProperty(c, 'Row') == step.row &&
+        host.frontProperty(c, 'Col') == step.col;
+    if (step.value == null) {
+      // A second click on the chosen cell edits it, and runs nothing.
+      if (chosen) return null;
+      if (interpreter.refusal(c, 'Click') case final refused?) return refused;
+      host
+        ..userSets(c, 'Row', step.row)
+        ..userSets(c, 'Col', step.col);
+      return interpreter.raiseEvent(c, 'Click');
+    }
+    // The user edits the cell chosen, as a second click on it does.
+    if (!chosen) {
+      throw StateError('choose $c\'s cell ${step.row} ${step.col} before '
+          'editing it');
+    }
+    if (host.frontProperty(c, 'ReadOnly') == true) {
+      return EventOutcome.disabled;
+    }
+    if (cells[i] == step.value) return null;
+    if (interpreter.refusal(c, 'Changed') case final refused?) return refused;
+    cells[i] = step.value!;
+    host
+      ..userSets(c, 'Row', step.row)
+      ..userSets(c, 'Col', step.col)
+      ..userSets(c, 'Cells', List<String>.unmodifiable(cells));
+    return interpreter.raiseEvent(c, 'Changed');
   }
 
   @override

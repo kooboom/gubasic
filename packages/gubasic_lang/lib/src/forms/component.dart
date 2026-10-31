@@ -103,15 +103,19 @@ class EventSpec {
 }
 
 /// A method of a component: `AddItem(item As String)`,
-/// `List(index As Integer) As String`.
+/// `List(index As Integer) As String`; one written with `Settable` after
+/// it can be assigned to, as an indexed property: `grd.Cell(0, 1) = "90"`
+/// (D114, D116).
 class MethodSpec {
-  const MethodSpec(this.name, this.parameters, this.returnType);
+  const MethodSpec(this.name, this.parameters, this.returnType,
+      {this.settable = false});
 
   final String name;
   final List<ParamSpec> parameters;
 
   /// [GbType.void_] for one that gives nothing back.
   final GbType returnType;
+  final bool settable;
 }
 
 /// The layer a control is drawn in (docs/DESIGN.md D41): [graphic]
@@ -357,15 +361,16 @@ ComponentSpec readComponentFile(String text) {
   }
 
   final methods = <MethodSpec>[];
-  final methodPattern =
-      RegExp(r'^([A-Za-z][A-Za-z0-9_]*)\((.*)\)(?: As ([A-Za-z]+))?$');
+  final methodPattern = RegExp(
+      r'^([A-Za-z][A-Za-z0-9_]*)\((.*)\)(?: As ([A-Za-z]+))?( Settable)?$');
   for (final m in doc['methods'] as YamlList? ?? YamlList()) {
     final mm = m is String ? methodPattern.firstMatch(m.trim()) : null;
     if (mm == null) throw FormatException('bad method: $m');
     final returnType =
         mm[3] == null ? GbType.void_ : _valueTypes[mm[3]!.toLowerCase()];
     if (returnType == null) throw FormatException('bad return type: $m');
-    methods.add(MethodSpec(mm[1]!, _parameters(mm[2]!), returnType));
+    methods.add(MethodSpec(mm[1]!, _parameters(mm[2]!), returnType,
+        settable: mm[4] != null));
   }
 
   final layerName = doc['layer'] ?? 'control';
@@ -476,6 +481,9 @@ List<ParamSpec> _parameters(String text) {
         // A form's menu (D106): Menu is a component, read after this one.
         final pm? when pm[2]!.toLowerCase() == 'menu' =>
           ParamSpec.of(pm[1]!, ArgKind.menu),
+        // A table's column, by its number or its name (D116).
+        final pm? when pm[2]!.toLowerCase() == 'column' =>
+          ParamSpec.of(pm[1]!, ArgKind.numericOrString),
         final pm? when _parameterTypes[pm[2]!.toLowerCase()] != null =>
           ParamSpec(pm[1]!, _parameterTypes[pm[2]!.toLowerCase()]!),
         _ => throw FormatException('bad parameter: $part'),

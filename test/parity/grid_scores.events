@@ -1,0 +1,6 @@
+btnLoad.Click
+grdScores.Click 1 2
+grdScores.Edit 1 2 "95"
+grdScores.Edit 1 2 "95"    ' no change: nothing
+btnAdd.Click
+Close

@@ -181,6 +181,16 @@ class _ControlIconPainter extends CustomPainter {
           outline,
         );
         line(6.5, 5, 11, 5, mark);
+      case 'grid':
+        // The square body, its header row filled, ruled into cells.
+        canvas
+          ..drawRRect(RRect.fromRectAndRadius(_square, _corner), faceFill)
+          ..drawRect(const Rect.fromLTRB(3, 3, 17, 7.5), _fill(accent));
+        line(3, 7.5, 17, 7.5, outline);
+        line(3, 12.2, 17, 12.2, text);
+        line(7.7, 7.5, 7.7, 17, text);
+        line(12.3, 7.5, 12.3, 17, text);
+        canvas.drawRRect(RRect.fromRectAndRadius(_square, _corner), outline);
       case 'image':
         canvas
           ..drawRRect(RRect.fromRectAndRadius(_square, _corner), faceFill)
