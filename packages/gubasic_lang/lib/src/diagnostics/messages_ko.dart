@@ -153,6 +153,15 @@ const Map<DiagnosticCode, String> koreanMessages = {
       'Show에는 인자가 없습니다. 폼을 대화상자로 띄우고 닫힐 때까지 기다리려면 {0}.ShowDialog로 써 주세요.',
   DiagnosticCode.badShortcutInCode:
       '"{0}" 값은 단축키가 아니어서, 실행하면 여기서 프로그램이 멈춥니다. "Ctrl+O"나 "F5"처럼 Ctrl, Shift, Alt와 키 하나를 +로 이어 적거나, 없으면 ""로 적어 주세요. 글자나 숫자 키에는 Ctrl이나 Alt가 있어야 합니다.',
+  DiagnosticCode.openStatement:
+      'GuBASIC에서는 텍스트 파일을 File로 읽고 씁니다. text = File.ReadAllText(path), File.ReadAllLines(path), File.WriteAllText(path, text), File.AppendAllText(path, text) 형태로 써 주세요.',
+  DiagnosticCode.fileNotFound:
+      '{0} 파일이 없습니다. 이름을 확인하거나 OpenFileDialog로 사용자가 고르게 해 주세요. 있는지는 File.Exists로 알 수 있습니다.',
+  DiagnosticCode.fileNotChosen:
+      '웹에서는 사용자가 고른 파일만 쓸 수 있습니다. {0} 파일을 먼저 OpenFileDialog로 열거나 SaveFileDialog로 저장해 주세요.',
+  DiagnosticCode.fileError:
+      '{0} 파일을 읽거나 쓰지 못했습니다({1}). 다른 프로그램에서 열려 있지 않은지, 그곳에 쓸 수 있는지 확인해 주세요.',
+  DiagnosticCode.noFiles: '여기서는 파일을 읽고 쓸 수 없습니다. IDE에서 실행하거나 앱으로 실행해 주세요.',
   DiagnosticCode.popupWithoutItems:
       '{0} 메뉴에는 항목이 없어서 PopupMenu로 보일 것이 없습니다. 메뉴 편집기에서 항목을 넣거나, 이 항목이 든 메뉴를 보여 주세요.',
   DiagnosticCode.popupOfOtherForm:

@@ -26,3 +26,7 @@
 *.woff     binary
 *.woff2    binary
 *.wasm     binary
+
+# The files a parity program reads (D113) are bytes, kept as they are:
+# CRLF and code page 949 included.
+test/parity/*.files/** binary

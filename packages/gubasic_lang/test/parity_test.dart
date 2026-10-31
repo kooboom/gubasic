@@ -72,6 +72,13 @@ void main() {
           : <String>[];
       final List<String> lines;
       final base = program.path.substring(0, program.path.length - 5);
+      // The files the program reads (D113): NAME.files/, by name.
+      final filesDir = Directory('$base.files');
+      final disk = <String, List<int>>{
+        if (filesDir.existsSync())
+          for (final f in filesDir.listSync().whereType<File>())
+            f.uri.pathSegments.last: f.readAsBytesSync(),
+      };
       final otherForms = Directory('../../test/parity')
           .listSync()
           .whereType<File>()
@@ -124,7 +131,8 @@ void main() {
             settings: settings,
             pictures: pictures,
             modules: modules,
-            startsWithMain: startsWithMain);
+            startsWithMain: startsWithMain,
+            disk: disk);
       } else if (formFile.existsSync()) {
         final form = readFormFile(formFile.readAsStringSync(),
             name: 'Form1', pictures: pictures);
@@ -135,7 +143,8 @@ void main() {
             File(program.path.replaceFirst('.gbas', '.events'))
                 .readAsStringSync(),
             settings: settings,
-            pictures: pictures);
+            pictures: pictures,
+            disk: disk);
       } else {
         final input = File(program.path.replaceFirst('.gbas', '.in'));
         final answers =

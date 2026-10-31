@@ -117,6 +117,12 @@ Problems we know about and have **deliberately** left unfixed for now. Each entr
 - **Why deferred:** Flutter's platform menus send no check marks to the system. Renaming in the code and access keys each add to the menu editor and the three ways menus are drawn, which the first programs with menus do not need.
 - **Revisit:** when Flutter's platform menus take check marks; when users ask for renaming or access keys.
 
+## On the web, every write downloads the whole file
+
+- **What:** a program on the web saves by downloading (D113): each `File.WriteAllText` or `File.AppendAllText` downloads the whole file again under its name, so a program that adds a line at a time leaves the browser a download for each. A file the user chose is read from what the browser gave; the program cannot write back into it.
+- **Why deferred:** a browser lets a page read a chosen file and download a new one; writing into the user's own file needs the File System Access API, which only Chromium-based browsers have.
+- **Revisit:** when the File System Access API is in Safari and Firefox, or when users ask for programs that log to a file on the web.
+
 ## Keys a TextBox uses do not reach the form
 
 - **What:** with `KeyPreview` True and a TextBox typed in, the form gets the keys the TextBox only types (letters, digits, Space), not those it acts on itself, such as the arrow keys, Home and End, which move its caret (D101).

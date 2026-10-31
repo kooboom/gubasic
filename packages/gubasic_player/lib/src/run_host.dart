@@ -11,7 +11,7 @@ import 'form_window.dart';
 /// form's properties live in a model ([modelOf]), which the run window
 /// shows, and MsgBox and InputBox are [dialogs]. What the user does on a
 /// form goes to the interpreter as events.
-class RunHost implements FormHost {
+class RunHost implements FormHost, FileHost {
   /// [form] is the startup form, [others] the project's other forms (D88).
   RunHost(
     FormFile form, {
@@ -21,7 +21,9 @@ class RunHost implements FormHost {
     String? settingsKey,
     this._settings,
     this._pictures,
-  }) : settingsKey = settingsKey ?? project,
+    GbFiles? files,
+  }) : _fileSystem = files,
+       settingsKey = settingsKey ?? project,
        dialogs = GbDialogs(strings: strings),
        _startup = form.name {
     for (final f in [form, ...others]) {
@@ -302,6 +304,69 @@ class RunHost implements FormHost {
         (context.findRenderObject() as RenderBox?)?.paintBounds.center ??
         Offset.zero;
     return dialogs.popupMenu(context, model, menu, at);
+  }
+
+  /// The program's files (D113): the system's, made when first used.
+  GbFiles? _fileSystem;
+  GbFiles get _disk => _fileSystem ??= GbFiles();
+
+  static List<GbFileFilter> _filters(List<FileFilter> filters) => [
+    for (final f in filters) (label: f.label, extensions: f.extensions),
+  ];
+
+  @override
+  Future<String?> chooseOpenFile(
+    String title,
+    List<FileFilter> filters,
+    String fileName,
+  ) => _disk.chooseOpen(title, _filters(filters), fileName);
+
+  /// The system's save dialog; on the web, where there is none, the name
+  /// is asked in a dialog of the app's, and saving downloads the file.
+  @override
+  Future<String?> chooseSaveFile(
+    String title,
+    List<FileFilter> filters,
+    String fileName,
+  ) async {
+    final disk = _disk;
+    if (disk.hasSaveDialog) {
+      return disk.chooseSave(title, _filters(filters), fileName);
+    }
+    final extension = filters.isEmpty || filters.first.extensions.isEmpty
+        ? ''
+        : '.${filters.first.extensions.first}';
+    final name = (await dialogs.inputBox(
+      _context,
+      dialogs.strings.saveAs,
+      _title(title),
+      fileName.isEmpty ? 'file$extension' : fileName,
+    )).trim();
+    if (name.isEmpty) return null;
+    disk.allowSave(name);
+    return name;
+  }
+
+  @override
+  Future<List<int>> readFile(String path) => _guard(() => _disk.read(path));
+
+  @override
+  Future<void> writeFile(String path, List<int> bytes, {bool append = false}) =>
+      _guard(() => _disk.write(path, bytes, append: append));
+
+  @override
+  Future<bool> fileExists(String path) => _disk.exists(path);
+
+  static Future<T> _guard<T>(Future<T> Function() body) async {
+    try {
+      return await body();
+    } on GbFileError catch (e) {
+      throw FileProblem(switch (e.kind) {
+        GbFileErrorKind.notFound => FileProblemKind.notFound,
+        GbFileErrorKind.notChosen => FileProblemKind.notChosen,
+        GbFileErrorKind.other => FileProblemKind.other,
+      }, e.detail);
+    }
   }
 
   @override

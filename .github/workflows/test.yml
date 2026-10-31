@@ -214,6 +214,10 @@ jobs:
       - name: Menus in the player's own window
         working-directory: apps/player
         run: flutter test integration_test/menus_test.dart -d windows
+      # Text files written, added to and read in the app (D113).
+      - name: Files in the player's own window
+        working-directory: apps/player
+        run: flutter test integration_test/files_test.dart -d windows
       # The IDE's toolbox in its own window (D107): two columns of drawn
       # controls, the name in the tooltip; pictures of it in the Artifacts.
       - name: The toolbox in the IDE's own window
@@ -312,6 +316,10 @@ jobs:
       - name: Menus in the player's own window
         working-directory: apps/player
         run: flutter test integration_test/menus_test.dart -d macos
+      # Text files written, added to and read in the app (D113).
+      - name: Files in the player's own window
+        working-directory: apps/player
+        run: flutter test integration_test/files_test.dart -d macos
       # The IDE's toolbox in its own window (D107): two columns of drawn
       # controls, the name in the tooltip; pictures of it in the Artifacts.
       - name: The toolbox in the IDE's own window

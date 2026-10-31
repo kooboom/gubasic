@@ -204,6 +204,29 @@ class _ControlIconPainter extends CustomPainter {
         line(10, 2.6, 10, 4.6, outline);
         line(10, 10.8, 10, 7.4, mark);
         line(10, 10.8, 12.6, 12.2, mark);
+      case 'openfiledialog' || 'savefiledialog':
+        // A folder, with an arrow out of it to open, into it to save.
+        final folder = Path()
+          ..moveTo(3, 6.5)
+          ..lineTo(3, 16)
+          ..lineTo(17, 16)
+          ..lineTo(17, 7.5)
+          ..lineTo(9.5, 7.5)
+          ..lineTo(8, 5)
+          ..lineTo(3.8, 5)
+          ..close();
+        canvas
+          ..drawPath(folder, faceFill)
+          ..drawPath(folder, outline);
+        final open = kind == 'openfiledialog';
+        line(10, open ? 14 : 9.5, 10, open ? 9.5 : 14, mark);
+        canvas.drawPath(
+          Path()
+            ..moveTo(7.8, open ? 11.6 : 11.9)
+            ..lineTo(10, open ? 9.4 : 14.1)
+            ..lineTo(12.2, open ? 11.6 : 11.9),
+          mark,
+        );
       default:
         body(_square);
     }

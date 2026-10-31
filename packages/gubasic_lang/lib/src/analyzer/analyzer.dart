@@ -81,6 +81,10 @@ class _Analyzer {
           type: f.returnType,
           callable: f));
     }
+    for (final name in builtinConstants.keys) {
+      _builtins.declare(
+          Symbol(name: name, kind: SymbolKind.constant, type: GbType.string));
+    }
     for (final name in builtinObjects.values) {
       _builtins.declare(Symbol(
           name: name,

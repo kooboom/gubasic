@@ -7,13 +7,29 @@ import 'menus.dart';
 
 /// Words on the runtime's own buttons, in English and Korean.
 class GbStrings {
-  const GbStrings({required this.ok, required this.cancel});
+  const GbStrings({
+    required this.ok,
+    required this.cancel,
+    required this.saveAs,
+  });
 
   final String ok;
   final String cancel;
 
-  static const en = GbStrings(ok: 'OK', cancel: 'Cancel');
-  static const ko = GbStrings(ok: '확인', cancel: '취소');
+  /// What a SaveFileDialog asks on the web, where the browser has no save
+  /// dialog and the file is downloaded under the name (D113).
+  final String saveAs;
+
+  static const en = GbStrings(
+    ok: 'OK',
+    cancel: 'Cancel',
+    saveAs: 'Save as (the file is downloaded under this name):',
+  );
+  static const ko = GbStrings(
+    ok: '확인',
+    cancel: '취소',
+    saveAs: '저장할 이름(이 이름으로 내려받습니다):',
+  );
 }
 
 /// MsgBox, InputBox and the menus `PopupMenu` shows. All are modal (D28):

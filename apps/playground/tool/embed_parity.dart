@@ -37,10 +37,12 @@ void main(List<String> args) {
     ..writeln('/// the other forms of a project, (name, form file, code), are')
     ..writeln('/// NAME.FORM.form.yaml and NAME.FORM.gbas (D88), its modules')
     ..writeln('/// (name, null, code) NAME.MODULE.gbas (D102); the last is')
-    ..writeln('/// whether NAME.startup says it starts with Sub Main.')
+    ..writeln('/// whether NAME.startup says it starts with Sub Main; then the')
+    ..writeln('/// files of NAME.files/ the program reads (D113), name to')
+    ..writeln('/// base64.')
     ..writeln('const parityCases = <(String, String, List<String>, String, '
         'String?, String?, String?, List<String>, '
-        'List<(String, String?, String)>, bool)>[');
+        'List<(String, String?, String)>, bool, Map<String, String>)>[');
   for (final p in programs) {
     final name = p.uri.pathSegments.last.replaceFirst('.gbas', '');
     final input = read(p.path.replaceFirst('.gbas', '.in'));
@@ -93,6 +95,17 @@ void main(List<String> args) {
     out
       ..writeln('    ],')
       ..writeln('    ${read('$base.startup')?.trim() == 'Sub Main'},')
+      ..writeln('    {');
+    final files = Directory('$base.files');
+    if (files.existsSync()) {
+      for (final f in files.listSync().whereType<File>().toList()
+        ..sort((a, b) => a.path.compareTo(b.path))) {
+        out.writeln('      ${jsonEncode(f.uri.pathSegments.last)}: '
+            '${jsonEncode(base64Encode(f.readAsBytesSync()))},');
+      }
+    }
+    out
+      ..writeln('    },')
       ..writeln('  ),');
   }
   out.writeln('];');

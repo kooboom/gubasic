@@ -136,7 +136,7 @@ class BenchProbe {
             event,
             GbMouseEvent(mouseButtons[button]!, step.x, step.y),
           );
-        case ResizeStep():
+        case ResizeStep() || PickStep():
           break;
       }
       await _settle();

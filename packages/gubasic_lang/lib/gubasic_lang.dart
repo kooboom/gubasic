@@ -36,6 +36,7 @@ export 'src/forms/project_file.dart';
 export 'src/forms/project_writer.dart';
 export 'src/interpreter/checked_math.dart';
 export 'src/interpreter/host.dart';
+export 'src/text/text_codec.dart';
 export 'src/interpreter/interpreter.dart';
 export 'src/interpreter/rng.dart';
 export 'src/interpreter/run_result.dart';

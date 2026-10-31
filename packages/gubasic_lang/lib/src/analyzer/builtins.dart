@@ -171,6 +171,18 @@ const _builtins = <Callable>[
   Callable('GetSetting', [ParamSpec('key', _s), ParamSpec('default', _s)], _s),
 ];
 
+/// Built-in constants (D113): Visual Basic .NET's characters for line
+/// breaks and tabs. `vbNewLine` is `vbCrLf` everywhere, as in Visual
+/// Basic .NET on Windows, so that a program writes the same file on every
+/// platform.
+const Map<String, String> builtinConstants = {
+  'vbCrLf': '\r\n',
+  'vbNewLine': '\r\n',
+  'vbLf': '\n',
+  'vbCr': '\r',
+  'vbTab': '\t',
+};
+
 /// Built-in objects, by lower-case name. Their members are in members.dart.
 const Map<String, String> builtinObjects = {
   'debug': 'Debug',
@@ -178,4 +190,5 @@ const Map<String, String> builtinObjects = {
   'keys': 'Keys',
   'dialogresult': 'DialogResult',
   'mousebuttons': 'MouseButtons',
+  'file': 'File',
 };

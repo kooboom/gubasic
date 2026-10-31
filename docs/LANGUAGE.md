@@ -110,6 +110,7 @@ How the parser recovers:
 | P027 | `Load Command1(1)` (Visual Basic 6's control array) | Make a control with `New` and `Me.Controls.Add` (§11.4) |
 | P028 | `Unload Command1(1)` | Take a control off with `Me.Controls.Remove` (§11.4) |
 | P029 | `PopupMenu mnuEdit` | `Me.PopupMenu(mnuEdit)` (§11.1) |
+| P030 | `Open path For Input As #1` | `File.ReadAllText(path)` and the other `File` functions (§11.6) |
 
 **Analyzer**
 
@@ -238,6 +239,10 @@ Errors found while a program runs. Each stops the program and points at its line
 | R024 | A `Shortcut` set to text that is not a shortcut (§11.1) |
 | R025 | `PopupMenu` of a menu item that has no items (§11.1) |
 | R026 | `PopupMenu` of another form's menu (§11.1) |
+| R027 | A file that is not there (§11.6) |
+| R028 | On the web, a file no dialog gave in this run (§11.6) |
+| R029 | A file that could not be read or written (§11.6) |
+| R030 | Files where the program runs without them, the playground (§11.6) |
 
 ## 2. Types
 
@@ -838,6 +843,22 @@ A **module** (DESIGN.md D102) is code without a form, shared by the project: the
       frmMain.Show
   End Sub
   ```
+
+### 11.6 Files
+
+(DESIGN.md D112, D113.) **Open and save dialogs** are `OpenFileDialog` and `SaveFileDialog`, as in Visual Basic .NET ([Microsoft](https://learn.microsoft.com/en-us/dotnet/api/system.windows.forms.openfiledialog)): put on the form from the toolbox, kept in the tray as a Timer is, with `Title`, `Filter` and `FileName`. `Filter` is a label and its patterns, in pairs: `"Text files|*.txt|All files|*.*"`. `ShowDialog()` shows the dialog and waits, as a MsgBox does; it gives `DialogResult.OK`, with the file in `FileName` after the dialog's `FileOk` has run, or `DialogResult.Cancel`.
+
+```vb
+If dlgOpen.ShowDialog() = DialogResult.OK Then
+    txtMemo.Text = File.ReadAllText(dlgOpen.FileName)
+End If
+```
+
+**Text files** are read and written through `File`, as Visual Basic .NET's `System.IO.File` ([Microsoft](https://learn.microsoft.com/en-us/dotnet/api/system.io.file)): `File.ReadAllText(path)` gives the text; `File.ReadAllLines(path)` its lines as a `String` array, split at any line break, without an empty line after the last; `File.WriteAllText(path, text)` writes it, in place of what was there; `File.AppendAllText(path, text)` adds it at the end, making the file when there is none; `File.Exists(path)` says whether it is there. A file is read as UTF-8, with or without a byte order mark, and as code page 949, the "ANSI" text of Korean Windows in which Excel saves CSV files there, when it is not UTF-8; it is written as UTF-8, with a byte order mark for a `.csv` file so that Excel reads its Korean text. A file that is not there is R027; one that cannot be read or written R029, with what the system said. Visual Basic 6's `Open path For Input As #1` is P030.
+
+**Line breaks and tabs** are Visual Basic .NET's constants ([Microsoft](https://learn.microsoft.com/en-us/dotnet/visual-basic/language-reference/constants-and-enumerations)): `vbCrLf` (carriage return and line feed), `vbLf`, `vbCr`, `vbTab`, and `vbNewLine`, which is `vbCrLf` on every platform, so that a program writes the same file everywhere.
+
+**Where files are.** On the desktop, in the IDE and in an exported app, a path is a real one; an exported macOS app, which runs in Apple's sandbox, reaches the files the user chose in a dialog and its own folders. On the web, which has no paths, a file is known by the name of one the user chose with an `OpenFileDialog`, or one the program saved, in the same run: any other is R028. A `SaveFileDialog` there asks for the name in a dialog of the app's, and saving downloads the file under it; `File.Exists` says whether the name is one of these. Where a program runs without files (the playground), the dialogs and `File` are R030.
 
 ## 12. Open questions
 

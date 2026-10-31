@@ -8,6 +8,7 @@ export 'src/check_box.dart';
 export 'src/combo_box.dart';
 export 'src/composing.dart';
 export 'src/dialogs.dart';
+export 'src/files.dart';
 export 'src/form_model.dart';
 export 'src/keys.dart';
 export 'src/form_view.dart';

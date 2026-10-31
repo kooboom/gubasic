@@ -180,6 +180,20 @@ const Map<DiagnosticCode, String> englishMessages = {
       'form as a dialog and wait until it is closed, write {0}.ShowDialog.',
   DiagnosticCode.badShortcutInCode: '"{0}" is not a shortcut, so the '
       'program will stop here when it runs. Write Ctrl, Shift or Alt and a key, joined by +, as in "Ctrl+O" or "F5", or "" for none. A letter or digit needs Ctrl or Alt.',
+  DiagnosticCode.openStatement: 'GuBASIC reads and writes text files with '
+      'File: write text = File.ReadAllText(path), File.ReadAllLines(path), '
+      'File.WriteAllText(path, text) or File.AppendAllText(path, text).',
+  DiagnosticCode.fileNotFound: 'There is no file {0}. Check the name, or '
+      'let the user choose it with an OpenFileDialog; File.Exists says '
+      'whether it is there.',
+  DiagnosticCode.fileNotChosen: 'On the web a program reaches only the '
+      'files the user chose: open {0} with an OpenFileDialog, or save it '
+      'with a SaveFileDialog, first.',
+  DiagnosticCode.fileError: 'The file {0} could not be read or written '
+      '({1}). Check that it is not open in another program, and that it '
+      'may be written there.',
+  DiagnosticCode.noFiles: 'Files cannot be read or written here. Run the '
+      'program in the IDE or as an app.',
   DiagnosticCode.popupWithoutItems: '{0} has no items, so PopupMenu has '
       'nothing to show. Give it items in the menu editor, or show the menu '
       'it is in.',

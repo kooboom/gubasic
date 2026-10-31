@@ -1,0 +1,26 @@
+# The dialog that asks for a file to open (docs/DESIGN.md D113), as Visual
+# Basic .NET's OpenFileDialog. Not seen on the form: the designer keeps it
+# in the tray. ShowDialog() shows it and gives DialogResult.OK with the
+# file in FileName, after FileOk has run, or DialogResult.Cancel. Filter
+# is "Text files|*.txt|All files|*.*": a label and its patterns, in pairs.
+# On the web FileName is the file's name, which the File functions take
+# in the same run; the file is read from the browser.
+name: OpenFileDialog
+version: 1
+visual: false
+defaultEvent: FileOk
+properties:
+  - { name: Title, type: String, default: "" }
+  - { name: Filter, type: String, default: "" }
+  - { name: FileName, type: String, default: "" }
+  # Any text the program keeps with it, as in Visual Basic; GuBASIC does
+  # nothing with it (D98).
+  - { name: Tag, type: String, default: "" }
+events:
+  - FileOk()
+methods:
+  - ShowDialog() As Integer
+# Names other versions of BASIC use, pointed to GuBASIC's (A036,
+# docs/DESIGN.md D50).
+otherNames:
+  Index: Tag

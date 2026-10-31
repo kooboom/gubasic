@@ -8,7 +8,9 @@
 /// the other forms of a project, (name, form file, code), are
 /// NAME.FORM.form.yaml and NAME.FORM.gbas (D88), its modules
 /// (name, null, code) NAME.MODULE.gbas (D102); the last is
-/// whether NAME.startup says it starts with Sub Main.
+/// whether NAME.startup says it starts with Sub Main; then the
+/// files of NAME.files/ the program reads (D113), name to
+/// base64.
 const parityCases = <(
   String,
   String,
@@ -19,7 +21,8 @@ const parityCases = <(
   String?,
   List<String>,
   List<(String, String?, String)>,
-  bool
+  bool,
+  Map<String, String>
 )>[
   (
     "arithmetic",
@@ -32,6 +35,7 @@ const parityCases = <(
     [],
     [],
     false,
+    {},
   ),
   (
     "askname_example",
@@ -50,6 +54,7 @@ const parityCases = <(
       ),
     ],
     false,
+    {},
   ),
   (
     "big_integers",
@@ -62,6 +67,7 @@ const parityCases = <(
     [],
     [],
     false,
+    {},
   ),
   (
     "calculator_example",
@@ -74,6 +80,7 @@ const parityCases = <(
     [],
     [],
     false,
+    {},
   ),
   (
     "conditions",
@@ -86,6 +93,7 @@ const parityCases = <(
     [],
     [],
     false,
+    {},
   ),
   (
     "controls_cast_error",
@@ -98,6 +106,7 @@ const parityCases = <(
     [],
     [],
     false,
+    {},
   ),
   (
     "controls_loop",
@@ -110,6 +119,7 @@ const parityCases = <(
     [],
     [],
     false,
+    {},
   ),
   (
     "controls_new",
@@ -122,6 +132,7 @@ const parityCases = <(
     [],
     [],
     false,
+    {},
   ),
   (
     "dialogs",
@@ -134,6 +145,7 @@ const parityCases = <(
     [],
     [],
     false,
+    {},
   ),
   (
     "divide_by_zero",
@@ -146,6 +158,7 @@ const parityCases = <(
     [],
     [],
     false,
+    {},
   ),
   (
     "end_statement",
@@ -158,6 +171,7 @@ const parityCases = <(
     [],
     [],
     false,
+    {},
   ),
   (
     "events_anchor",
@@ -170,6 +184,7 @@ const parityCases = <(
     [],
     [],
     false,
+    {},
   ),
   (
     "events_changed",
@@ -182,6 +197,7 @@ const parityCases = <(
     [],
     [],
     false,
+    {},
   ),
   (
     "events_checkbox",
@@ -194,6 +210,7 @@ const parityCases = <(
     [],
     [],
     false,
+    {},
   ),
   (
     "events_combobox",
@@ -206,6 +223,7 @@ const parityCases = <(
     [],
     [],
     false,
+    {},
   ),
   (
     "events_end",
@@ -218,6 +236,7 @@ const parityCases = <(
     [],
     [],
     false,
+    {},
   ),
   (
     "events_error",
@@ -230,6 +249,7 @@ const parityCases = <(
     [],
     [],
     false,
+    {},
   ),
   (
     "events_frame",
@@ -242,6 +262,7 @@ const parityCases = <(
     [],
     [],
     false,
+    {},
   ),
   (
     "events_image",
@@ -254,6 +275,7 @@ const parityCases = <(
     ["triangle.png", "circle.png"],
     [],
     false,
+    {},
   ),
   (
     "events_listbox",
@@ -266,6 +288,7 @@ const parityCases = <(
     [],
     [],
     false,
+    {},
   ),
   (
     "events_load",
@@ -278,6 +301,7 @@ const parityCases = <(
     [],
     [],
     false,
+    {},
   ),
   (
     "events_menu",
@@ -290,6 +314,7 @@ const parityCases = <(
     [],
     [],
     false,
+    {},
   ),
   (
     "events_modal",
@@ -302,6 +327,7 @@ const parityCases = <(
     [],
     [],
     false,
+    {},
   ),
   (
     "events_mouse",
@@ -314,6 +340,7 @@ const parityCases = <(
     [],
     [],
     false,
+    {},
   ),
   (
     "events_mouse_sender",
@@ -326,6 +353,7 @@ const parityCases = <(
     [],
     [],
     false,
+    {},
   ),
   (
     "events_option",
@@ -338,6 +366,7 @@ const parityCases = <(
     [],
     [],
     false,
+    {},
   ),
   (
     "events_popup",
@@ -350,6 +379,7 @@ const parityCases = <(
     [],
     [],
     false,
+    {},
   ),
   (
     "events_reentry",
@@ -362,6 +392,7 @@ const parityCases = <(
     [],
     [],
     false,
+    {},
   ),
   (
     "events_resize",
@@ -374,6 +405,7 @@ const parityCases = <(
     [],
     [],
     false,
+    {},
   ),
   (
     "events_shared",
@@ -386,6 +418,7 @@ const parityCases = <(
     [],
     [],
     false,
+    {},
   ),
   (
     "events_static",
@@ -398,6 +431,23 @@ const parityCases = <(
     [],
     [],
     false,
+    {},
+  ),
+  (
+    "files_text",
+    "' Open and save dialogs, and text files (D113): a UTF-8 file with a BOM,\n' a CSV file Korean Windows' Excel saved in code page 949, a CSV written\n' with a BOM and added to, and a file that is not there.\nSub btnOpen_Click()\n    If dlgOpen.ShowDialog() = DialogResult.OK Then\n        Dim lines = File.ReadAllLines(dlgOpen.FileName)\n        Debug.Print(UBound(lines) + 1 & \" lines; the first: \" & lines(0))\n    Else\n        Debug.Print(\"cancelled\")\n    End If\nEnd Sub\n\nSub dlgOpen_FileOk()\n    Debug.Print(\"chosen: \" & dlgOpen.FileName)\nEnd Sub\n\nSub btnOld_Click()\n    Debug.Print(Replace(File.ReadAllText(\"old.csv\"), vbCrLf, \" / \"))\nEnd Sub\n\nSub btnSave_Click()\n    If dlgSave.ShowDialog() = DialogResult.OK Then\n        File.WriteAllText(dlgSave.FileName, \"이름,점수\" & vbCrLf)\n        File.AppendAllText(dlgSave.FileName, \"박둘,85\" & vbCrLf)\n        Debug.Print(File.Exists(dlgSave.FileName))\n    End If\nEnd Sub\n\nSub btnMissing_Click()\n    Debug.Print(File.Exists(\"nothing.txt\"))\n    Debug.Print(File.ReadAllText(\"nothing.txt\"))\nEnd Sub\n",
+    [],
+    "> btnOpen.Click\nOpenFileDialog: Open a memo\n> Cancel\nDebug.Print: cancelled\n> btnOpen.Click\nOpenFileDialog: Open a memo\n> Pick \"memo.txt\"\nSet dlgOpen.FileName: memo.txt\nDebug.Print: chosen: memo.txt\nDebug.Print: 2 lines; the first: 안녕하세요\n> btnOld.Click\nDebug.Print: 이름,점수 / 김하나,90 / \n> btnSave.Click\nSaveFileDialog: Save the memo\n> Pick \"scores.csv\"\nSet dlgSave.FileName: scores.csv\nWrote scores.csv: (BOM) 이름,점수\\r\\n\nAppended scores.csv: 박둘,85\\r\\n\nDebug.Print: True\n> btnMissing.Click\nDebug.Print: False\nError R027 @ 31\n",
+    "formatVersion: 1\nproperties: { Caption: Files, Width: 320, Height: 200 }\ncontrols:\n  - { name: btnOpen, type: Button, properties: { Caption: Open, Left: 16, Top: 16 } }\n  - { name: btnSave, type: Button, properties: { Caption: Save, Left: 120, Top: 16 } }\n  - { name: btnOld, type: Button, properties: { Caption: Old, Left: 224, Top: 16, Width: 80 } }\n  - { name: btnMissing, type: Button, properties: { Caption: Missing, Left: 16, Top: 64 } }\n  - { name: dlgOpen, type: OpenFileDialog, properties: { Title: Open a memo, Filter: \"Text files|*.txt|All files|*.*\" } }\n  - { name: dlgSave, type: SaveFileDialog, properties: { Title: Save the memo, Filter: \"CSV|*.csv\" } }\n",
+    "btnOpen.Click\nCancel\nbtnOpen.Click\nPick \"memo.txt\"\nbtnOld.Click\nbtnSave.Click\nPick \"scores.csv\"\nbtnMissing.Click\n",
+    null,
+    [],
+    [],
+    false,
+    {
+      "memo.txt": "77u/7JWI64WV7ZWY7IS47JqUCuuRmOynuCDspIQK",
+      "old.csv": "wMy4pyzBobz2DQqx6MfPs6osOTANCg==",
+    },
   ),
   (
     "forms_dialog",
@@ -416,6 +466,7 @@ const parityCases = <(
       ),
     ],
     false,
+    {},
   ),
   (
     "forms_dialogresult",
@@ -434,6 +485,7 @@ const parityCases = <(
       ),
     ],
     false,
+    {},
   ),
   (
     "forms_error",
@@ -452,6 +504,7 @@ const parityCases = <(
       ),
     ],
     false,
+    {},
   ),
   (
     "forms_last",
@@ -470,6 +523,7 @@ const parityCases = <(
       ),
     ],
     false,
+    {},
   ),
   (
     "forms_show",
@@ -488,6 +542,7 @@ const parityCases = <(
       ),
     ],
     false,
+    {},
   ),
   (
     "forms_window",
@@ -511,6 +566,7 @@ const parityCases = <(
       ),
     ],
     false,
+    {},
   ),
   (
     "handles_shared",
@@ -523,6 +579,7 @@ const parityCases = <(
     [],
     [],
     false,
+    {},
   ),
   (
     "integer_overflow",
@@ -535,6 +592,7 @@ const parityCases = <(
     [],
     [],
     false,
+    {},
   ),
   (
     "keys_move",
@@ -547,6 +605,7 @@ const parityCases = <(
     [],
     [],
     false,
+    {},
   ),
   (
     "keys_preview",
@@ -559,6 +618,7 @@ const parityCases = <(
     [],
     [],
     false,
+    {},
   ),
   (
     "lists_arrays",
@@ -571,6 +631,7 @@ const parityCases = <(
     [],
     [],
     false,
+    {},
   ),
   (
     "loops",
@@ -583,6 +644,7 @@ const parityCases = <(
     [],
     [],
     false,
+    {},
   ),
   (
     "modules_error",
@@ -601,6 +663,7 @@ const parityCases = <(
       ),
     ],
     false,
+    {},
   ),
   (
     "modules_main",
@@ -619,6 +682,7 @@ const parityCases = <(
       ),
     ],
     true,
+    {},
   ),
   (
     "modules_main_ends",
@@ -637,6 +701,7 @@ const parityCases = <(
       ),
     ],
     true,
+    {},
   ),
   (
     "modules_shared",
@@ -660,6 +725,7 @@ const parityCases = <(
       ),
     ],
     false,
+    {},
   ),
   (
     "overflow_caught",
@@ -672,6 +738,7 @@ const parityCases = <(
     [],
     [],
     false,
+    {},
   ),
   (
     "overflow_edges",
@@ -684,6 +751,7 @@ const parityCases = <(
     [],
     [],
     false,
+    {},
   ),
   (
     "quiz_best",
@@ -696,6 +764,7 @@ const parityCases = <(
     ["triangle.png", "pentagon.png"],
     [],
     false,
+    {},
   ),
   (
     "quiz_example",
@@ -708,6 +777,7 @@ const parityCases = <(
     ["triangle.png", "pentagon.png"],
     [],
     false,
+    {},
   ),
   (
     "random_seeded",
@@ -720,6 +790,7 @@ const parityCases = <(
     [],
     [],
     false,
+    {},
   ),
   (
     "recursion",
@@ -732,6 +803,7 @@ const parityCases = <(
     [],
     [],
     false,
+    {},
   ),
   (
     "rounding",
@@ -744,6 +816,7 @@ const parityCases = <(
     [],
     [],
     false,
+    {},
   ),
   (
     "settings",
@@ -756,6 +829,7 @@ const parityCases = <(
     [],
     [],
     false,
+    {},
   ),
   (
     "settings_limit",
@@ -768,6 +842,7 @@ const parityCases = <(
     [],
     [],
     false,
+    {},
   ),
   (
     "static_and_scope",
@@ -780,6 +855,7 @@ const parityCases = <(
     [],
     [],
     false,
+    {},
   ),
   (
     "strings",
@@ -792,6 +868,7 @@ const parityCases = <(
     [],
     [],
     false,
+    {},
   ),
   (
     "text_form",
@@ -804,6 +881,7 @@ const parityCases = <(
     [],
     [],
     false,
+    {},
   ),
   (
     "timer_clock",
@@ -816,6 +894,7 @@ const parityCases = <(
     [],
     [],
     false,
+    {},
   ),
   (
     "timer_turns",
@@ -828,6 +907,7 @@ const parityCases = <(
     [],
     [],
     false,
+    {},
   ),
   (
     "try_catch",
@@ -840,5 +920,6 @@ const parityCases = <(
     [],
     [],
     false,
+    {},
   ),
 ];

@@ -875,6 +875,13 @@ class _Parser {
         !_is(TokenKind.plus) &&
         _startsExpression(_tok)) {
       final statement = target is NameExpr ? target.name.toLowerCase() : null;
+      if (statement == 'open') {
+        // VB6's `Open path For Input As #1`: File's functions (P030,
+        // D113). The rest of the line is VB6's, not GuBASIC's.
+        _error(DiagnosticCode.openStatement, target.start, target.end);
+        _skipLine();
+        return ErrorStmt(from, _lastEnd);
+      }
       if (statement != null && formStatements.contains(statement)) {
         // VB6's `Unload Form2`: a method in GuBASIC (P024, P025); with
         // `(index)`, a control array's element (P027, P028).

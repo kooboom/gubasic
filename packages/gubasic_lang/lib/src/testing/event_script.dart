@@ -9,6 +9,7 @@ import '../interpreter/host.dart';
 import '../interpreter/interpreter.dart';
 import '../interpreter/run_result.dart';
 import '../interpreter/values.dart';
+import '../text/text_codec.dart';
 
 /// One step of an event script (`NAME.events`, docs/DESIGN.md §9.1).
 sealed class ScriptStep {
@@ -110,6 +111,14 @@ class ChooseStep extends ScriptStep {
   final String? item;
 }
 
+/// `Pick "names.csv"`: chooses a file in the open or save dialog (D113).
+/// `Cancel` cancels it.
+class PickStep extends ScriptStep {
+  const PickStep(super.text, this.name);
+
+  final String name;
+}
+
 /// `Close`: the user closes the form.
 class CloseStep extends ScriptStep {
   const CloseStep(super.text);
@@ -132,6 +141,7 @@ final _type = RegExp(r'^([A-Za-z][A-Za-z0-9_]*)\.Type\s+"((?:[^"]|"")*)"$');
 final _select = RegExp(r'^([A-Za-z][A-Za-z0-9_]*)\.Select\s+(\d+)$');
 final _answer = RegExp(r'^Answer\s+"((?:[^"]|"")*)"$');
 final _choose = RegExp(r'^Choose\s+([A-Za-z][A-Za-z0-9_]*)$');
+final _pick = RegExp(r'^Pick\s+"((?:[^"]|"")*)"$');
 final _key = RegExp(
     r'^([A-Za-z][A-Za-z0-9_]*)\.(KeyDown|KeyUp)\s+((?:(?:Shift|Ctrl|Alt)\+)*)([A-Za-z0-9]+)$');
 final _mouse = RegExp(
@@ -153,6 +163,8 @@ List<ScriptStep> parseEventScript(String text) {
       steps.add(AnswerStep(line, null));
     } else if (line == 'Close') {
       steps.add(CloseStep(line));
+    } else if ((m = _pick.firstMatch(line)) != null) {
+      steps.add(PickStep(line, m![1]!.replaceAll('""', '"')));
     } else if (line == 'Dismiss') {
       steps.add(ChooseStep(line, null));
     } else if ((m = _choose.firstMatch(line)) != null) {
@@ -210,9 +222,12 @@ String _withoutComment(String line) {
 }
 
 class _Dialog {
-  _Dialog(this.isInputBox, {this.isPopup = false});
+  _Dialog(this.isInputBox, {this.isPopup = false, this.isFile = false});
 
   final bool isInputBox;
+
+  /// An open or save dialog (D113).
+  final bool isFile;
 
   /// A menu `PopupMenu` shows (D106).
   final bool isPopup;
@@ -232,6 +247,22 @@ abstract final class TranscriptLine {
 
   /// `PopupMenu` shows [menu]'s items (D106).
   static String popupMenu(String menu) => 'PopupMenu: $menu';
+
+  /// An OpenFileDialog or a SaveFileDialog is shown (D113).
+  static String fileDialog(String component, String title) =>
+      title.isEmpty ? component : '$component: $title';
+
+  /// The program wrote [bytes] to the file [path] (D113): its text, with
+  /// its line breaks as `\n`, after `(BOM)` when it starts with one.
+  static String wroteFile(String path, List<int> bytes, {bool append = false}) {
+    final bom = bytes.length >= 3 &&
+        bytes[0] == 0xEF &&
+        bytes[1] == 0xBB &&
+        bytes[2] == 0xBF;
+    final text =
+        decodeText(bytes).replaceAll('\r', '\\r').replaceAll('\n', '\\n');
+    return '${append ? 'Appended' : 'Wrote'} $path: ${bom ? '(BOM) ' : ''}$text';
+  }
 
   static String saveSettings(String text) => 'Settings: $text';
 
@@ -271,14 +302,18 @@ abstract final class TranscriptLine {
 ///
 /// The program's settings start as [settings] (a test's NAME.settings),
 /// as if an earlier run had saved them.
-class ScriptedHost implements FormHost {
+class ScriptedHost implements FormHost, FileHost {
   /// A host for a program with one form.
-  ScriptedHost(FormFile form, {String? settings})
-      : this.forms([form], settings: settings);
+  ScriptedHost(FormFile form,
+      {String? settings, Map<String, List<int>> disk = const {}})
+      : this.forms([form], settings: settings, disk: disk);
 
-  /// A host for a program with [forms] (D88).
-  ScriptedHost.forms(List<FormFile> forms, {this.settings})
+  /// A host for a program with [forms] (D88). [disk] holds the files it
+  /// can read (D113), by name: a test's NAME.files folder.
+  ScriptedHost.forms(List<FormFile> forms,
+      {this.settings, Map<String, List<int>> disk = const {}})
       : _files = {for (final f in forms) f.name.toLowerCase(): f},
+        disk = Map.of(disk),
         _several = forms.length > 1 {
     for (final f in forms) {
       _start(f);
@@ -287,6 +322,48 @@ class ScriptedHost implements FormHost {
 
   final Map<String, FormFile> _files;
   final bool _several;
+
+  /// The files the program reads and writes, by path (D113).
+  final Map<String, List<int>> disk;
+
+  @override
+  Future<String?> chooseOpenFile(
+          String title, List<FileFilter> filters, String fileName) =>
+      _fileDialog('OpenFileDialog', title);
+
+  @override
+  Future<String?> chooseSaveFile(
+          String title, List<FileFilter> filters, String fileName) =>
+      _fileDialog('SaveFileDialog', title);
+
+  Future<String?> _fileDialog(String component, String title) async {
+    transcript.add(TranscriptLine.fileDialog(component, title));
+    final d = _Dialog(false, isFile: true);
+    _dialogs.add(d);
+    return (await d.answer.future) as String?;
+  }
+
+  /// Chooses the file [name] in the open file dialog, or cancels it when
+  /// null; false when none is open.
+  bool pick(String? name) {
+    if (_dialogs.isEmpty || !_dialogs.last.isFile) return false;
+    _dialogs.removeLast().answer.complete(name);
+    return true;
+  }
+
+  @override
+  Future<List<int>> readFile(String path) async =>
+      disk[path] ?? (throw const FileProblem(FileProblemKind.notFound));
+
+  @override
+  Future<void> writeFile(String path, List<int> bytes,
+      {bool append = false}) async {
+    disk[path] = [if (append) ...?disk[path], ...bytes];
+    transcript.add(TranscriptLine.wroteFile(path, bytes, append: append));
+  }
+
+  @override
+  Future<bool> fileExists(String path) async => disk.containsKey(path);
 
   /// Gives [form]'s properties the values of its form file.
   void _start(FormFile form) {
@@ -580,6 +657,7 @@ class ScriptedHost implements FormHost {
   bool answer({required bool inputBox, Object? value}) {
     if (_dialogs.isEmpty ||
         _dialogs.last.isPopup ||
+        _dialogs.last.isFile ||
         _dialogs.last.isInputBox != inputBox) {
       return false;
     }
@@ -636,6 +714,10 @@ abstract interface class ScriptDriver {
   /// (D106); false when no popup menu is open.
   Future<bool> choose(String? item);
 
+  /// Chooses the file [name] in the open file dialog, or cancels it when
+  /// null (D113); false when none is open.
+  Future<bool> pick(String? name);
+
   /// The user closes the form; false when an open dialog blocks it.
   Future<bool> close();
 
@@ -657,7 +739,8 @@ Future<List<String>> runProjectScript(List<FormSource> forms, String script,
     String? settings,
     List<String> pictures = const [],
     List<ModuleSource> modules = const [],
-    bool startsWithMain = false}) async {
+    bool startsWithMain = false,
+    Map<String, List<int>> disk = const {}}) async {
   final steps = parseEventScript(script);
   final project = compileProject(forms,
       startup: startup,
@@ -675,8 +758,8 @@ Future<List<String>> runProjectScript(List<FormSource> forms, String script,
       if (startsWithMain && project.main == null) 'Not started: F019',
     ];
   }
-  final host =
-      ScriptedHost.forms([for (final f in forms) f.file], settings: settings);
+  final host = ScriptedHost.forms([for (final f in forms) f.file],
+      settings: settings, disk: disk);
   return driveEventScript(
       steps, _HostDriver(Interpreter.project(project, host), host),
       namesFile: forms.length > 1 || modules.isNotEmpty);
@@ -687,7 +770,9 @@ Future<List<String>> runProjectScript(List<FormSource> forms, String script,
 ///
 /// [pictures] are the project's pictures (a test's NAME.pictures).
 Future<List<String>> runEventScript(String source, FormFile form, String script,
-    {String? settings, List<String> pictures = const []}) async {
+    {String? settings,
+    List<String> pictures = const [],
+    Map<String, List<int>> disk = const {}}) async {
   final steps = parseEventScript(script);
   final program = compile(source, form: form, pictures: pictures);
   if (program.hasErrors) {
@@ -696,7 +781,7 @@ Future<List<String>> runEventScript(String source, FormFile form, String script,
         if (d.isError) 'Not started: ${d.code.code} @ ${d.line}'
     ];
   }
-  final host = ScriptedHost(form, settings: settings);
+  final host = ScriptedHost(form, settings: settings, disk: disk);
   return driveEventScript(steps, _HostDriver(Interpreter(program, host), host));
 }
 
@@ -747,8 +832,13 @@ Future<List<String>> driveEventScript(
           throw StateError('"OK" but no MsgBox is open');
         }
       case AnswerStep(:final value):
-        if (!await driver.answer(value)) {
+        if (!await driver.answer(value) &&
+            !(value == null && await driver.pick(null))) {
           throw StateError('"${step.text}" but no InputBox is open');
+        }
+      case PickStep(:final name):
+        if (!await driver.pick(name)) {
+          throw StateError('"${step.text}" but no file dialog is open');
         }
       case ChooseStep(:final item):
         if (!await driver.choose(item)) {
@@ -911,6 +1001,9 @@ class _HostDriver implements ScriptDriver {
 
   @override
   Future<bool> choose(String? item) async => host.choose(item);
+
+  @override
+  Future<bool> pick(String? name) async => host.pick(name);
 
   @override
   Future<bool> close() async {

@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:gubasic_lang/gubasic_lang.dart';
 import 'package:gubasic_lang/testing.dart';
 import 'package:test/test.dart';
@@ -53,8 +55,13 @@ void main() {
         settings,
         pictures,
         others,
-        startsWithMain
+        startsWithMain,
+        files,
       ) in parityCases) {
+    final disk = {
+      for (final MapEntry(:key, :value) in files.entries)
+        key: base64Decode(value),
+    };
     if (others.isNotEmpty) {
       // A project with several forms (D88), or modules (D102).
       test(name, () async {
@@ -80,7 +87,8 @@ void main() {
               for (final (moduleName, file, code) in others)
                 if (file == null) (name: moduleName, source: code),
             ],
-            startsWithMain: startsWithMain);
+            startsWithMain: startsWithMain,
+            disk: disk);
         expect('${lines.join('\n')}\n', expected);
       });
       continue;
@@ -89,7 +97,7 @@ void main() {
       test(name, () async {
         final lines = await runEventScript(source,
             readFormFile(form, name: 'Form1', pictures: pictures).form, events!,
-            settings: settings, pictures: pictures);
+            settings: settings, pictures: pictures, disk: disk);
         expect('${lines.join('\n')}\n', expected);
       });
       continue;

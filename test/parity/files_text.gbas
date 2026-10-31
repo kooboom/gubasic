@@ -1,0 +1,32 @@
+' Open and save dialogs, and text files (D113): a UTF-8 file with a BOM,
+' a CSV file Korean Windows' Excel saved in code page 949, a CSV written
+' with a BOM and added to, and a file that is not there.
+Sub btnOpen_Click()
+    If dlgOpen.ShowDialog() = DialogResult.OK Then
+        Dim lines = File.ReadAllLines(dlgOpen.FileName)
+        Debug.Print(UBound(lines) + 1 & " lines; the first: " & lines(0))
+    Else
+        Debug.Print("cancelled")
+    End If
+End Sub
+
+Sub dlgOpen_FileOk()
+    Debug.Print("chosen: " & dlgOpen.FileName)
+End Sub
+
+Sub btnOld_Click()
+    Debug.Print(Replace(File.ReadAllText("old.csv"), vbCrLf, " / "))
+End Sub
+
+Sub btnSave_Click()
+    If dlgSave.ShowDialog() = DialogResult.OK Then
+        File.WriteAllText(dlgSave.FileName, "이름,점수" & vbCrLf)
+        File.AppendAllText(dlgSave.FileName, "박둘,85" & vbCrLf)
+        Debug.Print(File.Exists(dlgSave.FileName))
+    End If
+End Sub
+
+Sub btnMissing_Click()
+    Debug.Print(File.Exists("nothing.txt"))
+    Debug.Print(File.ReadAllText("nothing.txt"))
+End Sub

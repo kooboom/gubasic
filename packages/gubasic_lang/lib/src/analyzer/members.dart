@@ -172,5 +172,18 @@ Map<String, MemberSpec> builtinObjectMembers(String name) => switch (name) {
           for (final name in mouseButtons.keys)
             name.toLowerCase(): MemberSpec.property(name, _i),
         },
+      // Text files (D113): read, written, added to, there or not.
+      'File' => {
+          'readalltext': MemberSpec.method(
+              'ReadAllText', [const ParamSpec('path', _s)], _s),
+          'readalllines': MemberSpec.method('ReadAllLines',
+              [const ParamSpec('path', _s)], const ArrayType(_s)),
+          'writealltext': MemberSpec.method('WriteAllText',
+              [const ParamSpec('path', _s), const ParamSpec('text', _s)], _v),
+          'appendalltext': MemberSpec.method('AppendAllText',
+              [const ParamSpec('path', _s), const ParamSpec('text', _s)], _v),
+          'exists':
+              MemberSpec.method('Exists', [const ParamSpec('path', _s)], _b),
+        },
       _ => const {},
     };

@@ -141,6 +141,9 @@ enum DiagnosticCode {
   /// Visual Basic 6's `PopupMenu mnuEdit` (D110). Args: the menu.
   popupMenuStatement('P029'),
 
+  /// Visual Basic 6's `Open path For Input As #1` (D113).
+  openStatement('P030'),
+
   // Analyzer: names
 
   /// A name that is not declared. Args: the name.
@@ -553,7 +556,20 @@ enum DiagnosticCode {
 
   /// `PopupMenu` of another form's menu (D106). Args: the menu, its form,
   /// the form asked to show it.
-  popupOfOtherForm('R026');
+  popupOfOtherForm('R026'),
+
+  /// A file that is not there (D113). Args: the path.
+  fileNotFound('R027'),
+
+  /// On the web, a file no dialog gave in this run (D113). Args: the name.
+  fileNotChosen('R028'),
+
+  /// A file that could not be read or written. Args: the path, what the
+  /// system said.
+  fileError('R029'),
+
+  /// Files where the program runs without them (the playground, D113).
+  noFiles('R030');
 
   const DiagnosticCode(this.code, [this.severity = DiagnosticSeverity.error]);
 

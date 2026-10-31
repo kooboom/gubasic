@@ -20,6 +20,7 @@ import '../forms/component.dart';
 import '../forms/keys.dart';
 import '../forms/pictures.dart';
 import '../forms/shortcut.dart';
+import '../text/text_codec.dart';
 import '../lexer/keyword.dart';
 import 'checked_math.dart';
 import 'host.dart';
@@ -782,6 +783,8 @@ class Interpreter {
         final s => switch (s.kind) {
             SymbolKind.form => _formNamed(s.name)!.controls[null],
             SymbolKind.module => GbModule(s.name),
+            // vbCrLf and the like (D113).
+            SymbolKind.constant => builtinConstants[s.name],
             _ => _frame.form.designed[s.name.toLowerCase()],
           },
       };
@@ -923,6 +926,12 @@ class Interpreter {
   /// methods never wait.
   bool _methodMayRunEvent(MemberExpr target) {
     final type = _a.types[target.target];
+    // File's functions wait for the file (D113).
+    if (target.target case final NameExpr t
+        when _a.symbols[t]?.kind == SymbolKind.builtinObject &&
+            _a.symbols[t]!.name == 'File') {
+      return true;
+    }
     // A module's procedure (D102) is user code.
     if (type is ModuleType) {
       return type.module.procedures.containsKey(target.name.name.toLowerCase());
@@ -1708,6 +1717,9 @@ class Interpreter {
           return null;
         };
         return null;
+      case ('OpenFileDialog' || 'SaveFileDialog', 'ShowDialog'):
+        _pendingCall = () async => GbInt.of(await _fileDialog(c, at));
+        return null;
       case ('Timer', 'Start'):
         _rawSet(c, 'Enabled', true);
         return null;
@@ -1741,6 +1753,69 @@ class Interpreter {
         return items[_itemIndex(items, args[0], at)];
     }
     throw StateError('no code for ${c.component.name}.${method.name}');
+  }
+
+  /// Where the program's files are (D113); R030 where there are none.
+  FileHost _files(Node at) =>
+      host is FileHost ? host as FileHost : _fail(DiagnosticCode.noFiles, at);
+
+  /// An open or save dialog's ShowDialog (D113): waits, as for a MsgBox,
+  /// for the user's file; with one, FileName is it and FileOk runs, then
+  /// DialogResult.OK; without, DialogResult.Cancel.
+  Future<int> _fileDialog(GbControl c, Node at) async {
+    final files = _files(at);
+    final title = _raw(c, 'Title') as String;
+    final filters = parseFileFilter(_raw(c, 'Filter') as String);
+    final name = _raw(c, 'FileName') as String;
+    final chosen = await _dialog(c.component.name == 'OpenFileDialog'
+        ? files.chooseOpenFile(title, filters, name)
+        : files.chooseSaveFile(title, filters, name));
+    if (chosen is! String) return dialogResults['Cancel']!;
+    _rawSet(c, 'FileName', chosen);
+    final form = _formNamed(c.form);
+    final handler = form == null ? null : _handler(form, c.name, 'FileOk');
+    if (handler != null && !_running.contains(handler)) {
+      await _runNow(handler, c);
+    }
+    return dialogResults['OK']!;
+  }
+
+  /// One of File's functions (D113), [name] in lower case.
+  Future<Object?> _file(String name, List<Object?> args, Node at) async {
+    final files = _files(at);
+    final path = args[0] as String;
+    Never problem(FileProblem p) => _fail(
+        switch (p.kind) {
+          FileProblemKind.notFound => DiagnosticCode.fileNotFound,
+          FileProblemKind.notChosen => DiagnosticCode.fileNotChosen,
+          FileProblemKind.other => DiagnosticCode.fileError,
+        },
+        at,
+        [path, p.detail]);
+    try {
+      switch (name) {
+        case 'readalltext':
+          return decodeText(await files.readFile(path));
+        case 'readalllines':
+          return GbArray(
+              GbType.string, textLines(decodeText(await files.readFile(path))));
+        case 'writealltext':
+          await files.writeFile(
+              path, encodeText(args[1] as String, bom: wantsBom(path)));
+          return null;
+        case 'appendalltext':
+          // A BOM only at the start of a new file.
+          final exists = await files.fileExists(path);
+          await files.writeFile(path,
+              encodeText(args[1] as String, bom: !exists && wantsBom(path)),
+              append: true);
+          return null;
+        default:
+          return await files.fileExists(path);
+      }
+    } on FileProblem catch (p) {
+      problem(p);
+    }
   }
 
   /// `PopupMenu` (D106): waits, as for a MsgBox, until the user chooses
@@ -2141,6 +2216,9 @@ class Interpreter {
         return name == 'maxvalue' ? GbInt.maxValue : GbInt.minValue;
       case _BuiltinObject(name: 'Keys'):
         return GbInt.of(keyCodesByLowerName[name]!.$2);
+      case _BuiltinObject(name: 'File'):
+        _pendingCall = () => _file(name, args, node);
+        return null;
       case _BuiltinObject(name: 'MouseButtons'):
         return GbInt.of(mouseButtons.entries
             .firstWhere((e) => e.key.toLowerCase() == name)

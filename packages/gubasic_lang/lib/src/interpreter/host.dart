@@ -92,3 +92,83 @@ abstract interface class FormHost implements Host {
   /// if it was cancelled.
   void endProgram();
 }
+
+/// One choice of an open or save dialog's Filter: `Text files|*.txt`
+/// (docs/DESIGN.md D113). [extensions] without the dot, lower case; empty
+/// for `*.*`, any file.
+class FileFilter {
+  const FileFilter(this.label, this.extensions);
+
+  final String label;
+  final List<String> extensions;
+
+  @override
+  bool operator ==(Object other) =>
+      other is FileFilter &&
+      other.label == label &&
+      other.extensions.join(',') == extensions.join(',');
+
+  @override
+  int get hashCode => Object.hash(label, extensions.join(','));
+
+  @override
+  String toString() => '$label|${extensions.join(';')}';
+}
+
+/// A Filter's text as its choices: `Text files|*.txt;*.log|All|*.*`.
+/// A label without patterns is left out.
+List<FileFilter> parseFileFilter(String filter) {
+  final parts = filter.split('|');
+  return [
+    for (var i = 0; i + 1 < parts.length; i += 2)
+      FileFilter(parts[i].trim(), [
+        for (final p in parts[i + 1].split(';'))
+          if (p.trim().toLowerCase() case final ext
+              when ext.startsWith('*.') && ext != '*.*')
+            ext.substring(2),
+      ]),
+  ];
+}
+
+/// Why a file could not be read or written (D113).
+enum FileProblemKind {
+  /// There is no such file.
+  notFound,
+
+  /// On the web: a name no dialog gave in this run.
+  notChosen,
+
+  /// Anything else the system said: [FileProblem.detail].
+  other,
+}
+
+class FileProblem implements Exception {
+  const FileProblem(this.kind, [this.detail = '']);
+
+  final FileProblemKind kind;
+  final String detail;
+}
+
+/// What a program's files need from where it runs (docs/DESIGN.md D113):
+/// the open and save dialogs, and the files' bytes. The IDE and the apps
+/// have one; where there is none (the playground), the File functions and
+/// the dialogs stop the program with R030.
+abstract interface class FileHost {
+  /// OpenFileDialog: the file the user chooses, or null when cancelled.
+  Future<String?> chooseOpenFile(
+      String title, List<FileFilter> filters, String fileName);
+
+  /// SaveFileDialog: where the user chooses to save, or null.
+  Future<String?> chooseSaveFile(
+      String title, List<FileFilter> filters, String fileName);
+
+  /// The bytes of the file [path]; throws a [FileProblem].
+  Future<List<int>> readFile(String path);
+
+  /// Writes [bytes] to [path], after what it has when [append]; throws a
+  /// [FileProblem].
+  Future<void> writeFile(String path, List<int> bytes, {bool append = false});
+
+  /// Whether the file [path] is there.
+  Future<bool> fileExists(String path);
+}

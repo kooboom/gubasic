@@ -93,9 +93,19 @@ void main() {
       final several = sources.length > 1;
       final expected = File('$base.out').readAsStringSync().trimRight();
       final settings = File('$base.settings');
-      final host = _RecordingHost(startup.file, [
-        for (final f in sources.skip(1)) f.file,
-      ], settings.existsSync() ? settings.readAsStringSync().trim() : null);
+      // The files the program reads (D113): NAME.files/.
+      final filesDir = Directory('$base.files');
+      final files = _FakeFiles({
+        if (filesDir.existsSync())
+          for (final f in filesDir.listSync().whereType<File>())
+            f.uri.pathSegments.last: f.readAsBytesSync(),
+      });
+      final host = _RecordingHost(
+        startup.file,
+        [for (final f in sources.skip(1)) f.file],
+        settings.existsSync() ? settings.readAsStringSync().trim() : null,
+        files,
+      );
       final session = RunSession(
         StartupForm(
           startup.file,
@@ -124,14 +134,106 @@ void main() {
   }
 }
 
+/// Files kept in memory, and dialogs the driver answers (D113), behind the
+/// run host's own handling of them.
+class _FakeFiles implements GbFiles {
+  _FakeFiles(this.disk);
+
+  final Map<String, List<int>> disk;
+  Completer<String?>? _dialog;
+
+  bool get dialogOpen => _dialog != null;
+
+  /// The user picks [name] in the open dialog, or cancels it.
+  bool pick(String? name) {
+    final d = _dialog;
+    if (d == null) return false;
+    _dialog = null;
+    d.complete(name);
+    return true;
+  }
+
+  @override
+  bool get hasSaveDialog => true;
+
+  @override
+  Future<String?> chooseOpen(
+    String title,
+    List<GbFileFilter> filters,
+    String fileName,
+  ) => (_dialog = Completer<String?>()).future;
+
+  @override
+  Future<String?> chooseSave(
+    String title,
+    List<GbFileFilter> filters,
+    String fileName,
+  ) => (_dialog = Completer<String?>()).future;
+
+  @override
+  void allowSave(String name) {}
+
+  @override
+  Future<List<int>> read(String path) async =>
+      disk[path] ?? (throw const GbFileError(GbFileErrorKind.notFound));
+
+  @override
+  Future<void> write(
+    String path,
+    List<int> bytes, {
+    bool append = false,
+  }) async => disk[path] = [if (append) ...?disk[path], ...bytes];
+
+  @override
+  Future<bool> exists(String path) async => disk.containsKey(path);
+}
+
 /// Records what the program shows, as [ScriptedHost] does.
 class _RecordingHost extends RunHost {
-  _RecordingHost(super.form, List<FormFile> others, String? settings)
-    : _several = others.isNotEmpty,
+  _RecordingHost(
+    super.form,
+    List<FormFile> others,
+    String? settings,
+    this.files,
+  ) : _several = others.isNotEmpty,
       super(
         others: others,
         settings: GbMemorySettings()..values.addAll({'': ?settings}),
+        files: files,
       );
+
+  /// The files, and the open and save dialogs, the test answers (D113).
+  final _FakeFiles files;
+
+  @override
+  Future<String?> chooseOpenFile(
+    String title,
+    List<FileFilter> filters,
+    String fileName,
+  ) {
+    transcript.add(TranscriptLine.fileDialog('OpenFileDialog', title));
+    return super.chooseOpenFile(title, filters, fileName);
+  }
+
+  @override
+  Future<String?> chooseSaveFile(
+    String title,
+    List<FileFilter> filters,
+    String fileName,
+  ) {
+    transcript.add(TranscriptLine.fileDialog('SaveFileDialog', title));
+    return super.chooseSaveFile(title, filters, fileName);
+  }
+
+  @override
+  Future<void> writeFile(
+    String path,
+    List<int> bytes, {
+    bool append = false,
+  }) async {
+    await super.writeFile(path, bytes, append: append);
+    transcript.add(TranscriptLine.wroteFile(path, bytes, append: append));
+  }
 
   /// A program with several forms names the form in its lines (D88).
   final bool _several;
@@ -553,6 +655,15 @@ class _WidgetDriver implements ScriptDriver {
     }
     await tester.pump();
     return host.lastOutcome ?? EventOutcome.noHandler;
+  }
+
+  /// The user picks a file in the open or save dialog (D113): the
+  /// system's dialog, which the test stands in for.
+  @override
+  Future<bool> pick(String? name) async {
+    final ok = host.files.pick(name);
+    await tester.pump();
+    return ok;
   }
 
   /// Chooses [item] in the open popup menu (D106), opening the items it

@@ -1,0 +1,22 @@
+> btnOpen.Click
+OpenFileDialog: Open a memo
+> Cancel
+Debug.Print: cancelled
+> btnOpen.Click
+OpenFileDialog: Open a memo
+> Pick "memo.txt"
+Set dlgOpen.FileName: memo.txt
+Debug.Print: chosen: memo.txt
+Debug.Print: 2 lines; the first: 안녕하세요
+> btnOld.Click
+Debug.Print: 이름,점수 / 김하나,90 / 
+> btnSave.Click
+SaveFileDialog: Save the memo
+> Pick "scores.csv"
+Set dlgSave.FileName: scores.csv
+Wrote scores.csv: (BOM) 이름,점수\r\n
+Appended scores.csv: 박둘,85\r\n
+Debug.Print: True
+> btnMissing.Click
+Debug.Print: False
+Error R027 @ 31

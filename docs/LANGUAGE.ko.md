@@ -110,6 +110,7 @@ TypeOf CType AddHandler AddressOf
 | P027 | `Load Command1(1)`(Visual Basic 6의 컨트롤 배열) | `New`와 `Me.Controls.Add`로 컨트롤을 만듦(11.4절) |
 | P028 | `Unload Command1(1)` | `Me.Controls.Remove`로 컨트롤을 뺌(11.4절) |
 | P029 | `PopupMenu mnuEdit` | `Me.PopupMenu(mnuEdit)`(11.1절) |
+| P030 | `Open path For Input As #1` | `File.ReadAllText(path)`와 다른 `File` 함수(11.6절) |
 
 **분석기**
 
@@ -238,6 +239,10 @@ TypeOf CType AddHandler AddressOf
 | R024 | `Shortcut`에 단축키가 아닌 글자를 넣음(11.1절) |
 | R025 | 항목이 없는 메뉴에 쓴 `PopupMenu`(11.1절) |
 | R026 | 다른 폼의 메뉴에 쓴 `PopupMenu`(11.1절) |
+| R027 | 없는 파일(11.6절) |
+| R028 | 웹에서 이번 실행의 대화상자가 주지 않은 파일(11.6절) |
+| R029 | 읽거나 쓸 수 없는 파일(11.6절) |
+| R030 | 파일 없이 도는 곳(놀이터)의 파일(11.6절) |
 
 ## 2. 타입
 
@@ -838,6 +843,22 @@ GuBASIC에는 컨트롤 배열이 없습니다(DESIGN.ko.md D95). Visual Basic 6
       frmMain.Show
   End Sub
   ```
+
+### 11.6 파일
+
+(DESIGN.ko.md D112, D113.) **열기·저장 대화상자**는 Visual Basic .NET처럼([Microsoft](https://learn.microsoft.com/en-us/dotnet/api/system.windows.forms.openfiledialog)) `OpenFileDialog`와 `SaveFileDialog`입니다. 도구 상자에서 폼에 놓으면 Timer처럼 트레이에 있고, `Title`, `Filter`, `FileName`이 있습니다. `Filter`는 이름과 패턴의 짝입니다: `"텍스트 파일|*.txt|모든 파일|*.*"`. `ShowDialog()`는 대화상자를 보이고 MsgBox처럼 기다리며, 파일을 고르면 대화상자의 `FileOk`가 실행된 뒤 `FileName`에 그 파일을 두고 `DialogResult.OK`를, 아니면 `DialogResult.Cancel`을 줍니다.
+
+```vb
+If dlgOpen.ShowDialog() = DialogResult.OK Then
+    txtMemo.Text = File.ReadAllText(dlgOpen.FileName)
+End If
+```
+
+**텍스트 파일**은 Visual Basic .NET의 `System.IO.File`처럼([Microsoft](https://learn.microsoft.com/en-us/dotnet/api/system.io.file)) `File`로 읽고 씁니다. `File.ReadAllText(path)`는 글을 주고, `File.ReadAllLines(path)`는 줄을 `String` 배열로 줍니다(어떤 줄바꿈에서든 나누고, 마지막 줄바꿈 뒤의 빈 줄은 넣지 않음). `File.WriteAllText(path, text)`는 원래 있던 것 대신 쓰고, `File.AppendAllText(path, text)`는 끝에 덧붙이며 파일이 없으면 만듭니다. `File.Exists(path)`는 파일이 있는지 알려 줍니다. 파일은 BOM이 있든 없든 UTF-8로 읽고, UTF-8이 아니면 코드 페이지 949(한국어 Windows의 "ANSI", 거기서 Excel이 CSV를 저장하는 형식)로 읽습니다. 쓸 때는 UTF-8이고, `.csv`는 Excel이 한글을 읽도록 BOM을 붙입니다. 없는 파일은 R027, 읽거나 쓸 수 없는 파일은 시스템이 알려 준 내용과 함께 R029입니다. Visual Basic 6의 `Open path For Input As #1`은 P030입니다.
+
+**줄바꿈과 탭**은 Visual Basic .NET의 상수입니다([Microsoft](https://learn.microsoft.com/en-us/dotnet/visual-basic/language-reference/constants-and-enumerations)): `vbCrLf`(캐리지 리턴과 줄 바꿈), `vbLf`, `vbCr`, `vbTab`, 그리고 모든 플랫폼에서 `vbCrLf`인 `vbNewLine`. 그래서 프로그램은 어디서나 같은 파일을 씁니다.
+
+**파일이 있는 곳.** 데스크톱에서는 IDE와 내보낸 앱 모두 경로가 실제 경로입니다. Apple의 샌드박스에서 도는 내보낸 macOS 앱은 사용자가 대화상자에서 고른 파일과 자기 폴더에 닿습니다. 경로가 없는 웹에서는 같은 실행에서 사용자가 `OpenFileDialog`로 고르거나 프로그램이 저장한 파일의 이름으로 파일을 알고, 다른 이름은 R028입니다. 웹의 `SaveFileDialog`는 앱의 대화상자로 이름을 묻고, 저장은 그 이름으로 내려받기가 됩니다. `File.Exists`는 그 이름이 이런 것인지 알려 줍니다. 파일 없이 도는 곳(놀이터)에서는 대화상자와 `File`이 R030입니다.
 
 ## 12. 열린 질문
 

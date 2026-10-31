@@ -33,6 +33,8 @@ List<ComponentSpec> get toolboxComponents => [
     'frame',
     'image',
     'timer',
+    'openfiledialog',
+    'savefiledialog',
   ])
     builtinComponents[name]!,
 ];

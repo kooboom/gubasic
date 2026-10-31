@@ -1,0 +1,8 @@
+btnOpen.Click
+Cancel
+btnOpen.Click
+Pick "memo.txt"
+btnOld.Click
+btnSave.Click
+Pick "scores.csv"
+btnMissing.Click
