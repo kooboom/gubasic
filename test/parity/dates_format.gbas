@@ -1,0 +1,20 @@
+' Dates and Format (D115): date literals, DateAdd and DateDiff with VB's
+' interval texts and DateInterval, and .NET's format strings for dates
+' and numbers. Fixed dates, so the output is the same every day.
+Sub Main()
+    Dim d As Date = #2026-01-31 14:05:09#
+    Debug.Print(Format(d, "yyyy-MM-dd HH:mm:ss"))
+    Debug.Print(Format(d, "dddd, MMMM d, yyyy h:mm tt"))
+    Debug.Print(Format(DateAdd("m", 1, d), "yyyy-MM-dd"))
+    Debug.Print(Format(DateAdd(DateInterval.Year, 2, #2028-02-29#), "yyyy-MM-dd"))
+    Debug.Print(Format(DateAdd("d", -1, #2026-03-01#), "yyyy-MM-dd ddd"))
+    Debug.Print(DateDiff("d", #2026-01-01#, #2026-12-25#))
+    Debug.Print(DateDiff(DateInterval.Month, #2025-12-31#, #2026-01-01#))
+    Debug.Print(DateDiff("yyyy", #2026-12-31#, #2026-01-01#))
+    Debug.Print(DateDiff("ww", #2026-03-07#, #2026-03-08#))
+    Debug.Print(Format(1234567, "#,##0") & " / " & Format(1234.5, "#,##0.00"))
+    Debug.Print(Format(2.675, "0.00") & " / " & Format(0.256, "0.0%") & " / " & Format(7, "000"))
+    Debug.Print(Format(-5, "0;(0)") & " / " & Format(0, "0;(0);-") & " / " & Format(15000, "#,##0원"))
+    Debug.Print(#2026-10-29# < #2026-10-30#)
+    Debug.Print(DateAdd("x", 1, d))
+End Sub

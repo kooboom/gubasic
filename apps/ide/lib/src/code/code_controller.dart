@@ -31,7 +31,9 @@ Uint8List codeKinds(String text, Set<String> controls) {
     final kind = switch (t.kind) {
       TokenKind.keyword => CodeKind.keyword,
       TokenKind.stringLiteral => CodeKind.string,
-      TokenKind.integerLiteral || TokenKind.doubleLiteral => CodeKind.number,
+      TokenKind.integerLiteral ||
+      TokenKind.doubleLiteral ||
+      TokenKind.dateLiteral => CodeKind.number,
       TokenKind.identifier when controls.contains(t.text.toLowerCase()) =>
         CodeKind.control,
       // A string not closed yet, being typed.

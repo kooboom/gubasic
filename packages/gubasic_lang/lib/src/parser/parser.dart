@@ -1339,6 +1339,7 @@ class _Parser {
         TokenKind.integerLiteral ||
         TokenKind.doubleLiteral ||
         TokenKind.stringLiteral ||
+        TokenKind.dateLiteral ||
         TokenKind.leftParen ||
         TokenKind.minus ||
         TokenKind.plus ||
@@ -1451,6 +1452,9 @@ class _Parser {
       case TokenKind.stringLiteral:
         _advance();
         return StringLiteral(t.value! as String, t.offset, t.end);
+      case TokenKind.dateLiteral:
+        _advance();
+        return DateLiteral(t.value! as DateTime, t.offset, t.end);
       case TokenKind.identifier:
         if (_otherCasts.contains(t.text.toLowerCase()) &&
             _peek(1).kind == TokenKind.leftParen) {

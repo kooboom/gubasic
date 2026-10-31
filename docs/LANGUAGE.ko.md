@@ -17,6 +17,7 @@ GuBASIC은 VB.NET을 단순화한 BASIC입니다. 이 문서는 **초안**입니
 | 한 줄의 문장 수 | 하나. `:` 구분은 오류입니다(L003). 그래도 렉서는 `:`를 문장의 끝으로 보고, 줄의 나머지 부분도 검사합니다. |
 | 숫자 | 정수(`123`)와 실수(`1.5`). 실수는 점 **양쪽**에 숫자가 있어야 합니다. `.5`와 `1.`은 숫자가 아닙니다(`0.5`, `1.0`으로 씁니다). **지수 표기**를 쓸 수 있습니다: `1E+21`, `1.5E-7`, `2e10`. `E`는 대소문자 상관없고, 부호는 써도 되고 안 써도 되며, 그 뒤에 숫자가 옵니다. 지수 표기 리터럴은 항상 `Double`입니다. 글자 모양(2.2절)과 같은 표기라서 출력된 값을 그대로 다시 쓸 수 있습니다. `Double` 범위를 넘는 리터럴(`1E400`)은 오류(L008)이고, 0이 아닌 값을 썼는데 너무 작아서 정확히 0이 되는 리터럴(`1E-400`)은 경고(L009)합니다. 정밀도만 줄고 0이 아닌 값이 남는 수(`4E-324`)는 경고하지 않습니다. 빼기 기호는 숫자의 일부가 아니라 연산자입니다. |
 | 문자열 | `"..."`; 따옴표를 두 번 쓴 `""`는 따옴표 문자 하나. 문자열은 시작한 줄에서 닫아야 합니다(L001). |
+| 날짜 리터럴 | `#2026-10-29#`, 시각까지는 `#2026-10-29 14:30#`(초도 됨): 어느 플랫폼에서나 ISO 8601처럼 연, 월, 일 순서(DESIGN.ko.md D115). `#` 사이의 다른 것은 L010입니다. |
 | 문장의 끝 | 줄바꿈이 문장을 끝냅니다. 빈 줄과 주석만 있는 줄은 무시합니다. |
 | 위치 | 줄과 칸은 1부터 셉니다. 탭은 한 칸으로 셉니다. |
 | Dart 예약어 | 식별자가 Dart 예약어(`var`, `class`, `is`, `new` 등)와 겹치면 트랜스파일러가 자동으로 이름을 바꿉니다. 사용자에게는 보이지 않습니다. |
@@ -70,6 +71,7 @@ TypeOf CType AddHandler AddressOf
 | L007 | **폐지됨**(D26으로 불필요): 웹이 정확히 담지 못하는 정수를 경고했지만, 이제 Integer는 모든 플랫폼에서 정확합니다. 코드는 다시 쓰지 않습니다 | — |
 | L008 | `Double` 범위를 넘는 `Double` 리터럴 (`1E400`) | 값이 없는 Double 토큰 |
 | L009 | **경고.** 0이 아닌 값을 썼지만 너무 작아서 정확히 0이 되는 `Double` 리터럴 (`1E-400`) | 값이 0인 Double 토큰. 실행은 막지 않음(D23) |
+| L010 | `#yyyy-MM-dd#`나 `#yyyy-MM-dd HH:mm(:ss)#`가 아니거나 없는 날짜인 날짜 리터럴(`#10/29/2026#`, `#2026-02-30#`) | 오류 토큰 |
 
 **파서**
 
@@ -245,6 +247,7 @@ TypeOf CType AddHandler AddressOf
 | R030 | 파일 없이 도는 곳(놀이터)의 파일(11.6절) |
 | R031 | 표에 없는 줄이나 열(11.7절) |
 | R032 | 표에 없는 열 이름(11.7절) |
+| R033 | `DateAdd`나 `DateDiff`가 모르는 구간(10절) |
 
 ## 2. 타입
 
@@ -611,7 +614,8 @@ End Try
 | 문자열 | `Len`, `Left`, `Right`, `Mid`, `InStr`, `UCase`, `LCase`, `Trim`, `Replace`, `Split`, `Join` |
 | 변환 | `CInt`, `CDbl`, `CStr`, `CBool`, `Val`, `Str` |
 | 수학 | `Abs`, `Int`, `Round`, `Sqr`, `Rnd`, `Randomize`, `Min`, `Max`. 상수 `Integer.MaxValue`, `Integer.MinValue` |
-| 날짜 | `Now`, `Today`, `Year`, `Month`, `Day`, `Hour`, `Minute`, `Second` |
+| 날짜 | `Now`, `Today`, `Year`, `Month`, `Day`, `Hour`, `Minute`, `Second`, `DateAdd`, `DateDiff`, `DateInterval` |
+| 서식 | `Format` |
 | 대화상자 | `MsgBox`, `InputBox` |
 | 개발자용 출력 | `Debug.Print(값)`: 놀이터의 직접 실행 창(VB6의 직접 실행 창)에 한 줄 씀 |
 | 프로그램 | `DoEvents`, `End` |
@@ -619,6 +623,8 @@ End Try
 
 - `Debug.Print`도 인수가 있는 다른 호출처럼 괄호가 필요합니다. `Debug.Print "x"`가 아니라 `Debug.Print("x")`로 씁니다(P011).
 - `CInt`, `Round`, `Int`는 2.1절처럼 반올림하고, `Int`는 `Integer`를 돌려줍니다.
+- **날짜**(DESIGN.ko.md D115). `DateAdd(interval, number, date)`는 Visual Basic처럼([Microsoft](https://learn.microsoft.com/en-us/dotnet/visual-basic/language-reference/functions/dateadd-function)) `date`에 구간을 `number`만큼 더한(음수면 뺀) 날짜를, `DateDiff(interval, date1, date2)`는 `date1`부터 `date2`까지 몇 구간인지를 줍니다([Microsoft](https://learn.microsoft.com/en-us/dotnet/visual-basic/language-reference/functions/datediff-function)). 구간은 대소문자를 가리지 않는 Visual Basic의 글입니다: `"yyyy"` 연, `"q"` 분기, `"m"` 월, `"y"`나 `"d"` 일, `"w"` 7일씩의 주, `"ww"` 달력의 주, `"h"` 시, `"n"` 분, `"s"` 초. 또는 같은 것을 `DateInterval`로 씁니다: `DateInterval.Year`, `Quarter`, `Month`, `DayOfYear`, `Day`, `Weekday`, `WeekOfYear`, `Hour`, `Minute`, `Second`. 31일이나 2월 29일에 월이나 연을 더하면 닿은 달의 마지막 날에서 멈춥니다(`DateAdd("m", 1, #2026-01-31#)`는 2월 28일). `DateDiff`는 연, 분기, 월, 달력의 주에서는 넘은 경계의 수를(12월 31일에서 1월 1일까지는 1년), 그 아래에서는 온전한 일, 시, 분, 초의 수를 셉니다. 다른 구간은 R033입니다. 날짜는 연월일시분초로 계산하므로 서머타임이 바뀌어도 달라지지 않습니다.
+- **`Format(value, format)`**(D115)는 Visual Basic .NET의 사용자 지정 서식 문자열로 날짜나 숫자를 씁니다. 날짜([Microsoft](https://learn.microsoft.com/en-us/dotnet/standard/base-types/custom-date-and-time-format-strings)): `yyyy` `yy` 연, `MMMM` `MMM` `MM` `M` 월의 이름, 짧은 이름, 두 자리, 숫자, `dddd` `ddd` `dd` `d` 요일 이름, 짧은 이름, 두 자리 일, 숫자 일, `HH` `H` 24시간제 시, `hh` `h` 12시간제 시, `mm` `m` 분, `ss` `s` 초, `tt` 오전/오후. 숫자([Microsoft](https://learn.microsoft.com/en-us/dotnet/standard/base-types/custom-numeric-format-strings)): `0` 늘 쓰는 자리, `#` 필요할 때만 쓰는 자리, `.` 소수점, 자리 사이의 `,` 천 단위 구분, `%` 100을 곱하고 퍼센트 기호, 그리고 `;`로 나눈 세 칸까지(양수, 음수(빼기 없이 씀), 0). 따옴표 안의 글, `\` 뒤의 글자, 그 밖의 글자는 그대로 씁니다: `Format(15000, "#,##0원")`은 `15,000원`. 요일·월 이름과 오전/오후는 앱 언어를 따르고(한국어면 `토요일`, `오후`), 소수점은 늘 `.`, 구분 기호는 `,`입니다. 반올림은 `Round`처럼 0에서 먼 쪽입니다. 다른 값은 2.2절의 글 형태로 씁니다.
 - `Mid(text, start[, length])`, `Left`, `Right`: 시작 위치가 1보다 작거나 길이가 음수이면 R007입니다. 길이가 끝을 넘으면 있는 만큼만 가져옵니다. `InStr`은 못 찾으면 0입니다.
 - `CInt(문자열)`은 정수는 정확히(2⁵³을 넘어도) 읽고, 그 밖의 수는 `Double`을 거쳐 2.1절처럼 반올림합니다. `CBool`은 숫자(0은 `False`)와 대소문자에 상관없는 문자열 `True` / `False`를 받습니다. `Val`은 문자열 맨 앞의 수를 읽고, 없으면 0입니다. `Str`은 수의 글자 모양이며 앞에 공백을 붙이지 않습니다.
 - `Round(x, 자릿수)`: 자릿수는 0부터 15까지입니다. `x`의 가장 짧은 소수 표기를 기준으로 0에서 먼 쪽으로 반올림하므로, `Round(2.675, 2)`는 쓴 그대로 2.68입니다.

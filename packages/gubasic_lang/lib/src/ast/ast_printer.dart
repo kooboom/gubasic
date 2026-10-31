@@ -29,6 +29,7 @@ String astToText(Node node, {LineMap? lineMap}) {
 String exprToSexp(Expr e) => switch (e) {
       IntegerLiteral(:final text) || DoubleLiteral(:final text) => text,
       StringLiteral(:final value) => '"$value"',
+      DateLiteral(:final value) => '#$value#',
       BooleanLiteral(:final value) => value ? 'True' : 'False',
       NothingLiteral() => 'Nothing',
       MeExpr() => 'Me',

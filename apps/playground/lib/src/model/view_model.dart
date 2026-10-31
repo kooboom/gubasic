@@ -62,6 +62,7 @@ TokenRow _row(Token t) => TokenRow(
 String _value(Token t) => switch (t.kind) {
       TokenKind.keyword => t.keyword!.spelling,
       TokenKind.stringLiteral => '"${t.value}"',
+      TokenKind.dateLiteral => '#${t.value}#',
       TokenKind.integerLiteral ||
       TokenKind.doubleLiteral =>
         '${t.value ?? '—'}',

@@ -128,6 +128,7 @@ Completions? completionsAt(
       case TokenKind.integerLiteral ||
             TokenKind.doubleLiteral ||
             TokenKind.stringLiteral ||
+            TokenKind.dateLiteral ||
             TokenKind.error:
         return null;
       default:

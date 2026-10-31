@@ -161,6 +161,10 @@ const Map<DiagnosticCode, String> koreanMessages = {
       '웹에서는 사용자가 고른 파일만 쓸 수 있습니다. {0} 파일을 먼저 OpenFileDialog로 열거나 SaveFileDialog로 저장해 주세요.',
   DiagnosticCode.fileError:
       '{0} 파일을 읽거나 쓰지 못했습니다({1}). 다른 프로그램에서 열려 있지 않은지, 그곳에 쓸 수 있는지 확인해 주세요.',
+  DiagnosticCode.badDateLiteral:
+      '날짜는 #2026-10-29#처럼, 시각까지는 #2026-10-29 14:30#처럼 연, 월, 일 순서로 써 주세요.',
+  DiagnosticCode.badInterval:
+      '"{0}" 값은 구간이 아닙니다. "yyyy", "q", "m", "d", "ww", "h", "n", "s" 가운데 하나나 DateInterval.Day 같은 것을 써 주세요.',
   DiagnosticCode.tableIndex:
       '줄이나 열 번호 {0} 자리는 없습니다. 0부터 세며, 개수는 {1} 개입니다. 먼저 RowCount나 ColumnCount와 비교해 주세요.',
   DiagnosticCode.tableColumn:

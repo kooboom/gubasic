@@ -32,6 +32,7 @@ const _lf = 0x0A;
 const _cr = 0x0D;
 const _space = 0x20;
 const _quote = 0x22; // "
+const _hash = 0x23; // #
 const _ampersand = 0x26; // &
 const _apostrophe = 0x27; // '
 const _leftParen = 0x28;
@@ -131,6 +132,8 @@ class _Lexer {
       _number(start);
     } else if (c == _quote) {
       _string(start);
+    } else if (c == _hash && _isDigit(_peek(1))) {
+      _date(start);
     } else if (c == _underscore) {
       _underscoreOrContinuation(start);
     } else if (c == _colon) {
@@ -320,6 +323,43 @@ class _Lexer {
         buffer.writeCharCode(c);
       }
     }
+  }
+
+  /// `#2026-10-29#` or `#2026-10-29 14:30#`, seconds too (D115): a date
+  /// written as ISO 8601 writes it; anything else between `#`s is L010.
+  void _date(int start) {
+    var end = _pos + 1;
+    while (end < _src.length &&
+        _src.codeUnitAt(end) != _hash &&
+        !_isLineBreak(_src.codeUnitAt(end))) {
+      end++;
+    }
+    final closed = end < _src.length && _src.codeUnitAt(end) == _hash;
+    final text = _src.substring(_pos + 1, end);
+    _pos = closed ? end + 1 : end;
+    final m = RegExp(
+      r'^(\d{4})-(\d{2})-(\d{2})(?: (\d{1,2}):(\d{2})(?::(\d{2}))?)?$',
+    ).firstMatch(text.trim());
+    DateTime? date;
+    if (closed && m != null) {
+      int part(int i) => int.parse(m[i] ?? '0');
+      final d = DateTime(part(1), part(2), part(3), part(4), part(5), part(6));
+      // Not a date the parts say, as February 30.
+      if (d.year == part(1) &&
+          d.month == part(2) &&
+          d.day == part(3) &&
+          part(4) < 24 &&
+          part(5) < 60 &&
+          part(6) < 60) {
+        date = d;
+      }
+    }
+    if (date == null) {
+      _report(DiagnosticCode.badDateLiteral, start);
+      _emit(TokenKind.error, start);
+      return;
+    }
+    _emit(TokenKind.dateLiteral, start, value: date);
   }
 
   /// `_` followed only by spaces or tabs up to the end of the line joins the

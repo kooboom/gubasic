@@ -54,13 +54,14 @@ Sub Main()
     Dim big As Integer = 99999999999999999999
     Dim huge As Double = 1E400
     Dim tiny As Double = 1E-400
+    Dim due As Date = #10/29/2026#
     Dim unused As String
     If total > 0 Then
         MsgBox "Hi"
     Next
     On Error Resume Next
     Dim half As Integer = total / 2
-    Debug.Print(점수 & greeting & price & answer & big & huge & tiny & half & totl)
+    Debug.Print(점수 & greeting & price & answer & big & huge & tiny & due & half & totl)
 End Sub
 
 Sub Later()

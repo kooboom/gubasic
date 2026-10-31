@@ -7,6 +7,9 @@ enum TokenKind {
   doubleLiteral,
   stringLiteral,
 
+  /// `#2026-10-29#`, `#2026-10-29 14:30#` (D115); its value a DateTime.
+  dateLiteral,
+
   // Operators
   plus, // +
   minus, // -

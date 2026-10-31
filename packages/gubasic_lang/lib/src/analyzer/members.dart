@@ -1,5 +1,6 @@
 import '../forms/component.dart';
 import '../forms/keys.dart';
+import '../text/dates.dart';
 import 'builtins.dart';
 import 'symbols.dart';
 import 'types.dart';
@@ -198,6 +199,12 @@ Map<String, MemberSpec> builtinObjectMembers(String name) => switch (name) {
       'MouseButtons' => {
           for (final name in mouseButtons.keys)
             name.toLowerCase(): MemberSpec.property(name, _i),
+        },
+      // The intervals of DateAdd and DateDiff (D115): DateInterval.Day is
+      // "d".
+      'DateInterval' => {
+          for (final name in dateIntervals.keys)
+            name.toLowerCase(): MemberSpec.property(name, _s),
         },
       // CSV files as tables (D114).
       'Csv' => {

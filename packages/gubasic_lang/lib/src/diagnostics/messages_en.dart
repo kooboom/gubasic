@@ -192,6 +192,12 @@ const Map<DiagnosticCode, String> englishMessages = {
   DiagnosticCode.fileError: 'The file {0} could not be read or written '
       '({1}). Check that it is not open in another program, and that it '
       'may be written there.',
+  DiagnosticCode.badDateLiteral: 'A date is written as #2026-10-29#, or '
+      'with its time as #2026-10-29 14:30#: year, month and day, in that '
+      'order.',
+  DiagnosticCode.badInterval: '"{0}" is not an interval. Write "yyyy", '
+      '"q", "m", "d", "ww", "h", "n" or "s", or DateInterval.Day '
+      'and the like.',
   DiagnosticCode.tableIndex: 'There is no row or column {0}: there are {1}, '
       'counted from 0. Check against RowCount or ColumnCount first.',
   DiagnosticCode.tableColumn: 'There is no column named "{0}". The '

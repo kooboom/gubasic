@@ -150,6 +150,31 @@ const _builtins = <Callable>[
   Callable('Hour', [ParamSpec('date', _dt)], _i),
   Callable('Minute', [ParamSpec('date', _dt)], _i),
   Callable('Second', [ParamSpec('date', _dt)], _i),
+  // D115: VB's DateAdd and DateDiff, an interval as VB's text or through
+  // DateInterval; Format with .NET's custom format strings.
+  Callable(
+      'DateAdd',
+      [
+        ParamSpec('interval', _s),
+        ParamSpec('number', _i),
+        ParamSpec('date', _dt),
+      ],
+      _dt),
+  Callable(
+      'DateDiff',
+      [
+        ParamSpec('interval', _s),
+        ParamSpec('date1', _dt),
+        ParamSpec('date2', _dt),
+      ],
+      _i),
+  Callable(
+      'Format',
+      [
+        ParamSpec.of('value', ArgKind.anyValue),
+        ParamSpec('format', _s),
+      ],
+      _s),
 
   // Dialogs.
   Callable('MsgBox',
@@ -192,4 +217,5 @@ const Map<String, String> builtinObjects = {
   'mousebuttons': 'MouseButtons',
   'file': 'File',
   'csv': 'Csv',
+  'dateinterval': 'DateInterval',
 };

@@ -1254,6 +1254,7 @@ class _Analyzer {
       IntegerLiteral() => GbType.integer,
       DoubleLiteral() => GbType.double_,
       StringLiteral() => GbType.string,
+      DateLiteral() => GbType.date,
       BooleanLiteral() => GbType.boolean,
       NothingLiteral() => GbType.nothing,
       MeExpr() => _me(e),

@@ -15,12 +15,15 @@ import '../ast/ast.dart';
 import '../ast/line_map.dart';
 import '../diagnostics/diagnostic.dart';
 import '../diagnostics/messages_en.dart';
+import '../diagnostics/messages_ko.dart';
 import '../forms/anchor.dart';
 import '../forms/component.dart';
 import '../forms/keys.dart';
 import '../forms/pictures.dart';
 import '../forms/shortcut.dart';
 import '../text/csv.dart';
+import '../text/dates.dart';
+import '../text/format.dart';
 import '../text/text_codec.dart';
 import '../lexer/keyword.dart';
 import 'checked_math.dart';
@@ -209,6 +212,10 @@ class Interpreter {
 
   /// The language of `ex.Message` for run-time errors caught by `Try`.
   final Map<DiagnosticCode, String> messages;
+
+  /// The app's language, which Format's names and AM/PM follow (D115):
+  /// that of [messages].
+  String get _language => identical(messages, koreanMessages) ? 'ko' : 'en';
   final int callDepthLimit;
 
   final AnalysisResult _a;
@@ -1998,6 +2005,8 @@ class Interpreter {
         return e.value;
       case StringLiteral():
         return e.value;
+      case DateLiteral():
+        return e.value;
       case BooleanLiteral():
         return e.value;
       case NothingLiteral():
@@ -2336,6 +2345,10 @@ class Interpreter {
         return null;
       case GbTable t:
         return _tableMember(t, name, args, node);
+      case _BuiltinObject(name: 'DateInterval'):
+        return dateIntervals.entries
+            .firstWhere((e) => e.key.toLowerCase() == name)
+            .value;
       case _BuiltinObject(name: 'MouseButtons'):
         return GbInt.of(mouseButtons.entries
             .firstWhere((e) => e.key.toLowerCase() == name)
@@ -2583,6 +2596,24 @@ class Interpreter {
         return GbInt.of((a as GbArray).items.length - 1);
 
       // Date and time
+      case 'DateAdd' || 'DateDiff':
+        final interval = dateInterval(args[0] as String) ??
+            _fail(DiagnosticCode.badInterval, at, [args[0] as String]);
+        if (f.name == 'DateAdd') {
+          final n = small(1, 'DateAdd');
+          return dateAdd(interval, n, args[2] as DateTime);
+        }
+        return GbInt.of(
+            dateDiff(interval, args[1] as DateTime, args[2] as DateTime));
+      case 'Format':
+        final value = args[0];
+        final format = args[1] as String;
+        return switch (value) {
+          final DateTime d => formatDateWith(d, format, language: _language),
+          final double d => formatNumberWith(d, format),
+          _ when isGbInt(value) => formatNumberWith(formatValue(value), format),
+          _ => formatValue(value),
+        };
       case 'Now':
         return DateTime.now();
       case 'Today':

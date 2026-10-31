@@ -39,6 +39,9 @@ enum DiagnosticCode {
   /// A non-zero Double literal so small that it becomes 0 (`1E-400`).
   doubleBecomesZero('L009', DiagnosticSeverity.warning),
 
+  /// A date literal that is not one (D115): `#10/29/2026#`.
+  badDateLiteral('L010'),
+
   // L007 (an integer the web could not store exactly) is retired: Integer
   // is exact 64-bit on every platform (D26). The code is not reused.
 
@@ -577,7 +580,10 @@ enum DiagnosticCode {
 
   /// A column name a table does not have (D114). Args: the name, the
   /// names it has.
-  tableColumn('R032');
+  tableColumn('R032'),
+
+  /// An interval DateAdd or DateDiff does not know (D115). Args: it.
+  badInterval('R033');
 
   const DiagnosticCode(this.code, [this.severity = DiagnosticSeverity.error]);
 

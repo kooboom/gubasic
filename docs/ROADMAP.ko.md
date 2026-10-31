@@ -74,7 +74,7 @@ IDE 안에서 완결되는 비주얼 베이직의 핵심 경험입니다.
 - [x] 마우스 단추: `e.Button`, `e.X`, `e.Y`가 있는 `MouseDown`과 `MouseUp`, 터치 화면에서는 길게 누르기가 오른쪽 단추(D111)
 - [x] 파일 열기·저장 대화상자, 텍스트 파일 읽고 쓰기(D113)
 - [x] CSV 파일(D114)
-- [ ] 날짜·형식 함수(`DateAdd`, `DateDiff`, `Format`)
+- [x] 날짜·형식 함수(`DateAdd`, `DateDiff`, `Format`)(D115)
 - [ ] 표 컨트롤(DataGrid)
 - [ ] PDF 내보내기
 - [ ] 업무 자동화 예제: CSV 파일을 읽어 합계 내기(D95)

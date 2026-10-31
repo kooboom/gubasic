@@ -74,7 +74,7 @@ Three releases, then the rest (D94–D96). The order follows who GuBASIC is for 
 - [x] Mouse buttons: `MouseDown` and `MouseUp` with `e.Button`, `e.X`, `e.Y`, a long press as the right button on touch screens (D111)
 - [x] Open and save dialogs; reading and writing text files (D113)
 - [x] CSV files (D114)
-- [ ] Date and format functions (`DateAdd`, `DateDiff`, `Format`)
+- [x] Date and format functions (`DateAdd`, `DateDiff`, `Format`) (D115)
 - [ ] A grid control (DataGrid)
 - [ ] PDF export
 - [ ] An example of work automation: reading a CSV file and adding it up (D95)

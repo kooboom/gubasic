@@ -661,6 +661,19 @@ class DoubleLiteral extends Expr {
   List<Node> get children => const [];
 }
 
+/// `#2026-10-29#` (D115).
+class DateLiteral extends Expr {
+  const DateLiteral(this.value, super.start, super.end);
+
+  final DateTime value;
+
+  @override
+  String get label => 'Date $value';
+
+  @override
+  List<Node> get children => const [];
+}
+
 class StringLiteral extends Expr {
   const StringLiteral(this.value, super.start, super.end);
 

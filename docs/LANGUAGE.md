@@ -17,6 +17,7 @@ GuBASIC is a simplified, VB.NET-flavored BASIC. This is a **draft**: it fixes th
 | Statements per line | One. A `:` separator is an error (L003); the lexer still treats it as the end of a statement so that the rest of the line is checked. |
 | Numbers | Integers (`123`) and reals (`1.5`). A real needs digits on **both** sides of the dot: `.5` and `1.` are not numbers (write `0.5` and `1.0`). **Exponent notation** is allowed: `1E+21`, `1.5E-7`, `2e10` — `E` in either case, an optional sign, then digits; such a literal is always a `Double`. It is the same notation the text form uses (§2.2), so printed values can be written back as they are. A literal beyond the `Double` range (`1E400`) is an error (L008); a non-zero literal so small that it becomes exactly 0 (`1E-400`) gets a warning (L009); one that only loses precision but stays non-zero (`4E-324`) does not. A minus sign is an operator, not part of the number. |
 | String literals | `"..."`; a doubled quote `""` is a literal quote. A string must close on the line where it starts (L001). |
+| Date literals | `#2026-10-29#`, or with its time `#2026-10-29 14:30#` (seconds too): year, month and day as ISO 8601 writes them, on every platform (DESIGN.md D115). Anything else between `#`s is L010. |
 | Statement end | A line break ends a statement. Blank lines and comment-only lines are ignored. |
 | Positions | Lines and columns count from 1. A tab counts as one column. |
 | Dart reserved words | If an identifier collides with a Dart keyword (`var`, `class`, `is`, `new`, …), the transpiler renames it automatically. Users never see this. |
@@ -70,6 +71,7 @@ Every diagnostic is an **error** unless marked as a **warning** below. Errors mu
 | L007 | **Retired** (D26 made it unnecessary): it warned about integers the web could not store exactly; Integer is now exact on every platform. The code is not reused | — |
 | L008 | A `Double` literal beyond the `Double` range (`1E400`) | Double token with no value |
 | L009 | **Warning.** A non-zero `Double` literal so small that it becomes exactly 0 (`1E-400`) | Double token with the value 0; the program still runs (D23) |
+| L010 | A date literal that is not `#yyyy-MM-dd#` or `#yyyy-MM-dd HH:mm(:ss)#`, or no date (`#10/29/2026#`, `#2026-02-30#`) | Error token |
 
 **Parser**
 
@@ -245,6 +247,7 @@ Errors found while a program runs. Each stops the program and points at its line
 | R030 | Files where the program runs without them, the playground (§11.6) |
 | R031 | A row or column of a table that is not there (§11.7) |
 | R032 | A name no column of a table has (§11.7) |
+| R033 | An interval `DateAdd` or `DateDiff` does not know (§10) |
 
 ## 2. Types
 
@@ -611,7 +614,8 @@ String functions follow classic BASIC and **count from 1**. String *methods* (`.
 | String | `Len`, `Left`, `Right`, `Mid`, `InStr`, `UCase`, `LCase`, `Trim`, `Replace`, `Split`, `Join` |
 | Conversion | `CInt`, `CDbl`, `CStr`, `CBool`, `Val`, `Str` |
 | Math | `Abs`, `Int`, `Round`, `Sqr`, `Rnd`, `Randomize`, `Min`, `Max`; constants `Integer.MaxValue`, `Integer.MinValue` |
-| Date | `Now`, `Today`, `Year`, `Month`, `Day`, `Hour`, `Minute`, `Second` |
+| Date | `Now`, `Today`, `Year`, `Month`, `Day`, `Hour`, `Minute`, `Second`, `DateAdd`, `DateDiff`; `DateInterval` |
+| Formatting | `Format` |
 | Dialogs | `MsgBox`, `InputBox` |
 | Output for developers | `Debug.Print(value)`: writes a line to the playground's output window (VB6's Immediate window) |
 | Program | `DoEvents`, `End` |
@@ -619,6 +623,8 @@ String functions follow classic BASIC and **count from 1**. String *methods* (`.
 
 - `Debug.Print` needs parentheses like any call with arguments: `Debug.Print("x")`, not `Debug.Print "x"` (P011).
 - `CInt`, `Round` and `Int` round as described in §2.1; `Int` returns an `Integer`.
+- **Dates** (DESIGN.md D115). `DateAdd(interval, number, date)` gives `date` with `number` intervals more (fewer when negative), as Visual Basic's ([Microsoft](https://learn.microsoft.com/en-us/dotnet/visual-basic/language-reference/functions/dateadd-function)); `DateDiff(interval, date1, date2)` how many from `date1` to `date2` ([Microsoft](https://learn.microsoft.com/en-us/dotnet/visual-basic/language-reference/functions/datediff-function)). An interval is Visual Basic's text, in any case: `"yyyy"` years, `"q"` quarters, `"m"` months, `"y"` or `"d"` days, `"w"` weeks of 7 days, `"ww"` calendar weeks, `"h"` hours, `"n"` minutes, `"s"` seconds; or the same through `DateInterval`: `DateInterval.Year`, `Quarter`, `Month`, `DayOfYear`, `Day`, `Weekday`, `WeekOfYear`, `Hour`, `Minute`, `Second`. A month or a year added to the 31st, or to February 29, stops at the last day of the month it reaches (`DateAdd("m", 1, #2026-01-31#)` is February 28). `DateDiff` counts the boundaries crossed for years, quarters, months and calendar weeks (from December 31 to January 1 is one year), and whole days, hours, minutes or seconds below. Another interval is R033. Dates are worked out on their parts, so a change to summer time changes nothing.
+- **`Format(value, format)`** (D115) writes a date or a number with Visual Basic .NET's custom format strings. Dates ([Microsoft](https://learn.microsoft.com/en-us/dotnet/standard/base-types/custom-date-and-time-format-strings)): `yyyy` `yy` the year; `MMMM` `MMM` `MM` `M` the month's name, short name, two digits, digits; `dddd` `ddd` `dd` `d` the weekday's name, short name, the day in two digits, in digits; `HH` `H` the hour of 24, `hh` `h` of 12; `mm` `m` minutes; `ss` `s` seconds; `tt` AM or PM. Numbers ([Microsoft](https://learn.microsoft.com/en-us/dotnet/standard/base-types/custom-numeric-format-strings)): `0` a digit always written, `#` one written only when needed, `.` the decimal point, `,` among the digits a thousands separator, `%` the number times 100 with a percent sign, and up to three sections split by `;` for positive, negative (written without its minus) and zero. Text in quotes, a character after `\`, and any other character are written as they are: `Format(15000, "#,##0원")` is `15,000원`. The names of days and months and AM/PM are in the app's language (`토요일`, `오후` in Korean); the decimal point is always `.` and the separator `,`. Rounding goes half away from zero, as `Round`. Other values are written in the text form of §2.2.
 - `Mid(text, start[, length])`, `Left`, `Right`: a start below 1 or a negative length is R007; a length past the end takes what is there. `InStr` gives 0 when the text is not found.
 - `CInt(text)` reads whole numbers exactly (also above 2⁵³) and other numbers through `Double`, rounding as §2.1. `CBool` takes numbers (0 is `False`) and the texts `True` / `False` in any case. `Val` reads the number at the start of the text and gives 0 if there is none. `Str` is the text form of a number, with no leading space.
 - `Round(x, digits)`: `digits` from 0 to 15. It rounds the shortest decimal text of `x` half away from zero, so `Round(2.675, 2)` is 2.68 as written.
