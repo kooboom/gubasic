@@ -1,0 +1,9 @@
+' One MouseUp handler for two Labels (D112): the sender comes before e,
+' and says which Label it was.
+Sub Seat_MouseUp(sender As Label, e As MouseEventArgs) Handles lblSeat1.MouseUp, lblSeat2.MouseUp
+    If e.Button = MouseButtons.Right Then
+        sender.Caption = "(empty)"
+    Else
+        sender.Caption = "Taken at " & e.X
+    End If
+End Sub

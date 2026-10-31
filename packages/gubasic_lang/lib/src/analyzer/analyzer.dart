@@ -491,23 +491,37 @@ class _Analyzer {
       // parameter (A032).
       if (sender != null &&
           (sender is ControlType || sender == GbType.unknown)) {
-        var ok = true;
-        for (final (type, name, at) in senders) {
-          final check = checkConversion(type, sender);
-          final fits = check.isAllowed &&
-              (check.conversion == ImplicitConversion.none ||
-                  check.conversion == ImplicitConversion.unchecked);
-          if (!fits) {
-            _reportAt(at, DiagnosticCode.senderTypeMismatch, [
-              decl.name.name,
-              name,
-              type.displayName,
-              sender.displayName,
-            ]);
-            ok = false;
-          }
-        }
-        return ok;
+        return _sendersFit(decl, sender, senders);
+      }
+    }
+    // An event with parameters: a `sender` may come before them, as in
+    // Visual Basic .NET (D112).
+    if (!decl.isFunction &&
+        event.parameters.isNotEmpty &&
+        params.length == event.parameters.length + 1 &&
+        [
+          for (var i = 0; i < event.parameters.length; i++)
+            params[i + 1].type == event.parameters[i].type &&
+                !params[i + 1].optional
+        ].every((same) => same) &&
+        !params.first.optional) {
+      final sender = params.first.type ?? GbType.unknown;
+      if (sender is ControlType || sender == GbType.unknown) {
+        return _sendersFit(decl, sender, senders);
+      }
+      if (sender == GbType.object) {
+        // `sender As Object`: the control's own type, as for events
+        // without parameters (A044's advice), written in full here.
+        final rest = [
+          for (final p in event.parameters)
+            '${p.name} As ${p.type!.displayName}'
+        ].join(', ');
+        _reportAt(decl.name, DiagnosticCode.handlerSignature, [
+          decl.name.name,
+          '$owner.${event.name}',
+          'Sub ${decl.name.name}(${senderText()}, $rest)',
+        ]);
+        return false;
       }
     }
     if (event.parameters.length == 1 &&
@@ -557,6 +571,29 @@ class _Analyzer {
         '$owner.${event.name}',
         'Sub ${byName ? event.handlerSignature(owner) : '${decl.name.name}($params)'}',
       ]);
+    }
+    return ok;
+  }
+
+  /// Whether [sender], a handler's first parameter, can hold each control
+  /// of [senders] (D98); reports each one it cannot (A043).
+  bool _sendersFit(
+      ProcedureDecl decl, GbType sender, List<(GbType, String, Node)> senders) {
+    var ok = true;
+    for (final (type, name, at) in senders) {
+      final check = checkConversion(type, sender);
+      final fits = check.isAllowed &&
+          (check.conversion == ImplicitConversion.none ||
+              check.conversion == ImplicitConversion.unchecked);
+      if (!fits) {
+        _reportAt(at, DiagnosticCode.senderTypeMismatch, [
+          decl.name.name,
+          name,
+          type.displayName,
+          sender.displayName,
+        ]);
+        ok = false;
+      }
     }
     return ok;
   }

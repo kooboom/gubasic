@@ -1,0 +1,8 @@
+> lblSeat2.MouseDown Left 20 5
+> lblSeat2.MouseUp Left 20 5
+Set lblSeat2.Caption: Taken at 20
+> lblSeat1.MouseDown Right 4 4
+> lblSeat1.MouseUp Right 4 4
+Set lblSeat1.Caption: (empty)
+> Close
+Closed

@@ -632,8 +632,15 @@ class Interpreter {
         if (_ended != null) return;
         _frame = _Frame(null, _formOf[handler] ?? _top);
         _depth = 0;
-        await _guard(() =>
-            _callUser(handler, args ?? _senderArgs(handler, sender), handler));
+        await _guard(() => _callUser(
+            handler,
+            args == null
+                ? _senderArgs(handler, sender)
+                // A sender before the event's own arguments (D112).
+                : handler.parameters.length == args.length + 1
+                    ? [sender, ...args]
+                    : args,
+            handler));
       } finally {
         _passTurn();
       }

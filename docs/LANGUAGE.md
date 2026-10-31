@@ -529,7 +529,7 @@ End Sub
   Sub SaveData() Handles btnSave.Click, mnuSave.Click
   ```
 
-- **`sender`**: a handler of an event without parameters may take one parameter, the control (or form) that raised it, of its type, or `Control` for controls of different types (§11.4). A sender that cannot hold one of them is A043. Visual Basic .NET's `(sender As Object, e As EventArgs)` is A044. A handler by name may take a sender too: `Sub btnClear_Click(sender As Button)`.
+- **`sender`**: a handler of an event without parameters may take one parameter, the control (or form) that raised it, of its type, or `Control` for controls of different types (§11.4). A sender that cannot hold one of them is A043. Visual Basic .NET's `(sender As Object, e As EventArgs)` is A044. A handler by name may take a sender too: `Sub btnClear_Click(sender As Button)`. A handler of an event with parameters may put the sender before them, as Visual Basic .NET does: `Sub Any_MouseUp(sender As Label, e As MouseEventArgs) Handles lblA.MouseUp, lblB.MouseUp` (DESIGN.md D112).
 
   ```vb
   Sub Digit_Click(sender As Button) Handles btn1.Click, btn2.Click, btn3.Click

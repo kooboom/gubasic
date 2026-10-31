@@ -529,7 +529,7 @@ End Sub
   Sub SaveData() Handles btnSave.Click, mnuSave.Click
   ```
 
-- **`sender`**: 매개변수가 없는 이벤트의 처리기는 매개변수 하나로 그 이벤트를 낸 컨트롤(또는 폼)을 받을 수 있습니다. 타입은 그 컨트롤의 타입이고, 종류가 다른 컨트롤을 함께 처리하면 `Control`입니다(11.4절). 처리하는 컨트롤 하나라도 담지 못하는 sender는 A043입니다. Visual Basic .NET의 `(sender As Object, e As EventArgs)`는 A044입니다. 이름으로 정한 처리기도 `Sub btnClear_Click(sender As Button)`처럼 sender를 받을 수 있습니다.
+- **`sender`**: 매개변수가 없는 이벤트의 처리기는 매개변수 하나로 그 이벤트를 낸 컨트롤(또는 폼)을 받을 수 있습니다. 타입은 그 컨트롤의 타입이고, 종류가 다른 컨트롤을 함께 처리하면 `Control`입니다(11.4절). 처리하는 컨트롤 하나라도 담지 못하는 sender는 A043입니다. Visual Basic .NET의 `(sender As Object, e As EventArgs)`는 A044입니다. 이름으로 정한 처리기도 `Sub btnClear_Click(sender As Button)`처럼 sender를 받을 수 있습니다. 매개변수가 있는 이벤트의 처리기는 Visual Basic .NET처럼 그 앞에 sender를 둘 수 있습니다: `Sub Any_MouseUp(sender As Label, e As MouseEventArgs) Handles lblA.MouseUp, lblB.MouseUp`(DESIGN.ko.md D112).
 
   ```vb
   Sub Digit_Click(sender As Button) Handles btn1.Click, btn2.Click, btn3.Click

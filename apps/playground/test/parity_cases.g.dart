@@ -316,6 +316,18 @@ const parityCases = <(
     false,
   ),
   (
+    "events_mouse_sender",
+    "' One MouseUp handler for two Labels (D112): the sender comes before e,\n' and says which Label it was.\nSub Seat_MouseUp(sender As Label, e As MouseEventArgs) Handles lblSeat1.MouseUp, lblSeat2.MouseUp\n    If e.Button = MouseButtons.Right Then\n        sender.Caption = \"(empty)\"\n    Else\n        sender.Caption = \"Taken at \" & e.X\n    End If\nEnd Sub\n",
+    [],
+    "> lblSeat2.MouseDown Left 20 5\n> lblSeat2.MouseUp Left 20 5\nSet lblSeat2.Caption: Taken at 20\n> lblSeat1.MouseDown Right 4 4\n> lblSeat1.MouseUp Right 4 4\nSet lblSeat1.Caption: (empty)\n> Close\nClosed\n",
+    "formatVersion: 1\nproperties: { Caption: Seats, Width: 320, Height: 120 }\ncontrols:\n  - { name: lblSeat1, type: Label, properties: { Caption: Seat 1, Left: 16, Top: 16, Width: 80, Height: 32 } }\n  - { name: lblSeat2, type: Label, properties: { Caption: Seat 2, Left: 112, Top: 16, Width: 80, Height: 32 } }\n",
+    "lblSeat2.MouseDown Left 20 5\nlblSeat2.MouseUp Left 20 5\nlblSeat1.MouseDown Right 4 4\nlblSeat1.MouseUp Right 4 4\nClose\n",
+    null,
+    [],
+    [],
+    false,
+  ),
+  (
     "events_option",
     "' The OptionButtons of a form are one group (D104): checking one, by a\n' click or in code, unchecks the others. Changed runs for the one that\n' becomes checked, so one handler for the group runs once.\nSub Size_Changed(sender As OptionButton) Handles optSmall.Changed, optMedium.Changed, optLarge.Changed\n    Debug.Print(sender.Caption & \" chosen; Small \" & optSmall.Checked & \", Medium \" & optMedium.Checked & \", Large \" & optLarge.Checked)\nEnd Sub\n\nSub btnLarge_Click()\n    optLarge.Checked = True\nEnd Sub\n\nSub btnNone_Click()\n    optLarge.Checked = False\n    Debug.Print(\"None chosen: \" & (Not optSmall.Checked And Not optMedium.Checked And Not optLarge.Checked))\nEnd Sub\n",
     [],

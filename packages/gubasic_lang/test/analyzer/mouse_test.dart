@@ -1,4 +1,5 @@
 import 'package:gubasic_lang/gubasic_lang.dart';
+import 'package:gubasic_lang/testing.dart';
 import 'package:test/test.dart';
 
 /// MouseDown and MouseUp (docs/DESIGN.md D111). How they run is in the
@@ -7,6 +8,8 @@ final _form = readFormFile('''
 formatVersion: 1
 controls:
   - { name: lblName, type: Label }
+  - { name: lblCity, type: Label }
+  - { name: btnOk, type: Button }
 ''', name: 'Form1').form;
 
 List<String> _codes(String source) => [
@@ -47,5 +50,39 @@ void main() {
         'GuBASIC tells a mouse event its button and place in one parameter: '
         'write Sub Form_MouseDown(e As MouseEventArgs), then read e.Button '
         '(as in e.Button = MouseButtons.Right), e.X and e.Y.');
+  });
+
+  test('a sender before e, for several controls (D112)', () async {
+    expect(
+        _codes('Sub Any_MouseUp(sender As Label, e As MouseEventArgs) '
+            'Handles lblName.MouseUp, lblCity.MouseUp\nEnd Sub\n'),
+        isEmpty);
+    expect(
+        _codes('Sub Any_MouseUp(sender As Label, e As MouseEventArgs) '
+            'Handles lblName.MouseUp, btnOk.MouseUp\nEnd Sub\n'),
+        ['A043@1']);
+    final d = compile(
+            'Sub Any_MouseUp(sender As Object, e As MouseEventArgs) '
+            'Handles lblName.MouseUp\nEnd Sub\n',
+            form: _form)
+        .diagnostics
+        .single;
+    expect(d.code.code, 'A032');
+    expect(d.message,
+        contains('Sub Any_MouseUp(sender As Label, e As MouseEventArgs)'));
+    expect(
+        await runEventScript(
+            'Sub Any_MouseUp(sender As Label, e As MouseEventArgs) '
+                'Handles lblName.MouseUp, lblCity.MouseUp\n'
+                'Debug.Print(sender.Name & " " & e.X)\nEnd Sub\n',
+            _form,
+            'lblCity.MouseDown Left 3 4\nlblCity.MouseUp Left 3 4\nClose'),
+        [
+          '> lblCity.MouseDown Left 3 4',
+          '> lblCity.MouseUp Left 3 4',
+          'Debug.Print: lblCity 3',
+          '> Close',
+          'Closed',
+        ]);
   });
 }
