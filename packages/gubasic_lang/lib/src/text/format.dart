@@ -17,6 +17,14 @@
 /// The decimal point is always `.` and the separator `,`. Rounding goes
 /// half away from zero, on the number as it is written in decimal, as
 /// `Round` does.
+///
+/// **Standard formats** (D118): a format of one letter is .NET's standard
+/// one, in the app's [language]: for dates `d` `D` (short and long date),
+/// `t` `T` (short and long time); for numbers `N` (with separators), `F`
+/// (fixed), `P` (percent), `C` (currency: `$` in English, `₩` in Korean),
+/// `D` (an integer's digits), each with the number of decimals (digits for
+/// `D`) after it: `N0`, `C2`. `%` before one letter makes it a custom
+/// format: `%d` is the day.
 library;
 
 const _monthsEn = [
@@ -29,9 +37,38 @@ const _daysEn = [
 ];
 const _daysKo = ['월요일', '화요일', '수요일', '목요일', '금요일', '토요일', '일요일'];
 
+/// The custom format a standard date [format] stands for, or null.
+String? _standardDate(String format, bool ko) => switch (format) {
+      'd' => ko ? 'yyyy-MM-dd' : 'M/d/yyyy',
+      'D' => ko ? 'yyyy년 M월 d일 dddd' : 'dddd, MMMM d, yyyy',
+      't' => ko ? 'tt h:mm' : 'h:mm tt',
+      'T' => ko ? 'tt h:mm:ss' : 'h:mm:ss tt',
+      _ => null,
+    };
+
+final _standardNumberFormat = RegExp(r'^([NnFfPpCcDd])(\d{0,2})$');
+
+/// The custom format a standard number [format] stands for, or null.
+String? _standardNumber(String format, bool ko) {
+  final m = _standardNumberFormat.firstMatch(format);
+  if (m == null) return null;
+  final letter = m[1]!.toUpperCase();
+  final given = m[2]!.isEmpty ? null : int.parse(m[2]!);
+  String decimals(int n) => n == 0 ? '' : '.${'0' * n}';
+  return switch (letter) {
+    'N' => '#,##0${decimals(given ?? 2)}',
+    'F' => '0${decimals(given ?? 2)}',
+    'P' => '#,##0${decimals(given ?? 2)}%',
+    'C' => '${ko ? '₩' : r'\$'}#,##0${decimals(given ?? (ko ? 0 : 2))}',
+    _ => '0' * (given ?? 1),
+  };
+}
+
 /// [date] written as [format] says.
 String formatDateWith(DateTime date, String format, {String language = 'en'}) {
   final ko = language == 'ko';
+  format = _standardDate(format, ko) ??
+      (format.length == 2 && format[0] == '%' ? format[1] : format);
   final out = StringBuffer();
   var i = 0;
   int run(String c) {
@@ -100,7 +137,10 @@ String formatDateWith(DateTime date, String format, {String language = 'en'}) {
 
 /// [number] (an `int` or a `double`; or the text of an exact integer, as
 /// GuBASIC's 64-bit Integers give it) written as [format] says.
-String formatNumberWith(Object number, String format) {
+String formatNumberWith(Object number, String format,
+    {String language = 'en'}) {
+  format = _standardNumber(format, language == 'ko') ??
+      (format.length == 2 && format[0] == '%' ? format[1] : format);
   final sections = _sections(format);
   final negative = switch (number) {
     final double d => d < 0,

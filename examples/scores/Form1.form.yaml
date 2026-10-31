@@ -1,6 +1,6 @@
 formatVersion: 1
 properties:
-  Caption: Scores
+  Caption: 성적표
   Width: 480
   Height: 340
 controls:
@@ -22,7 +22,7 @@ controls:
   - name: btnOpen
     type: Button
     properties:
-      Caption: Open CSV
+      Caption: CSV 열기
       Left: 16
       Top: 288
       Width: 120
@@ -30,7 +30,7 @@ controls:
   - name: btnPdf
     type: Button
     properties:
-      Caption: Save PDF
+      Caption: PDF로 저장
       Left: 144
       Top: 288
       Width: 120
@@ -45,11 +45,11 @@ controls:
   - name: dlgOpen
     type: OpenFileDialog
     properties:
-      Title: Open a list
-      Filter: CSV files|*.csv
+      Title: 명단 열기
+      Filter: CSV 파일|*.csv
   - name: dlgSave
     type: SaveFileDialog
     properties:
-      Title: Save the scores
-      Filter: PDF files|*.pdf
-      FileName: scores.pdf
+      Title: 성적 저장
+      Filter: PDF 파일|*.pdf
+      FileName: 성적.pdf

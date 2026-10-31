@@ -39,13 +39,36 @@ class PdfPageBreak extends PdfBlock {
   const PdfPageBreak();
 }
 
-/// A program's `PdfDocument`: what it has added so far.
+/// The letter sizes a PdfDocument starts with, in points (D117).
+const pdfTitleSize = 18.0;
+const pdfTextSize = 11.0;
+const pdfTableSize = 10.0;
+
+/// The smallest and largest letter size a PdfDocument takes (D118).
+const pdfMinSize = 4.0;
+const pdfMaxSize = 72.0;
+
+/// A program's `PdfDocument`: what it has added so far, and how its pages
+/// and letters are (D118): pages on their side when [landscape].
 class GbPdfDocument {
   final blocks = <PdfBlock>[];
+  var landscape = false;
+  var titleSize = pdfTitleSize;
+  var textSize = pdfTextSize;
+  var tableSize = pdfTableSize;
 
-  /// The document as a parity transcript tells it: each block in square
-  /// brackets.
+  /// A copy of what it holds now.
+  GbPdfDocument copy() => GbPdfDocument()
+    ..blocks.addAll(blocks)
+    ..landscape = landscape
+    ..titleSize = titleSize
+    ..textSize = textSize
+    ..tableSize = tableSize;
+
+  /// The document as a parity transcript tells it: what is not as at
+  /// first in parentheses, then each block in square brackets.
   String describe() => [
+        if (_settings() case final s?) '($s)',
         for (final b in blocks)
           switch (b) {
             PdfTitle(:final text) => '[title $text]',
@@ -57,4 +80,15 @@ class GbPdfDocument {
             PdfPageBreak() => '[new page]',
           },
       ].join(' ');
+
+  String? _settings() {
+    String n(double v) => v == v.roundToDouble() ? '${v.toInt()}' : '$v';
+    final s = [
+      if (landscape) 'landscape',
+      if (titleSize != pdfTitleSize) 'title ${n(titleSize)}',
+      if (textSize != pdfTextSize) 'text ${n(textSize)}',
+      if (tableSize != pdfTableSize) 'table ${n(tableSize)}',
+    ];
+    return s.isEmpty ? null : s.join(', ');
+  }
 }

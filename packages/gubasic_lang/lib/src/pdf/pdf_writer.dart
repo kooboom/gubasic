@@ -9,20 +9,17 @@ const pdfPageWidth = 595.0;
 const pdfPageHeight = 842.0;
 const pdfMargin = 56.0;
 
-const _titleSize = 18.0;
-const _textSize = 11.0;
-const _tableSize = 10.0;
 const _cellPadding = 4.0;
 
 /// [document] as the bytes of a PDF file (docs/DESIGN.md D117), its text
-/// in [font]: A4 pages, titles, paragraphs broken into lines, tables as
+/// in [font]: A4 pages, on their side when it says so (D118), titles, paragraphs broken into lines, tables as
 /// wide as the page whose header row is drawn again on each page they go
 /// on to. The font goes in
 /// with only the glyphs the text uses, and with what each one is as text,
 /// so that a viewer can find and copy it. The same document and font give
 /// the same bytes.
 Uint8List pdfBytes(GbPdfDocument document, TrueTypeFont font) =>
-    _Writer(font).write(document);
+    _Writer(font, document).write();
 
 /// A run of text at a place on a page: x, and y of its baseline.
 typedef _Run = ({double x, double y, double size, String text});
@@ -35,16 +32,23 @@ class _Page {
 }
 
 class _Writer {
-  _Writer(this.font);
+  _Writer(this.font, this.document)
+      : pageWidth = document.landscape ? pdfPageHeight : pdfPageWidth,
+        pageHeight = document.landscape ? pdfPageWidth : pdfPageHeight {
+    y = pageHeight - pdfMargin;
+  }
 
   final TrueTypeFont font;
+  final GbPdfDocument document;
+  final double pageWidth;
+  final double pageHeight;
   final pages = <_Page>[_Page()];
 
   /// Where the next block starts, from the bottom of the page.
-  double y = pdfPageHeight - pdfMargin;
+  late double y;
   bool pageEmpty = true;
 
-  static const _width = pdfPageWidth - 2 * pdfMargin;
+  double get _width => pageWidth - 2 * pdfMargin;
 
   double _em(double size) => size / font.unitsPerEm;
   double ascent(double size) => font.ascent * _em(size);
@@ -60,7 +64,7 @@ class _Writer {
 
   void newPage() {
     pages.add(_Page());
-    y = pdfPageHeight - pdfMargin;
+    y = pageHeight - pdfMargin;
     pageEmpty = true;
   }
 
@@ -116,7 +120,7 @@ class _Writer {
   void table(PdfTable t) {
     final columns = t.headers.length;
     if (columns == 0) return;
-    const size = _tableSize;
+    final size = document.tableSize;
     final natural = List.filled(columns, 2 * _cellPadding);
     for (final row in [t.headers, ...t.rows]) {
       for (var c = 0; c < columns && c < row.length; c++) {
@@ -170,13 +174,13 @@ class _Writer {
     y -= 10;
   }
 
-  Uint8List write(GbPdfDocument document) {
+  Uint8List write() {
     for (final block in document.blocks) {
       switch (block) {
         case PdfTitle(:final text):
-          paragraph(text, _titleSize, after: 8);
+          paragraph(text, document.titleSize, after: 8);
         case PdfParagraph(:final text):
-          paragraph(text, _textSize);
+          paragraph(text, document.textSize);
         case PdfTable():
           table(block);
         case PdfPageBreak():
@@ -293,7 +297,7 @@ class _Writer {
       }
       final contents = add(stream('', text('$content')));
       kids.add(add(text('<< /Type /Page /Parent 2 0 R '
-          '/MediaBox [0 0 ${n(pdfPageWidth)} ${n(pdfPageHeight)}] '
+          '/MediaBox [0 0 ${n(pageWidth)} ${n(pageHeight)}] '
           '/Resources << /Font << /F1 $type0 0 R >> >> '
           '/Contents $contents 0 R >>')));
     }

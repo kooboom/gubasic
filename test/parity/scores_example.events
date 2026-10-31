@@ -8,4 +8,8 @@ grdScores.Click 1 2
 grdScores.Edit 1 2 "95"
 btnPdf.Click
 Pick "성적2.pdf"
+btnOpen.Click
+Pick "넓은명단.csv"
+btnPdf.Click
+Pick "성적3.pdf"
 Close

@@ -2,7 +2,8 @@
 ' the total and the average worked out again, a row added and saved.
 Sub btnLoad_Click()
     grdScores.LoadCsv("명단.csv")
-    Debug.Print(grdScores.RowCount & " rows, " & grdScores.ColumnCount & " columns, row " & grdScores.Row)
+    grdScores.ColumnWidth(0) = 120
+    Debug.Print(grdScores.RowCount & " rows, " & grdScores.ColumnCount & " columns, row " & grdScores.Row & ", widths " & grdScores.ColumnWidth(0) & " " & grdScores.ColumnWidth(1))
     ShowTotal()
 End Sub
 

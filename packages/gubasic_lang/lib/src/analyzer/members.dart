@@ -114,8 +114,13 @@ Map<String, MemberSpec>? membersOf(GbType type) {
         MemberSpec.method('Clear', [], _v),
       ];
     case GbType.pdfDocument:
-      // A PDF file put together block by block, then saved (D117).
+      // A PDF file put together block by block, then saved (D117); its
+      // pages and letter sizes (D118).
       list = [
+        const MemberSpec.property('Landscape', _b, readOnly: false),
+        const MemberSpec.property('TitleSize', GbType.double_, readOnly: false),
+        const MemberSpec.property('TextSize', GbType.double_, readOnly: false),
+        const MemberSpec.property('TableSize', GbType.double_, readOnly: false),
         MemberSpec.method('AddTitle', [const ParamSpec('text', _s)], _v),
         MemberSpec.method('AddText', [const ParamSpec('text', _s)], _v),
         MemberSpec.method(

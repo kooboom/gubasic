@@ -586,7 +586,10 @@ enum DiagnosticCode {
   badInterval('R033'),
 
   /// No font to write a PDF file with (D117).
-  noPdfFont('R034');
+  noPdfFont('R034'),
+
+  /// A PdfDocument letter size out of its range (D118). Args: the value.
+  pdfSize('R035');
 
   const DiagnosticCode(this.code, [this.severity = DiagnosticSeverity.error]);
 

@@ -49,7 +49,7 @@ void main() {
     await tester.sendKeyEvent(LogicalKeyboardKey.f5);
     await tester.pumpAndSettle();
     expect(find.byKey(runFormKey('Form1')), findsOneWidget);
-    expect(find.text('3 students, total 245, average 81.7'), findsOneWidget);
+    expect(find.text('3명, 합계 245, 평균 81.7'), findsOneWidget);
 
     // A click chooses the cell, a second one edits it.
     final cell = find.byKey(gbGridCellKey('grdScores', 1, 2));
@@ -60,7 +60,7 @@ void main() {
     await tester.enterText(find.byKey(gbGridEditorKey('grdScores')), '95');
     await tester.testTextInput.receiveAction(TextInputAction.done);
     await tester.pumpAndSettle();
-    expect(find.text('3 students, total 255, average 85.0'), findsOneWidget);
+    expect(find.text('3명, 합계 255, 평균 85.0'), findsOneWidget);
 
     if (shots.isNotEmpty) {
       final area = tester.getRect(find.byKey(runFormKey('Form1')));
@@ -82,7 +82,7 @@ void main() {
       });
     }
 
-    await tester.tap(find.text('Save PDF'));
+    await tester.tap(find.text('PDF로 저장'));
     for (var i = 0; i < 100 && !File(path).existsSync(); i++) {
       await tester.runAsync(
         () => Future<void>.delayed(const Duration(milliseconds: 50)),
@@ -90,7 +90,7 @@ void main() {
       await tester.pump();
     }
     await tester.pumpAndSettle();
-    expect(find.text('Saved $path'), findsOneWidget);
+    expect(find.text('저장했습니다: $path'), findsOneWidget);
     final bytes = File(path).readAsBytesSync();
     final text = String.fromCharCodes(bytes);
     expect(text, startsWith('%PDF-1.4'));

@@ -165,12 +165,14 @@ const Map<DiagnosticCode, String> koreanMessages = {
       '날짜는 #2026-10-29#처럼, 시각까지는 #2026-10-29 14:30#처럼 연, 월, 일 순서로 써 주세요.',
   DiagnosticCode.noPdfFont:
       'PDF 파일을 만들 글꼴이 이 앱에 없습니다. GuBASIC에서 프로젝트를 다시 내보내 주세요. PdfDocument를 쓰는 앱에는 글꼴이 함께 들어갑니다.',
+  DiagnosticCode.pdfSize:
+      'PDF의 글자 크기는 4포인트에서 72포인트까지입니다. 받은 값은 {0} 입니다. 처음 값은 TitleSize 18, TextSize 11, TableSize 10입니다.',
   DiagnosticCode.badInterval:
       '"{0}" 값은 구간이 아닙니다. "yyyy", "q", "m", "d", "ww", "h", "n", "s" 가운데 하나나 DateInterval.Day 같은 것을 써 주세요.',
   DiagnosticCode.tableIndex:
       '줄이나 열 번호 {0} 자리는 없습니다. 0부터 세며, 개수는 {1} 개입니다. 먼저 RowCount나 ColumnCount와 비교해 주세요.',
   DiagnosticCode.tableColumn:
-      '"{0}" 이름의 열은 없습니다. 열 이름은 Header로 확인해 주세요(있는 열: {1}).',
+      '그런 열이 없습니다: {0}. 열 이름은 Header로 확인하고, 있는지는 Column(name)이 -1이 아닌지로 알 수 있습니다(있는 열: {1}).',
   DiagnosticCode.noFiles: '여기서는 파일을 읽고 쓸 수 없습니다. IDE에서 실행하거나 앱으로 실행해 주세요.',
   DiagnosticCode.popupWithoutItems:
       '{0} 메뉴에는 항목이 없어서 PopupMenu로 보일 것이 없습니다. 메뉴 편집기에서 항목을 넣거나, 이 항목이 든 메뉴를 보여 주세요.',
