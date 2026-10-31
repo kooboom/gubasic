@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:gubasic_lang/gubasic_lang.dart';
+import 'package:gubasic_lang/testing.dart';
 import 'package:test/test.dart';
 
 /// PDF files (docs/DESIGN.md D117), in the font the IDE and the apps
@@ -113,5 +114,32 @@ void main() {
         (_scores(1)..blocks.add(const PdfPageBreak())).describe(),
         '[title 2학기 성적표] [text 합계 245, 평균 81.7] '
         '[table 이름|반|점수; 학생 0|1반|50] [new page]');
+  });
+
+  test('Landscape turns the pages; the sizes change the letters (D118)', () {
+    final wide = _latin(pdfBytes(_scores(3)..landscape = true, _font));
+    expect(wide, contains('/MediaBox [0 0 842 595]'));
+    final big = _latin(pdfBytes(_scores(3)..titleSize = 30, _font));
+    expect(big, contains('/F1 30 Tf'));
+    expect(_latin(pdfBytes(_scores(3), _font)), contains('/F1 18 Tf'));
+  });
+
+  test('the properties in a program: read, set, R035 out of range', () async {
+    final form = readFormFile('formatVersion: 1\n', name: 'Form1').form;
+    expect(
+        await runEventScript(
+            'Sub Form_Load()\nDim pdf As New PdfDocument\n'
+                'Debug.Print(pdf.Landscape & " " & pdf.TitleSize & " " & '
+                'pdf.TextSize & " " & pdf.TableSize)\n'
+                'pdf.Landscape = True\npdf.TextSize = 12\npdf.TableSize = 9.5\n'
+                'pdf.Save("a.pdf")\npdf.TitleSize = 80\nEnd Sub\n',
+            form,
+            'Close'),
+        [
+          'Debug.Print: False 18 11 10',
+          'Wrote a.pdf: PDF (landscape, text 12, table 9.5)',
+          'Script not finished: Close was not run',
+          'Error R035 @ 8',
+        ]);
   });
 }

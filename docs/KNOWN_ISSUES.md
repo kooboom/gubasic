@@ -201,3 +201,9 @@ Problems we know about and have **deliberately** left unfixed for now. Each entr
 - **What:** a PDF file (D117) has its text in NanumGothic Regular only: a title is larger, not bold, and there are no pictures or colours. Its parts are not compressed, so it is larger than it could be (the Scores example's file is 20 KB, a 120-row list 55 KB).
 - **Why deferred:** what v0.4's work programs need is a title, text and a table. Compressing needs a deflate encoder that runs in the browser too, which `gubasic_lang` does not have.
 - **Revisit:** when programs need pictures or bold text in a PDF file, or when files this size are a problem.
+
+## A Grid's columns cannot be dragged wider
+
+- **What:** a Grid's column has the width the program gives it with `ColumnWidth` (D118), or a share of what is left; the user cannot drag a column's edge to change it.
+- **Why deferred:** v0.4's answers chose the property first; dragging needs the edge to be found in the header and an event for the program, if it wants to know.
+- **Revisit:** a candidate for a later version, when programs show lists whose columns differ much in width.

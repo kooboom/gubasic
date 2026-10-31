@@ -10,5 +10,7 @@ Debug.Print: 1
 Debug.Print: 1,234,567 / 1,234.50
 Debug.Print: 2.68 / 25.6% / 007
 Debug.Print: (5) / - / 15,000원
+Debug.Print: 1/31/2026 / Saturday, January 31, 2026 / 2:05 PM / 2:05:09 PM / 31
+Debug.Print: 1,234.57 / 1,235 / 1234.5 / 12.34% / -$1,234.50 / 00042
 Debug.Print: True
-Error R033 @ 19
+Error R033 @ 22

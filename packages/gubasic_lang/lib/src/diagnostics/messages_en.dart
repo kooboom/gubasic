@@ -198,13 +198,15 @@ const Map<DiagnosticCode, String> englishMessages = {
   DiagnosticCode.noPdfFont: 'This app has no font to write PDF files '
       'with. Export the project again from GuBASIC: an app that uses '
       'PdfDocument carries one.',
+  DiagnosticCode.pdfSize: 'A PDF letter size is from 4 to 72 points; {0} '
+      'is not. TitleSize is 18 at first, TextSize 11 and TableSize 10.',
   DiagnosticCode.badInterval: '"{0}" is not an interval. Write "yyyy", '
       '"q", "m", "d", "ww", "h", "n" or "s", or DateInterval.Day '
       'and the like.',
   DiagnosticCode.tableIndex: 'There is no row or column {0}: there are {1}, '
       'counted from 0. Check against RowCount or ColumnCount first.',
-  DiagnosticCode.tableColumn: 'There is no column named "{0}". The '
-      'columns are: {1}.',
+  DiagnosticCode.tableColumn: 'There is no such column: {0}. The columns '
+      'are: {1}. Column(name) gives -1 for a name no column has.',
   DiagnosticCode.noFiles: 'Files cannot be read or written here. Run the '
       'program in the IDE or as an app.',
   DiagnosticCode.popupWithoutItems: '{0} has no items, so PopupMenu has '

@@ -1,4 +1,5 @@
 import 'package:gubasic_lang/gubasic_lang.dart';
+import 'package:gubasic_lang/testing.dart';
 import 'package:test/test.dart';
 
 /// Grids (docs/DESIGN.md D116). How one runs is in the parity program
@@ -56,5 +57,41 @@ void main() {
       expect((f.code.code, f.message),
           ('F020', 'GuBASIC calls the $name control Grid: write type: Grid.'));
     }
+  });
+
+  test('ColumnWidth: 0 at first, set in pixels, R010 below 0 (D118)', () async {
+    expect(
+        await runEventScript(
+            'Sub Form_Load()\ngrdScores.AddColumn("이름")\n'
+                'grdScores.AddColumn("점수")\n'
+                'Debug.Print(grdScores.ColumnWidth(1))\n'
+                'grdScores.ColumnWidth(0) = 120\n'
+                'Debug.Print(grdScores.ColumnWidth(0) & " " & grdScores.ColumnWidth(1))\n'
+                'grdScores.ColumnWidth(1) = -5\nEnd Sub\n',
+            _form,
+            'Close'),
+        [
+          'Set grdScores.Headers: [이름]',
+          'Set grdScores.Headers: [이름, 점수]',
+          'Debug.Print: 0',
+          'Set grdScores.ColumnWidths: [120]',
+          'Debug.Print: 120 0',
+          'Script not finished: Close was not run',
+          'Error R010 @ 7',
+        ]);
+  });
+
+  test('R032: Cell with a name no column has; Column gives -1 (D118)',
+      () async {
+    final lines = await runEventScript(
+        'Sub Form_Load()\ngrdScores.AddColumn("이름")\n'
+            'Debug.Print(grdScores.Column("없는열"))\n'
+            'grdScores.Cell(grdScores.AddRow(), "없는열") = "x"\nEnd Sub\n',
+        _form,
+        'Close');
+    expect(lines, contains('Debug.Print: -1'));
+    expect(lines.last, 'Error R032 @ 4');
+    expect(koreanMessages[DiagnosticCode.tableColumn],
+        startsWith('그런 열이 없습니다: {0}.'));
   });
 }

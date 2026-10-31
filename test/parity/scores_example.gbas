@@ -1,7 +1,9 @@
 ' Work automation (docs/DESIGN.md D117): a list in a Grid, its total and
-' average, saved as a PDF file. It starts with three names; Open CSV
-' reads your own list, a CSV file with a column named 점수 (score), such
-' as one Excel saves. Change a score in the Grid and the total follows.
+' average, saved as a PDF file. It starts with three names; CSV 열기
+' (Open CSV) reads your own list, a CSV file with a column named 점수
+' (score), such as one Excel saves. Change a score in the Grid and the
+' total follows. A list of more than four columns is saved on pages
+' turned on their side.
 Sub Form_Load()
     grdScores.AddColumn("이름")
     grdScores.AddColumn("반")
@@ -21,16 +23,16 @@ End Sub
 
 Sub ShowTotal()
     If grdScores.Column("점수") < 0 Then
-        lblTotal.Caption = "The list has no column named 점수."
+        lblTotal.Caption = "점수 열이 없는 명단입니다."
     ElseIf grdScores.RowCount = 0 Then
-        lblTotal.Caption = "The list is empty."
+        lblTotal.Caption = "명단이 비어 있습니다."
     Else
         Dim total As Double = 0
         For i As Integer = 0 To grdScores.RowCount - 1
             total = total + Val(grdScores.Cell(i, "점수"))
         Next
         Dim average As String = Format(total / grdScores.RowCount, "0.0")
-        lblTotal.Caption = grdScores.RowCount & " students, total " & total & ", average " & average
+        lblTotal.Caption = grdScores.RowCount & "명, 합계 " & total & ", 평균 " & average
     End If
 End Sub
 
@@ -48,10 +50,14 @@ End Sub
 Sub btnPdf_Click()
     If dlgSave.ShowDialog() = DialogResult.OK Then
         Dim pdf As New PdfDocument
-        pdf.AddTitle("Scores")
+        pdf.TitleSize = 20
+        If grdScores.ColumnCount > 4 Then
+            pdf.Landscape = True
+        End If
+        pdf.AddTitle("성적표")
         pdf.AddText(lblTotal.Caption)
         pdf.AddTable(grdScores)
         pdf.Save(dlgSave.FileName)
-        lblStatus.Caption = "Saved " & dlgSave.FileName
+        lblStatus.Caption = "저장했습니다: " & dlgSave.FileName
     End If
 End Sub

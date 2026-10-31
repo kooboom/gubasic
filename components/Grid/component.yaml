@@ -30,6 +30,9 @@ properties:
   # The column names, and the cells row by row.
   - { name: Headers, type: List(Of String), default: [], internal: true }
   - { name: Cells, type: List(Of String), default: [], internal: true }
+  # Each column's width in pixels, as text; 0, or none, shares what is
+  # left (D118).
+  - { name: ColumnWidths, type: List(Of String), default: [], internal: true }
 events:
   - Changed()
   - Click()
@@ -39,6 +42,9 @@ events:
 methods:
   - Cell(row As Integer, column As Column) As String Settable
   - Header(column As Integer) As String Settable
+  # A column's width in pixels; 0 (at first) shares what the columns with
+  # a width leave (D118).
+  - ColumnWidth(column As Integer) As Integer Settable
   - Column(name As String) As Integer
   - AddRow() As Integer
   - AddColumn(name As String)
@@ -53,6 +59,7 @@ otherNames:
   TextMatrix: Cell
   Rows: RowCount
   Cols: ColumnCount
+  ColWidth: ColumnWidth
   CurrentRow: Row
 # Events other versions of BASIC name differently (A051, D100).
 otherEvents:

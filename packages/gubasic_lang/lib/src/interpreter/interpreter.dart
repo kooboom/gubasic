@@ -1335,6 +1335,10 @@ class Interpreter {
         if (receiver is GbControl) {
           return _setProperty(receiver, target, value);
         }
+        if (receiver is GbPdfDocument) {
+          _setPdf(receiver, target.name.name.toLowerCase(), value, target);
+          return null;
+        }
         if (receiver is GbModule) {
           // `Module1.Total = 5` (D102).
           final symbol = _modules[receiver.name.toLowerCase()]!
@@ -1787,6 +1791,8 @@ class Interpreter {
           return null;
         };
         return null;
+      case ('Grid', 'ColumnWidth'):
+        return GbInt.of(_columnWidths(c)[_gridColumn(c, args[0], at)]);
       case ('Grid', 'SaveCsv'):
         final t = _gridTable(c);
         _pendingCall = () => _csv('write', [args[0], t], at);
@@ -1888,9 +1894,40 @@ class Interpreter {
     }
   }
 
-  /// PdfDocument's methods but Save (D117), [name] in lower case.
+  /// PdfDocument's properties (D118), [name] in lower case.
+  void _setPdf(GbPdfDocument d, String name, Object? value, Node at) {
+    if (name == 'landscape') {
+      d.landscape = value as bool;
+      return;
+    }
+    final size = toDoubleValue(value);
+    if (size < pdfMinSize || size > pdfMaxSize) {
+      _fail(DiagnosticCode.pdfSize, at, [formatValue(value)]);
+    }
+    switch (name) {
+      case 'titlesize':
+        d.titleSize = size;
+      case 'textsize':
+        d.textSize = size;
+      default:
+        d.tableSize = size;
+    }
+  }
+
+  /// PdfDocument's properties and methods but Save (D117, D118), [name]
+  /// in lower case.
   Object? _pdfMember(
       GbPdfDocument d, String name, List<Object?> args, Node at) {
+    switch (name) {
+      case 'landscape':
+        return d.landscape;
+      case 'titlesize':
+        return d.titleSize;
+      case 'textsize':
+        return d.textSize;
+      case 'tablesize':
+        return d.tableSize;
+    }
     d.blocks.add(switch (name) {
       'addtitle' => PdfTitle(args[0] as String),
       'addtext' => PdfParagraph(args[0] as String),
@@ -1912,7 +1949,7 @@ class Interpreter {
   /// PdfDocument.Save (D117): the document so far, written as a PDF file.
   Future<Object?> _savePdf(GbPdfDocument d, String path, Node at) async {
     final files = _files(at);
-    final copy = GbPdfDocument()..blocks.addAll(d.blocks);
+    final copy = d.copy();
     try {
       await files.writePdf(path, copy);
     } on FileProblem catch (p) {
@@ -1993,6 +2030,20 @@ class Interpreter {
     ]);
   }
 
+  /// The width of each column of the Grid [c] (D118), 0 for one that
+  /// shares what is left.
+  List<int> _columnWidths(GbControl c) {
+    final set = [
+      for (final w in _raw(c, 'ColumnWidths') as List) int.parse(w as String),
+    ];
+    final columns = (_raw(c, 'Headers') as List).length;
+    return [for (var i = 0; i < columns; i++) i < set.length ? set[i] : 0];
+  }
+
+  /// The number of column [column] of the Grid [c], or R031.
+  int _gridColumn(GbControl c, Object? column, Node at) =>
+      _tableColumn(_gridTable(c), column, at);
+
   /// No cell of the Grid [c] chosen any more, unless none was.
   void _unchoose(GbControl c) {
     for (final p in const ['Row', 'Col']) {
@@ -2024,6 +2075,19 @@ class Interpreter {
         t.rows[_tableRow(t, args[0], at)][_tableColumn(t, args[1], at)] = text;
       case GbTable t:
         t.headers[_tableColumn(t, args[0], at)] = text;
+      case GbControl c when name == 'columnwidth':
+        final width = (value as GbInt).toSmallInt() ?? -1;
+        if (width < 0 || width > 100000) {
+          _fail(DiagnosticCode.propertyValueOutOfRange, at,
+              ['ColumnWidth', '0', '100000']);
+        }
+        final widths = _columnWidths(c);
+        widths[_gridColumn(c, args[0], at)] = width;
+        while (widths.isNotEmpty && widths.last == 0) {
+          widths.removeLast();
+        }
+        _rawSet(c, 'ColumnWidths',
+            List<String>.unmodifiable(widths.map((w) => '$w')));
       case GbControl c when c.component.name == 'Grid':
         // The program's change runs nothing (D116).
         final t = _gridTable(c);
@@ -2714,8 +2778,9 @@ class Interpreter {
         final format = args[1] as String;
         return switch (value) {
           final DateTime d => formatDateWith(d, format, language: _language),
-          final double d => formatNumberWith(d, format),
-          _ when isGbInt(value) => formatNumberWith(formatValue(value), format),
+          final double d => formatNumberWith(d, format, language: _language),
+          _ when isGbInt(value) =>
+            formatNumberWith(formatValue(value), format, language: _language),
           _ => formatValue(value),
         };
       case 'Now':

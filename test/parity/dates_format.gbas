@@ -15,6 +15,9 @@ Sub Main()
     Debug.Print(Format(1234567, "#,##0") & " / " & Format(1234.5, "#,##0.00"))
     Debug.Print(Format(2.675, "0.00") & " / " & Format(0.256, "0.0%") & " / " & Format(7, "000"))
     Debug.Print(Format(-5, "0;(0)") & " / " & Format(0, "0;(0);-") & " / " & Format(15000, "#,##0원"))
+    ' .NET's standard formats (D118).
+    Debug.Print(Format(d, "d") & " / " & Format(d, "D") & " / " & Format(d, "t") & " / " & Format(d, "T") & " / " & Format(d, "%d"))
+    Debug.Print(Format(1234.567, "N") & " / " & Format(1234.567, "N0") & " / " & Format(1234.5, "F1") & " / " & Format(0.1234, "P") & " / " & Format(-1234.5, "C") & " / " & Format(42, "D5"))
     Debug.Print(#2026-10-29# < #2026-10-30#)
     Debug.Print(DateAdd("x", 1, d))
 End Sub

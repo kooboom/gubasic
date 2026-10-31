@@ -1,7 +1,8 @@
 > btnLoad.Click
 Set grdScores.Headers: [이름, 반, 점수]
 Set grdScores.Cells: [김하나, 1반, 90, 박둘, 2반, 85, 이셋, 1반, 70]
-Debug.Print: 3 rows, 3 columns, row -1
+Set grdScores.ColumnWidths: [120]
+Debug.Print: 3 rows, 3 columns, row -1, widths 120 0
 Set lblTotal.Caption: 합계 245, 평균 81.7
 > grdScores.Click 1 2
 Debug.Print: chose 1,2: 85

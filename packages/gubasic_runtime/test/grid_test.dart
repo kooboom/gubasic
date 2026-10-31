@@ -157,4 +157,17 @@ void main() {
     await tester.pump();
     expect((g['Row'], g['Col']), (29, 3));
   });
+
+  test('column widths: set ones kept, the others share the rest (D118)', () {
+    expect(gbGridColumnWidths(300, 3, const []), [100, 100, 100]);
+    expect(gbGridColumnWidths(301, 3, const []), [100, 100, 101]);
+    expect(gbGridColumnWidths(400, 3, const ['200']), [200, 100, 100]);
+    expect(gbGridColumnWidths(400, 3, const ['0', '50']), [175, 50, 175]);
+    expect(gbGridColumnWidths(200, 3, const ['50', '60', '70']), [50, 60, 70]);
+    expect(gbGridColumnWidths(150, 3, const []), [
+      96,
+      96,
+      96,
+    ], reason: 'too narrow: they scroll');
+  });
 }

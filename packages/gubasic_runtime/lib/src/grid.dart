@@ -9,6 +9,32 @@ const gbGridRowHeight = 24.0;
 /// The narrowest a Grid's column is drawn; wider when the Grid has room.
 const gbGridMinColumnWidth = 96.0;
 
+/// The widths of a Grid's [columns] in [room] pixels (D118): those
+/// [given] a width (as text, `0` or none for the others) have it; the
+/// others share what is left, each at least [gbGridMinColumnWidth], and
+/// the last of them takes what rounding leaves over.
+List<double> gbGridColumnWidths(double room, int columns, List<String> given) {
+  final set = [
+    for (var c = 0; c < columns; c++)
+      c < given.length ? (int.tryParse(given[c]) ?? 0).toDouble() : 0.0,
+  ];
+  final shared = set.where((w) => w == 0).length;
+  if (shared == 0) return set;
+  final left = room - set.fold<double>(0, (a, w) => a + w);
+  final each = (left / shared)
+      .clamp(gbGridMinColumnWidth, double.infinity)
+      .floorToDouble();
+  final lastShared = set.lastIndexOf(0);
+  return [
+    for (var c = 0; c < columns; c++)
+      set[c] != 0
+          ? set[c]
+          : c == lastShared
+          ? (left - each * (shared - 1)).clamp(each, double.infinity)
+          : each,
+  ];
+}
+
 /// The key of the cell at [row], [col] of Grid [control] (row -1: the
 /// header), for tests.
 Key gbGridCellKey(String control, int row, int col) =>
@@ -184,24 +210,19 @@ class _GbGridState extends State<GbGrid> {
                     onKeyEvent: _key,
                     child: LayoutBuilder(
                       builder: (context, box) {
-                        final width = columns == 0
-                            ? box.maxWidth
-                            : (box.maxWidth / columns)
-                                  .clamp(gbGridMinColumnWidth, double.infinity)
-                                  .floorToDouble();
-                        // The last column takes what is left over.
-                        final last = columns == 0
-                            ? width
-                            : (box.maxWidth - width * (columns - 1)).clamp(
-                                width,
-                                double.infinity,
-                              );
+                        final widths = gbGridColumnWidths(
+                          box.maxWidth,
+                          columns,
+                          state.has('ColumnWidths')
+                              ? _list('ColumnWidths')
+                              : const [],
+                        );
                         Widget cell(int r, int c, String text) {
                           final chosen = r == row && c == col && r >= 0;
                           final header = r < 0;
                           return Container(
                             key: gbGridCellKey(state.name ?? '', r, c),
-                            width: c == columns - 1 ? last : width,
+                            width: widths[c],
                             height: gbGridRowHeight,
                             padding: const EdgeInsets.symmetric(horizontal: 6),
                             alignment: Alignment.centerLeft,
@@ -267,9 +288,7 @@ class _GbGridState extends State<GbGrid> {
                               controller: _across,
                               scrollDirection: Axis.horizontal,
                               child: SizedBox(
-                                width: columns == 0
-                                    ? 0
-                                    : width * (columns - 1) + last,
+                                width: widths.fold<double>(0, (a, w) => a + w),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
