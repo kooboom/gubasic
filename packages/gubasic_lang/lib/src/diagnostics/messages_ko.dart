@@ -161,6 +161,10 @@ const Map<DiagnosticCode, String> koreanMessages = {
       '웹에서는 사용자가 고른 파일만 쓸 수 있습니다. {0} 파일을 먼저 OpenFileDialog로 열거나 SaveFileDialog로 저장해 주세요.',
   DiagnosticCode.fileError:
       '{0} 파일을 읽거나 쓰지 못했습니다({1}). 다른 프로그램에서 열려 있지 않은지, 그곳에 쓸 수 있는지 확인해 주세요.',
+  DiagnosticCode.tableIndex:
+      '줄이나 열 번호 {0} 자리는 없습니다. 0부터 세며, 개수는 {1} 개입니다. 먼저 RowCount나 ColumnCount와 비교해 주세요.',
+  DiagnosticCode.tableColumn:
+      '"{0}" 이름의 열은 없습니다. 열 이름은 Header로 확인해 주세요(있는 열: {1}).',
   DiagnosticCode.noFiles: '여기서는 파일을 읽고 쓸 수 없습니다. IDE에서 실행하거나 앱으로 실행해 주세요.',
   DiagnosticCode.popupWithoutItems:
       '{0} 메뉴에는 항목이 없어서 PopupMenu로 보일 것이 없습니다. 메뉴 편집기에서 항목을 넣거나, 이 항목이 든 메뉴를 보여 주세요.',

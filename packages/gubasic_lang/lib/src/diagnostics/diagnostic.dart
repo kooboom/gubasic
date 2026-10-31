@@ -569,7 +569,15 @@ enum DiagnosticCode {
   fileError('R029'),
 
   /// Files where the program runs without them (the playground, D113).
-  noFiles('R030');
+  noFiles('R030'),
+
+  /// A row or column of a table that is not there (D114). Args: the
+  /// number, how many there are.
+  tableIndex('R031'),
+
+  /// A column name a table does not have (D114). Args: the name, the
+  /// names it has.
+  tableColumn('R032');
 
   const DiagnosticCode(this.code, [this.severity = DiagnosticSeverity.error]);
 

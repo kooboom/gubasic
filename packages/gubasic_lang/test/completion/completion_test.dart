@@ -219,6 +219,7 @@ void main() {
         'OptionButton',
         'SaveFileDialog',
         'String',
+        'Table',
         'TextBox',
         'Timer',
       ]);

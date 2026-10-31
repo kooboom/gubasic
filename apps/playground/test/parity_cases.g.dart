@@ -135,6 +135,22 @@ const parityCases = <(
     {},
   ),
   (
+    "csv_table",
+    "' CSV files as tables (D114): rows and columns from 0, the header not\n' counted; a column by its number or its name; a table written back as\n' CSV, with a BOM, quoting what needs it.\nSub btnSum_Click()\n    Dim t As Table = Csv.Read(\"명단.csv\")\n    Debug.Print(t.RowCount & \" rows, \" & t.ColumnCount & \" columns: \" & t.Header(0) & \", \" & t.Header(1) & \", \" & t.Header(2))\n    Dim score As Integer = t.Column(\"점수\")\n    Dim total As Integer = 0\n    For i As Integer = 0 To t.RowCount - 1\n        total = total + CInt(t.Cell(i, score))\n        Debug.Print(t.Cell(i, \"이름\") & \" [\" & t.Cell(i, \"반\") & \"]\")\n    Next\n    t.AddColumn(\"평균과의 차\")\n    For i As Integer = 0 To t.RowCount - 1\n        t.Cell(i, \"평균과의 차\") = CInt(t.Cell(i, score)) - total \\ t.RowCount\n    Next\n    Dim r As Integer = t.AddRow()\n    t.Cell(r, 0) = \"합계\"\n    t.Cell(r, \"점수\") = total\n    t.Header(1) = \"학급\"\n    Csv.Write(\"결과.csv\", t)\n    Debug.Print(t.Column(\"없음\"))\nEnd Sub\n\nSub btnWrong_Click()\n    Dim t As New Table\n    t.AddColumn(\"이름\")\n    t.AddRow()\n    Debug.Print(t.RowCount & \" \" & t.ColumnCount)\n    Debug.Print(t.Cell(0, \"점수\"))\nEnd Sub\n",
+    [],
+    "> btnSum.Click\nDebug.Print: 3 rows, 3 columns: 이름, 반, 점수\nDebug.Print: 김하나 [1반]\nDebug.Print: 박, 둘 [2반]\nDebug.Print: 이셋 []\nWrote 결과.csv: (BOM) 이름,학급,점수,평균과의 차\\r\\n김하나,1반,90,9\\r\\n\"박, 둘\",2반,85,4\\r\\n이셋,,70,-11\\r\\n합계,,245,\\r\\n\nDebug.Print: -1\n> btnWrong.Click\nDebug.Print: 1 1\nError R032 @ 30\n",
+    "formatVersion: 1\nproperties: { Caption: CSV, Width: 320, Height: 120 }\ncontrols:\n  - { name: btnSum, type: Button, properties: { Caption: Sum, Left: 16, Top: 16 } }\n  - { name: btnWrong, type: Button, properties: { Caption: Wrong, Left: 120, Top: 16 } }\n",
+    "btnSum.Click\nbtnWrong.Click\n",
+    null,
+    [],
+    [],
+    false,
+    {
+      "명단.csv":
+          "wMy4pyy53SzBobz2DQqx6MfPs6osMbndLDkwDQoiudosILXRIiwyud0sODUNCsDMvMIsLDcwDQo=",
+    },
+  ),
+  (
     "dialogs",
     "' InputBox answers come from dialogs.in; MsgBox is recorded.\nSub Main()\n    Dim name As String = InputBox(\"What is your name?\", \"Hello\")\n    MsgBox(\"Hello, \" & name & \"!\")\n    Dim age As String = InputBox(\"How old are you?\")\n    MsgBox(\"Next year you will be \" & (CInt(age) + 1), \"Age\")\n    Dim nothingTyped As String = InputBox(\"Cancel me\")\n    Debug.Print(\"[\" & nothingTyped & \"]\")\nEnd Sub\n",
     ["Kim", "41"],

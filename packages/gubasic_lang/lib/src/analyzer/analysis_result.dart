@@ -63,6 +63,10 @@ class AnalysisResult {
   /// (`DoEvents`, `Form2.Show`, `s.ToUpper`).
   final Set<Expr> implicitCalls = Set.identity();
 
+  /// Calls assigned to, as indexed properties: `t.Cell(0, 1) = "90"`
+  /// (D114).
+  final Set<InvokeExpr> settableCalls = Set.identity();
+
   /// The member each [MemberExpr] refers to, when it is a known one.
   final Map<MemberExpr, MemberSpec> members = Map.identity();
 

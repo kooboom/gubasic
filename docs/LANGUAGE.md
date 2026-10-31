@@ -243,6 +243,8 @@ Errors found while a program runs. Each stops the program and points at its line
 | R028 | On the web, a file no dialog gave in this run (§11.6) |
 | R029 | A file that could not be read or written (§11.6) |
 | R030 | Files where the program runs without them, the playground (§11.6) |
+| R031 | A row or column of a table that is not there (§11.7) |
+| R032 | A name no column of a table has (§11.7) |
 
 ## 2. Types
 
@@ -859,6 +861,30 @@ End If
 **Line breaks and tabs** are Visual Basic .NET's constants ([Microsoft](https://learn.microsoft.com/en-us/dotnet/visual-basic/language-reference/constants-and-enumerations)): `vbCrLf` (carriage return and line feed), `vbLf`, `vbCr`, `vbTab`, and `vbNewLine`, which is `vbCrLf` on every platform, so that a program writes the same file everywhere.
 
 **Where files are.** On the desktop, in the IDE and in an exported app, a path is a real one; an exported macOS app, which runs in Apple's sandbox, reaches the files the user chose in a dialog and its own folders. On the web, which has no paths, a file is known by the name of one the user chose with an `OpenFileDialog`, or one the program saved, in the same run: any other is R028. A `SaveFileDialog` there asks for the name in a dialog of the app's, and saving downloads the file under it; `File.Exists` says whether the name is one of these. Where a program runs without files (the playground), the dialogs and `File` are R030.
+
+### 11.7 CSV files and tables
+
+(DESIGN.md D112, D114.) `Csv.Read(path)` reads a CSV file into a **`Table`**, and `Csv.Write(path, table)` writes one, as RFC 4180 writes CSV ([RFC 4180](https://www.rfc-editor.org/rfc/rfc4180)): cells split by commas, rows by line breaks, a cell in double quotes holding commas, line breaks and `""` for a quote. The first line is the header. Rows and columns count from 0, as a ListBox's `ListIndex` does, and the header is not among the rows.
+
+| Member | What it is |
+|---|---|
+| `RowCount`, `ColumnCount` | how many rows (without the header) and columns |
+| `Cell(row, column)` | a cell's text; `column` is a number or a column's name: `Cell(i, "점수")`. It can be assigned to: `t.Cell(i, "등급") = "A"` |
+| `Header(column)` | a column's name; it can be assigned to |
+| `Column(name)` | a column's number, or -1 when there is none |
+| `AddRow()` | adds an empty row at the end and gives its number |
+| `AddColumn(name)` | adds an empty column at the end |
+| `Clear()` | takes away every row, keeping the columns |
+
+```vb
+Dim t As Table = Csv.Read(dlgOpen.FileName)
+Dim total As Integer = 0
+For i As Integer = 0 To t.RowCount - 1
+    total = total + CInt(t.Cell(i, "점수"))
+Next
+```
+
+A row shorter than the widest is filled with empty cells. `Dim t As New Table` makes an empty one. A file is read and written as §11.6 says: UTF-8 or code page 949 in, UTF-8 out, with a byte order mark for a `.csv` file, so that Excel opens it with its Korean text. `Csv.Write` quotes a cell that holds a comma, a quote, a line break, or space at either end, and ends each row with a carriage return and a line feed. A row or column that is not there is R031; a name no column has R032.
 
 ## 12. Open questions
 

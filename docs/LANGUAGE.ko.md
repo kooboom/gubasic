@@ -243,6 +243,8 @@ TypeOf CType AddHandler AddressOf
 | R028 | 웹에서 이번 실행의 대화상자가 주지 않은 파일(11.6절) |
 | R029 | 읽거나 쓸 수 없는 파일(11.6절) |
 | R030 | 파일 없이 도는 곳(놀이터)의 파일(11.6절) |
+| R031 | 표에 없는 줄이나 열(11.7절) |
+| R032 | 표에 없는 열 이름(11.7절) |
 
 ## 2. 타입
 
@@ -859,6 +861,30 @@ End If
 **줄바꿈과 탭**은 Visual Basic .NET의 상수입니다([Microsoft](https://learn.microsoft.com/en-us/dotnet/visual-basic/language-reference/constants-and-enumerations)): `vbCrLf`(캐리지 리턴과 줄 바꿈), `vbLf`, `vbCr`, `vbTab`, 그리고 모든 플랫폼에서 `vbCrLf`인 `vbNewLine`. 그래서 프로그램은 어디서나 같은 파일을 씁니다.
 
 **파일이 있는 곳.** 데스크톱에서는 IDE와 내보낸 앱 모두 경로가 실제 경로입니다. Apple의 샌드박스에서 도는 내보낸 macOS 앱은 사용자가 대화상자에서 고른 파일과 자기 폴더에 닿습니다. 경로가 없는 웹에서는 같은 실행에서 사용자가 `OpenFileDialog`로 고르거나 프로그램이 저장한 파일의 이름으로 파일을 알고, 다른 이름은 R028입니다. 웹의 `SaveFileDialog`는 앱의 대화상자로 이름을 묻고, 저장은 그 이름으로 내려받기가 됩니다. `File.Exists`는 그 이름이 이런 것인지 알려 줍니다. 파일 없이 도는 곳(놀이터)에서는 대화상자와 `File`이 R030입니다.
+
+### 11.7 CSV 파일과 표
+
+(DESIGN.ko.md D112, D114.) `Csv.Read(path)`는 CSV 파일을 **`Table`**로 읽고, `Csv.Write(path, table)`는 표를 씁니다. CSV는 RFC 4180대로입니다([RFC 4180](https://www.rfc-editor.org/rfc/rfc4180)): 칸은 쉼표로, 줄은 줄바꿈으로 나누고, 큰따옴표 안의 칸에는 쉼표, 줄바꿈, 따옴표를 뜻하는 `""`가 들어갈 수 있습니다. 첫 줄은 머리글입니다. 줄과 열은 ListBox의 `ListIndex`처럼 0부터 세고, 머리글 줄은 줄 번호에 들지 않습니다.
+
+| 멤버 | 뜻 |
+|---|---|
+| `RowCount`, `ColumnCount` | 줄(머리글 빼고)과 열의 수 |
+| `Cell(row, column)` | 칸의 글. `column`은 번호나 열 이름: `Cell(i, "점수")`. 값을 넣을 수도 있음: `t.Cell(i, "등급") = "A"` |
+| `Header(column)` | 열의 이름. 값을 넣을 수 있음 |
+| `Column(name)` | 열의 번호, 없으면 -1 |
+| `AddRow()` | 끝에 빈 줄을 더하고 그 번호를 줌 |
+| `AddColumn(name)` | 끝에 빈 열을 더함 |
+| `Clear()` | 열은 두고 줄을 모두 지움 |
+
+```vb
+Dim t As Table = Csv.Read(dlgOpen.FileName)
+Dim total As Integer = 0
+For i As Integer = 0 To t.RowCount - 1
+    total = total + CInt(t.Cell(i, "점수"))
+Next
+```
+
+가장 긴 줄보다 짧은 줄은 빈 칸으로 채웁니다. `Dim t As New Table`은 빈 표를 만듭니다. 파일은 11.6절대로 읽고 씁니다: 읽을 때는 UTF-8이나 코드 페이지 949, 쓸 때는 UTF-8이고, `.csv`는 Excel이 한글과 함께 열도록 BOM을 붙입니다. `Csv.Write`는 쉼표, 따옴표, 줄바꿈이 있거나 앞뒤에 빈칸이 있는 칸을 따옴표로 싸고, 줄마다 캐리지 리턴과 줄 바꿈으로 끝냅니다. 없는 줄이나 열은 R031, 없는 열 이름은 R032입니다.
 
 ## 12. 열린 질문
 

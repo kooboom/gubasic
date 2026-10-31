@@ -192,6 +192,10 @@ const Map<DiagnosticCode, String> englishMessages = {
   DiagnosticCode.fileError: 'The file {0} could not be read or written '
       '({1}). Check that it is not open in another program, and that it '
       'may be written there.',
+  DiagnosticCode.tableIndex: 'There is no row or column {0}: there are {1}, '
+      'counted from 0. Check against RowCount or ColumnCount first.',
+  DiagnosticCode.tableColumn: 'There is no column named "{0}". The '
+      'columns are: {1}.',
   DiagnosticCode.noFiles: 'Files cannot be read or written here. Run the '
       'program in the IDE or as an app.',
   DiagnosticCode.popupWithoutItems: '{0} has no items, so PopupMenu has '

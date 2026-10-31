@@ -20,6 +20,7 @@ sealed class GbType {
   /// and Alt (docs/DESIGN.md D101).
   static const keyEventArgs = PrimitiveType._('KeyEventArgs');
   static const mouseEventArgs = PrimitiveType._('MouseEventArgs');
+  static const table = PrimitiveType._('Table');
 
   /// The type of the `Nothing` literal.
   static const nothing = SpecialType._('Nothing');
@@ -158,6 +159,7 @@ const Map<String, GbType> namedTypes = {
   'exception': GbType.exception,
   'keyeventargs': GbType.keyEventArgs,
   'mouseeventargs': GbType.mouseEventArgs,
+  'table': GbType.table,
 };
 
 /// A type name written after `As` or `New` (not `List`): a built-in type

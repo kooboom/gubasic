@@ -915,7 +915,14 @@ class _Analyzer {
         }
       case InvokeExpr():
         final t = _invoke(target, valueNeeded: true);
-        if (_result.invokeKinds[target] == InvokeKind.call) {
+        final callee = target.target;
+        if (_result.invokeKinds[target] == InvokeKind.call &&
+            callee is MemberExpr &&
+            _result.members[callee]?.settable == true) {
+          // `t.Cell(0, 1) = "90"` (D114).
+          _result.settableCalls.add(target);
+          targetType = t;
+        } else if (_result.invokeKinds[target] == InvokeKind.call) {
           _reportAt(target, DiagnosticCode.notAssignable, [_text(target)]);
           targetType = GbType.unknown;
         } else {
@@ -1632,6 +1639,7 @@ class _Analyzer {
     }
     final params = switch (type) {
       ListType() => const <ParamSpec>[],
+      GbType.table => const <ParamSpec>[],
       GbType.exception => const [
           ParamSpec('message', GbType.string, optional: true)
         ],

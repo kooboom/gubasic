@@ -1,0 +1,5 @@
+formatVersion: 1
+properties: { Caption: CSV, Width: 320, Height: 120 }
+controls:
+  - { name: btnSum, type: Button, properties: { Caption: Sum, Left: 16, Top: 16 } }
+  - { name: btnWrong, type: Button, properties: { Caption: Wrong, Left: 120, Top: 16 } }

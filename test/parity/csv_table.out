@@ -1,0 +1,10 @@
+> btnSum.Click
+Debug.Print: 3 rows, 3 columns: 이름, 반, 점수
+Debug.Print: 김하나 [1반]
+Debug.Print: 박, 둘 [2반]
+Debug.Print: 이셋 []
+Wrote 결과.csv: (BOM) 이름,학급,점수,평균과의 차\r\n김하나,1반,90,9\r\n"박, 둘",2반,85,4\r\n이셋,,70,-11\r\n합계,,245,\r\n
+Debug.Print: -1
+> btnWrong.Click
+Debug.Print: 1 1
+Error R032 @ 30

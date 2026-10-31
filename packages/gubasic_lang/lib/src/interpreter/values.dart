@@ -148,6 +148,7 @@ String formatValue(Object? value) {
     GbControls() => 'Controls',
     GbKeyEvent() => 'KeyEventArgs',
     GbMouseEvent() => 'MouseEventArgs',
+    GbTable() => 'Table',
     GbModule m => m.name,
     _ => '$value',
   };
@@ -169,6 +170,7 @@ String typeNameOf(Object? value) {
     GbControls() => 'Controls',
     GbKeyEvent() => 'KeyEventArgs',
     GbMouseEvent() => 'MouseEventArgs',
+    GbTable() => 'Table',
     GbModule m => m.name,
     _ => 'Object',
   };
@@ -186,3 +188,38 @@ bool valuesEqual(Object? a, Object? b) {
 /// An Integer or Double as a double.
 double toDoubleValue(Object? value) =>
     isGbInt(value) ? (value as GbInt).toDouble() : (value as num).toDouble();
+
+/// A table of text, as a CSV file holds it (D114): named columns, and rows
+/// of cells counted from 0, the header not among them.
+class GbTable {
+  GbTable([List<String>? headers, List<List<String>>? rows])
+      : headers = headers ?? [],
+        rows = rows ?? [];
+
+  final List<String> headers;
+  final List<List<String>> rows;
+
+  /// [rows] read as a CSV file's: the first is the header; every row as
+  /// wide as the widest, its missing cells "".
+  factory GbTable.fromCsv(List<List<String>> lines) {
+    final width = lines.fold(0, (w, r) => r.length > w ? r.length : w);
+    List<String> padded(List<String> r) =>
+        [...r, for (var i = r.length; i < width; i++) ''];
+    return GbTable(
+      lines.isEmpty ? [] : padded(lines.first),
+      [for (final r in lines.skip(1)) padded(r)],
+    );
+  }
+
+  /// The header and the rows, as a CSV file writes them.
+  List<List<String>> get csv => [headers, ...rows];
+
+  /// The number of the column named [name] (exactly, then in any case),
+  /// or -1.
+  int column(String name) {
+    final i = headers.indexOf(name);
+    if (i >= 0) return i;
+    final lower = name.toLowerCase();
+    return headers.indexWhere((h) => h.toLowerCase() == lower);
+  }
+}

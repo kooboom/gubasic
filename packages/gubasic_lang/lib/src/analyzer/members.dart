@@ -7,12 +7,14 @@ import 'types.dart';
 /// A property or method of a built-in type or object.
 class MemberSpec {
   const MemberSpec.property(this.name, this.type, {this.readOnly = true})
-      : method = null;
+      : method = null,
+        settable = false;
   MemberSpec.method(
     this.name,
     List<ParamSpec> parameters,
-    GbType returnType,
-  )   : method = Callable(name, parameters, returnType),
+    GbType returnType, {
+    this.settable = false,
+  })  : method = Callable(name, parameters, returnType),
         type = returnType,
         readOnly = true;
 
@@ -24,6 +26,10 @@ class MemberSpec {
 
   /// Set for methods.
   final Callable? method;
+
+  /// A method that can be assigned to, as an indexed property is:
+  /// `t.Cell(0, 1) = "90"` (D114).
+  final bool settable;
 
   bool get isMethod => method != null;
 }
@@ -84,6 +90,27 @@ Map<String, MemberSpec>? membersOf(GbType type) {
         MemberSpec.property('Shift', _b),
         MemberSpec.property('Control', _b),
         MemberSpec.property('Alt', _b),
+      ];
+    case GbType.table:
+      // A table of text (D114): rows and columns from 0, a column by its
+      // number or its name.
+      list = [
+        const MemberSpec.property('RowCount', _i),
+        const MemberSpec.property('ColumnCount', _i),
+        MemberSpec.method(
+            'Cell',
+            [
+              const ParamSpec('row', _i),
+              const ParamSpec.of('column', ArgKind.numericOrString),
+            ],
+            _s,
+            settable: true),
+        MemberSpec.method('Header', [const ParamSpec('column', _i)], _s,
+            settable: true),
+        MemberSpec.method('Column', [const ParamSpec('name', _s)], _i),
+        MemberSpec.method('AddRow', [], _i),
+        MemberSpec.method('AddColumn', [const ParamSpec('name', _s)], _v),
+        MemberSpec.method('Clear', [], _v),
       ];
     case GbType.mouseEventArgs:
       // The button, as a number of MouseButtons, and where it went down or
@@ -171,6 +198,18 @@ Map<String, MemberSpec> builtinObjectMembers(String name) => switch (name) {
       'MouseButtons' => {
           for (final name in mouseButtons.keys)
             name.toLowerCase(): MemberSpec.property(name, _i),
+        },
+      // CSV files as tables (D114).
+      'Csv' => {
+          'read': MemberSpec.method(
+              'Read', [const ParamSpec('path', _s)], GbType.table),
+          'write': MemberSpec.method(
+              'Write',
+              [
+                const ParamSpec('path', _s),
+                const ParamSpec('table', GbType.table)
+              ],
+              _v),
         },
       // Text files (D113): read, written, added to, there or not.
       'File' => {

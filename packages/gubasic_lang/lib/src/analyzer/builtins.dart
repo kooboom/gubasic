@@ -191,4 +191,5 @@ const Map<String, String> builtinObjects = {
   'dialogresult': 'DialogResult',
   'mousebuttons': 'MouseButtons',
   'file': 'File',
+  'csv': 'Csv',
 };

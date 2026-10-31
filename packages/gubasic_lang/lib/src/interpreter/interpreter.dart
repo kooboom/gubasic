@@ -20,6 +20,7 @@ import '../forms/component.dart';
 import '../forms/keys.dart';
 import '../forms/pictures.dart';
 import '../forms/shortcut.dart';
+import '../text/csv.dart';
 import '../text/text_codec.dart';
 import '../lexer/keyword.dart';
 import 'checked_math.dart';
@@ -837,6 +838,7 @@ class Interpreter {
           GbControl(null, component, attached: false),
         GbType.exception =>
           GbException(args.isEmpty ? '' : args.first as String),
+        GbType.table => GbTable(),
         _ => defaultValue(type),
       };
 
@@ -929,7 +931,7 @@ class Interpreter {
     // File's functions wait for the file (D113).
     if (target.target case final NameExpr t
         when _a.symbols[t]?.kind == SymbolKind.builtinObject &&
-            _a.symbols[t]!.name == 'File') {
+            const {'File', 'Csv'}.contains(_a.symbols[t]!.name)) {
       return true;
     }
     // A module's procedure (D102) is user code.
@@ -1264,15 +1266,21 @@ class Interpreter {
 
   /// The item number of an item target (`a(i) = …`), evaluated before the
   /// assignment; null for other targets.
+  /// The index of an item assigned to, or all the arguments of a call
+  /// assigned to (`t.Cell(0, 1) = "90"`, D114).
   Object? _indexSync(Expr target) =>
-      target is InvokeExpr && target.arguments.isNotEmpty
-          ? _valueSync(target.arguments.first)
-          : null;
+      target is InvokeExpr && _a.settableCalls.contains(target)
+          ? [for (final a in target.arguments) _valueSync(a)]
+          : target is InvokeExpr && target.arguments.isNotEmpty
+              ? _valueSync(target.arguments.first)
+              : null;
 
   Future<Object?> _indexAsync(Expr target) async =>
-      target is InvokeExpr && target.arguments.isNotEmpty
-          ? await _value(target.arguments.first)
-          : null;
+      target is InvokeExpr && _a.settableCalls.contains(target)
+          ? [for (final a in target.arguments) await _value(a)]
+          : target is InvokeExpr && target.arguments.isNotEmpty
+              ? await _value(target.arguments.first)
+              : null;
 
   /// `AddHandler`: [procedure] handles the event of [target] from now on
   /// (D98); an event has one handler.
@@ -1302,6 +1310,10 @@ class Interpreter {
     switch (target) {
       case NameExpr():
         _write(_a.symbols[target]!, value);
+      case InvokeExpr() when _a.settableCalls.contains(target):
+        final member = target.target as MemberExpr;
+        _setByCall(_evalSync(member.target), member.name.name.toLowerCase(),
+            index(target) as List<Object?>, value, target);
       case InvokeExpr():
         final container = _evalSync(target.target);
         _setItem(container, index(target), value, target);
@@ -1818,6 +1830,106 @@ class Interpreter {
     }
   }
 
+  /// Csv's functions (D114), [name] in lower case.
+  Future<Object?> _csv(String name, List<Object?> args, Node at) async {
+    final files = _files(at);
+    final path = args[0] as String;
+    try {
+      if (name == 'read') {
+        return GbTable.fromCsv(
+            parseCsv(decodeText(await files.readFile(path))));
+      }
+      final table =
+          args[1] as GbTable? ?? _fail(DiagnosticCode.nothingReference, at);
+      await files.writeFile(
+          path, encodeText(writeCsv(table.csv), bom: wantsBom(path)));
+      return null;
+    } on FileProblem catch (p) {
+      _fail(
+          switch (p.kind) {
+            FileProblemKind.notFound => DiagnosticCode.fileNotFound,
+            FileProblemKind.notChosen => DiagnosticCode.fileNotChosen,
+            FileProblemKind.other => DiagnosticCode.fileError,
+          },
+          at,
+          [path, p.detail]);
+    }
+  }
+
+  /// The number of row [row] of [t], or R031.
+  int _tableRow(GbTable t, Object? row, Node at) {
+    final i = (row as GbInt).toSmallInt() ?? -1;
+    if (i < 0 || i >= t.rows.length) {
+      _fail(DiagnosticCode.tableIndex, at,
+          [formatValue(row), '${t.rows.length}']);
+    }
+    return i;
+  }
+
+  /// The number of column [column] of [t]: given as a number or by its
+  /// name (D112), or R031 / R032.
+  int _tableColumn(GbTable t, Object? column, Node at) {
+    if (column is String) {
+      final i = t.column(column);
+      if (i < 0) {
+        _fail(DiagnosticCode.tableColumn, at, [column, t.headers.join(', ')]);
+      }
+      return i;
+    }
+    final i = isGbInt(column)
+        ? (column as GbInt).toSmallInt() ?? -1
+        : _fail(DiagnosticCode.conversionFailed, at,
+            [formatValue(column), 'Integer']);
+    if (i < 0 || i >= t.headers.length) {
+      _fail(DiagnosticCode.tableIndex, at,
+          [formatValue(column), '${t.headers.length}']);
+    }
+    return i;
+  }
+
+  Object? _tableMember(GbTable t, String name, List<Object?> args, Node at) {
+    switch (name) {
+      case 'rowcount':
+        return GbInt.of(t.rows.length);
+      case 'columncount':
+        return GbInt.of(t.headers.length);
+      case 'cell':
+        return t.rows[_tableRow(t, args[0], at)][_tableColumn(t, args[1], at)];
+      case 'header':
+        return t.headers[_tableColumn(t, args[0], at)];
+      case 'column':
+        return GbInt.of(t.column(args[0] as String));
+      case 'addrow':
+        t.rows.add([for (final _ in t.headers) '']);
+        return GbInt.of(t.rows.length - 1);
+      case 'addcolumn':
+        t.headers.add(args[0] as String);
+        for (final r in t.rows) {
+          r.add('');
+        }
+        return null;
+      default: // clear
+        t.rows.clear();
+        return null;
+    }
+  }
+
+  /// `t.Cell(0, 1) = "90"`, `t.Header(0) = "이름"` (D114).
+  void _setByCall(Object? receiver, String name, List<Object?> args,
+      Object? value, Node at) {
+    final text = value is String ? value : formatValue(value);
+    switch (receiver) {
+      case GbTable t when name == 'cell':
+        t.rows[_tableRow(t, args[0], at)][_tableColumn(t, args[1], at)] = text;
+      case GbTable t:
+        t.headers[_tableColumn(t, args[0], at)] = text;
+      case null:
+        _fail(DiagnosticCode.nothingReference, at);
+      default:
+        throw StateError('no settable $name on $receiver');
+    }
+  }
+
   /// `PopupMenu` (D106): waits, as for a MsgBox, until the user chooses
   /// one of [menu]'s items or none; the chosen item's Click then runs
   /// before PopupMenu returns, unless it is running already (D5).
@@ -2219,6 +2331,11 @@ class Interpreter {
       case _BuiltinObject(name: 'File'):
         _pendingCall = () => _file(name, args, node);
         return null;
+      case _BuiltinObject(name: 'Csv'):
+        _pendingCall = () => _csv(name, args, node);
+        return null;
+      case GbTable t:
+        return _tableMember(t, name, args, node);
       case _BuiltinObject(name: 'MouseButtons'):
         return GbInt.of(mouseButtons.entries
             .firstWhere((e) => e.key.toLowerCase() == name)

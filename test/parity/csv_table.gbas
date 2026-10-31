@@ -1,0 +1,31 @@
+' CSV files as tables (D114): rows and columns from 0, the header not
+' counted; a column by its number or its name; a table written back as
+' CSV, with a BOM, quoting what needs it.
+Sub btnSum_Click()
+    Dim t As Table = Csv.Read("명단.csv")
+    Debug.Print(t.RowCount & " rows, " & t.ColumnCount & " columns: " & t.Header(0) & ", " & t.Header(1) & ", " & t.Header(2))
+    Dim score As Integer = t.Column("점수")
+    Dim total As Integer = 0
+    For i As Integer = 0 To t.RowCount - 1
+        total = total + CInt(t.Cell(i, score))
+        Debug.Print(t.Cell(i, "이름") & " [" & t.Cell(i, "반") & "]")
+    Next
+    t.AddColumn("평균과의 차")
+    For i As Integer = 0 To t.RowCount - 1
+        t.Cell(i, "평균과의 차") = CInt(t.Cell(i, score)) - total \ t.RowCount
+    Next
+    Dim r As Integer = t.AddRow()
+    t.Cell(r, 0) = "합계"
+    t.Cell(r, "점수") = total
+    t.Header(1) = "학급"
+    Csv.Write("결과.csv", t)
+    Debug.Print(t.Column("없음"))
+End Sub
+
+Sub btnWrong_Click()
+    Dim t As New Table
+    t.AddColumn("이름")
+    t.AddRow()
+    Debug.Print(t.RowCount & " " & t.ColumnCount)
+    Debug.Print(t.Cell(0, "점수"))
+End Sub
