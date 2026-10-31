@@ -33,6 +33,7 @@ class PlayerApp extends StatelessWidget {
     super.key,
     required this.files,
     this.pictures = const {},
+    this.fonts = const {},
     this.settingsKey,
     required this.strings,
     this.asApp = kIsWeb,
@@ -52,6 +53,10 @@ class PlayerApp extends StatelessWidget {
 
   /// Its pictures, name → bytes.
   final Map<String, Uint8List> pictures;
+
+  /// The font PDF files are written in, when the program uses PdfDocument
+  /// (D117), and its licence.
+  final Map<String, Uint8List> fonts;
   final PlayerStrings strings;
 
   @override
@@ -62,6 +67,7 @@ class PlayerApp extends StatelessWidget {
     home: PlayerScreen(
       files: files,
       pictures: pictures,
+      fonts: fonts,
       settingsKey: settingsKey,
       strings: strings,
       asApp: asApp,
@@ -75,6 +81,7 @@ class PlayerScreen extends StatefulWidget {
     super.key,
     required this.files,
     required this.pictures,
+    this.fonts = const {},
     this.settingsKey,
     required this.strings,
     this.asApp = false,
@@ -82,6 +89,7 @@ class PlayerScreen extends StatefulWidget {
 
   final Map<String, String> files;
   final Map<String, Uint8List> pictures;
+  final Map<String, Uint8List> fonts;
   final String? settingsKey;
   final PlayerStrings strings;
   final bool asApp;
@@ -106,6 +114,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
         project: _project.name,
         settingsKey: widget.settingsKey,
         pictures: pictureSource(widget.pictures),
+        pdfFont: () async => widget.fonts[pdfFontFile],
       )..addListener(_changed);
     }
   }

@@ -1,0 +1,57 @@
+' Work automation (docs/DESIGN.md D117): a list in a Grid, its total and
+' average, saved as a PDF file. It starts with three names; Open CSV
+' reads your own list, a CSV file with a column named 점수 (score), such
+' as one Excel saves. Change a score in the Grid and the total follows.
+Sub Form_Load()
+    grdScores.AddColumn("이름")
+    grdScores.AddColumn("반")
+    grdScores.AddColumn("점수")
+    AddStudent("김하나", "1반", 90)
+    AddStudent("박둘", "2반", 85)
+    AddStudent("이셋", "1반", 70)
+    ShowTotal()
+End Sub
+
+Sub AddStudent(name As String, group As String, score As Integer)
+    Dim r As Integer = grdScores.AddRow()
+    grdScores.Cell(r, "이름") = name
+    grdScores.Cell(r, "반") = group
+    grdScores.Cell(r, "점수") = score
+End Sub
+
+Sub ShowTotal()
+    If grdScores.Column("점수") < 0 Then
+        lblTotal.Caption = "The list has no column named 점수."
+    ElseIf grdScores.RowCount = 0 Then
+        lblTotal.Caption = "The list is empty."
+    Else
+        Dim total As Double = 0
+        For i As Integer = 0 To grdScores.RowCount - 1
+            total = total + Val(grdScores.Cell(i, "점수"))
+        Next
+        Dim average As String = Format(total / grdScores.RowCount, "0.0")
+        lblTotal.Caption = grdScores.RowCount & " students, total " & total & ", average " & average
+    End If
+End Sub
+
+Sub grdScores_Changed()
+    ShowTotal()
+End Sub
+
+Sub btnOpen_Click()
+    If dlgOpen.ShowDialog() = DialogResult.OK Then
+        grdScores.LoadCsv(dlgOpen.FileName)
+        ShowTotal()
+    End If
+End Sub
+
+Sub btnPdf_Click()
+    If dlgSave.ShowDialog() = DialogResult.OK Then
+        Dim pdf As New PdfDocument
+        pdf.AddTitle("Scores")
+        pdf.AddText(lblTotal.Caption)
+        pdf.AddTable(grdScores)
+        pdf.Save(dlgSave.FileName)
+        lblStatus.Caption = "Saved " & dlgSave.FileName
+    End If
+End Sub

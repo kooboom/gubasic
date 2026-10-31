@@ -248,6 +248,7 @@ TypeOf CType AddHandler AddressOf
 | R031 | 표에 없는 줄이나 열(11.7절) |
 | R032 | 표에 없는 열 이름(11.7절) |
 | R033 | `DateAdd`나 `DateDiff`가 모르는 구간(10절) |
+| R034 | PDF 파일을 쓸 글꼴이 없음: 전에 내보낸 앱(11.8절) |
 
 ## 2. 타입
 
@@ -893,6 +894,28 @@ Next
 ```
 
 가장 긴 줄보다 짧은 줄은 빈 칸으로 채웁니다. `Dim t As New Table`은 빈 표를 만듭니다. 파일은 11.6절대로 읽고 씁니다: 읽을 때는 UTF-8이나 코드 페이지 949, 쓸 때는 UTF-8이고, `.csv`는 Excel이 한글과 함께 열도록 BOM을 붙입니다. `Csv.Write`는 쉼표, 따옴표, 줄바꿈이 있거나 앞뒤에 빈칸이 있는 칸을 따옴표로 싸고, 줄마다 캐리지 리턴과 줄 바꿈으로 끝냅니다. 없는 줄이나 열은 R031, 없는 열 이름은 R032입니다.
+
+### 11.8 PDF 파일
+
+(DESIGN.ko.md D112, D117.) **`PdfDocument`**에 내용을 하나씩 넣은 뒤 PDF 파일로 저장합니다.
+
+| 멤버 | 하는 일 |
+|---|---|
+| `AddTitle(text)` | 큰 글자의 제목 |
+| `AddText(text)` | 쪽에 맞춰 줄을 바꾸는 문단. 글 안의 줄바꿈은 새 줄을 시작합니다 |
+| `AddTable(table)` | 표: `Table`(11.7절)이나 `Grid`(11.1절)의 지금 내용 |
+| `NewPage()` | 다음 내용은 새 쪽에서 시작합니다 |
+| `Save(path)` | PDF 파일을 씁니다. 쓰는 방식은 `File.WriteAllText`와 같습니다(11.6절) |
+
+```vb
+Dim pdf As New PdfDocument
+pdf.AddTitle("2학기 성적표")
+pdf.AddText(lblTotal.Caption)
+pdf.AddTable(grdScores)
+pdf.Save(dlgSave.FileName)
+```
+
+쪽은 A4입니다. 표는 쪽 너비만큼 넓고, 열은 가장 긴 글에 맞춰 너비를 나누며, 칸의 글은 줄을 바꿉니다. 다음 쪽으로 넘어간 표는 그 쪽에 머리글 줄을 다시 그립니다. 글꼴은 IDE가 담아 온 나눔고딕입니다. 코드에 `PdfDocument`를 쓰는 프로젝트를 앱으로 내보내면 앱에도 글꼴이 들어가고, 다른 앱은 그 때문에 커지지 않습니다. PDF 파일에는 쓰인 글자만 들어갑니다. `PdfDocument`를 쓰기 전에 내보낸 앱에는 글꼴이 없어서 `Save`가 R034이며, 다시 내보내면 됩니다. 예제에도 있습니다. **Scores**는 Grid에 목록을 보여 주고 합계와 평균을 낸 뒤 PDF 파일로 저장합니다.
 
 ## 12. 열린 질문
 

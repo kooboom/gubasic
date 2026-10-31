@@ -218,6 +218,7 @@ void main() {
         'Object',
         'OpenFileDialog',
         'OptionButton',
+        'PdfDocument',
         'SaveFileDialog',
         'String',
         'Table',

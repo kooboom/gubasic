@@ -248,6 +248,7 @@ Errors found while a program runs. Each stops the program and points at its line
 | R031 | A row or column of a table that is not there (§11.7) |
 | R032 | A name no column of a table has (§11.7) |
 | R033 | An interval `DateAdd` or `DateDiff` does not know (§10) |
+| R034 | No font to write a PDF file with: an app exported before (§11.8) |
 
 ## 2. Types
 
@@ -893,6 +894,28 @@ Next
 ```
 
 A row shorter than the widest is filled with empty cells. `Dim t As New Table` makes an empty one. A file is read and written as §11.6 says: UTF-8 or code page 949 in, UTF-8 out, with a byte order mark for a `.csv` file, so that Excel opens it with its Korean text. `Csv.Write` quotes a cell that holds a comma, a quote, a line break, or space at either end, and ends each row with a carriage return and a line feed. A row or column that is not there is R031; a name no column has R032.
+
+### 11.8 PDF files
+
+(DESIGN.md D112, D117.) A **`PdfDocument`** is put together block by block and then saved as a PDF file:
+
+| Member | What it does |
+|---|---|
+| `AddTitle(text)` | a title, in larger letters |
+| `AddText(text)` | a paragraph, broken into lines to fit the page; a line break in it starts a new line |
+| `AddTable(table)` | a table: a `Table` (§11.7) or a `Grid` (§11.1), as it is now |
+| `NewPage()` | what follows starts on a new page |
+| `Save(path)` | writes the PDF file, as `File.WriteAllText` writes (§11.6) |
+
+```vb
+Dim pdf As New PdfDocument
+pdf.AddTitle("2학기 성적표")
+pdf.AddText(lblTotal.Caption)
+pdf.AddTable(grdScores)
+pdf.Save(dlgSave.FileName)
+```
+
+Pages are A4. A table is as wide as the page; its columns share it by their widest text, a cell's text wraps, and a table that goes on to another page draws its header row again there. The text is in NanumGothic, which the IDE carries; an app exported from a project whose code uses `PdfDocument` carries it too, and other apps are not made larger by it. The PDF file holds only the letters it uses. An app exported before it used `PdfDocument` has no font: `Save` is R034, and exporting it again mends it. The examples have one: **Scores** shows a list in a Grid, its total and average, and saves them as a PDF file.
 
 ## 12. Open questions
 

@@ -22,6 +22,7 @@ class RunHost implements FormHost, FileHost {
     this._settings,
     this._pictures,
     GbFiles? files,
+    this.pdfFont,
   }) : _fileSystem = files,
        settingsKey = settingsKey ?? project,
        dialogs = GbDialogs(strings: strings),
@@ -356,6 +357,22 @@ class RunHost implements FormHost, FileHost {
 
   @override
   Future<bool> fileExists(String path) => _disk.exists(path);
+
+  /// The bytes of the font PDF files are written in (D117): the IDE's, or
+  /// the one an app carries when its project uses PdfDocument; null when
+  /// there is none.
+  final Future<List<int>?> Function()? pdfFont;
+  TrueTypeFont? _pdfFont;
+
+  @override
+  Future<void> writePdf(String path, GbPdfDocument document) async {
+    final font = _pdfFont ??= switch (await pdfFont?.call()) {
+      final bytes? => TrueTypeFont.parse(bytes),
+      null => throw const FileProblem(FileProblemKind.noPdfFont),
+    };
+    final bytes = pdfBytes(document, font);
+    await _guard(() => _disk.write(path, bytes));
+  }
 
   static Future<T> _guard<T>(Future<T> Function() body) async {
     try {

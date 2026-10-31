@@ -4,13 +4,15 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:gubasic_lang/gubasic_lang.dart';
-import 'package:gubasic_player/gubasic_player.dart' show ProjectBundle;
+import 'package:gubasic_player/gubasic_player.dart'
+    show ProjectBundle, usesPdfDocument;
 import 'package:gubasic_runtime/gubasic_runtime.dart';
 
 import '../strings.dart';
 import '../designer/form_edit.dart' show FormSizePreset;
 import 'browser.dart';
 import 'folders.dart';
+import 'pdf_font.dart';
 import 'last_project.dart';
 import 'new_project.dart';
 import 'open_project.dart';
@@ -889,6 +891,9 @@ class ProjectController extends ChangeNotifier {
       name: name,
       files: project.files,
       pictures: project.pictures,
+      // The font only when the program writes PDF files: other apps stay
+      // as small as they were (D117).
+      fonts: usesPdfDocument(project.files) ? await loadPdfFont() : const {},
     );
     final file = appFileName(name);
     final words = _exportWords(template, file);

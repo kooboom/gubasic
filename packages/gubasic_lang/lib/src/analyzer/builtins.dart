@@ -22,6 +22,9 @@ enum ArgKind {
 
   /// A menu item of a form (`PopupMenu`, docs/DESIGN.md D106).
   menu,
+
+  /// A Table or a Grid (`PdfDocument.AddTable`, D117).
+  tableOrGrid,
 }
 
 class ParamSpec {

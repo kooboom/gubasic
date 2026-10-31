@@ -189,12 +189,19 @@ class _GbGridState extends State<GbGrid> {
                             : (box.maxWidth / columns)
                                   .clamp(gbGridMinColumnWidth, double.infinity)
                                   .floorToDouble();
+                        // The last column takes what is left over.
+                        final last = columns == 0
+                            ? width
+                            : (box.maxWidth - width * (columns - 1)).clamp(
+                                width,
+                                double.infinity,
+                              );
                         Widget cell(int r, int c, String text) {
                           final chosen = r == row && c == col && r >= 0;
                           final header = r < 0;
                           return Container(
                             key: gbGridCellKey(state.name ?? '', r, c),
-                            width: width,
+                            width: c == columns - 1 ? last : width,
                             height: gbGridRowHeight,
                             padding: const EdgeInsets.symmetric(horizontal: 6),
                             alignment: Alignment.centerLeft,
@@ -260,7 +267,9 @@ class _GbGridState extends State<GbGrid> {
                               controller: _across,
                               scrollDirection: Axis.horizontal,
                               child: SizedBox(
-                                width: width * columns,
+                                width: columns == 0
+                                    ? 0
+                                    : width * (columns - 1) + last,
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [

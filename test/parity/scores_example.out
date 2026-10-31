@@ -1,0 +1,41 @@
+Set grdScores.Headers: [이름]
+Set grdScores.Headers: [이름, 반]
+Set grdScores.Headers: [이름, 반, 점수]
+Set grdScores.Cells: [, , ]
+Set grdScores.Cells: [김하나, , ]
+Set grdScores.Cells: [김하나, 1반, ]
+Set grdScores.Cells: [김하나, 1반, 90]
+Set grdScores.Cells: [김하나, 1반, 90, , , ]
+Set grdScores.Cells: [김하나, 1반, 90, 박둘, , ]
+Set grdScores.Cells: [김하나, 1반, 90, 박둘, 2반, ]
+Set grdScores.Cells: [김하나, 1반, 90, 박둘, 2반, 85]
+Set grdScores.Cells: [김하나, 1반, 90, 박둘, 2반, 85, , , ]
+Set grdScores.Cells: [김하나, 1반, 90, 박둘, 2반, 85, 이셋, , ]
+Set grdScores.Cells: [김하나, 1반, 90, 박둘, 2반, 85, 이셋, 1반, ]
+Set grdScores.Cells: [김하나, 1반, 90, 박둘, 2반, 85, 이셋, 1반, 70]
+Set lblTotal.Caption: 3 students, total 245, average 81.7
+> btnPdf.Click
+SaveFileDialog: Save the scores
+> Cancel
+> btnPdf.Click
+SaveFileDialog: Save the scores
+> Pick "성적.pdf"
+Set dlgSave.FileName: 성적.pdf
+Wrote 성적.pdf: PDF [title Scores] [text 3 students, total 245, average 81.7] [table 이름|반|점수; 김하나|1반|90; 박둘|2반|85; 이셋|1반|70]
+Set lblStatus.Caption: Saved 성적.pdf
+> btnOpen.Click
+OpenFileDialog: Open a list
+> Pick "명단.csv"
+Set dlgOpen.FileName: 명단.csv
+Set lblTotal.Caption: 3 students, total 245, average 81.7
+> grdScores.Click 1 2
+> grdScores.Edit 1 2 "95"
+Set lblTotal.Caption: 3 students, total 255, average 85.0
+> btnPdf.Click
+SaveFileDialog: Save the scores
+> Pick "성적2.pdf"
+Set dlgSave.FileName: 성적2.pdf
+Wrote 성적2.pdf: PDF [title Scores] [text 3 students, total 255, average 85.0] [table 이름|반|점수; 김하나|1반|90; 박둘|2반|95; 이셋|1반|70]
+Set lblStatus.Caption: Saved 성적2.pdf
+> Close
+Closed

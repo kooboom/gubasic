@@ -195,3 +195,9 @@ Problems we know about and have **deliberately** left unfixed for now. Each entr
 - **What:** `Form_Closed` runs after a form is closed, or before the program ends when the window is closed (D88); there is no event that can keep the form open, as Visual Basic 6's `QueryUnload` and .NET's `FormClosing` do with their Cancel argument.
 - **Why deferred:** a Cancel argument is a `ByRef` parameter, which comes later in stage 2.
 - **Revisit:** with `ByRef`.
+
+## PDF files: one font, one weight, nothing compressed
+
+- **What:** a PDF file (D117) has its text in NanumGothic Regular only: a title is larger, not bold, and there are no pictures or colours. Its parts are not compressed, so it is larger than it could be (the Scores example's file is 20 KB, a 120-row list 55 KB).
+- **Why deferred:** what v0.4's work programs need is a title, text and a table. Compressing needs a deflate encoder that runs in the browser too, which `gubasic_lang` does not have.
+- **Revisit:** when programs need pictures or bold text in a PDF file, or when files this size are a problem.

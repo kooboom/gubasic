@@ -223,11 +223,23 @@ jobs:
       - name: The toolbox in the IDE's own window
         working-directory: apps/ide
         run: flutter test integration_test/toolbox_test.dart -d windows --dart-define=SHOTS=${{ runner.temp }}/toolbox
+      # The Scores example in the IDE's own window (D116, D117): a score
+      # changed in the Grid, the list saved as a PDF file.
+      - name: A Grid and a PDF file in the IDE's own window
+        working-directory: apps/ide
+        run: flutter test integration_test/scores_test.dart -d windows --dart-define=SHOTS=${{ runner.temp }}/scores
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: toolbox-windows
           path: ${{ runner.temp }}/toolbox/*.png
+          retention-days: 30
+          if-no-files-found: warn
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: scores-windows
+          path: ${{ runner.temp }}/scores/*
           retention-days: 30
           if-no-files-found: warn
       - name: The Windows template (D86), with every file a PC needs
@@ -325,6 +337,11 @@ jobs:
       - name: The toolbox in the IDE's own window
         working-directory: apps/ide
         run: flutter test integration_test/toolbox_test.dart -d macos --dart-define=SHOTS=${{ runner.temp }}/toolbox
+      # The Scores example in the IDE's own window (D116, D117): a score
+      # changed in the Grid, the list saved as a PDF file.
+      - name: A Grid and a PDF file in the IDE's own window
+        working-directory: apps/ide
+        run: flutter test integration_test/scores_test.dart -d macos --dart-define=SHOTS=${{ runner.temp }}/scores
       # The IDE's Edit menu on the system's menu bar while no program runs
       # (D110), set through the engine.
       - name: The IDE's Edit menu on macOS
@@ -335,6 +352,13 @@ jobs:
         with:
           name: toolbox-macos
           path: ${{ runner.temp }}/toolbox/*.png
+          retention-days: 30
+          if-no-files-found: warn
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: scores-macos
+          path: ${{ runner.temp }}/scores/*
           retention-days: 30
           if-no-files-found: warn
       - name: The macOS template (D87), with every file the app needs

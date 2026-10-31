@@ -163,6 +163,8 @@ const Map<DiagnosticCode, String> koreanMessages = {
       '{0} 파일을 읽거나 쓰지 못했습니다({1}). 다른 프로그램에서 열려 있지 않은지, 그곳에 쓸 수 있는지 확인해 주세요.',
   DiagnosticCode.badDateLiteral:
       '날짜는 #2026-10-29#처럼, 시각까지는 #2026-10-29 14:30#처럼 연, 월, 일 순서로 써 주세요.',
+  DiagnosticCode.noPdfFont:
+      'PDF 파일을 만들 글꼴이 이 앱에 없습니다. GuBASIC에서 프로젝트를 다시 내보내 주세요. PdfDocument를 쓰는 앱에는 글꼴이 함께 들어갑니다.',
   DiagnosticCode.badInterval:
       '"{0}" 값은 구간이 아닙니다. "yyyy", "q", "m", "d", "ww", "h", "n", "s" 가운데 하나나 DateInterval.Day 같은 것을 써 주세요.',
   DiagnosticCode.tableIndex:

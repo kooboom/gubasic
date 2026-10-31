@@ -13,6 +13,23 @@ const bundleFormatVersion = 1;
 /// app's `Contents/Resources`.
 const bundleFileName = 'project.gbz';
 
+/// The font PDF files are written in (D117), and its licence, as a bundle
+/// carries them under `fonts/` when its project uses PdfDocument.
+const pdfFontFile = 'NanumGothic-Regular.ttf';
+const pdfFontLicense = 'NanumGothic-OFL.txt';
+
+/// Whether the program of [files] uses PdfDocument (D117): the name in
+/// any `.gbas` file's code, in any case, not in a comment or a string.
+bool usesPdfDocument(Map<String, String> files) => files.entries.any(
+  (f) =>
+      f.key.toLowerCase().endsWith('.gbas') &&
+      lex(f.value).tokens.any(
+        (t) =>
+            t.kind == TokenKind.identifier &&
+            t.text.toLowerCase() == 'pdfdocument',
+      ),
+);
+
 /// This GuBASIC's version, written into the bundles it makes.
 const gubasicVersion = '0.3.1';
 
@@ -20,13 +37,16 @@ const gubasicVersion = '0.3.1';
 /// with `bundle.yaml` (the layout's version, the GuBASIC that made it, the
 /// app ID and the project's name) and the project's files as they are on
 /// disk under `project/`: its `.gbproj`, each form's `.form.yaml` and
-/// `.gbas`, however many forms it has, and `project/pictures/`.
+/// `.gbas`, however many forms it has, and `project/pictures/`; and under
+/// `fonts/` the font PDF files are written in, with its licence, when the
+/// program uses PdfDocument (D117).
 class ProjectBundle {
   const ProjectBundle({
     required this.id,
     required this.name,
     required this.files,
     this.pictures = const {},
+    this.fonts = const {},
     this.madeBy = gubasicVersion,
   });
 
@@ -39,6 +59,9 @@ class ProjectBundle {
 
   /// Picture name → bytes.
   final Map<String, Uint8List> pictures;
+
+  /// File name → bytes: [pdfFontFile] and [pdfFontLicense], or nothing.
+  final Map<String, Uint8List> fonts;
 
   /// The version of the GuBASIC that made the bundle.
   final String madeBy;
@@ -62,6 +85,9 @@ class ProjectBundle {
     }
     for (final MapEntry(:key, :value) in pictures.entries) {
       archive.add(ArchiveFile.bytes('project/pictures/$key', value));
+    }
+    for (final MapEntry(:key, :value) in fonts.entries) {
+      archive.add(ArchiveFile.bytes('fonts/$key', value));
     }
     return Uint8List.fromList(ZipEncoder().encodeBytes(archive));
   }
@@ -95,11 +121,16 @@ class ProjectBundle {
 
     final files = <String, String>{};
     final pictures = <String, Uint8List>{};
+    final fonts = <String, Uint8List>{};
     for (final entry in archive.files) {
       if (!entry.isFile) continue;
       final path = entry.name.replaceAll(r'\', '/');
       final parts = path.split('/');
-      if (parts.contains('..') || parts.first != 'project') continue;
+      if (parts.contains('..')) continue;
+      if (parts.length == 2 && parts.first == 'fonts') {
+        fonts[parts[1]] = Uint8List.fromList(entry.content);
+      }
+      if (parts.first != 'project') continue;
       if (parts.length == 2) {
         try {
           files[parts[1]] = utf8.decode(entry.content);
@@ -118,6 +149,7 @@ class ProjectBundle {
       name: '${yaml['name'] ?? ''}',
       files: files,
       pictures: pictures,
+      fonts: fonts,
       madeBy: madeBy,
     );
   }

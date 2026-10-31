@@ -38,6 +38,11 @@ flutter:
     - fonts/d2coding/D2Coding-Ver1.3.2-20180524.ttf
     # Pretendard Bold: loaded after the first frame (D30, BoldFont).
     - fonts/pretendard/Pretendard-Bold.otf
+    # NanumGothic (OFL, fonts/nanumgothic/OFL.txt), the font PDF files are
+    # written in: loaded when a program first saves one, and put into an
+    # exported app whose project uses PdfDocument (D117).
+    - fonts/nanumgothic/NanumGothic-Regular.ttf
+    - fonts/nanumgothic/OFL.txt
   # Pretendard 1.3.9 (OFL, fonts/pretendard/LICENSE.txt), the IDE's font
   # on every platform (D30, D49). The source is in README.md.
   fonts:

@@ -583,7 +583,10 @@ enum DiagnosticCode {
   tableColumn('R032'),
 
   /// An interval DateAdd or DateDiff does not know (D115). Args: it.
-  badInterval('R033');
+  badInterval('R033'),
+
+  /// No font to write a PDF file with (D117).
+  noPdfFont('R034');
 
   const DiagnosticCode(this.code, [this.severity = DiagnosticSeverity.error]);
 

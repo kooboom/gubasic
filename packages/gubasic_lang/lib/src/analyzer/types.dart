@@ -22,6 +22,9 @@ sealed class GbType {
   static const mouseEventArgs = PrimitiveType._('MouseEventArgs');
   static const table = PrimitiveType._('Table');
 
+  /// A PDF file being put together (docs/DESIGN.md D117).
+  static const pdfDocument = PrimitiveType._('PdfDocument');
+
   /// The type of the `Nothing` literal.
   static const nothing = SpecialType._('Nothing');
 
@@ -160,6 +163,7 @@ const Map<String, GbType> namedTypes = {
   'keyeventargs': GbType.keyEventArgs,
   'mouseeventargs': GbType.mouseEventArgs,
   'table': GbType.table,
+  'pdfdocument': GbType.pdfDocument,
 };
 
 /// A type name written after `As` or `New` (not `List`): a built-in type

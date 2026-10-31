@@ -21,6 +21,7 @@ import '../forms/component.dart';
 import '../forms/keys.dart';
 import '../forms/pictures.dart';
 import '../forms/shortcut.dart';
+import '../pdf/pdf_document.dart';
 import '../text/csv.dart';
 import '../text/dates.dart';
 import '../text/format.dart';
@@ -846,6 +847,7 @@ class Interpreter {
         GbType.exception =>
           GbException(args.isEmpty ? '' : args.first as String),
         GbType.table => GbTable(),
+        GbType.pdfDocument => GbPdfDocument(),
         _ => defaultValue(type),
       };
 
@@ -940,6 +942,10 @@ class Interpreter {
         when _a.symbols[t]?.kind == SymbolKind.builtinObject &&
             const {'File', 'Csv'}.contains(_a.symbols[t]!.name)) {
       return true;
+    }
+    // A PDF file is saved as a file is written (D117).
+    if (type == GbType.pdfDocument) {
+      return target.name.name.toLowerCase() == 'save';
     }
     // A module's procedure (D102) is user code.
     if (type is ModuleType) {
@@ -1777,8 +1783,7 @@ class Interpreter {
         _pendingCall = () async {
           final t = await _csv('read', args, at) as GbTable;
           _setGridTable(c, t);
-          _rawSet(c, 'Row', -1);
-          _rawSet(c, 'Col', -1);
+          _unchoose(c);
           return null;
         };
         return null;
@@ -1791,10 +1796,7 @@ class Interpreter {
         final result = _tableMember(t, method.name.toLowerCase(), args, at);
         if (const {'AddRow', 'AddColumn', 'Clear'}.contains(method.name)) {
           _setGridTable(c, t);
-          if (method.name == 'Clear') {
-            _rawSet(c, 'Row', -1);
-            _rawSet(c, 'Col', -1);
-          }
+          if (method.name == 'Clear') _unchoose(c);
         }
         return result;
     }
@@ -1826,18 +1828,21 @@ class Interpreter {
     return dialogResults['OK']!;
   }
 
+  /// Stops the program for [p], met reading or writing [path].
+  Never _fileProblem(FileProblem p, String path, Node at) => _fail(
+      switch (p.kind) {
+        FileProblemKind.notFound => DiagnosticCode.fileNotFound,
+        FileProblemKind.notChosen => DiagnosticCode.fileNotChosen,
+        FileProblemKind.noPdfFont => DiagnosticCode.noPdfFont,
+        FileProblemKind.other => DiagnosticCode.fileError,
+      },
+      at,
+      [path, p.detail]);
+
   /// One of File's functions (D113), [name] in lower case.
   Future<Object?> _file(String name, List<Object?> args, Node at) async {
     final files = _files(at);
     final path = args[0] as String;
-    Never problem(FileProblem p) => _fail(
-        switch (p.kind) {
-          FileProblemKind.notFound => DiagnosticCode.fileNotFound,
-          FileProblemKind.notChosen => DiagnosticCode.fileNotChosen,
-          FileProblemKind.other => DiagnosticCode.fileError,
-        },
-        at,
-        [path, p.detail]);
     try {
       switch (name) {
         case 'readalltext':
@@ -1860,7 +1865,7 @@ class Interpreter {
           return await files.fileExists(path);
       }
     } on FileProblem catch (p) {
-      problem(p);
+      _fileProblem(p, path, at);
     }
   }
 
@@ -1879,15 +1884,41 @@ class Interpreter {
           path, encodeText(writeCsv(table.csv), bom: wantsBom(path)));
       return null;
     } on FileProblem catch (p) {
-      _fail(
-          switch (p.kind) {
-            FileProblemKind.notFound => DiagnosticCode.fileNotFound,
-            FileProblemKind.notChosen => DiagnosticCode.fileNotChosen,
-            FileProblemKind.other => DiagnosticCode.fileError,
-          },
-          at,
-          [path, p.detail]);
+      _fileProblem(p, path, at);
     }
+  }
+
+  /// PdfDocument's methods but Save (D117), [name] in lower case.
+  Object? _pdfMember(
+      GbPdfDocument d, String name, List<Object?> args, Node at) {
+    d.blocks.add(switch (name) {
+      'addtitle' => PdfTitle(args[0] as String),
+      'addtext' => PdfParagraph(args[0] as String),
+      'addtable' => switch (args[0]) {
+          GbTable t => PdfTable(t.headers, t.rows),
+          GbControl c when c.component.name == 'Grid' => () {
+              final t = _gridTable(c);
+              return PdfTable(t.headers, t.rows);
+            }(),
+          null => _fail(DiagnosticCode.nothingReference, at),
+          final other => _fail(DiagnosticCode.conversionFailed, at,
+              [formatValue(other), 'Table']),
+        },
+      _ => const PdfPageBreak(),
+    });
+    return null;
+  }
+
+  /// PdfDocument.Save (D117): the document so far, written as a PDF file.
+  Future<Object?> _savePdf(GbPdfDocument d, String path, Node at) async {
+    final files = _files(at);
+    final copy = GbPdfDocument()..blocks.addAll(d.blocks);
+    try {
+      await files.writePdf(path, copy);
+    } on FileProblem catch (p) {
+      _fileProblem(p, path, at);
+    }
+    return null;
   }
 
   /// The number of row [row] of [t], or R031.
@@ -1960,6 +1991,13 @@ class Interpreter {
         for (var i = 0; i + width <= cells.length; i += width)
           List<String>.of(cells.sublist(i, i + width).cast<String>()),
     ]);
+  }
+
+  /// No cell of the Grid [c] chosen any more, unless none was.
+  void _unchoose(GbControl c) {
+    for (final p in const ['Row', 'Col']) {
+      if (_raw(c, p) != -1) _rawSet(c, p, -1);
+    }
   }
 
   /// Puts [t] back into the Grid [c]: only the list that changed.
@@ -2406,6 +2444,11 @@ class Interpreter {
         return null;
       case GbTable t:
         return _tableMember(t, name, args, node);
+      case GbPdfDocument d when name == 'save':
+        _pendingCall = () => _savePdf(d, args[0] as String, node);
+        return null;
+      case GbPdfDocument d:
+        return _pdfMember(d, name, args, node);
       case _BuiltinObject(name: 'DateInterval'):
         return dateIntervals.entries
             .firstWhere((e) => e.key.toLowerCase() == name)

@@ -1,0 +1,11 @@
+btnPdf.Click
+Cancel
+btnPdf.Click
+Pick "성적.pdf"
+btnOpen.Click
+Pick "명단.csv"
+grdScores.Click 1 2
+grdScores.Edit 1 2 "95"
+btnPdf.Click
+Pick "성적2.pdf"
+Close

@@ -1,3 +1,5 @@
+import '../pdf/pdf_document.dart';
+
 /// What a running program needs from the screen. The playground shows
 /// these in its Run tab; tests use a fake that records them.
 abstract interface class Host {
@@ -138,6 +140,10 @@ enum FileProblemKind {
   /// On the web: a name no dialog gave in this run.
   notChosen,
 
+  /// No font to write a PDF file with (D117): an app exported before it
+  /// used PdfDocument.
+  noPdfFont,
+
   /// Anything else the system said: [FileProblem.detail].
   other,
 }
@@ -171,4 +177,8 @@ abstract interface class FileHost {
 
   /// Whether the file [path] is there.
   Future<bool> fileExists(String path);
+
+  /// Writes [document] to [path] as a PDF file (D117), with `pdfBytes` and
+  /// the font the IDE and the apps carry for it; throws a [FileProblem].
+  Future<void> writePdf(String path, GbPdfDocument document);
 }

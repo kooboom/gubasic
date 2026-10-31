@@ -345,6 +345,7 @@ String _signature(Callable c) {
     for (final p in c.parameters)
       switch (p) {
         ParamSpec(kind: ArgKind.menu) => '${p.name} As Menu',
+        ParamSpec(kind: ArgKind.tableOrGrid) => '${p.name} As Table',
         ParamSpec(:final type?) when type != GbType.unknown => p.optional
             ? '[${p.name} As ${type.displayName}]'
             : '${p.name} As '

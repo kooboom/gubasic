@@ -1,6 +1,7 @@
 import '../analyzer/conversions.dart';
 import '../analyzer/types.dart';
 import '../forms/component.dart';
+import '../pdf/pdf_document.dart';
 import 'checked_math.dart';
 
 /// Values while a program runs:
@@ -149,6 +150,7 @@ String formatValue(Object? value) {
     GbKeyEvent() => 'KeyEventArgs',
     GbMouseEvent() => 'MouseEventArgs',
     GbTable() => 'Table',
+    GbPdfDocument() => 'PdfDocument',
     GbModule m => m.name,
     _ => '$value',
   };
@@ -171,6 +173,7 @@ String typeNameOf(Object? value) {
     GbKeyEvent() => 'KeyEventArgs',
     GbMouseEvent() => 'MouseEventArgs',
     GbTable() => 'Table',
+    GbPdfDocument() => 'PdfDocument',
     GbModule m => m.name,
     _ => 'Object',
   };

@@ -76,8 +76,8 @@ Three releases, then the rest (D94–D96). The order follows who GuBASIC is for 
 - [x] CSV files (D114)
 - [x] Date and format functions (`DateAdd`, `DateDiff`, `Format`) (D115)
 - [x] A grid control (D116)
-- [ ] PDF export
-- [ ] An example of work automation: reading a CSV file and adding it up (D95)
+- [x] PDF export (D117)
+- [x] An example of work automation (D95, D117): [Scores](../examples/scores), a list from a CSV file in a Grid, its total and average, saved as a PDF file
 
 ### v0.5 — A real development tool
 

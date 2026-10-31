@@ -26,6 +26,7 @@ Future<void> main() async {
         PlayerApp(
           files: bundle.files,
           pictures: bundle.pictures,
+          fonts: bundle.fonts,
           settingsKey: bundle.id,
           strings: strings,
           asApp: true,

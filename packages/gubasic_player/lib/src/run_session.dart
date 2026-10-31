@@ -18,6 +18,7 @@ class RunSession extends ChangeNotifier {
     String? settingsKey,
     GbSettingsStore? settings,
     GbPictureSource? pictures,
+    Future<List<int>?> Function()? pdfFont,
   }) : host =
            host ??
            RunHost(
@@ -28,6 +29,7 @@ class RunSession extends ChangeNotifier {
              settingsKey: settingsKey,
              settings: settings,
              pictures: pictures,
+             pdfFont: pdfFont,
            ) {
     final project = startup.project;
     interpreter = project == null

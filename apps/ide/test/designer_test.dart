@@ -650,7 +650,11 @@ void main() {
       for (final MapEntry(key: name, value: files) in exampleProjects.entries) {
         for (final MapEntry(key: file, value: text) in files.entries) {
           if (!file.endsWith('.form.yaml')) continue;
-          final controls = readFormFile(text, name: 'Form1').form.controls;
+          // Those seen on the form: not the tray's dialogs.
+          final controls = [
+            for (final c in readFormFile(text, name: 'Form1').form.controls)
+              if (c.component.visual) c,
+          ];
           for (var i = 0; i < controls.length; i++) {
             for (final b in controls.skip(i + 1)) {
               final p = boxOf(controls[i]);

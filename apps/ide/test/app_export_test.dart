@@ -297,15 +297,46 @@ void main() {
     await export(tester, IdeStrings.ko);
     expect(browser.downloads.single.$1, 'Demo-web.zip');
     final files = unzip(browser.downloads.single.$2);
-    expect(
-      ProjectBundle.decode(files['Demo-web/project.gbz']!).id,
-      'exampledemo',
-    );
+    final bundle = ProjectBundle.decode(files['Demo-web/project.gbz']!);
+    expect(bundle.id, 'exampledemo');
+    expect(bundle.fonts, isEmpty, reason: 'no PdfDocument, no font (D117)');
     expect(
       utf8.decode(files['Demo-web/HOSTING.txt']!),
       IdeStrings.ko.webAppGuide,
     );
     expect(find.textContaining('Demo-web.zip 파일로 저장했습니다'), findsOneWidget);
+  });
+
+  testWidgets('an app gets the PDF font and its licence only when its '
+      'program uses PdfDocument (D117)', (tester) async {
+    bigView(tester);
+    final browser = FakeBrowser();
+    await tester.pumpWidget(
+      IdeApp(
+        projects: {
+          'demo': demo,
+          'report': {
+            ...demo,
+            'Form1.gbas':
+                'Sub Form_Load()\n    Dim pdf As New PdfDocument\n'
+                '    pdf.AddTitle("hi")\nEnd Sub\n',
+          },
+        },
+        open: 'report',
+        strings: IdeStrings.en,
+        browser: browser,
+        kept: await BrowserProjects.open(browser.projects, browser.storage),
+        pickZip: () async => null,
+        fetchTemplate: (_) async => template(),
+      ),
+    );
+    await export(tester, IdeStrings.en);
+    final fonts = ProjectBundle.decode(
+      unzip(browser.downloads.single.$2)['Demo-web/project.gbz']!,
+    ).fonts;
+    expect(fonts.keys, unorderedEquals([pdfFontFile, pdfFontLicense]));
+    expect(fonts[pdfFontFile]!.length, 2054744);
+    expect(utf8.decode(fonts[pdfFontLicense]!), contains('SIL OPEN FONT'));
   });
 
   testWidgets('a project with errors is not exported', (tester) async {

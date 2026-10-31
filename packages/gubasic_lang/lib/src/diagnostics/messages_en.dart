@@ -195,6 +195,9 @@ const Map<DiagnosticCode, String> englishMessages = {
   DiagnosticCode.badDateLiteral: 'A date is written as #2026-10-29#, or '
       'with its time as #2026-10-29 14:30#: year, month and day, in that '
       'order.',
+  DiagnosticCode.noPdfFont: 'This app has no font to write PDF files '
+      'with. Export the project again from GuBASIC: an app that uses '
+      'PdfDocument carries one.',
   DiagnosticCode.badInterval: '"{0}" is not an interval. Write "yyyy", '
       '"q", "m", "d", "ww", "h", "n" or "s", or DateInterval.Day '
       'and the like.',

@@ -1603,12 +1603,16 @@ class _Analyzer {
         ok = type is ArrayType;
       case ArgKind.menu:
         ok = type is ControlType && type.component.menu;
+      case ArgKind.tableOrGrid:
+        ok = type == GbType.table ||
+            (type is ControlType && type.component.name == 'Grid');
     }
     if (!ok && type != GbType.void_) {
       final expected = switch (param.kind) {
         ArgKind.numeric || ArgKind.numericOrString => GbType.double_,
         ArgKind.array => const ArrayType(GbType.object),
         ArgKind.menu => menuComponent.type,
+        ArgKind.tableOrGrid => GbType.table,
         _ => GbType.string,
       };
       _reportAt(arg, DiagnosticCode.typeMismatch,
@@ -1640,7 +1644,7 @@ class _Analyzer {
     }
     final params = switch (type) {
       ListType() => const <ParamSpec>[],
-      GbType.table => const <ParamSpec>[],
+      GbType.table || GbType.pdfDocument => const <ParamSpec>[],
       GbType.exception => const [
           ParamSpec('message', GbType.string, optional: true)
         ],

@@ -41,3 +41,6 @@ export 'src/interpreter/interpreter.dart';
 export 'src/interpreter/rng.dart';
 export 'src/interpreter/run_result.dart';
 export 'src/interpreter/values.dart';
+export 'src/pdf/pdf_document.dart';
+export 'src/pdf/pdf_writer.dart';
+export 'src/pdf/truetype.dart';

@@ -200,6 +200,9 @@ class _RecordingHost extends RunHost {
         others: others,
         settings: GbMemorySettings()..values.addAll({'': ?settings}),
         files: files,
+        pdfFont: () async =>
+            File('../../apps/ide/fonts/nanumgothic/NanumGothic-Regular.ttf')
+                .readAsBytesSync(),
       );
 
   /// The files, and the open and save dialogs, the test answers (D113).
@@ -233,6 +236,16 @@ class _RecordingHost extends RunHost {
   }) async {
     await super.writeFile(path, bytes, append: append);
     transcript.add(TranscriptLine.wroteFile(path, bytes, append: append));
+  }
+
+  /// The PDF file is really written, in the IDE's font, then told by what
+  /// is in it (D117).
+  @override
+  Future<void> writePdf(String path, GbPdfDocument document) async {
+    await super.writePdf(path, document);
+    final bytes = files.disk[path]!;
+    expect(String.fromCharCodes(bytes.take(5)), '%PDF-');
+    transcript.add(TranscriptLine.wrotePdf(path, document));
   }
 
   /// A program with several forms names the form in its lines (D88).

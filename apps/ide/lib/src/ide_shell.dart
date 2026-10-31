@@ -13,6 +13,7 @@ import 'designer/form_designer.dart';
 import 'designer/form_edit.dart';
 import 'project/app_export.dart' show AppTemplate;
 import 'project/open_project.dart';
+import 'project/pdf_font.dart';
 import 'project/pictures_dialog.dart';
 
 import 'package:gubasic_player/gubasic_player.dart';
@@ -189,6 +190,8 @@ class _IdeShellState extends State<IdeShell> {
         settings: widget.controller.settings,
         // The pictures as the run starts; they cannot change while it runs.
         pictures: pictureSource(widget.controller.current.pictures),
+        // The run window can always write PDF files (D117).
+        pdfFont: () async => (await loadPdfFont())[pdfFontFile],
       );
       _showRun = true;
     });

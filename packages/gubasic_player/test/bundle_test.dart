@@ -39,6 +39,53 @@ void main() {
     expect(Project.read(read.files).canRun, isTrue);
   });
 
+  test('the PDF font and its licence go under fonts/ (D117), only when the '
+      'program uses PdfDocument', () {
+    final font = Uint8List.fromList([0, 1, 0, 0, 9]);
+    final bytes = ProjectBundle(
+      id: 'k3x9q2m7a1b4c8d0',
+      name: 'Quiz',
+      files: twoForms,
+      fonts: {pdfFontFile: font, pdfFontLicense: utf8.encode('OFL')},
+    ).encode();
+    expect(
+      ZipDecoder().decodeBytes(bytes).findFile('fonts/$pdfFontFile'),
+      isNotNull,
+    );
+    final read = ProjectBundle.decode(bytes);
+    expect(read.fonts[pdfFontFile], font);
+    expect(read.files, twoForms, reason: 'the font is not a project file');
+    expect(usesPdfDocument(twoForms), isFalse);
+    expect(
+      usesPdfDocument({
+        ...twoForms,
+        'Form2.gbas': "' PdfDocument in a comment\nDim s = \"PdfDocument\"\n",
+      }),
+      isFalse,
+    );
+    expect(
+      usesPdfDocument({
+        ...twoForms,
+        'Form2.gbas': 'Dim p As New pdfdocument\n',
+      }),
+      isTrue,
+    );
+  });
+
+  test('without the font, a PDF file cannot be written: R034 (D117)', () {
+    final form = readFormFile('formatVersion: 1\n', name: 'Form1').form;
+    expect(
+      RunHost(form).writePdf('a.pdf', GbPdfDocument()),
+      throwsA(
+        isA<FileProblem>().having(
+          (p) => p.kind,
+          'kind',
+          FileProblemKind.noPdfFont,
+        ),
+      ),
+    );
+  });
+
   test('its manifest names the layout, the GuBASIC, the ID and the name', () {
     final archive = ZipDecoder().decodeBytes(
       ProjectBundle(

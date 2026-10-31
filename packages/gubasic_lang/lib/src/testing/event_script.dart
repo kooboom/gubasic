@@ -9,6 +9,7 @@ import '../interpreter/host.dart';
 import '../interpreter/interpreter.dart';
 import '../interpreter/run_result.dart';
 import '../interpreter/values.dart';
+import '../pdf/pdf_document.dart';
 import '../text/text_codec.dart';
 
 /// One step of an event script (`NAME.events`, docs/DESIGN.md §9.1).
@@ -284,6 +285,10 @@ abstract final class TranscriptLine {
     return '${append ? 'Appended' : 'Wrote'} $path: ${bom ? '(BOM) ' : ''}$text';
   }
 
+  /// The program saved [document] as the PDF file [path] (D117).
+  static String wrotePdf(String path, GbPdfDocument document) =>
+      'Wrote $path: PDF ${document.describe()}';
+
   static String saveSettings(String text) => 'Settings: $text';
 
   /// [form] is named when the program has several forms (D88).
@@ -384,6 +389,13 @@ class ScriptedHost implements FormHost, FileHost {
 
   @override
   Future<bool> fileExists(String path) async => disk.containsKey(path);
+
+  /// The PDF file is told by what is in it; no font is laid out here.
+  @override
+  Future<void> writePdf(String path, GbPdfDocument document) async {
+    disk[path] = const [0x25, 0x50, 0x44, 0x46]; // %PDF
+    transcript.add(TranscriptLine.wrotePdf(path, document));
+  }
 
   /// Gives [form]'s properties the values of its form file.
   void _start(FormFile form) {

@@ -113,6 +113,16 @@ Map<String, MemberSpec>? membersOf(GbType type) {
         MemberSpec.method('AddColumn', [const ParamSpec('name', _s)], _v),
         MemberSpec.method('Clear', [], _v),
       ];
+    case GbType.pdfDocument:
+      // A PDF file put together block by block, then saved (D117).
+      list = [
+        MemberSpec.method('AddTitle', [const ParamSpec('text', _s)], _v),
+        MemberSpec.method('AddText', [const ParamSpec('text', _s)], _v),
+        MemberSpec.method(
+            'AddTable', [const ParamSpec.of('table', ArgKind.tableOrGrid)], _v),
+        MemberSpec.method('NewPage', [], _v),
+        MemberSpec.method('Save', [const ParamSpec('path', _s)], _v),
+      ];
     case GbType.mouseEventArgs:
       // The button, as a number of MouseButtons, and where it went down or
       // up, from the control's top left corner (D111).
