@@ -6,7 +6,7 @@ Windows, with the same interpreter and run window as the IDE's F5
 
 For now the project is built in: the files under `project/` (the hello
 example). The bundle of step 2-3 takes their place, and the IDE's export
-(steps 2-4 to 2-6) puts a student's project into a prebuilt player.
+(steps 2-4 to 2-6) puts a user's project into a prebuilt player.
 
     flutter run -d chrome        # or -d macos, -d windows
 

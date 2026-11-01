@@ -43,11 +43,11 @@
 
 ## 한글 입력은 아직 Chrome에서만 시험함
 
-- **무엇:** TextBox 테스트는 Chrome에서 Windows 한글 입력기와 macOS 한글 입력기(두벌식)가 보낸 신호를 재생합니다(`packages/gubasic_runtime/test/ime_logs/`). 데스크톱 앱은 아직 실제 입력기로 시험하지 않았습니다. macOS는 IDE 실행 창과 함께 시험합니다. Windows 앱은 CI가 빌드하므로 아무것도 설치하지 않고 내려받아 실행할 수 있습니다(D47). 그래서 학교 PC에서 기록할 수 있습니다.
+- **무엇:** TextBox 테스트는 Chrome에서 Windows 한글 입력기와 macOS 한글 입력기(두벌식)가 보낸 신호를 재생합니다(`packages/gubasic_runtime/test/ime_logs/`). 데스크톱 앱은 아직 실제 입력기로 시험하지 않았습니다. macOS는 IDE 실행 창과 함께 시험합니다. Windows 앱은 CI가 빌드하므로 아무것도 설치하지 않고 내려받아 실행할 수 있습니다(D47). 그래서 어느 Windows PC에서나 기록할 수 있습니다.
 - **두 기록에서 본 것:** 둘 다 LANGUAGE 11.1절의 약속을 지킵니다. 다섯 시나리오 모두에서 같은 이벤트를 만들었습니다. 스페이스는 앞 음절과 함께 확정되므로, 닭 다음에 `Changed`는 `닭 `은 보지만 `닭`만 따로는 보지 않습니다. 도중의 신호만 다릅니다(macOS는 스페이스를 먼저 조합 안에 넣습니다). 둘 다 입력 칸이 포커스를 잃을 때 조합 중인 글자를 확정하며, 웹에서는 클릭보다 150~180 ms쯤 먼저입니다.
 - **그때 확인할 Flutter 문제:** Windows 데스크톱에서 빠르게 치면 음절이 빠지는 문제([flutter/flutter#189491](https://github.com/flutter/flutter/issues/189491), 열림). 웹에서 브라우저가 조합을 버리면 조합 범위가 남는 문제([flutter/flutter#193847](https://github.com/flutter/flutter/issues/193847))는 Flutter master에서 고쳤지만 3.47.7에는 없습니다. 두 Chrome 기록 모두에서 생기지 않았습니다. 입력 칸을 떠날 때 글자가 깨끗하게 확정되었습니다.
 - **왜 미뤘나:** 기록하려면 사람이 시스템마다 직접 쳐야 합니다.
-- **다시 볼 때:** 학교 PC에서, CI가 만든 Windows IDE와 입력기 기록 도구로(D47, 단계는 이슈 #14).
+- **다시 볼 때:** Windows PC에서, CI가 만든 Windows IDE와 입력기 기록 도구로(D47, 단계는 이슈 #14).
 
 ## 나중에 만든 앱에서 IDE에서 그린 글자가 잘릴 수 있음
 
@@ -55,31 +55,31 @@
 - **왜 미뤘나:** 트랜스파일러가 아직 없습니다. 2단계의 플레이어(D79)는 GuBASIC 자체의 앱이라 IDE의 글꼴을 담을 수 있습니다. 2-2 단계에서 그렇게 하고, 그러면 플레이어 앱은 IDE와 똑같이 글자를 놓습니다.
 - **다시 볼 때:** 트랜스파일러와 함께. 선택지로는 생성 앱에도 같은 글꼴을 넣는 것(약 3 MB 커짐), 디자이너가 글자 잘림 위험을 경고하는 것 등이 있습니다.
 
-## 웹 IDE의 글꼴 불러오기는 학교망에서 확인하지 않았습니다
+## 웹 IDE의 글꼴 불러오기는 느리거나 걸러지는 네트워크에서 확인하지 않았습니다
 
 - **무엇:** 외부 주소를 모두 막고(headless Chrome, `--host-resolver-rules="MAP * ~NOTFOUND, EXCLUDE 127.0.0.1"`, 웹 빌드를 로컬 서버로 띄움) 열었을 때, IDE의 한국어 문구가 바르게 나오고 페이지가 외부에서 받는 것이 없었습니다. 엔진, 글꼴, 대체 글꼴 모두 로컬 서버에서 왔습니다. macOS와 Windows(Chrome 155)에서 확인했습니다. 넷 로그에 남은 외부 요청은 업데이트, 맞춤법 사전처럼 Chrome이 스스로 보낸 것뿐이었습니다. 음절이 □로 빠지는 문제([flutter/flutter#188255](https://github.com/flutter/flutter/issues/188255))는 나타나지 않았습니다.
 - **느린 네트워크에서 첫 방문**(Windows, headless Chrome, 캐시 끔, DevTools의 Slow 4G 설정: 지연 562.5 ms, 180 kB/s, 127.0.0.1에서 받음): "불러오는 중…"이 1.1초부터 약 102초의 첫 화면까지 보였습니다. Noto Sans KR 두 파일이 100.3초와 101.3초에 도착했고, 첫 화면은 그 바로 뒤에 그려졌습니다. 모든 프레임을 화면 녹화(screencast)로 보니 불러오는 중 문구에서 Noto Sans KR로 다 그려진 IDE로 바로 넘어갔습니다. 다른 글꼴로 그린 프레임이 없었으므로, 처음에 다른 글꼴로 그렸다가 바로잡히는 문제([flutter/flutter#77023](https://github.com/flutter/flutter/issues/77023))는 나타나지 않았습니다. `typing`을 실행하고 TextBox에 동해물과 백두산이 닭 값을 넣었을 때 TextBox와 Label 모두 □ 없이 나왔습니다.
 - **Pages 주소에서**(E1e, https://kooboom.github.io/gubasic/ide/, 다른 호스트를 모두 막은 macOS의 headless Chrome): IDE가 열렸고, 모든 파일이 kooboom.github.io에서 왔습니다. 크기는 D30에 있습니다.
-- **왜 미뤘나:** 학교망을 거치지 않았습니다. 그러려면 학교 PC가 필요합니다.
-- **다시 볼 때:** 학교 PC에서 이슈 #14의 단계대로: 학교망의 보통 브라우저로 주소를 열고 첫 방문에 걸리는 시간을 잽니다.
+- **왜 미뤘나:** 회사망이나 학교망처럼 내려받기를 거르거나 느리게 하는 네트워크를 거치지 않았습니다. 그러려면 그런 네트워크의 PC가 필요합니다.
+- **다시 볼 때:** 그런 네트워크의 PC에서 이슈 #14의 단계대로: 보통 브라우저로 주소를 열고 첫 방문에 걸리는 시간을 잽니다.
 
 ## 불러오는 중 퍼센트는 Firefox에서 확인하지 않았습니다
 
 - **무엇:** 웹 IDE의 "불러오는 중… 37%"(D43)는 Chrome과 WebKit(Safari의 엔진)에서 확인했습니다(Playwright 1.56, 로컬 서버, 느린 망 흉내). 퍼센트가 94~99%까지 오르고 첫 화면과 함께 사라졌으며, 모든 파일을 한 번씩만 받았습니다. Firefox는 확인하지 못했습니다. Playwright의 Firefox(142)가 이 macOS에서 시작되지 않고, Firefox도 설치되어 있지 않습니다. Firefox는 자체 엔진인 Gecko에서 돌아가므로([MDN](https://developer.mozilla.org/en-US/docs/Glossary/Gecko)) Chrome과 WebKit의 결과로 대신할 수 없습니다. Safari와 같은 점은 Flutter 로더가 고르는 빌드 하나뿐입니다. Chrome의 `Intl.v8BreakIterator`가 없으므로 Chromium용이 아니라 전체 CanvasKit 빌드를 받습니다.
 - **왜 미뤘나:** 확인하려면 실행되는 Firefox가 있어야 합니다. 코드에는 특정 브라우저만을 위한 부분이 없습니다.
-- **다시 볼 때:** Firefox를 쓸 수 있을 때(학교 PC, 또는 여기서 시작되는 Playwright 버전): 캐시를 끄고 IDE를 열어, 퍼센트가 오르는지와 파일마다 한 번씩만 받는지 확인합니다.
+- **다시 볼 때:** Firefox를 쓸 수 있을 때(Firefox가 있는 PC, 또는 여기서 시작되는 Playwright 버전): 캐시를 끄고 IDE를 열어, 퍼센트가 오르는지와 파일마다 한 번씩만 받는지 확인합니다.
 
 ## 웹 IDE의 글꼴은 WOFF2가 아니라 OTF로 보냅니다
 
 - **무엇:** Pretendard는 GitHub Pages가 gzip으로 압축한 OTF 파일로 브라우저에 갑니다(Regular 1.6 MB, 전송 1.05 MB). WOFF2는 글꼴을 더 잘 압축하지만, Flutter 문서는 `.ttc`, `.ttf`, `.otf`만 적고 WOFF와 WOFF2는 데스크톱 플랫폼에서 지원하지 않는다고 하며, 웹에 대해서는 말하지 않습니다([Flutter](https://docs.flutter.dev/cookbook/design/fonts)).
 - **왜 미뤘나:** IDE는 모든 플랫폼에서 글꼴 목록 하나를 쓰고(D30), 웹 지원은 문서에 없습니다. 시도하지 않았습니다.
-- **다시 볼 때:** Flutter가 웹의 WOFF2를 문서에 적을 때, 또는 학교망에서 첫 방문이 여전히 너무 느릴 때.
+- **다시 볼 때:** Flutter가 웹의 WOFF2를 문서에 적을 때, 또는 느리거나 걸러지는 네트워크에서 첫 방문이 여전히 너무 느릴 때.
 
 ## 줄여서 넣은 그림은 JPEG가 아니라 PNG입니다
 
 - **무엇:** 줄여서 넣기(D56)는 PNG를 씁니다. 그래서 1024 × 768 휴대폰 사진이 1.3–1.8MB가 되어(macOS, Chrome, WebKit), 그림 하나에 허용되는 2MB에 가깝습니다. 잔무늬가 많은 사진은 다시 줄여서 768픽셀 이하가 됩니다. JPEG였다면 수백 KB였을 것입니다. Windows에서는 해 보지 않았습니다. 같은 Flutter 호출로 디코딩하고 인코딩합니다.
 - **왜 미뤘나:** Flutter는 PNG만 인코딩합니다([Flutter](https://api.flutter.dev/flutter/dart-ui/ImageByteFormat.html)). JPEG 인코더는 패키지나 IDE가 직접 쓴 코드가 필요하고, 무거운 의존성은 넣지 않기로 했습니다.
-- **다시 볼 때:** 사용자의 사진이 자주 1024픽셀보다 작아질 때, 또는 사진 때문에 프로젝트가 10MB 한도에 닿을 때. 그리고 학교 PC의 Windows IDE에서.
+- **다시 볼 때:** 사용자의 사진이 자주 1024픽셀보다 작아질 때, 또는 사진 때문에 프로젝트가 10MB 한도에 닿을 때. 그리고 Windows PC의 Windows IDE에서.
 
 ## ListBox의 항목은 코드에서만 넣을 수 있습니다
 

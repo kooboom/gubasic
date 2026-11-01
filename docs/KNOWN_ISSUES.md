@@ -43,11 +43,11 @@ Problems we know about and have **deliberately** left unfixed for now. Each entr
 
 ## Korean typing is tested in Chrome only so far
 
-- **What:** the TextBox tests replay what the Windows and the macOS (2-set) Korean input methods sent in Chrome (`packages/gubasic_runtime/test/ime_logs/`). Desktop apps have not been tried with a real input method yet: on macOS this comes with the IDE run window; on Windows, the app is built by CI and can be downloaded and run without installing anything (D47), so it can be recorded on the school PC.
+- **What:** the TextBox tests replay what the Windows and the macOS (2-set) Korean input methods sent in Chrome (`packages/gubasic_runtime/test/ime_logs/`). Desktop apps have not been tried with a real input method yet: on macOS this comes with the IDE run window; on Windows, the app is built by CI and can be downloaded and run without installing anything (D47), so it can be recorded on any Windows PC.
 - **What the two recordings showed:** both keep the promises of LANGUAGE §11.1. They made the same events in all five scenarios: a space is committed together with the syllable before it, so after 닭 `Changed` sees `닭 ` but never `닭` alone. Only the signals on the way differ (macOS first puts the space into the composition). Both commit what is being composed when the field loses the focus, about 150 to 180 ms before a click on the web.
 - **Known Flutter problems to check then:** on Windows desktop, syllables can be lost when typing fast ([flutter/flutter#189491](https://github.com/flutter/flutter/issues/189491), open). On the web, a composition dropped by the browser can leave a stale composing range ([flutter/flutter#193847](https://github.com/flutter/flutter/issues/193847)); it is fixed on Flutter's master branch but not in 3.47.7. Neither Chrome recording showed it: leaving the field committed the text cleanly.
 - **Why deferred:** the recordings need a person typing on each system.
-- **Revisit:** on the school PC, with the Windows IDE and IME probe from CI (D47; the steps are in issue #14).
+- **Revisit:** on a Windows PC, with the Windows IDE and IME probe from CI (D47; the steps are in issue #14).
 
 ## Apps built later may cut off text drawn in the IDE
 
@@ -55,31 +55,31 @@ Problems we know about and have **deliberately** left unfixed for now. Each entr
 - **Why deferred:** there is no transpiler yet. The player of stage 2 (D79) is an app of GuBASIC's own, so it can bring the IDE's font: step 2-2 does, and its apps then lay text out as the IDE does.
 - **Revisit:** with the transpiler. Options include putting the same font into generated apps (they grow by about 3 MB), or having the designer warn when text may be cut off.
 
-## The web IDE's font loading is not checked on the school network
+## The web IDE's font loading is not checked on a slow or filtered network
 
 - **What:** with all outside hosts blocked (headless Chrome, `--host-resolver-rules="MAP * ~NOTFOUND, EXCLUDE 127.0.0.1"`, the web build served locally), the IDE shows its Korean words correctly and the page fetches nothing from outside: the engine, the fonts and the fallback font come from the local server. Checked on macOS and on Windows (Chrome 155; the only outside requests in the net log were Chrome's own, such as updates and spelling dictionaries). Missing syllables as □ ([flutter/flutter#188255](https://github.com/flutter/flutter/issues/188255)) did not appear.
 - **First visit on a slow network** (Windows, headless Chrome, cache off, DevTools' Slow 4G preset: 562.5 ms latency, 180 kB/s, served from 127.0.0.1): "불러오는 중…" showed from 1.1 s until the first frame at about 102 s. The two Noto Sans KR files arrived at 100.3 s and 101.3 s, and the first frame came right after them. A screencast of every frame went from the loading text straight to the finished IDE in Noto Sans KR: no frame in another font, so text first drawn in the wrong font and corrected later ([flutter/flutter#77023](https://github.com/flutter/flutter/issues/77023)) did not appear. Running `typing` and putting 동해물과 백두산이 닭 값 into its TextBox showed it in the TextBox and the Label without □.
 - **On the Pages address** (E1e, https://kooboom.github.io/gubasic/ide/, headless Chrome on macOS with every other host blocked): the IDE opened, and every file came from kooboom.github.io; D30 has the sizes.
-- **Why deferred:** no school network was in between. That needs a school PC.
-- **Revisit:** on the school PC, following the steps in issue #14: open the address in a normal browser on the school network and measure how long the first visit takes.
+- **Why deferred:** no such network was in between, such as an office's or a school's that filters or slows downloads. That needs a PC on one.
+- **Revisit:** on a PC on such a network, following the steps in issue #14: open the address in a normal browser and measure how long the first visit takes.
 
 ## The loading percentage is not checked in Firefox
 
 - **What:** the web IDE's "Loading… 37%" (D43) was checked in Chrome and in WebKit, the engine of Safari (Playwright 1.56, a local server, a throttled network): the percentage rose to 94–99%, went away with the first frame, and every file was fetched once. Firefox was not checked: Playwright's Firefox (142) does not start on this macOS, and Firefox is not installed. Firefox runs on its own engine, Gecko ([MDN](https://developer.mozilla.org/en-US/docs/Glossary/Gecko)), so the Chrome and WebKit results do not stand for it. The only part it shares with Safari is the build Flutter's loader picks: without Chrome's `Intl.v8BreakIterator` it gets the full CanvasKit build, not the Chromium one.
 - **Why deferred:** checking it needs a Firefox that runs; nothing in the code is specific to one browser.
-- **Revisit:** when Firefox is at hand (a school PC, or a Playwright release that starts here): open the IDE with the cache off and check that the percentage rises and each file is fetched once.
+- **Revisit:** when Firefox is at hand (a PC that has it, or a Playwright release that starts here): open the IDE with the cache off and check that the percentage rises and each file is fetched once.
 
 ## The web IDE's fonts are sent as OTF, not WOFF2
 
 - **What:** Pretendard goes to the browser as an OTF file that GitHub Pages compresses with gzip (Regular 1.6 MB, 1.05 MB on the wire). WOFF2 compresses fonts better, but Flutter's documentation lists only `.ttc`, `.ttf` and `.otf`, says WOFF and WOFF2 are not supported on desktop platforms, and says nothing of the web ([Flutter](https://docs.flutter.dev/cookbook/design/fonts)).
 - **Why deferred:** the IDE uses one font list on every platform (D30), and the web's support is not documented; it was not tried.
-- **Revisit:** if Flutter documents WOFF2 for the web, or if the first visit is still too slow on the school network.
+- **Revisit:** if Flutter documents WOFF2 for the web, or if the first visit is still too slow on a slow or filtered network.
 
 ## A picture made smaller is a PNG, not a JPEG
 
 - **What:** Make Smaller and Add (D56) writes a PNG. A phone photo of 1024 × 768 then takes 1.3–1.8 MB (macOS, Chrome, WebKit), close to the 2 MB a picture may take; a photo with much fine detail is made smaller again, to 768 pixels or less. As a JPEG it would take a few hundred KB. Windows was not tried; it decodes and encodes with the same Flutter calls.
 - **Why deferred:** Flutter encodes PNG only ([Flutter](https://api.flutter.dev/flutter/dart-ui/ImageByteFormat.html)); a JPEG encoder is a package, or code of the IDE's own, and the user asked for no heavy dependency.
-- **Revisit:** when users' photos often end up smaller than 1024 pixels, or projects reach the 10 MB limit with photos; and on the school PC with the Windows IDE.
+- **Revisit:** when users' photos often end up smaller than 1024 pixels, or projects reach the 10 MB limit with photos; and on a Windows PC with the Windows IDE.
 
 ## A ListBox's items are added only in code
 
