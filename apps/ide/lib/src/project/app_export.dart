@@ -163,9 +163,16 @@ Archive readTemplate(List<int> template) {
 /// The web app of [bundle], made from the web player's [template] (D84):
 /// a `.zip` with the folder `NAME-web/`, which holds the template's files,
 /// with the page's title and the manifest's name set to the project's
-/// name, the bundle as `project.gbz`, and [guide] as `HOSTING.txt`.
+/// name, the bundle as `project.gbz`, [guide] as `HOSTING.txt`, and the
+/// notices of what it is made with as `THIRD_PARTY_NOTICES.txt` (D120):
+/// GuBASIC's, the [fonts]' (name → licence) and the template's NOTICES.
 /// Throws [TemplateNotUsable].
-Uint8List webAppZip(List<int> template, ProjectBundle bundle, String guide) {
+Uint8List webAppZip(
+  List<int> template,
+  ProjectBundle bundle,
+  String guide, {
+  Map<String, String> fonts = const {},
+}) {
   final files = readTemplate(template);
   if (files.findFile('index.html') == null) throw const TemplateNotUsable();
   final folder = '${appFileName(bundle.name)}-web';
@@ -192,20 +199,36 @@ Uint8List webAppZip(List<int> template, ProjectBundle bundle, String guide) {
   }
   add(bundleFileName, bundle.encode());
   add('HOSTING.txt', utf8.encode(guide));
+  add(thirdPartyNoticesFile, _notices(files, 'assets/NOTICES', fonts));
   return Uint8List.fromList(ZipEncoder().encodeBytes(out));
+}
+
+/// The notices beside an exported app (D120): GuBASIC's, the [fonts]',
+/// and the template's NOTICES file at [path] (`.Z`: gzip).
+List<int> _notices(Archive files, String path, Map<String, String> fonts) {
+  final file = files.findFile(path);
+  var flutter = '';
+  if (file != null) {
+    final bytes = path.endsWith('.Z')
+        ? const GZipDecoder().decodeBytes(file.content)
+        : file.content;
+    flutter = utf8.decode(bytes, allowMalformed: true);
+  }
+  return utf8.encode(thirdPartyNotices(fonts: fonts, flutter: flutter));
 }
 
 /// The Windows app of [bundle], made from the Windows player's [template]
 /// (D86): a `.zip` with the folder `NAME-windows/`, which holds the
 /// template's files, with the program renamed to `NAME.exe`, the bundle as
-/// `project.gbz` next to it and [guide] as `README.txt`. NAME is the
-/// project's name as a file name ([appFileName]). Throws
-/// [TemplateNotUsable].
+/// `project.gbz` next to it, [guide] as `README.txt` and the notices as
+/// `THIRD_PARTY_NOTICES.txt` (D120, as [webAppZip]). NAME is the project's
+/// name as a file name ([appFileName]). Throws [TemplateNotUsable].
 Uint8List windowsAppZip(
   List<int> template,
   ProjectBundle bundle,
-  String guide,
-) {
+  String guide, {
+  Map<String, String> fonts = const {},
+}) {
   final files = readTemplate(template);
   final Object? program;
   try {
@@ -229,6 +252,10 @@ Uint8List windowsAppZip(
   }
   add(bundleFileName, bundle.encode());
   add('README.txt', utf8.encode(guide));
+  add(
+    thirdPartyNoticesFile,
+    _notices(files, 'data/flutter_assets/NOTICES.Z', fonts),
+  );
   return Uint8List.fromList(ZipEncoder().encodeBytes(out));
 }
 

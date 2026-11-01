@@ -225,6 +225,7 @@ class _IdeShellState extends State<IdeShell> {
       session: session,
       // While no program runs, the standard Edit menu (D110).
       editMenu: true,
+      onLicenses: () => showGubasicLicenses(context),
       child: _shell(context, s, session, controller, files),
     );
   }
@@ -302,6 +303,7 @@ class _IdeShellState extends State<IdeShell> {
                   icon: const Icon(Icons.stop),
                   label: Text('${s.stop} (Shift+F5)'),
                 ),
+                _infoMenu(context),
                 const SizedBox(width: 8),
               ],
             ),
@@ -455,6 +457,22 @@ class _IdeShellState extends State<IdeShell> {
 
   void _save() => widget.controller.save(context);
   void _saveAs() => widget.controller.saveAs(context);
+
+  /// The About menu (D120): the open source licences.
+  Widget _infoMenu(BuildContext context) => MenuAnchor(
+    menuChildren: [
+      MenuItemButton(
+        key: const ValueKey('menu.licenses'),
+        onPressed: () => showGubasicLicenses(context),
+        child: Text(widget.strings.player.licenses),
+      ),
+    ],
+    builder: (context, menu, _) => TextButton(
+      key: const ValueKey('menu.info'),
+      onPressed: () => menu.isOpen ? menu.close() : menu.open(),
+      child: Text(widget.strings.infoMenu),
+    ),
+  );
 
   Widget _fileMenu(BuildContext context) {
     final s = widget.strings;

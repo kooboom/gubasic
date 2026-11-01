@@ -207,3 +207,9 @@ Problems we know about and have **deliberately** left unfixed for now. Each entr
 - **What:** a Grid's column has the width the program gives it with `ColumnWidth` (D118), or a share of what is left; the user cannot drag a column's edge to change it.
 - **Why deferred:** v0.4's answers chose the property first; dragging needs the edge to be found in the header and an event for the program, if it wants to know.
 - **Revisit:** a candidate for a later version, when programs show lists whose columns differ much in width.
+
+## The open source licence page's own words are English
+
+- **What:** 정보 → 오픈소스 라이선스 (D120) shows Flutter's licence page. Its title ("Licenses"), "Powered by Flutter" and "1 license." are in English even in the Korean IDE; GuBASIC's own words around it are Korean.
+- **Why deferred:** those words come from Flutter's Material localizations, which the IDE and the player do not load; loading them changes the words of every built-in Material widget at once.
+- **Revisit:** when the IDE takes Flutter's localizations for another reason.

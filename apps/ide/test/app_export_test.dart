@@ -41,6 +41,7 @@ void main() {
     );
     add('manifest.json', '{"name": "GuBASIC Player", "short_name": "GuBASIC"}');
     add('main.dart.js', '// the player');
+    add('assets/NOTICES', 'the engine and the packages: their licences');
     add('template.json', '{"gubasic":"0.1.0","bundleFormat":$bundleFormat}');
     return ZipEncoder().encodeBytes(archive);
   }
@@ -59,17 +60,31 @@ void main() {
 
     test('puts the bundle and the guide into the template, with the '
         "project's name", () {
-      final files = unzip(webAppZip(template(), bundle, 'how to host'));
+      final files = unzip(
+        webAppZip(
+          template(),
+          bundle,
+          'how to host',
+          fonts: {'Pretendard': 'the OFL'},
+        ),
+      );
       expect(
         files.keys,
         unorderedEquals([
           'Demo-web/index.html',
           'Demo-web/manifest.json',
           'Demo-web/main.dart.js',
+          'Demo-web/assets/NOTICES',
           'Demo-web/project.gbz',
           'Demo-web/HOSTING.txt',
+          'Demo-web/THIRD_PARTY_NOTICES.txt',
         ]),
       );
+      // GuBASIC's licence, the fonts', then Flutter's (D120).
+      final notices = utf8.decode(files['Demo-web/THIRD_PARTY_NOTICES.txt']!);
+      expect(notices, contains('Copyright (c) 2026 Jungmo Gu'));
+      expect(notices, contains('Pretendard (font)\n\nthe OFL'));
+      expect(notices, contains('the engine and the packages: their licences'));
       final html = utf8.decode(files['Demo-web/index.html']!);
       expect(html, contains('<title>Demo</title>'));
       expect(html, contains('app-title" content="Demo"'));
@@ -120,6 +135,12 @@ void main() {
     add('gubasic_player_app.exe', 'MZ the player');
     add('flutter_windows.dll', 'the engine');
     add('data/app.so', 'the code');
+    archive.add(
+      ArchiveFile.bytes(
+        'data/flutter_assets/NOTICES.Z',
+        const GZipEncoder().encodeBytes(utf8.encode('the engine: licences')),
+      ),
+    );
     add(
       'template.json',
       jsonEncode({
@@ -146,9 +167,15 @@ void main() {
           '퀴즈-windows/퀴즈.exe',
           '퀴즈-windows/flutter_windows.dll',
           '퀴즈-windows/data/app.so',
+          '퀴즈-windows/data/flutter_assets/NOTICES.Z',
           '퀴즈-windows/project.gbz',
           '퀴즈-windows/README.txt',
+          '퀴즈-windows/THIRD_PARTY_NOTICES.txt',
         ]),
+      );
+      expect(
+        utf8.decode(files['퀴즈-windows/THIRD_PARTY_NOTICES.txt']!),
+        allOf(contains('MIT License'), contains('the engine: licences')),
       );
       expect(utf8.decode(files['퀴즈-windows/퀴즈.exe']!), 'MZ the player');
       final read = ProjectBundle.decode(files['퀴즈-windows/project.gbz']!);

@@ -8,6 +8,7 @@ export 'src/app_view.dart';
 export 'src/bundle.dart';
 export 'src/fit_view.dart';
 export 'src/form_window.dart';
+export 'src/licenses.dart';
 export 'src/pictures.dart';
 export 'src/player_strings.dart';
 export 'src/project.dart';

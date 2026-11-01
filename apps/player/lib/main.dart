@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -21,6 +23,7 @@ Future<void> main() async {
   if (bytes != null) {
     try {
       final bundle = ProjectBundle.decode(bytes);
+      addPlayerLicenses(bundle.fonts);
       if (!kIsWeb) await fitAppWindow(Project.read(bundle.files));
       runApp(
         PlayerApp(
@@ -51,5 +54,16 @@ Future<void> main() async {
       );
     }
   }
+  addPlayerLicenses(const {});
   runApp(PlayerApp(files: files, pictures: pictures, strings: strings));
 }
+
+/// The licences the player shows besides Flutter's (D120): GuBASIC's,
+/// Pretendard's, and NanumGothic's when the bundle carries it.
+void addPlayerLicenses(Map<String, Uint8List> fonts) => addGubasicLicenses({
+  pretendardFont: () => rootBundle.loadString('fonts/pretendard/LICENSE.txt'),
+  nanumGothicFont: () async => switch (fonts[pdfFontLicense]) {
+    final bytes? => utf8.decode(bytes),
+    null => null,
+  },
+});

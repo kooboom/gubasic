@@ -17,6 +17,7 @@ class PlayerStrings {
     required this.bundleTooNew,
     required this.notABundle,
     required this.windowMenu,
+    required this.licenses,
     required this.editMenu,
   });
 
@@ -51,6 +52,9 @@ class PlayerStrings {
   /// The Window menu on macOS's menu bar (D106).
   final String windowMenu;
 
+  /// The item that shows the open source licences (D120).
+  final String licenses;
+
   /// The IDE's Edit menu on macOS's menu bar while no program runs (D110):
   /// its title, then Undo, Redo, Cut, Copy, Paste and Select All.
   final List<String> editMenu;
@@ -76,6 +80,7 @@ class PlayerStrings {
         'This app\'s program file (project.gbz) is damaged. Export the app '
         'again.',
     windowMenu: 'Window',
+    licenses: 'Open Source Licenses',
     editMenu: ['Edit', 'Undo', 'Redo', 'Cut', 'Copy', 'Paste', 'Select All'],
   );
 
@@ -90,6 +95,7 @@ class PlayerStrings {
     bundleTooNew: '이 앱의 프로그램은 이 앱보다 새로운 GuBASIC {0} 버전으로 만들었습니다. 그 GuBASIC으로 앱을 다시 내보내 주세요.',
     notABundle: '이 앱의 프로그램 파일(project.gbz)이 손상되었습니다. 앱을 다시 내보내 주세요.',
     windowMenu: '윈도우',
+    licenses: '오픈소스 라이선스',
     editMenu: ['편집', '실행 취소', '다시 실행', '잘라내기', '복사', '붙여넣기', '모두 선택'],
   );
 }

@@ -207,6 +207,8 @@ class _PlayerScreenState extends State<PlayerScreen> {
       appName: _project.name,
       strings: widget.strings,
       session: session,
+      // Under the app's About (D120).
+      onLicenses: () => showGubasicLicenses(context),
       child: Scaffold(
         body: widget.asApp
             ? AppView(session: session)

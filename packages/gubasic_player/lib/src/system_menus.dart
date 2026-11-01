@@ -21,7 +21,12 @@ class SystemMenus extends StatefulWidget {
     required this.child,
     this.session,
     this.editMenu = false,
+    this.onLicenses,
   });
+
+  /// Shows the open source licences, from an item under the app's About
+  /// (D120); none when null.
+  final VoidCallback? onLicenses;
 
   /// The app's name, the label of its own menu.
   final String appName;
@@ -163,8 +168,22 @@ class _SystemMenusState extends State<SystemMenus> {
       PlatformMenu(
         label: widget.appName,
         menus: [
+          PlatformMenuItemGroup(
+            members: [
+              if (PlatformProvidedMenuItem.hasMenu(
+                PlatformProvidedMenuItemType.about,
+              ))
+                const PlatformProvidedMenuItem(
+                  type: PlatformProvidedMenuItemType.about,
+                ),
+              if (widget.onLicenses case final show?)
+                PlatformMenuItem(
+                  label: widget.strings.licenses,
+                  onSelected: show,
+                ),
+            ],
+          ),
           for (final group in const [
-            [PlatformProvidedMenuItemType.about],
             [PlatformProvidedMenuItemType.servicesSubmenu],
             [
               PlatformProvidedMenuItemType.hide,

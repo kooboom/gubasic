@@ -18,6 +18,7 @@ import 'src/project/platform_folders.dart';
 import 'src/project/project_controller.dart';
 import 'src/project/project_pictures.dart';
 import 'src/project/template_source.dart';
+import 'src/licenses.dart';
 import 'src/strings.dart';
 import 'src/theme.dart';
 
@@ -25,6 +26,7 @@ import 'src/theme.dart';
 /// projects on disk (D32), and runs them in a run window (docs/ROADMAP.md,
 /// stage 1).
 Future<void> main() async {
+  addIdeLicenses();
   final language = PlatformDispatcher.instance.locale.languageCode;
   // On the web, the projects kept in the browser are opened first, and
   // moved out of localStorage if they are still there (D53).

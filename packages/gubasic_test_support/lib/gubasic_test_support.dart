@@ -40,9 +40,11 @@ void testWidgetsKeepingFailures(
 /// Prints the window as it is now, as a PNG in base64 lines under
 /// [failureShotMarker], named after [description].
 Future<void> printFailureShot(WidgetTester tester, String description) async {
-  final name = description
+  final ascii = description
       .replaceAll(RegExp(r'[^A-Za-z0-9]+'), '-')
       .replaceAll(RegExp(r'^-+|-+$'), '');
+  // A name of no ASCII letters at all (a Korean one) still names the file.
+  final name = ascii.isEmpty ? 'failure' : ascii;
   try {
     final bytes = await tester.runAsync(() async {
       final view = tester.binding.renderViews.first;

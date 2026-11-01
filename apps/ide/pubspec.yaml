@@ -38,6 +38,9 @@ flutter:
   # first opens, not on the IDE's first visit (D36).
   assets:
     - fonts/d2coding/D2Coding-Ver1.3.2-20180524.ttf
+    # The fonts' licences, in the open source licences (D120).
+    - fonts/d2coding/OFL.txt
+    - fonts/pretendard/LICENSE.txt
     # Pretendard Bold: loaded after the first frame (D30, BoldFont).
     - fonts/pretendard/Pretendard-Bold.otf
     # NanumGothic (OFL, fonts/nanumgothic/OFL.txt), the font PDF files are

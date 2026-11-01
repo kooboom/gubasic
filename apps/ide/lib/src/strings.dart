@@ -16,6 +16,7 @@ class IdeStrings {
     required this.ended,
     required this.stopped,
     required this.fileMenu,
+    required this.infoMenu,
     required this.open,
     required this.save,
     required this.saveAs,
@@ -260,6 +261,9 @@ class IdeStrings {
 
   // Opening and saving projects (D32).
   final String fileMenu;
+
+  /// The menu with the open source licences (D120).
+  final String infoMenu;
   final String open;
   final String save;
   final String saveAs;
@@ -743,6 +747,7 @@ class IdeStrings {
     ended: 'The program ended at End.',
     stopped: 'The program was stopped.',
     fileMenu: 'File',
+    infoMenu: 'About',
     open: 'Open…',
     save: 'Save',
     saveAs: 'Save As…',
@@ -1101,6 +1106,7 @@ class IdeStrings {
     ended: 'End 문에서 프로그램이 끝났습니다.',
     stopped: '프로그램을 중지했습니다.',
     fileMenu: '파일',
+    infoMenu: '정보',
     open: '열기…',
     save: '저장',
     saveAs: '다른 이름으로 저장…',

@@ -1,11 +1,17 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:math';
-import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:gubasic_lang/gubasic_lang.dart';
 import 'package:gubasic_player/gubasic_player.dart'
-    show ProjectBundle, usesPdfDocument;
+    show
+        ProjectBundle,
+        nanumGothicFont,
+        pdfFontLicense,
+        pretendardFont,
+        usesPdfDocument;
 import 'package:gubasic_runtime/gubasic_runtime.dart';
 
 import '../strings.dart';
@@ -902,9 +908,23 @@ class ProjectController extends ChangeNotifier {
     final Uint8List zip;
     try {
       final bytes = await fetchTemplate!(template);
+      // The fonts' licences, for the notices beside the app (D120).
+      final fonts = {
+        pretendardFont: utf8.decode(
+          (await rootBundle.load('fonts/pretendard/LICENSE.txt')).buffer
+              .asUint8List(),
+        ),
+        if (bundle.fonts[pdfFontLicense] case final ofl?)
+          nanumGothicFont: utf8.decode(ofl),
+      };
       zip = switch (template) {
-        AppTemplate.web => webAppZip(bytes, bundle, words.guide),
-        AppTemplate.windows => windowsAppZip(bytes, bundle, words.guide),
+        AppTemplate.web => webAppZip(bytes, bundle, words.guide, fonts: fonts),
+        AppTemplate.windows => windowsAppZip(
+          bytes,
+          bundle,
+          words.guide,
+          fonts: fonts,
+        ),
         AppTemplate.macos => await macAppMaker!(bytes, bundle, words.guide),
       };
     } on WebTemplateProblem catch (p) {
