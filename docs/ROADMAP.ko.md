@@ -82,15 +82,42 @@ IDE 안에서 완결되는 비주얼 베이직의 핵심 경험입니다.
 ### v0.5 — 실제 개발 도구
 
 - [ ] 디버거: 중단점, 그다음 한 줄씩 실행, 그다음 변수 보기, 그다음 직접 실행 창
-- [ ] `Database` (SQLite)와 `Http` + JSON
+- [ ] `Database` (SQLite)와 `Http` + JSON. 컴포넌트 통로를 거치는 첫 컴포넌트로([COMPONENT_CHANNEL.ko.md](COMPONENT_CHANNEL.ko.md), 권장)
+- [ ] 언어·컨트롤·함수를 한곳에 모은 참조 문서, 그리고 AI용 참조(`llms.txt`)(D121 d)
 
-### v0.5 다음
+**v0.5를 시작하기 전에 정할 질문:**
+
+- **Http: 기다리는 동안 화면이 멈추지 않는 방식.** 요청에는 시간이 걸리고, 그동안에도 폼은 그려지고 클릭을 받아야 합니다. 프로그램이 묻는 자리에서 기다리거나(`Dim reply = Await Http.Get(url)`, Visual Basic .NET의 `Await`처럼: [Microsoft](https://learn.microsoft.com/en-us/dotnet/visual-basic/programming-guide/concepts/async/)), `Http.Get`은 바로 돌아오고 완료 이벤트가 답을 가져오는 방식(`httpScores_Completed`, Winsock의 이벤트처럼)입니다. 이 답이 `WebSocket`과 `Room`(v0.6)도 정합니다.
+
+### v0.6 — 함께 쓰기(후보, D122)
+
+- [ ] `WebSocket`: `Connect`, `Send`, `Close`, 그리고 `Connected`, `Message`, `Closed`, `Error`. 어떤 표준 WebSocket 서버에도 연결
+- [ ] `Room`: `Create`, `Join`, `Send`, `Leave`, 그리고 `Joined`, `Left`, `Message`. 메시지 형식을 공개한 중계 서버 위에서
+- [ ] 저장소에 둔 중계 서버와, Linux에서 Apache 뒤에 두는 방법
+- [ ] 예제: 폰으로 답하고 TV가 경주를 보여 주는 실시간 퀴즈([IDEAS](IDEAS.ko.md#실시간으로-함께-websocket과-room))
+
+### v0.7 — 게임 도구(후보, D121 a)
+
+- [ ] `Sprite`: 위치, 속도, 프레임이 있는 움직이는 그림
+- [ ] 충돌 검사: 사각형, 원, 픽셀
+- [ ] 소리: 효과음과 음악
+- [ ] `Keyboard.IsDown(Keys.Left)`: 게임 루프를 위한 동시에 누른 키
+- [ ] 게임 루프를 Timer 하나로 돌리기 위한 ms 단위 시간
+- [ ] 예제: 정석을 보여 주는 슈팅 게임(Timer 하나의 게임 루프, 물체마다 상태, 적이 나오는 시간표), 격투 게임
+
+### v0.6 다음(후보, 권장 순서)
+
+- [ ] GuBASIC 서버: 서버에서 HTTP(JSON)와 WebSocket에 답하는 화면 없는 프로그램([IDEAS](IDEAS.ko.md#gubasic-서버)). 예제: 게시판
+- [ ] 프로젝트가 고른 패키지를 위한 컴포넌트 통로, 트랜스파일러와 함께([COMPONENT_CHANNEL.ko.md](COMPONENT_CHANNEL.ko.md))
+- [ ] UserControl: 다른 사용자의 도구 상자에 넣는, GuBASIC으로 만든 컨트롤([IDEAS](IDEAS.ko.md#usercontrol)). 컴포넌트 통로 다음
+
+### v0.5 다음의 다른 후보
 
 - [ ] 트랜스파일러: GuBASIC → Dart → Flutter 프로젝트. CI에서 변환된 Dart로 동일성 테스트 묶음을 돌림. 디버거 다음이고, pub.dev 컴포넌트가 필요해지거나 STAGE2_PLAN §7의 기준을 넘는 프로그램이 생기면 앞당김(D79, D96)
 - [ ] 트랜스파일러와 함께, 네이티브 빌드를 위한 Flutter SDK 내려받기와 GitHub Actions 템플릿. 고르는 사람을 위해(D95)
 - [ ] 엑셀 파일을 데이터로(D92)
 - [ ] 인쇄
-- [ ] 소리, 그림 여러 장으로 하는 애니메이션
+- [ ] 소리, 그림 여러 장으로 하는 애니메이션(게임 도구, v0.7과 함께)
 - [ ] 레이아웃: `LayoutMode` (세로 / 가로 / 격자), `Dock`, 화면 크기별 레이아웃 덮어쓰기
 - [ ] `ByRef`
 - [ ] 동일성 테스트 프로그램을 플레이어로도 돌리기

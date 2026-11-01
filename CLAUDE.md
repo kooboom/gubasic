@@ -67,6 +67,7 @@ that package.
 - Documentation: English file first (`X.md`), Korean translation next to it (`X.ko.md`). Keep them in sync.
 - Text files are LF everywhere (`.gitattributes`), so golden files and byte-for-byte test comparisons match on Windows and macOS alike.
 - Small, focused changes. One feature per change, with its tests.
+- A plan for a feature is written as `docs/PLAN_TEMPLATE.md` says, including its "No detours" check (D121).
 - Commit messages in English, imperative mood.
 - Diagnostic messages say what is wrong and how to fix it, in one or two sentences; Korean ones use the documents' "~합니다" style.
 - In Korean messages, never put a particle right after a placeholder (`{0}가`): attach it to a fixed word instead (`{0} 키워드가`, `{0} 블록이`).

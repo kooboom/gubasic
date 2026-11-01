@@ -82,15 +82,42 @@ Three releases, then the rest (D94–D96). The order follows who GuBASIC is for 
 ### v0.5 — A real development tool
 
 - [ ] Debugger: breakpoints, then stepping, then watching variables, then an Immediate window
-- [ ] `Database` (SQLite) and `Http` + JSON
+- [ ] `Database` (SQLite) and `Http` + JSON, as the first components through the component channel ([COMPONENT_CHANNEL.md](COMPONENT_CHANNEL.md), recommended)
+- [ ] A reference of the language, the controls and the functions in one place, and one for AI assistants (`llms.txt`) (D121 d)
 
-### After v0.5
+**Questions to settle before v0.5 starts:**
+
+- **Http: waiting without freezing the screen.** A request takes time; the form must go on drawing and taking clicks meanwhile. Either the program waits where it asks (`Dim reply = Await Http.Get(url)`, as Visual Basic .NET's `Await`: [Microsoft](https://learn.microsoft.com/en-us/dotnet/visual-basic/programming-guide/concepts/async/)), or `Http.Get` returns at once and a completion event brings the answer (`httpScores_Completed`, as Winsock's events did). The answer also decides `WebSocket` and `Room` (v0.6).
+
+### v0.6 — Together (candidate, D122)
+
+- [ ] `WebSocket`: `Connect`, `Send`, `Close`; `Connected`, `Message`, `Closed`, `Error`, for any standard WebSocket server
+- [ ] `Room`: `Create`, `Join`, `Send`, `Leave`; `Joined`, `Left`, `Message`, over a relay server whose message format is published
+- [ ] The relay server, kept in the repository, and how to run it on Linux behind Apache
+- [ ] Example: a live quiz, phones answering and a TV showing the race ([IDEAS](IDEAS.md#real-time-together-websocket-and-room))
+
+### v0.7 — Game tools (candidate, D121 a)
+
+- [ ] `Sprite`: a picture that moves, with its position, speed and frames
+- [ ] Collision tests: rectangles, circles, pixels
+- [ ] Sound: effects and music
+- [ ] `Keyboard.IsDown(Keys.Left)`: keys held at once, for a game loop
+- [ ] Time in milliseconds, for a game loop on one Timer
+- [ ] Examples: a shooting game showing the usual shape (one Timer as the game loop, a state for each object, a timetable of when enemies come), and a fighting game
+
+### After v0.6 (candidates, order recommended)
+
+- [ ] The GuBASIC server: programs with no screen, answering HTTP (JSON) and WebSocket on a server ([IDEAS](IDEAS.md#the-gubasic-server)). Example: a bulletin board
+- [ ] The component channel for packages a project chooses, with the transpiler ([COMPONENT_CHANNEL.md](COMPONENT_CHANNEL.md))
+- [ ] UserControl: controls made with GuBASIC for other users' toolboxes ([IDEAS](IDEAS.md#usercontrol)), after the component channel
+
+### Other candidates after v0.5
 
 - [ ] Transpiler: GuBASIC → Dart → Flutter project, with the parity suite running the transpiled Dart in CI. After the debugger; earlier when a component from pub.dev is needed, or a program goes past the criteria of STAGE2_PLAN §7 (D79, D96)
 - [ ] Flutter SDK download and a GitHub Actions template for native builds, with the transpiler, for those who choose them (D95)
 - [ ] Excel files as data (D92)
 - [ ] Printing
-- [ ] Sound; animation with several pictures
+- [ ] Sound; animation with several pictures (with the game tools, v0.7)
 - [ ] Layout: `LayoutMode` (Vertical / Horizontal / Grid), `Dock`; per-size layout overrides
 - [ ] `ByRef`
 - [ ] Parity programs run through the player too
