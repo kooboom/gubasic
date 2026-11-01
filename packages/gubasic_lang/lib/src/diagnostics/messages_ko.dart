@@ -237,7 +237,7 @@ const Map<DiagnosticCode, String> koreanMessages = {
   DiagnosticCode.vb6KeyHandler:
       'GuBASIC에서는 키 이벤트가 매개변수 하나로 키를 알려 줍니다. {1} 형태로 쓰고, e.KeyCode(e.KeyCode = Keys.Left처럼)와 e.Shift, e.Control, e.Alt를 읽어 주세요.',
   DiagnosticCode.vb6MouseHandler:
-      'GuBASIC에서는 마우스 이벤트가 매개변수 하나로 단추와 위치를 알려 줍니다. {1} 형태로 쓰고, e.Button(e.Button = MouseButtons.Right처럼)과 e.X, e.Y를 읽어 주세요.',
+      'GuBASIC에서는 마우스 이벤트가 매개변수 하나로 버튼과 위치를 알려 줍니다. {1} 형태로 쓰고, e.Button(e.Button = MouseButtons.Right처럼)과 e.X, e.Y를 읽어 주세요.',
   DiagnosticCode.ambiguousName:
       '{0} 이름은 {1} 모듈에서 모두 Public이라 여기서 어느 것인지 알 수 없습니다. {2} 형태처럼 모듈 이름과 함께 써 주세요.',
   DiagnosticCode.mainTwice:

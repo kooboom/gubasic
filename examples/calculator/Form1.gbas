@@ -1,6 +1,6 @@
-' 계산기: 숫자 단추 10개를 처리기 하나로 처리합니다. Handles 뒤에 단추를
-' 모두 적고, 어느 단추가 눌렸는지는 sender로 압니다(DESIGN.md D98).
-' Visual Basic 6에서 컨트롤 배열로 하던 일입니다. 연산 단추 넷도 처리기
+' 계산기: 숫자 버튼 10개를 처리기 하나로 처리합니다. Handles 뒤에 버튼을
+' 모두 적고, 어느 버튼이 눌렸는지는 sender로 압니다(DESIGN.md D98).
+' Visual Basic 6에서 컨트롤 배열로 하던 일입니다. 연산 버튼 넷도 처리기
 ' 하나입니다. 키보드의 숫자 키, Esc(지우기), Backspace도 됩니다: 폼의
 ' KeyPreview가 True여서 폼이 키를 먼저 받습니다(D101).
 Dim shown As String      ' 화면에 보이는 수
@@ -81,7 +81,7 @@ End Sub
 ' 0으로 나누려 하면 알리고 False를 줍니다.
 Function Calculate() As Boolean
     If startNew And pending <> "" Then
-        ' 연산 단추를 잇달아 누르면 마지막 것만 씁니다.
+        ' 연산 버튼을 잇달아 누르면 마지막 것만 씁니다.
         Return True
     End If
     Dim value As Double = Val(shown)
