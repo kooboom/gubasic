@@ -1,0 +1,8 @@
+formatVersion: 1
+controls:
+  - { name: lblCount, type: Label, properties: { Width: 300 } }
+  - { name: btnGo, type: Button, properties: { Caption: Go, Top: 40 } }
+  - { name: btnStopFast, type: Button, properties: { Caption: Stop fast, Top: 40, Left: 120 } }
+  - { name: tmrFast, type: Timer, properties: { Interval: 100, Enabled: true } }
+  - { name: tmrMid, type: Timer, properties: { Interval: 1000, Enabled: true } }
+  - { name: tmrSlow, type: Timer, properties: { Interval: 5000, Enabled: true } }

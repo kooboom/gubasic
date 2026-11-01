@@ -1,0 +1,14 @@
+tmrFast.Tick
+tmrFast.Tick
+tmrFast.Tick
+tmrMid.Tick
+tmrFast.Tick
+tmrSlow.Tick      ' waits in DoEvents
+tmrFast.Tick      ' the others tick meanwhile
+tmrMid.Tick
+tmrSlow.Tick      ' its handler is running: ignored
+btnGo.Click
+btnStopFast.Click
+tmrFast.Tick      ' stopped: no tick
+tmrMid.Tick       ' the others go on
+Close

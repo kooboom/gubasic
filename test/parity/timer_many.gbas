@@ -1,0 +1,41 @@
+' Several Timers on one form (D100), each at its own Interval: each
+' ticks on its own. While one Tick handler waits (here in DoEvents), the
+' others tick, and its own next tick is ignored; stopping one leaves the
+' others ticking. The script makes each tick, as the clocks would.
+Dim fast As Integer
+Dim mid As Integer
+Dim slow As Integer
+Dim waiting As Boolean
+
+Sub Show()
+    lblCount.Caption = fast & " " & mid & " " & slow
+End Sub
+
+Sub tmrFast_Tick()
+    fast = fast + 1
+    Show()
+End Sub
+
+Sub tmrMid_Tick()
+    mid = mid + 1
+    Show()
+End Sub
+
+Sub tmrSlow_Tick()
+    slow = slow + 1
+    Show()
+    Debug.Print("slow starts, every " & tmrSlow.Interval & " ms")
+    waiting = True
+    Do While waiting
+        DoEvents
+    Loop
+    Debug.Print("slow done: " & fast & " " & mid & " " & slow)
+End Sub
+
+Sub btnGo_Click()
+    waiting = False
+End Sub
+
+Sub btnStopFast_Click()
+    tmrFast.Stop
+End Sub

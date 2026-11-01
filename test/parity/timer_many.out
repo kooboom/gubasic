@@ -1,0 +1,29 @@
+> tmrFast.Tick
+Set lblCount.Caption: 1 0 0
+> tmrFast.Tick
+Set lblCount.Caption: 2 0 0
+> tmrFast.Tick
+Set lblCount.Caption: 3 0 0
+> tmrMid.Tick
+Set lblCount.Caption: 3 1 0
+> tmrFast.Tick
+Set lblCount.Caption: 4 1 0
+> tmrSlow.Tick
+Set lblCount.Caption: 4 1 1
+Debug.Print: slow starts, every 5000 ms
+> tmrFast.Tick
+Set lblCount.Caption: 5 1 1
+> tmrMid.Tick
+Set lblCount.Caption: 5 2 1
+> tmrSlow.Tick
+Ignored: tmrSlow.Tick
+> btnGo.Click
+Debug.Print: slow done: 5 2 1
+> btnStopFast.Click
+Set tmrFast.Enabled: False
+> tmrFast.Tick
+Disabled: tmrFast.Tick
+> tmrMid.Tick
+Set lblCount.Caption: 5 3 1
+> Close
+Closed
