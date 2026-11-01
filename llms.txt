@@ -1,0 +1,36 @@
+# GuBASIC
+
+> GuBASIC is a Visual Basic-style RAD tool: draw a form, double-click a control, write event handlers in a BASIC dialect and press F5. The same program runs in the IDE's interpreter and in exported web, Windows and macOS apps.
+
+Write GuBASIC code as the documents below describe; it is close to Visual Basic .NET but not the same. Key rules: identifiers are case-insensitive; arrays are zero-based and `Dim a(5)` has six elements; `Mid` and `InStr` count from 1; `And` and `Or` short-circuit; there is no `On Error`, `GoTo`, `Variant`, control array or user-defined class (use `Try … Catch`, `Handles` with `sender`, and `Me.Controls`); every event handler is `Sub control_Event()` and does not run again while it runs.
+
+## Docs
+
+- [Language](https://github.com/kooboom/gubasic/blob/main/docs/LANGUAGE.md): the whole language, its controls and its diagnostics
+- [Reference](https://github.com/kooboom/gubasic/blob/main/docs/reference/README.md): every control, function, object and type
+- [Your first app](https://github.com/kooboom/gubasic/blob/main/docs/FIRST_APP.md): a five-minute guide
+
+## Reference
+
+- [Button](https://github.com/kooboom/gubasic/blob/main/docs/reference/controls/Button.md): A button the user clicks: its Caption is the text on it, and Click runs when it is clicked.
+- [CheckBox](https://github.com/kooboom/gubasic/blob/main/docs/reference/controls/CheckBox.md): A box the user checks and unchecks, with a Caption beside it.
+- [ComboBox](https://github.com/kooboom/gubasic/blob/main/docs/reference/controls/ComboBox.md): A closed list that opens to pick one item: Visual Basic 6's ComboBox with Style 2, the user picks and does not type.
+- [Form](https://github.com/kooboom/gubasic/blob/main/docs/reference/controls/Form.md): The form a program's controls sit on.
+- [Frame](https://github.com/kooboom/gubasic/blob/main/docs/reference/controls/Frame.md): A box with a Caption on its edge that holds other controls.
+- [Grid](https://github.com/kooboom/gubasic/blob/main/docs/reference/controls/Grid.md): A table of text the user reads and edits, as Visual Basic's grids: named columns, rows and columns counted from 0, the header row not among them.
+- [Image](https://github.com/kooboom/gubasic/blob/main/docs/reference/controls/Image.md): A picture from the project.
+- [Label](https://github.com/kooboom/gubasic/blob/main/docs/reference/controls/Label.md): Text on the form that the user reads but does not type into: its Caption.
+- [ListBox](https://github.com/kooboom/gubasic/blob/main/docs/reference/controls/ListBox.md): A list the user picks one item from.
+- [Menu](https://github.com/kooboom/gubasic/blob/main/docs/reference/controls/Menu.md): An item of a form's menu bar, made in the menu editor and written under menus: in the form file.
+- [OpenFileDialog](https://github.com/kooboom/gubasic/blob/main/docs/reference/controls/OpenFileDialog.md): The dialog that asks for a file to open, as Visual Basic .NET's OpenFileDialog.
+- [OptionButton](https://github.com/kooboom/gubasic/blob/main/docs/reference/controls/OptionButton.md): One of a group of choices, of which one is checked: the OptionButtons of a form are one group.
+- [SaveFileDialog](https://github.com/kooboom/gubasic/blob/main/docs/reference/controls/SaveFileDialog.md): The dialog that asks for a file to save to, as Visual Basic .NET's SaveFileDialog.
+- [TextBox](https://github.com/kooboom/gubasic/blob/main/docs/reference/controls/TextBox.md): A box the user types a line of text into: its Text.
+- [Timer](https://github.com/kooboom/gubasic/blob/main/docs/reference/controls/Timer.md): A Timer runs its Tick every Interval milliseconds while Enabled.
+- [Functions](https://github.com/kooboom/gubasic/blob/main/docs/reference/functions.md): text, conversion, math, dates, dialogs, settings
+- [Objects and types](https://github.com/kooboom/gubasic/blob/main/docs/reference/objects.md): File, Csv, Keys, Table, PdfDocument and the others
+
+## Optional
+
+- [Design](https://github.com/kooboom/gubasic/blob/main/docs/DESIGN.md): how GuBASIC is built, and its decisions
+- [Examples](https://github.com/kooboom/gubasic/tree/main/examples): hello, calculator, quiz, scores and others

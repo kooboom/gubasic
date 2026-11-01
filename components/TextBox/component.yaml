@@ -1,3 +1,4 @@
+# A box the user types a line of text into: its Text.
 # Changed runs after the text changes, also when the program sets Text
 # (changeEvent). Text holds only the characters the input method (IME)
 # has committed, and Changed runs each time it commits one

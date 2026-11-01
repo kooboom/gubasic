@@ -1,3 +1,5 @@
+# Text on the form that the user reads but does not type into: its
+# Caption. Click runs when it is clicked.
 name: Label
 version: 1
 visual: true

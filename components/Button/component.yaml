@@ -1,3 +1,5 @@
+# A button the user clicks: its Caption is the text on it, and Click
+# runs when it is clicked.
 name: Button
 version: 1
 visual: true

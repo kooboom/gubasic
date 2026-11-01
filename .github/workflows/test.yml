@@ -27,6 +27,9 @@ jobs:
         run: dart analyze --fatal-infos
       - name: Check embedded components are up to date
         run: dart run tool/embed_components.dart --check
+      # docs/reference, llms.txt and llms-full.txt (D124).
+      - name: Check the reference is up to date
+        run: dart run tool/gen_reference.dart --check
       - name: Test
         run: dart test
 

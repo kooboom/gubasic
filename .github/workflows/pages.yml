@@ -110,6 +110,10 @@ jobs:
         with:
           name: macos-template
           path: apps/playground/build/web/player
+      # The references for AI assistants at the site's top (D124):
+      # https://kooboom.github.io/gubasic/llms.txt
+      - name: llms.txt and llms-full.txt
+        run: cp llms.txt llms-full.txt apps/playground/build/web/
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v4
         with:

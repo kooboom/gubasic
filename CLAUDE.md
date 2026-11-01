@@ -40,9 +40,11 @@ Generated files that are checked in, each with a `--check` mode that CI runs:
 `packages/gubasic_lang/lib/src/forms/components.g.dart` (`tool/embed_components.dart`),
 `apps/ide/lib/src/project/examples.g.dart` (`tool/embed_examples.dart`),
 `apps/playground/test/parity_cases.g.dart` (`tool/embed_parity.dart`),
-`packages/gubasic_player/lib/src/bench/projects.g.dart` (`tool/embed_bench.dart`).
+`packages/gubasic_player/lib/src/bench/projects.g.dart` (`tool/embed_bench.dart`),
+`docs/reference/`, `llms.txt` and `llms-full.txt` (`tool/gen_reference.dart` in `packages/gubasic_lang`).
 After changing `components/`, `examples/`, `test/parity/` or `test/bench/`, run the generator in
-that package.
+that package; after changing `docs/LANGUAGE.md`, a built-in function or a component, run
+`tool/gen_reference.dart`.
 
 ## Hard rules
 
@@ -106,5 +108,5 @@ The Mac is the author's own computer, in use while you work.
 - `dart test -p vm,chrome` in `apps/playground` passes (parity in Chrome)
 - `flutter test` in `packages/gubasic_player` passes (parity through the run window's widgets)
 - `flutter test` in `apps/ide` and in `apps/player` passes
-- The generators' `--check` passes
+- The generators' `--check` passes (with `tool/gen_reference.dart --check` in `packages/gubasic_lang`)
 - Docs updated if behavior or a decision changed
