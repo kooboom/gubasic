@@ -155,6 +155,8 @@ const Map<DiagnosticCode, String> koreanMessages = {
       '"{0}" 값은 단축키가 아니어서, 실행하면 여기서 프로그램이 멈춥니다. "Ctrl+O"나 "F5"처럼 Ctrl, Shift, Alt와 키 하나를 +로 이어 적거나, 없으면 ""로 적어 주세요. 글자나 숫자 키에는 Ctrl이나 Alt가 있어야 합니다.',
   DiagnosticCode.openStatement:
       'GuBASIC에서는 텍스트 파일을 File로 읽고 씁니다. text = File.ReadAllText(path), File.ReadAllLines(path), File.WriteAllText(path, text), File.AppendAllText(path, text) 형태로 써 주세요.',
+  DiagnosticCode.structureNotYet:
+      '{0} 문은 아직 GuBASIC에 없습니다. v0.5 다음에 들어올 예정입니다. 지금은 필드마다 배열을 하나씩 두고(Dim x(9) As Integer, Dim y(9) As Integer) 같은 번호로 한 물체를 나타내세요.',
   DiagnosticCode.fileNotFound:
       '{0} 파일이 없습니다. 이름을 확인하거나 OpenFileDialog로 사용자가 고르게 해 주세요. 있는지는 File.Exists로 알 수 있습니다.',
   DiagnosticCode.fileNotChosen:

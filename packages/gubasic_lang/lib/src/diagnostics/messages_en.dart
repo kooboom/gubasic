@@ -183,6 +183,9 @@ const Map<DiagnosticCode, String> englishMessages = {
   DiagnosticCode.openStatement: 'GuBASIC reads and writes text files with '
       'File: write text = File.ReadAllText(path), File.ReadAllLines(path), '
       'File.WriteAllText(path, text) or File.AppendAllText(path, text).',
+  DiagnosticCode.structureNotYet: '{0} is not in GuBASIC yet: it comes after '
+      'v0.5. For now, keep each field in an array of its own (Dim x(9) As '
+      'Integer, Dim y(9) As Integer), the same index for one thing.',
   DiagnosticCode.fileNotFound: 'There is no file {0}. Check the name, or '
       'let the user choose it with an OpenFileDialog; File.Exists says '
       'whether it is there.',

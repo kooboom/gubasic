@@ -43,6 +43,7 @@ These Visual Basic keywords are **reserved but not supported**, so that the edit
 | `GoTo`, `GoSub` | not supported | loops, `Exit`, procedures |
 | `Variant` | not supported | `Object` |
 | `Class` | not in 1.0 | — |
+| `Structure`, `Type` | planned after v0.5 (D123) | an array for each field, one index for one thing |
 | `AndAlso`, `OrElse` | not supported | `And`, `Or` (they already short-circuit) |
 | `Wend` | not supported | `Do While … Loop` |
 | `Call` | not supported | call the procedure directly: `ShowScore("Kim", 90)` |
@@ -113,6 +114,7 @@ How the parser recovers:
 | P028 | `Unload Command1(1)` | Take a control off with `Me.Controls.Remove` (§11.4) |
 | P029 | `PopupMenu mnuEdit` | `Me.PopupMenu(mnuEdit)` (§11.1) |
 | P030 | `Open path For Input As #1` | `File.ReadAllText(path)` and the other `File` functions (§11.6) |
+| P031 | `Structure … End Structure`, or Visual Basic 6's `Type … End Type` | Skips the block: not in GuBASIC yet (D123); use an array for each field |
 
 **Analyzer**
 

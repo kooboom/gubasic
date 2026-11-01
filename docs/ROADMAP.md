@@ -89,11 +89,15 @@ Three releases, then the rest (D94–D96). The order follows who GuBASIC is for 
 
 - **Http: waiting without freezing the screen.** A request takes time; the form must go on drawing and taking clicks meanwhile. Either the program waits where it asks (`Dim reply = Await Http.Get(url)`, as Visual Basic .NET's `Await`: [Microsoft](https://learn.microsoft.com/en-us/dotnet/visual-basic/programming-guide/concepts/async/)), or `Http.Get` returns at once and a completion event brings the answer (`httpScores_Completed`, as Winsock's events did). The answer also decides `WebSocket` and `Room` (v0.6).
 
+### Between v0.5 and v0.6
+
+- [ ] `Structure … End Structure`: fields only, copied when assigned, arrays of it, in a module for every form (D123). Until then P031 says it is not in yet
+
 ### v0.6 — Together (candidate, D122)
 
 - [ ] `WebSocket`: `Connect`, `Send`, `Close`; `Connected`, `Message`, `Closed`, `Error`, for any standard WebSocket server
 - [ ] `Room`: `Create`, `Join`, `Send`, `Leave`; `Joined`, `Left`, `Message`, over a relay server whose message format is published
-- [ ] The relay server, kept in the repository, and how to run it on Linux behind Apache
+- [ ] The relay server, kept in the repository, with a guide, an install script and an Apache configuration for users' own servers; a very small public one for trying (D123)
 - [ ] Example: a live quiz, phones answering and a TV showing the race ([IDEAS](IDEAS.md#real-time-together-websocket-and-room))
 
 ### v0.7 — Game tools (candidate, D121 a)

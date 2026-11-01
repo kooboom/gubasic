@@ -456,6 +456,11 @@ class _Parser {
       if (_isKw(Keyword.kwSub, 1) || _isKw(Keyword.kwFunction, 1)) {
         return _procedure();
       }
+      if (_atStructure(1)) {
+        _advance();
+        _skipStructure();
+        return null;
+      }
       _advance();
       if (_isKw(Keyword.kwConst)) {
         _advance();
@@ -483,6 +488,10 @@ class _Parser {
         _skipClass();
         return null;
       default:
+    }
+    if (_atStructure() || _atEndStructure()) {
+      _skipStructure();
+      return null;
     }
     final closer = _closerAt();
     if (closer != null) {
@@ -640,6 +649,47 @@ class _Parser {
     return HandlesClause(events, handlesToken.offset, _lastEnd);
   }
 
+  /// `Structure Point` or Visual Basic 6's `Type Point` at [ahead]: the word,
+  /// a name, and nothing else on the line.
+  bool _atStructure([int ahead = 0]) {
+    final word = _peek(ahead);
+    if (word.kind != TokenKind.identifier) return false;
+    final lower = word.text.toLowerCase();
+    if (lower != 'structure' && lower != 'type') return false;
+    final end = _peek(ahead + 2).kind;
+    return _peek(ahead + 1).kind == TokenKind.identifier &&
+        (end == TokenKind.newline || end == TokenKind.eof);
+  }
+
+  /// `End Structure` or `End Type`.
+  bool _atEndStructure() {
+    if (!_isKw(Keyword.kwEnd)) return false;
+    final word = _peek(1);
+    final lower = word.text.toLowerCase();
+    return word.kind == TokenKind.identifier &&
+        (lower == 'structure' || lower == 'type');
+  }
+
+  /// `Structure … End Structure` (or `Type … End Type`) is skipped as a
+  /// whole (P031): not yet in GuBASIC (DESIGN D123).
+  void _skipStructure() {
+    final word = _atEndStructure() ? _peek(1) : _tok;
+    _errorAt(_tok, DiagnosticCode.structureNotYet, [word.text]);
+    if (_atEndStructure()) {
+      _skipLine();
+      return;
+    }
+    while (!_atEof) {
+      if (_atEndStructure()) {
+        _advance();
+        _advance();
+        _skipLine();
+        return;
+      }
+      _advance();
+    }
+  }
+
   /// `Class … End Class` is skipped as a whole (P016).
   void _skipClass() {
     _errorAt(_tok, DiagnosticCode.unsupportedClass);
@@ -753,6 +803,10 @@ class _Parser {
 
   Stmt _statementBody() {
     final t = _tok;
+    if (_atStructure() || _atEndStructure()) {
+      _skipStructure();
+      return ErrorStmt(t.offset, _lastEnd);
+    }
     if (t.kind != TokenKind.keyword) return _callOrAssignment();
     switch (t.keyword!) {
       case Keyword.kwDim || Keyword.kwStatic || Keyword.kwConst:

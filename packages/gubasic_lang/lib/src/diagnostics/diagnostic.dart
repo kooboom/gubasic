@@ -147,6 +147,10 @@ enum DiagnosticCode {
   /// Visual Basic 6's `Open path For Input As #1` (D113).
   openStatement('P030'),
 
+  /// `Structure … End Structure`, or Visual Basic 6's `Type … End Type`:
+  /// not yet in GuBASIC (D123). Args: the word written.
+  structureNotYet('P031'),
+
   // Analyzer: names
 
   /// A name that is not declared. Args: the name.

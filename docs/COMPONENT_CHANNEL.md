@@ -1,8 +1,10 @@
 # The component channel (design, not built yet)
 
+> The three questions at the end were answered as recommended (DESIGN D123).
+
 [한국어](COMPONENT_CHANNEL.ko.md)
 
-How abilities from outside GuBASIC, Dart and Flutter packages, come in as GuBASIC components (DESIGN D121 c). This is a design for the author to decide on; nothing here is implemented, and the questions at the end are open.
+How abilities from outside GuBASIC, Dart and Flutter packages, come in as GuBASIC components (DESIGN D121 c). Nothing here is implemented yet.
 
 ## Why
 
@@ -47,7 +49,7 @@ An interpreter cannot load a Dart package at run time, and neither can the prebu
 - A component lists its platforms; the analyzer says when a program uses one on a platform it does not support, before the export, not after.
 - The package's licence goes into the open source licences (D120).
 
-## Questions for the author
+## Questions for the author (answered as recommended, D123)
 
 1. Should `Http` and `Database` in v0.5 be the first components through the channel (recommended), or built in first and moved later?
 2. For the "built for the project" route before the transpiler: is a player built by CI for one project worth it (it needs a GitHub account and a wait), or should it wait for the transpiler (recommended)?

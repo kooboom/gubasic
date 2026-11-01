@@ -117,7 +117,7 @@ Members: `Create()`, `Join(code, nickname)`, `Send(text)` (to everyone) and `Sen
 | Bad | Networks at offices and schools often block incoming connections and keep devices from seeing each other; phones on mobile data cannot reach a private address. A web app served over HTTPS cannot open `ws://`, and Chrome blocks public pages from reaching private addresses ([Chrome](https://developer.chrome.com/blog/private-network-access-update)); a certificate for a private address is hard to get | An account and keys for every app (no secrets in apps: hard rule 12, so security rules must do the work); the service's own protocol, not WebSocket that others can use; the messages are stored with a third party; costs that grow with use | Someone must run it and pay for it, and limit abuse |
 | For | A later option between desktop apps on one network | Users who already use the service: a `Firebase` component is on the ROADMAP | The default for `Room` |
 
-**Recommended:** the relay server. GuBASIC's project runs one public instance, with limits, so that `Room` works out of the box; schools, companies and anyone else can run their own, and `Room.Server` points to it.
+**Decided (D123):** the relay server, and first of all on the user's own server: it comes with a guide, an install script and an Apache configuration to copy, so that putting it on a Linux server takes a few commands, and `Room.Server` points to it. The project also runs a public server, but only for trying `Room`, kept very small (few rooms at once, short-lived rooms, small messages); whether it grows is decided later.
 
 **Built with:** Dart (`dart:io`'s `HttpServer` with its WebSocket upgrade, [Dart](https://api.dart.dev/dart-io/HttpServer-class.html)), the language GuBASIC is written in, so that the "GuBASIC server" later can share its code. Node.js with [ws](https://github.com/websockets/ws) is the common alternative.
 
@@ -129,13 +129,13 @@ Members: `Create()`, `Join(code, nickname)`, `Send(text)` (to everyone) and `Sen
 - **Nothing kept.** Rooms live in the server's memory only; when a room ends (its creator leaves, or no one has sent anything for a while), everything about it is gone. The server logs no messages.
 - **Room codes that cannot be guessed:** made by a secure random number generator, six characters from an alphabet without look-alikes (no `0`/`O`, `1`/`I`), so about a billion codes; join attempts limited per address, as against password guessing ([OWASP](https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html)); rooms that expire. The creator may also lock a room once everyone is in.
 
-### Questions to decide, with recommendations
+### Questions, decided as recommended (D123)
 
 1. **Waiting:** `Connect` and `Join` return at once and events say what happened (recommended: the events, as Winsock had), or the program waits for them. This follows v0.5's answer for Http.
 2. **Text or objects:** `Send` takes text and v0.5's JSON helpers make it (recommended), or `Send` takes a structure directly.
 3. **A tray component or `New`:** a `Room` and a `WebSocket` in the designer's tray, like a Timer, with `Server` and `Nickname` in the Properties window (recommended), and `New` too.
 4. **The room code:** six characters as above (recommended), or digits only, easier to type on a phone but far fewer.
-5. **The public server's limits:** say 100 members per room, 16 KB per message, 20 messages a second per member, rooms ended after 30 idle minutes (recommended starting points).
+5. **Limits.** On the relay server by default, which its owner may change: 100 members per room, 16 KB per message, 20 messages a second per member, rooms ended after 30 idle minutes. On the project's public server, for trying only (D123): say 20 rooms at once, 10 members per room, 4 KB per message, rooms that end after 15 minutes.
 6. **When the creator leaves:** the room ends (recommended: nothing left behind), or another member takes over.
 7. **A dropped connection:** reconnect by itself for 30 seconds keeping the member's place (recommended), or `Closed` at once.
 8. **Plain `ws://`:** only to `localhost`, while developing (recommended).

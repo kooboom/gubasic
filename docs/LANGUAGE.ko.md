@@ -43,6 +43,7 @@ TypeOf CType AddHandler AddressOf
 | `GoTo`, `GoSub` | 지원하지 않음 | 반복문, `Exit`, 프로시저 |
 | `Variant` | 지원하지 않음 | `Object` |
 | `Class` | 1.0에는 없음 | — |
+| `Structure`, `Type` | v0.5 다음 예정(D123) | 필드마다 배열 하나, 한 물체는 같은 번호 |
 | `AndAlso`, `OrElse` | 지원하지 않음 | `And`, `Or` (이미 단락 평가함) |
 | `Wend` | 지원하지 않음 | `Do While … Loop` |
 | `Call` | 지원하지 않음 | 프로시저를 바로 호출: `ShowScore("Kim", 90)` |
@@ -113,6 +114,7 @@ TypeOf CType AddHandler AddressOf
 | P028 | `Unload Command1(1)` | `Me.Controls.Remove`로 컨트롤을 뺌(11.4절) |
 | P029 | `PopupMenu mnuEdit` | `Me.PopupMenu(mnuEdit)`(11.1절) |
 | P030 | `Open path For Input As #1` | `File.ReadAllText(path)`와 다른 `File` 함수(11.6절) |
+| P031 | `Structure … End Structure`, 또는 Visual Basic 6의 `Type … End Type` | 블록을 건너뜀. 아직 GuBASIC에 없음(D123). 필드마다 배열을 씀 |
 
 **분석기**
 

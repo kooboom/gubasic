@@ -89,11 +89,15 @@ IDE 안에서 완결되는 비주얼 베이직의 핵심 경험입니다.
 
 - **Http: 기다리는 동안 화면이 멈추지 않는 방식.** 요청에는 시간이 걸리고, 그동안에도 폼은 그려지고 클릭을 받아야 합니다. 프로그램이 묻는 자리에서 기다리거나(`Dim reply = Await Http.Get(url)`, Visual Basic .NET의 `Await`처럼: [Microsoft](https://learn.microsoft.com/en-us/dotnet/visual-basic/programming-guide/concepts/async/)), `Http.Get`은 바로 돌아오고 완료 이벤트가 답을 가져오는 방식(`httpScores_Completed`, Winsock의 이벤트처럼)입니다. 이 답이 `WebSocket`과 `Room`(v0.6)도 정합니다.
 
+### v0.5와 v0.6 사이
+
+- [ ] `Structure … End Structure`: 필드만, 대입하면 복사, 그 배열, 모듈에 두면 모든 폼에서(D123). 그때까지는 P031이 아직 없다고 알려 줌
+
 ### v0.6 — 함께 쓰기(후보, D122)
 
 - [ ] `WebSocket`: `Connect`, `Send`, `Close`, 그리고 `Connected`, `Message`, `Closed`, `Error`. 어떤 표준 WebSocket 서버에도 연결
 - [ ] `Room`: `Create`, `Join`, `Send`, `Leave`, 그리고 `Joined`, `Left`, `Message`. 메시지 형식을 공개한 중계 서버 위에서
-- [ ] 저장소에 둔 중계 서버와, Linux에서 Apache 뒤에 두는 방법
+- [ ] 저장소에 둔 중계 서버. 사용자의 자기 서버를 위한 안내, 설치 스크립트, Apache 설정 예. 시험용으로 아주 작은 공개 서버(D123)
 - [ ] 예제: 폰으로 답하고 TV가 경주를 보여 주는 실시간 퀴즈([IDEAS](IDEAS.ko.md#실시간으로-함께-websocket과-room))
 
 ### v0.7 — 게임 도구(후보, D121 a)

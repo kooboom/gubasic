@@ -35,6 +35,22 @@ void main() {
     expect(r.unit.members.single.label, 'Sub Main');
   });
 
+  test(
+      'Structure … End Structure and Type … End Type → P031, skipped as a '
+      'whole (D123)', () {
+    final r = parse('Structure Point\n  Dim X As Integer\n  Dim Y As Integer\n'
+        'End Structure\nPublic Structure Ball\n  Dim Speed As Double\n'
+        'End Structure\nType Old\n  Name As String\nEnd Type\n'
+        'Sub Main()\n  Dim type As Integer = 1\nEnd Sub');
+    expect(codesAndLines(r), ['P031@1', 'P031@5', 'P031@8']);
+    expect(r.diagnostics.map((d) => d.args.single),
+        ['Structure', 'Structure', 'Type']);
+    expect(r.unit.members.single.label, 'Sub Main',
+        reason: 'a variable named type is still a variable');
+    expect(codesAndLines(_inSub('End Structure')), ['P031@2'],
+        reason: 'a lone End Structure too');
+  });
+
   test('AndAlso / OrElse → P017, read as And / Or', () {
     final r = _inSub('If a AndAlso b OrElse c Then x = 1');
     expect(codes(r), ['P017', 'P017'], reason: 'each is its own finding');
