@@ -109,6 +109,15 @@ jobs:
         run: dart run tool/embed_bench.dart --check
       - name: Test (the parity scripts through the run window's widgets)
         run: flutter test
+      # What the apps' integration tests share: a failure's output and
+      # picture kept.
+      - name: The integration tests' support (format, analyze, test)
+        working-directory: packages/gubasic_test_support
+        run: |
+          flutter pub get
+          dart format --output=none --set-exit-if-changed .
+          flutter analyze --fatal-infos
+          flutter test
 
   player:
     name: player (format, analyze, test, web build)
@@ -208,26 +217,26 @@ jobs:
       # takes each form's size (D88, D89).
       - name: Several forms in the player's own window
         working-directory: apps/player
-        run: flutter test integration_test/forms_test.dart -d windows
+        run: dart run gubasic_test_support:integration integration_test/forms_test.dart -d windows
       # A form's menus where the platform puts them (D106). Each file runs
       # on its own: a second app launched in one run loses its connection.
       - name: Menus in the player's own window
         working-directory: apps/player
-        run: flutter test integration_test/menus_test.dart -d windows
+        run: dart run gubasic_test_support:integration integration_test/menus_test.dart -d windows
       # Text files written, added to and read in the app (D113).
       - name: Files in the player's own window
         working-directory: apps/player
-        run: flutter test integration_test/files_test.dart -d windows
+        run: dart run gubasic_test_support:integration integration_test/files_test.dart -d windows
       # The IDE's toolbox in its own window (D107): two columns of drawn
       # controls, the name in the tooltip; pictures of it in the Artifacts.
       - name: The toolbox in the IDE's own window
         working-directory: apps/ide
-        run: flutter test integration_test/toolbox_test.dart -d windows --dart-define=SHOTS=${{ runner.temp }}/toolbox
+        run: dart run gubasic_test_support:integration integration_test/toolbox_test.dart -d windows --dart-define=SHOTS=${{ runner.temp }}/toolbox
       # The Scores example in the IDE's own window (D116, D117): a score
       # changed in the Grid, the list saved as a PDF file.
       - name: A Grid and a PDF file in the IDE's own window
         working-directory: apps/ide
-        run: flutter test integration_test/scores_test.dart -d windows --dart-define=SHOTS=${{ runner.temp }}/scores
+        run: dart run gubasic_test_support:integration integration_test/scores_test.dart -d windows --dart-define=SHOTS=${{ runner.temp }}/scores
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -240,6 +249,17 @@ jobs:
         with:
           name: scores-windows
           path: ${{ runner.temp }}/scores/*
+          retention-days: 30
+          if-no-files-found: warn
+      # A failing integration test's whole output and a picture of its
+      # window (gubasic_test_support).
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: integration-failures-windows
+          path: |
+            apps/ide/build/integration_logs
+            apps/player/build/integration_logs
           retention-days: 30
           if-no-files-found: warn
       - name: The Windows template (D86), with every file a PC needs
@@ -322,31 +342,31 @@ jobs:
         working-directory: apps/player
       - name: Several forms in the player's own window
         working-directory: apps/player
-        run: flutter test integration_test/forms_test.dart -d macos
+        run: dart run gubasic_test_support:integration integration_test/forms_test.dart -d macos
       # A form's menus where the platform puts them (D106). Each file runs
       # on its own: a second app launched in one run loses its connection.
       - name: Menus in the player's own window
         working-directory: apps/player
-        run: flutter test integration_test/menus_test.dart -d macos
+        run: dart run gubasic_test_support:integration integration_test/menus_test.dart -d macos
       # Text files written, added to and read in the app (D113).
       - name: Files in the player's own window
         working-directory: apps/player
-        run: flutter test integration_test/files_test.dart -d macos
+        run: dart run gubasic_test_support:integration integration_test/files_test.dart -d macos
       # The IDE's toolbox in its own window (D107): two columns of drawn
       # controls, the name in the tooltip; pictures of it in the Artifacts.
       - name: The toolbox in the IDE's own window
         working-directory: apps/ide
-        run: flutter test integration_test/toolbox_test.dart -d macos --dart-define=SHOTS=${{ runner.temp }}/toolbox
+        run: dart run gubasic_test_support:integration integration_test/toolbox_test.dart -d macos --dart-define=SHOTS=${{ runner.temp }}/toolbox
       # The Scores example in the IDE's own window (D116, D117): a score
       # changed in the Grid, the list saved as a PDF file.
       - name: A Grid and a PDF file in the IDE's own window
         working-directory: apps/ide
-        run: flutter test integration_test/scores_test.dart -d macos --dart-define=SHOTS=${{ runner.temp }}/scores
+        run: dart run gubasic_test_support:integration integration_test/scores_test.dart -d macos --dart-define=SHOTS=${{ runner.temp }}/scores
       # The IDE's Edit menu on the system's menu bar while no program runs
       # (D110), set through the engine.
       - name: The IDE's Edit menu on macOS
         working-directory: apps/ide
-        run: flutter test integration_test/edit_menu_test.dart -d macos
+        run: dart run gubasic_test_support:integration integration_test/edit_menu_test.dart -d macos
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -359,6 +379,17 @@ jobs:
         with:
           name: scores-macos
           path: ${{ runner.temp }}/scores/*
+          retention-days: 30
+          if-no-files-found: warn
+      # A failing integration test's whole output and a picture of its
+      # window (gubasic_test_support).
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: integration-failures-macos
+          path: |
+            apps/ide/build/integration_logs
+            apps/player/build/integration_logs
           retention-days: 30
           if-no-files-found: warn
       - name: The macOS template (D87), with every file the app needs

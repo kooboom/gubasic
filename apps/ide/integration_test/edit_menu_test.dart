@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:gubasic_ide/main.dart';
 import 'package:gubasic_ide/src/project/examples.g.dart';
 import 'package:gubasic_ide/src/strings.dart';
+import 'package:gubasic_test_support/gubasic_test_support.dart';
 import 'package:integration_test/integration_test.dart';
 
 /// The IDE's Edit menu on macOS's menu bar (D110), set through the engine
@@ -16,7 +17,7 @@ import 'package:integration_test/integration_test.dart';
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
-  testWidgets('Edit while no program runs', (tester) async {
+  testWidgetsKeepingFailures('Edit while no program runs', (tester) async {
     await tester.pumpWidget(
       IdeApp(
         projects: {'hello': exampleProjects['hello']!},

@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gubasic_player/gubasic_player.dart';
 import 'package:gubasic_player_app/src/player_app.dart';
+import 'package:gubasic_test_support/gubasic_test_support.dart';
 import 'package:integration_test/integration_test.dart';
 
 /// Text files in an exported desktop app (docs/DESIGN.md D113): the
@@ -13,7 +14,9 @@ import 'package:integration_test/integration_test.dart';
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
-  testWidgets('WriteAllText, AppendAllText, ReadAllLines', (tester) async {
+  testWidgetsKeepingFailures('WriteAllText, AppendAllText, ReadAllLines', (
+    tester,
+  ) async {
     final dir = await Directory.systemTemp.createTemp('gubasic');
     addTearDown(() => dir.delete(recursive: true));
     final path = '${dir.path}${Platform.pathSeparator}점수.csv';

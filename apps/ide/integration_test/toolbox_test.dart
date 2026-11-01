@@ -9,6 +9,7 @@ import 'package:gubasic_ide/main.dart';
 import 'package:gubasic_ide/src/designer/toolbox.dart';
 import 'package:gubasic_ide/src/project/examples.g.dart';
 import 'package:gubasic_ide/src/strings.dart';
+import 'package:gubasic_test_support/gubasic_test_support.dart';
 import 'package:integration_test/integration_test.dart';
 
 /// The toolbox in the IDE's own window (D107): icons in two columns, each
@@ -43,55 +44,58 @@ void main() {
     });
   }
 
-  testWidgets('two columns of drawn controls; the name in the tooltip', (
-    tester,
-  ) async {
-    await tester.pumpWidget(
-      IdeApp(
-        projects: {'hello': exampleProjects['hello']!},
-        strings: IdeStrings.en,
-      ),
-    );
-    await tester.pumpAndSettle();
-    final toolbox = find.byType(Toolbox);
-    expect(toolbox, findsOneWidget);
+  testWidgetsKeepingFailures(
+    'two columns of drawn controls; the name in the tooltip',
+    (tester) async {
+      await tester.pumpWidget(
+        IdeApp(
+          projects: {'hello': exampleProjects['hello']!},
+          strings: IdeStrings.en,
+        ),
+      );
+      await tester.pumpAndSettle();
+      final toolbox = find.byType(Toolbox);
+      expect(toolbox, findsOneWidget);
 
-    // The pointer and the Button side by side, the TextBox under the
-    // pointer: two columns.
-    final pointer = tester.getRect(
-      find.byKey(const ValueKey('toolbox.pointer')),
-    );
-    final button = tester.getRect(find.byKey(const ValueKey('toolbox.Button')));
-    final label = tester.getRect(find.byKey(const ValueKey('toolbox.Label')));
-    expect(button.top, pointer.top);
-    expect(button.left, greaterThan(pointer.right - 1));
-    expect(label.left, pointer.left);
-    expect(label.top, greaterThan(pointer.bottom - 1));
-    // No names in the toolbox itself.
-    expect(
-      find.descendant(of: toolbox, matching: find.byType(Text)),
-      findsNothing,
-    );
-    final box = tester.getRect(toolbox);
-    final last = tester.getRect(find.byKey(const ValueKey('toolbox.Timer')));
-    await save(
-      tester,
-      'toolbox',
-      Rect.fromLTRB(box.left, box.top, box.right, last.bottom + 8),
-    );
+      // The pointer and the Button side by side, the TextBox under the
+      // pointer: two columns.
+      final pointer = tester.getRect(
+        find.byKey(const ValueKey('toolbox.pointer')),
+      );
+      final button = tester.getRect(
+        find.byKey(const ValueKey('toolbox.Button')),
+      );
+      final label = tester.getRect(find.byKey(const ValueKey('toolbox.Label')));
+      expect(button.top, pointer.top);
+      expect(button.left, greaterThan(pointer.right - 1));
+      expect(label.left, pointer.left);
+      expect(label.top, greaterThan(pointer.bottom - 1));
+      // No names in the toolbox itself.
+      expect(
+        find.descendant(of: toolbox, matching: find.byType(Text)),
+        findsNothing,
+      );
+      final box = tester.getRect(toolbox);
+      final last = tester.getRect(find.byKey(const ValueKey('toolbox.Timer')));
+      await save(
+        tester,
+        'toolbox',
+        Rect.fromLTRB(box.left, box.top, box.right, last.bottom + 8),
+      );
 
-    final mouse = await tester.createGesture(kind: PointerDeviceKind.mouse);
-    await mouse.addPointer(location: Offset.zero);
-    addTearDown(mouse.removePointer);
-    await mouse.moveTo(
-      tester.getCenter(find.byKey(const ValueKey('toolbox.OptionButton'))),
-    );
-    await tester.pumpAndSettle(const Duration(seconds: 1));
-    expect(find.text('OptionButton'), findsOneWidget);
-    await save(
-      tester,
-      'toolbox-tooltip',
-      Rect.fromLTWH(box.left, box.top, 420, last.bottom + 8 - box.top),
-    );
-  });
+      final mouse = await tester.createGesture(kind: PointerDeviceKind.mouse);
+      await mouse.addPointer(location: Offset.zero);
+      addTearDown(mouse.removePointer);
+      await mouse.moveTo(
+        tester.getCenter(find.byKey(const ValueKey('toolbox.OptionButton'))),
+      );
+      await tester.pumpAndSettle(const Duration(seconds: 1));
+      expect(find.text('OptionButton'), findsOneWidget);
+      await save(
+        tester,
+        'toolbox-tooltip',
+        Rect.fromLTWH(box.left, box.top, 420, last.bottom + 8 - box.top),
+      );
+    },
+  );
 }

@@ -24,6 +24,8 @@ packages/gubasic_lang/   Pure Dart: lexer, parser, AST, analyzer, interpreter, f
 packages/gubasic_runtime/ Flutter runtime used by BOTH interpreter and generated apps
 packages/gubasic_player/  The run window, its host and the project model, shared by the IDE
                          and the player (D79)
+packages/gubasic_test_support/ What the apps' integration tests share: a failing test keeps
+                         its output and a picture of the window (D119)
 components/<Name>/       component.yaml (the adapter comes with the transpiler)
 examples/                Sample projects, built into the IDE
 test/parity/             Parity programs (.gbas, .form.yaml, .events, .in, .out), run by
@@ -84,6 +86,7 @@ The Mac is the author's own computer, in use while you work.
 
 - **Real mouse and keyboard events** (CGEvent, System Events, `cliclick` and the like) only after the author says the Mac is free to use ("지금 맥 안 쓴다, 해도 된다"). Before starting, say about how many minutes it will take; when done, say that it is done.
 - **Without that permission**, check only in ways that do not use the author's mouse and keyboard: tests that run inside the app (Flutter `integration_test`, widget tests) and Playwright for the web.
+- Run integration tests through `dart run gubasic_test_support:integration integration_test/NAME_test.dart -d macos` in the app's folder, so that a failure leaves its output and a picture of the window (D119).
 - **Even with permission**, before every event check that the frontmost app is the GuBASIC IDE you started (by its process id), and stop at once if it is not.
 - **Do not end system processes** (CoreServicesUIAgent and the like). If a system window cannot be closed without the mouse or keyboard, leave it open and say so in the report.
 - **Every report comes as one zip file.** Each time you finish a task and report, put the report and the files it shows into one archive:

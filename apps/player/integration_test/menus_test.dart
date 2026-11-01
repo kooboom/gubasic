@@ -5,6 +5,7 @@ import 'package:gubasic_player/gubasic_player.dart';
 import 'package:gubasic_player_app/src/app_window.dart';
 import 'package:gubasic_player_app/src/player_app.dart';
 import 'package:gubasic_runtime/gubasic_runtime.dart';
+import 'package:gubasic_test_support/gubasic_test_support.dart';
 import 'package:integration_test/integration_test.dart';
 
 /// A form's menus in an exported desktop app (docs/DESIGN.md D106): on
@@ -34,40 +35,43 @@ void main() {
         '    mnuFileHello.Checked = True\nEnd Sub\n',
   };
 
-  testWidgets('the menus where the platform puts them; choosing an item '
-      'runs its Click', (tester) async {
-    Size inside() => tester.view.physicalSize / tester.view.devicePixelRatio;
-    final bar = gbUsesSystemMenus ? 0.0 : gbMenuBarHeight;
+  testWidgetsKeepingFailures(
+    'the menus where the platform puts them; choosing an item '
+    'runs its Click',
+    (tester) async {
+      Size inside() => tester.view.physicalSize / tester.view.devicePixelRatio;
+      final bar = gbUsesSystemMenus ? 0.0 : gbMenuBarHeight;
 
-    await fitAppWindow(Project.read(files));
-    await tester.pumpWidget(
-      PlayerApp(files: files, strings: PlayerStrings.en, asApp: true),
-    );
-    await tester.pumpAndSettle();
-    for (var i = 0; i < 100 && inside() != Size(320, 140 + bar); i++) {
-      await tester.runAsync(
-        () => Future<void>.delayed(const Duration(milliseconds: 50)),
+      await fitAppWindow(Project.read(files));
+      await tester.pumpWidget(
+        PlayerApp(files: files, strings: PlayerStrings.en, asApp: true),
       );
-      await tester.pump();
-    }
-    expect(inside(), Size(320, 140 + bar));
+      await tester.pumpAndSettle();
+      for (var i = 0; i < 100 && inside() != Size(320, 140 + bar); i++) {
+        await tester.runAsync(
+          () => Future<void>.delayed(const Duration(milliseconds: 50)),
+        );
+        await tester.pump();
+      }
+      expect(inside(), Size(320, 140 + bar));
 
-    if (defaultTargetPlatform == TargetPlatform.macOS) {
-      expect(find.byKey(gbMenuBarKey), findsNothing);
-      List<PlatformMenuItem> menus() =>
-          tester.widget<PlatformMenuBar>(find.byType(PlatformMenuBar)).menus;
-      expect(menus().map((m) => m.label), ['Menus', 'File', 'Window']);
-      // What the system's menu calls when the item is chosen.
-      (menus()[1] as PlatformMenu).menus.single.onSelected!();
-      await tester.pumpAndSettle();
-      expect((menus()[1] as PlatformMenu).menus.single.label, '✓ Hello');
-    } else {
-      expect(find.byType(PlatformMenuBar), findsNothing);
-      await tester.tap(find.byKey(gbMenuKey('mnuFile')));
-      await tester.pumpAndSettle();
-      await tester.tap(find.byKey(gbMenuKey('mnuFileHello')));
-      await tester.pumpAndSettle();
-    }
-    expect(find.text('Hello'), findsOneWidget);
-  });
+      if (defaultTargetPlatform == TargetPlatform.macOS) {
+        expect(find.byKey(gbMenuBarKey), findsNothing);
+        List<PlatformMenuItem> menus() =>
+            tester.widget<PlatformMenuBar>(find.byType(PlatformMenuBar)).menus;
+        expect(menus().map((m) => m.label), ['Menus', 'File', 'Window']);
+        // What the system's menu calls when the item is chosen.
+        (menus()[1] as PlatformMenu).menus.single.onSelected!();
+        await tester.pumpAndSettle();
+        expect((menus()[1] as PlatformMenu).menus.single.label, '✓ Hello');
+      } else {
+        expect(find.byType(PlatformMenuBar), findsNothing);
+        await tester.tap(find.byKey(gbMenuKey('mnuFile')));
+        await tester.pumpAndSettle();
+        await tester.tap(find.byKey(gbMenuKey('mnuFileHello')));
+        await tester.pumpAndSettle();
+      }
+      expect(find.text('Hello'), findsOneWidget);
+    },
+  );
 }
