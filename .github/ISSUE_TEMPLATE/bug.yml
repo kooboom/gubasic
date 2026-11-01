@@ -1,0 +1,71 @@
+name: 버그 / Bug
+description: 잘못 동작하는 것을 알려 주세요. / Something does not work as it should.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        알려 주셔서 고맙습니다. GuBASIC은 개인 취미 프로젝트라 답이 늦을 수 있습니다.
+        Thank you for reporting. GuBASIC is a personal hobby project, so answers may be slow.
+  - type: dropdown
+    id: where
+    attributes:
+      label: 어디에서 / Where
+      options:
+        - 웹 IDE / Web IDE
+        - macOS IDE
+        - Windows IDE
+        - 내보낸 웹 앱 / Exported web app
+        - 내보낸 Windows 앱 / Exported Windows app
+        - 내보낸 macOS 앱 / Exported macOS app
+        - 놀이터 / Playground
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: 버전 / Version
+      description: 릴리스 이름(예 v0.4.0)이나 웹 IDE를 연 날짜. / The release (v0.4.0, say), or the day you used the web IDE.
+      placeholder: v0.4.0
+    validations:
+      required: true
+  - type: input
+    id: system
+    attributes:
+      label: 운영체제와 브라우저 / System and browser
+      placeholder: macOS 15.5, Chrome 141 / Windows 11, Edge
+  - type: textarea
+    id: steps
+    attributes:
+      label: 한 일 / What you did
+      description: 다시 해 볼 수 있게 순서대로 적어 주세요. / Step by step, so that it can be done again.
+      placeholder: |
+        1. 예제 Scores를 엽니다. / Open the Scores example.
+        2. F5를 누릅니다. / Press F5.
+        3. …
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: 기대한 것 / What you expected
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: 실제로 일어난 것 / What happened
+      description: 오류 메시지가 있으면 코드(R031 같은)와 함께 그대로 붙여 넣어 주세요. / Paste any error message as it is, with its code (R031 and the like).
+    validations:
+      required: true
+  - type: textarea
+    id: code
+    attributes:
+      label: 코드나 프로젝트 / Code or project
+      description: 문제를 보여 주는 짧은 코드, 또는 "내 컴퓨터에 저장"으로 받은 .zip을 끌어다 놓아 주세요. 개인 정보나 비밀번호가 들어 있지 않은지 확인해 주세요. / A short piece of code that shows it, or the project's .zip ("Save to my computer"). Make sure it holds no personal data or passwords.
+      render: vb
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: 화면 / Screenshots
+      description: 있으면 끌어다 놓아 주세요. / Drag them here if you have any.

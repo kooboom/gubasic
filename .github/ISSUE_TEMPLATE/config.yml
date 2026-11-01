@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: 5분 만에 첫 앱 만들기 / Your first app in five minutes
+    url: https://github.com/kooboom/gubasic/blob/main/docs/FIRST_APP.ko.md
+    about: 처음이라면 여기서 시작하세요. / New here? Start with this.
