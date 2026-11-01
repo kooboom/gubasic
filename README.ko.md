@@ -3,22 +3,36 @@
 # GuBASIC
 
 **Flutter™로 만든 비주얼 베이직 스타일의 RAD 도구.**
-화면을 그리고, 컨트롤을 더블클릭하고, BASIC 몇 줄을 쓰면 macOS, Windows, iOS, Android, 웹으로 출시할 수 있습니다.
+
+### ▶ [웹 IDE 열기](https://kooboom.github.io/gubasic/ide/) — 설치 없이 브라우저에서 바로
+
+![폼을 그리고, 버튼을 더블클릭하고, 코드 한 줄을 쓰고, F5를 누르는 모습](docs/images/first-app.gif)
+
+폼 그리기 → 컨트롤 더블클릭 → BASIC 몇 줄 → F5로 실행. 만든 것은 웹, Windows, macOS 앱으로 내보냅니다. 처음이라면 [5분 만에 첫 앱 만들기](docs/FIRST_APP.ko.md)부터 해 보세요.
 
 [English](README.md)
 
-> **상태: 3단계 v0.4 "업무에 쓰기" 완료**([v0.4.0](https://github.com/kooboom/gubasic/releases/tag/v0.4.0), 개발판). 폼을 그리고, 컨트롤을 더블클릭하고, BASIC을 쓰고, F5를 누르는 일이 모두 IDE 안에서 되며, Flutter를 설치하지 않아도 됩니다. 만든 프로젝트는 웹, Windows, macOS 앱으로 내보냅니다. Visual Basic의 작업 방식이 들어왔습니다: 여러 컨트롤을 처리기 하나로, `Timer`, 키 이벤트, 모듈과 `Sub Main`, `OptionButton`, `ComboBox`, `Frame`, 메뉴 편집기로 만드는 메뉴. 업무에 쓰는 것: 열기·저장 대화상자, 텍스트·CSV 파일, 날짜와 `Format`, `Grid` 컨트롤, PDF 파일(예제 Scores). 다음 계획: [로드맵](docs/ROADMAP.ko.md).
+## 누구를 위한 도구인가
+
+- **처음 앱을 만들어 보는 취미 개발자:** 툴킷을 배우기 전에 창과 버튼이 움직이는 것부터 보고 싶은 사람.
+- **비주얼 베이직이 그리운 사람:** 그리기 → 더블클릭 → 코드 → 실행의 작업 방식을 다시 쓰고 싶은 사람.
+- **일을 자동화하고 싶은 직장인과 교사:** 반복되는 업무를 덜어 줄 프로그램을 직접 만들고 싶은 사람.
+
+## 예제
+
+| 계산기: 숫자 버튼 10개를 처리기 하나로 | 성적표(Scores): CSV 명단을 Grid에 띄우고 합계·평균을 내어 PDF로 저장 |
+|---|---|
+| <img src="docs/images/calculator.png" width="273" alt="실행 중인 계산기 예제"> | <img src="docs/images/scores.png" width="505" alt="실행 중인 Scores 예제"> |
+
+둘 다 IDE의 예제에 있고, hello, quiz, typing, askname도 함께 있습니다.
+
+> **상태: 3단계 v0.4 "업무에 쓰기" 완료**([v0.4.0](https://github.com/kooboom/gubasic/releases/tag/v0.4.0), 개발판).
 >
-> - **웹 IDE:** https://kooboom.github.io/gubasic/ide/ (macOS·Windows 앱도 있음: [apps/ide](apps/ide))
-> - **놀이터:** https://kooboom.github.io/gubasic (개발용으로 언어만 따로 실행)
+> - **지금 할 수 있는 것:** 버튼, 레이블, 텍스트 상자, 목록, 그리드, 메뉴 들로 폼을 그리고, 색을 입히고 이름을 완성하고 오류를 설명해 주는 편집기로 이벤트 처리기를 쓰고, F5로 실행합니다. 프로젝트는 브라우저나 폴더에 보관하고, 웹·Windows·macOS 앱으로 내보냅니다. 업무에 쓰는 것: 열기·저장 대화상자, 텍스트·CSV 파일, 날짜와 `Format`, `Grid` 컨트롤, PDF 파일.
+> - **그 밖에:** macOS·Windows용 IDE 앱([apps/ide](apps/ide)), 언어만 따로 실행하는 [놀이터](https://kooboom.github.io/gubasic).
+> - **알려진 한계:** macOS·Windows 앱은 서명하지 않은 개발판입니다. 휴대폰 앱(3단계)과 디버거(v0.5)는 나중에 옵니다. 전체 목록: [docs/KNOWN_ISSUES.ko.md](docs/KNOWN_ISSUES.ko.md). 다음 계획: [로드맵](docs/ROADMAP.ko.md).
 >
-> **지금 할 수 있는 것**
-> - `Button`, `Label`, `TextBox`, `CheckBox`, `ListBox`, `Image`로 폼을 그리고, 속성 창에서 속성을 정하고, `Anchor`와 폰·태블릿·데스크톱 크기를 씁니다.
-> - 컨트롤을 더블클릭해 이벤트 처리기를 씁니다. 코드 편집기가 코드에 색을 입히고, 이름을 완성하고, 블록을 닫아 줍니다.
-> - F5를 눌러 IDE 안에서 앱을 실행합니다. 오류는 한국어나 영어로 설명하고, 누르면 그 줄로 갑니다.
-> - 프로젝트를 브라우저에 보관하거나 macOS·Windows에서 폴더로 저장하고, `.zip`으로 내려받습니다. 예제 hello, quiz, typing에서 시작할 수 있습니다.
->
-> **알려진 한계:** 아직 내 앱을 빌드할 수 없고(2단계), 프로젝트에는 폼이 하나뿐이며, macOS·Windows 앱은 서명하지 않은 개발판이고, Windows 앱은 CI 빌드와 위젯 테스트로만 확인했습니다. 전체 목록: [docs/KNOWN_ISSUES.ko.md](docs/KNOWN_ISSUES.ko.md).
+> GuBASIC은 개인 취미 프로젝트라서 이슈와 질문에 대한 답이 늦을 수 있습니다.
 
 ---
 

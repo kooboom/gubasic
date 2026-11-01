@@ -3,22 +3,36 @@
 # GuBASIC
 
 **A Visual Basic–style RAD tool, built with Flutter™.**
-Draw your interface, double-click a control, write a few lines of BASIC — and ship it to macOS, Windows, iOS, Android and the web.
+
+### ▶ [Open the web IDE](https://kooboom.github.io/gubasic/ide/) — nothing to install, right in your browser
+
+![Draw a form, double-click a button, write a line of code, press F5](docs/images/first-app.gif)
+
+Draw a form → double-click a control → write a few lines of BASIC → press F5. Then export it as a web, Windows or macOS app. New here? [Make your first app in five minutes](docs/FIRST_APP.md).
 
 [한국어](README.ko.md)
 
-> **Status: stage 3, v0.4 "For work" complete** ([v0.4.0](https://github.com/kooboom/gubasic/releases/tag/v0.4.0), a development build). Draw forms, double-click a control, write BASIC and press F5, all inside the IDE, with no Flutter installed; then export the project as a web, Windows or macOS app. Visual Basic's ways of working are in: one handler for several controls, `Timer`, key events, modules and `Sub Main`, `OptionButton`, `ComboBox`, `Frame`, and menus made in a menu editor. For work: open and save dialogs, text and CSV files, dates and `Format`, the `Grid` control and PDF files, shown in the Scores example. What comes next: [ROADMAP](docs/ROADMAP.md).
+## Who it is for
+
+- **Hobbyists** making their first apps, who want to see a window and a button work before learning a toolkit.
+- **People who miss Visual Basic** and its draw → double-click → write → run way of working.
+- **People at work, teachers among them,** who want to build their own programs to take the repetitive part out of their work.
+
+## Examples
+
+| Calculator: ten digit buttons in one handler | Scores: a CSV list in a Grid, its total and average, saved as PDF |
+|---|---|
+| <img src="docs/images/calculator.png" width="273" alt="The calculator example running"> | <img src="docs/images/scores.png" width="505" alt="The Scores example running"> |
+
+Both are in the IDE's examples, next to hello, quiz, typing and askname.
+
+> **Status: stage 3, v0.4 "For work" complete** ([v0.4.0](https://github.com/kooboom/gubasic/releases/tag/v0.4.0), a development build).
 >
-> - **Web IDE:** https://kooboom.github.io/gubasic/ide/ (also as an app for macOS and Windows: [apps/ide](apps/ide))
-> - **Playground:** https://kooboom.github.io/gubasic (the language on its own, for development)
+> - **What you can do now:** draw forms with buttons, labels, text boxes, lists, grids, menus and more; write event handlers in an editor that colours, completes and explains; run with F5; keep projects in the browser or as folders; export web, Windows and macOS apps. For work: open and save dialogs, text and CSV files, dates and `Format`, the `Grid` control and PDF files.
+> - **Also:** the IDE as an app for macOS and Windows ([apps/ide](apps/ide)), and the [playground](https://kooboom.github.io/gubasic), the language on its own.
+> - **Known limits:** the macOS and Windows apps are unsigned development builds; phone apps (stage 3) and the debugger (v0.5) come later. The full list: [docs/KNOWN_ISSUES.md](docs/KNOWN_ISSUES.md). What comes next: [ROADMAP](docs/ROADMAP.md).
 >
-> **What you can do now**
-> - Draw forms with `Button`, `Label`, `TextBox`, `CheckBox`, `ListBox` and `Image`, set their properties in the Properties window, and use `Anchor` and the phone, tablet and desktop sizes.
-> - Double-click a control to write its event handler. The code editor colours the code, completes names and closes blocks.
-> - Press F5 to run the app in the IDE. Errors are explained in English or Korean, and a click goes to the line.
-> - Keep projects in the browser, or as folders on macOS and Windows, and download them as `.zip`. Start from the examples: hello, quiz and typing.
->
-> **Known limits:** your apps cannot be built yet (stage 2); a project has one form; the macOS and Windows apps are unsigned development builds, and the Windows app has been checked only by CI builds and widget tests. The full list: [docs/KNOWN_ISSUES.md](docs/KNOWN_ISSUES.md).
+> GuBASIC is a personal hobby project, so answers to issues and questions may be slow.
 
 ---
 
