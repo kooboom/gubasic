@@ -103,6 +103,8 @@ Building a language and an IDE together with an AI is part of the fun of this pr
 
 MIT — see [LICENSE](LICENSE). © 2026 Jungmo Gu
 
+The apps you make with GuBASIC are yours: their forms and code belong to whoever wrote them, under any license they choose. An exported app carries GuBASIC's player and the fonts and packages it uses, whose notices go with it.
+
 ## Trademarks and affiliation
 
 GuBASIC is an independent personal project. It is **not affiliated with, endorsed by, or sponsored by Microsoft or Google**.
