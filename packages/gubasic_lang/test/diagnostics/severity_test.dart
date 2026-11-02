@@ -21,6 +21,8 @@ void main() {
       DiagnosticCode.handlerNameMismatch,
       // The SQL may still be right; a ? is the safer way (D126).
       DiagnosticCode.sqlJoined,
+      // The loop may mean to change the copy only (D131).
+      DiagnosticCode.forEachCopy,
     };
     for (final code in DiagnosticCode.values) {
       expect(

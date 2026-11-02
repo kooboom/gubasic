@@ -700,6 +700,7 @@ class _CodeEditorState extends State<CodeEditor>
   /// anyway.
   Map<String, FormInterface>? _forms;
   String? _formsKey;
+  Map<String, ModuleInterface>? _formsModules;
 
   Map<String, FormInterface>? _projectForms() {
     final files = widget.project.files;
@@ -716,15 +717,18 @@ class _CodeEditorState extends State<CodeEditor>
         if ('$n.gbas'.toLowerCase() != own) files['$n.gbas'],
       ],
     ].join('\u0000');
-    if (key == _formsKey) return _forms;
+    // The modules' Structures, which forms' variables may have (D131).
+    final modules = _projectModules();
+    if (key == _formsKey && identical(modules, _formsModules)) return _forms;
     _formsKey = key;
+    _formsModules = modules;
     return _forms = formInterfaces([
       for (final n in names)
         (
           file: readFormFile(files['$n.form.yaml']!, name: n).form,
           source: files['$n.gbas'] ?? '',
         ),
-    ]);
+    ], modules: modules);
   }
 
   /// Whether this code is a module's (D102).
@@ -758,7 +762,12 @@ class _CodeEditorState extends State<CodeEditor>
     form: _form,
     forms: _projectForms(),
     modules: _projectModules(),
+    moduleName: _isModule ? _moduleName : null,
   );
+
+  /// This code's module name, when it is a module's (`Module1`).
+  String get _moduleName =>
+      widget.file.substring(0, widget.file.length - '.gbas'.length);
 
   void _compile() {
     if (!mounted) return;

@@ -21,6 +21,7 @@ import 'checked_math.dart';
 /// | a control, the form | [GbControl] |
 /// | Json | [GbJson] |
 /// | HttpResponse | [GbHttpResponse] |
+/// | a Structure | [GbStruct] |
 
 class GbList {
   GbList(this.element, [List<Object?>? items]) : items = items ?? [];
@@ -35,6 +36,48 @@ class GbArray {
   final GbType element;
   List<Object?> items;
 }
+
+/// A value of a Structure (D131): its fields, in [type]'s order. A value
+/// is copied whenever it is stored ([copy]): a variable, a field, an item
+/// of an array or a List, an argument.
+class GbStruct {
+  GbStruct(this.type, this.values);
+
+  /// A new value: each field its type's default, an array field with its
+  /// size's items.
+  GbStruct.empty(this.type)
+      : values = [
+          for (final f in type.fields)
+            f.type is ArrayType
+                ? (f.size == null
+                    ? null
+                    : GbArray((f.type as ArrayType).element, [
+                        for (var i = 0; i <= f.size!; i++)
+                          defaultValue((f.type as ArrayType).element)
+                      ]))
+                : defaultValue(f.type),
+        ];
+
+  final StructureType type;
+  final List<Object?> values;
+
+  /// A copy whose Structures and arrays are copies too; the objects in it
+  /// (a List, a control, Json) are the same objects, as an argument's are
+  /// (docs/LANGUAGE.md §7.1).
+  GbStruct copy() => GbStruct(type, [for (final v in values) copyStored(v)]);
+
+  /// The number of the field named [lower] (lower case).
+  int indexOf(String lower) =>
+      type.fields.indexWhere((f) => f.name.toLowerCase() == lower);
+}
+
+/// [value] as it goes into a Structure's copy: a Structure or an array
+/// copied, anything else itself.
+Object? copyStored(Object? value) => switch (value) {
+      GbStruct s => s.copy(),
+      GbArray a => GbArray(a.element, [for (final v in a.items) copyStored(v)]),
+      _ => value,
+    };
 
 /// A control, or a form itself (`btnSave`, `Me`). While it is on a form
 /// its properties live in the [FormHost]; a control made with New, or
@@ -133,6 +176,7 @@ Object? defaultValue(GbType type) => switch (type) {
       GbType.boolean => false,
       GbType.string => '',
       GbType.date => DateTime(1),
+      StructureType() => GbStruct.empty(type),
       _ => null,
     };
 
@@ -157,6 +201,7 @@ String formatValue(Object? value) {
     GbJson j => j.text,
     GbHttpResponse() => 'HttpResponse',
     GbModule m => m.name,
+    GbStruct s => s.type.name,
     _ => '$value',
   };
 }
@@ -182,6 +227,7 @@ String typeNameOf(Object? value) {
     GbJson() => 'Json',
     GbHttpResponse() => 'HttpResponse',
     GbModule m => m.name,
+    GbStruct s => s.type.name,
     _ => 'Object',
   };
 }

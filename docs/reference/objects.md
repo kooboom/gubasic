@@ -254,6 +254,20 @@ Talks to web servers over HTTP (docs/DESIGN.md D124, D125), the way Visual Basic
 - `Json As Json`
 - `Header(name As String) As String`
 
+## Structures
+
+A program's own types: `Structure Student … End Structure`, fields only,
+in a module for the whole project or in a form for that form.
+Explained in [LANGUAGE.md §4.1](../LANGUAGE.md).
+
+- A Structure is copied when it is stored (assigned, passed, returned, put
+  into an array or a List), **its array fields too**. A plain array
+  assigned to another variable (`y = x`) is **the same array**.
+- A field is changed where the value is: `list(0).Score = 95` changes the
+  item of a `List(Of Student)`. Visual Basic .NET refuses this (BC30068).
+- For Each gives copies (A066). Not done with a Structure: comparing it
+  (A063), text (A064), `Object` (A067).
+
 ## Constants
 
 - `vbCrLf`: `\r\n`

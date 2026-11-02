@@ -1,0 +1,6 @@
+' Another form's Public variable of the module's Structure.
+Public Picked As Student
+
+Function Describe() As String
+    Return Picked.Name & " has " & Picked.Score
+End Function

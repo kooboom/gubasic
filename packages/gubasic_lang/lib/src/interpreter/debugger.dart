@@ -216,7 +216,8 @@ class Debugger {
 }
 
 /// A value as the debugger shows it: text in quotes, an array or a list
-/// with its items, Nothing by name, and the rest as GuBASIC writes it.
+/// with its items, a Structure with its fields, Nothing by name, and the
+/// rest as GuBASIC writes it.
 String debugValueText(Object? value) {
   String items(Iterable<Object?> all, int count) =>
       '(${all.take(20).map(debugValueText).join(', ')}${count > 20 ? ', …' : ''})';
@@ -225,6 +226,11 @@ String debugValueText(Object? value) {
     String s => '"${s.replaceAll('"', '""')}"',
     GbArray a => items(a.items, a.items.length),
     GbList l => items(l.items, l.items.length),
+    // A Structure with its fields (D131).
+    GbStruct st => '${st.type.name} { ${[
+        for (var i = 0; i < st.values.length; i++)
+          '${st.type.fields[i].name} = ${debugValueText(st.values[i])}'
+      ].join(', ')} }',
     _ => formatValue(value),
   };
 }

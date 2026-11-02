@@ -1,0 +1,46 @@
+' A Structure keeps related values under one name (D131): fields start
+' at their types' defaults, are read and written by name, and a Structure
+' can hold another. Passed to a procedure, it is copied (ByVal); returned
+' from a function, the caller gets the value.
+Structure Address
+    City As String
+    Zip As Integer
+End Structure
+
+Structure Student
+    Name As String
+    Public Score As Integer
+    Dim Born As Date
+    Passed As Boolean
+    Average As Double
+    Home As Address
+End Structure
+
+Function Make(name As String, score As Integer) As Student
+    Dim s As Student
+    s.Name = name
+    s.Score = score
+    s.Passed = score >= 60
+    Return s
+End Function
+
+Sub Raise(s As Student)
+    s.Score = s.Score + 100
+    Debug.Print("inside: " & s.Score)
+End Sub
+
+Sub Main()
+    Dim empty As Student
+    Debug.Print("[" & empty.Name & "] " & empty.Score & " " & empty.Passed & " " & empty.Average & " " & empty.Born)
+    Dim kim As Student = Make("Kim", 90)
+    kim.Home.City = "Seoul"
+    kim.Home.Zip = 4524
+    kim.Average = kim.Score / 4
+    Debug.Print(kim.Name & " " & kim.Score & " " & kim.Passed & " " & kim.Average)
+    Debug.Print(kim.Home.City & " " & kim.Home.Zip)
+    Raise(kim)
+    Debug.Print("after: " & kim.Score)
+    Dim made As New Student
+    made.Name = "Lee"
+    Debug.Print(made.Name & " " & Make("Park", 40).Passed)
+End Sub

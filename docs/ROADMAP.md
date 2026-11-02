@@ -93,7 +93,8 @@ Three releases, then the rest (D94–D96). The order follows who GuBASIC is for 
 
 ### Between v0.5 and v0.6
 
-- [ ] `Structure … End Structure`: fields only, copied when assigned, arrays of it, in a module for every form (D123). Until then P031 says it is not in yet
+- [x] `Structure … End Structure`: fields only, copied when assigned (its array fields too), arrays and Lists of it, in a module for every form or in a form for that form (D123, D131). Example: [Quiz](../examples/quiz)
+- [ ] `New Student With {.Name = "Kim", .Score = 90}`: a Structure's value in one line (D131; planned next)
 
 ### v0.6 — Together (candidate, D122)
 

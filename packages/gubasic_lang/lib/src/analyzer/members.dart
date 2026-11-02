@@ -213,6 +213,12 @@ Map<String, MemberSpec>? membersOf(GbType type) {
           GbType.nothing ||
           GbType.void_:
       list = const [];
+    case StructureType(:final fields):
+      // A Structure's fields, each read and written (D131).
+      list = [
+        for (final f in fields)
+          MemberSpec.property(f.name, f.type, readOnly: false),
+      ];
     default:
       return null; // Object, unknown: not checked.
   }

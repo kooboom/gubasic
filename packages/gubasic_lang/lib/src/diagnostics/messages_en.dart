@@ -183,9 +183,6 @@ const Map<DiagnosticCode, String> englishMessages = {
   DiagnosticCode.openStatement: 'GuBASIC reads and writes text files with '
       'File: write text = File.ReadAllText(path), File.ReadAllLines(path), '
       'File.WriteAllText(path, text) or File.AppendAllText(path, text).',
-  DiagnosticCode.structureNotYet: '{0} is not in GuBASIC yet: it comes after '
-      'v0.5. For now, keep each field in an array of its own (Dim x(9) As '
-      'Integer, Dim y(9) As Integer), the same index for one thing.',
   DiagnosticCode.fileNotFound: 'There is no file {0}. Check the name, or '
       'let the user choose it with an OpenFileDialog; File.Exists says '
       'whether it is there.',
@@ -238,6 +235,53 @@ const Map<DiagnosticCode, String> englishMessages = {
       'blocked) and has room for it.',
   DiagnosticCode.databaseNotFile: '{0} is not an SQLite database file. '
       'Give Database.Import a file that Database.Export wrote.',
+  DiagnosticCode.vb6Type:
+      '`Type … End Type` is Visual Basic 6\'s. Write `Structure {0} … End '
+          'Structure`; the fields are written the same way.',
+  DiagnosticCode.structureFieldValue:
+      'A field of a Structure starts at its type\'s '
+          'default and cannot be given a value here. Set it after the variable '
+          'is declared: s.Score = 100.',
+  DiagnosticCode.structureFieldPrivate:
+      'A Structure has fields only, and every '
+          'field can be used. Leave out Private.',
+  DiagnosticCode.structureEmpty:
+      'Structure {0} has no fields. Write at least one, '
+          'as Name As String.',
+  DiagnosticCode.structureInProcedure:
+      'A Structure is declared at the top of a '
+          'module or a form, not inside a Sub or Function. Move it above the '
+          'procedures.',
+  DiagnosticCode.structureFieldsOnly: 'A Structure has fields only ({0} is not '
+      'one). Write each field as Name As String, and procedures after End '
+      'Structure.',
+  DiagnosticCode.structureContainsItself:
+      'Structure {0} contains itself (through '
+          '{1}), so its value would never end. Leave that field out, or keep '
+          'it as a List(Of {0}).',
+  DiagnosticCode.structurePublicInForm:
+      'A Structure in a form is for that form. '
+          'To use it in other forms, put it in a module.',
+  DiagnosticCode.structureCompared:
+      'Two Structures cannot be compared with {0}. '
+          'Compare their fields: a.Name = b.Name And a.Score = b.Score.',
+  DiagnosticCode.structureNotText: 'A Structure is not text. Use its fields: '
+      's.Name & " " & s.Score.',
+  DiagnosticCode.structureCopyNotKept: 'This value is a copy that is not kept '
+      'anywhere, so changing {0} would be lost. Put it in a variable first, '
+      'change the field, and store it back.',
+  DiagnosticCode.forEachCopy: '{0} is a copy of the item, so this change does '
+      'not reach {1}. Go through it with For i = 0 To … and change '
+      '{1}(i).{2}.',
+  DiagnosticCode.structureToObject:
+      'A Structure cannot be kept in an Object yet. '
+          'Use a variable, an array or a List of {0}.',
+  DiagnosticCode.structureNameTaken:
+      'The name {0} is already a type ({1}). Give the Structure another '
+          'name.',
+  DiagnosticCode.structureArraySize: 'The size of an array in a Structure is a '
+      'whole number written out, as Marks(4) As Integer. For a size worked '
+      'out while the program runs, write Marks() As Integer and ReDim it.',
   DiagnosticCode.sqlJoined: 'This SQL is put together with &. Write ? '
       'where a value goes and pass the value after the SQL, as in '
       'Database.{0}("… WHERE name = ?", name): then a quote in the value '

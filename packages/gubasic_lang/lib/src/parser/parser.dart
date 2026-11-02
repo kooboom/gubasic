@@ -61,7 +61,8 @@ enum _BlockKind {
   do_('Do', 'Loop'),
   while_('While', 'Wend'),
   select('Select Case', 'End Select'),
-  try_('Try', 'End Try');
+  try_('Try', 'End Try'),
+  structure('Structure', 'End Structure');
 
   const _BlockKind(this.opener, this.closer);
   final String opener;
@@ -138,6 +139,8 @@ bool _accepts(_BlockKind kind, _Closer c) => switch (kind) {
       _BlockKind.select => c == _Closer.case_ || c == _Closer.endSelect,
       _BlockKind.try_ =>
         c == _Closer.catch_ || c == _Closer.finally_ || c == _Closer.endTry,
+      // A Structure is read on its own (_structure), never as an open frame.
+      _BlockKind.structure => false,
     };
 
 const _binaryTokens = {
@@ -485,8 +488,7 @@ class _Parser {
       }
       if (_atStructure(1)) {
         _advance();
-        _skipStructure();
-        return null;
+        return _structure(t, k);
       }
       _advance();
       if (_isKw(Keyword.kwConst)) {
@@ -516,8 +518,9 @@ class _Parser {
         return null;
       default:
     }
-    if (_atStructure() || _atEndStructure()) {
-      _skipStructure();
+    if (_atStructure()) return _structure(t, null);
+    if (_atEndStructure()) {
+      _strayEndStructure();
       return null;
     }
     final closer = _closerAt();
@@ -677,7 +680,8 @@ class _Parser {
   }
 
   /// `Structure Point` or Visual Basic 6's `Type Point` at [ahead]: the word,
-  /// a name, and nothing else on the line.
+  /// a name, and nothing else on the line (`Type` is an ordinary name
+  /// otherwise).
   bool _atStructure([int ahead = 0]) {
     final word = _peek(ahead);
     if (word.kind != TokenKind.identifier) return false;
@@ -697,24 +701,151 @@ class _Parser {
         (lower == 'structure' || lower == 'type');
   }
 
-  /// `Structure … End Structure` (or `Type … End Type`) is skipped as a
-  /// whole (P031): not yet in GuBASIC (DESIGN D123).
-  void _skipStructure() {
-    final word = _atEndStructure() ? _peek(1) : _tok;
-    _errorAt(_tok, DiagnosticCode.structureNotYet, [word.text]);
-    if (_atEndStructure()) {
-      _skipLine();
-      return;
+  /// `End Structure` with no Structure open.
+  void _strayEndStructure() {
+    final word = _peek(1).text;
+    _errorAt(_tok, DiagnosticCode.unmatchedCloser,
+        ['End $word', word.toLowerCase() == 'type' ? 'Type' : 'Structure']);
+    _skipLine();
+  }
+
+  /// `Structure Student … End Structure` (D131), at the word `Structure`
+  /// (or Visual Basic 6's `Type`, P031); [start] is where the declaration
+  /// starts, its modifier if it has one. A line that starts a procedure or
+  /// another Structure ends one whose `End Structure` is missing.
+  StructureDecl _structure(Token start, Keyword? modifier) {
+    final opener = _advance();
+    final name = _name();
+    if (opener.text.toLowerCase() == 'type') {
+      _errorAt(opener, DiagnosticCode.vb6Type, [name.name]);
     }
-    while (!_atEof) {
-      if (_atEndStructure()) {
-        _advance();
-        _advance();
-        _skipLine();
-        return;
+    _endOfStatement();
+    final fields = <StructureField>[];
+    while (true) {
+      _skipNewlines();
+      if (_atEof) {
+        _unclosed(_Frame(_BlockKind.structure, opener));
+        break;
       }
-      _advance();
+      _beginLine();
+      if (_atEndStructure()) {
+        if (_singleLineDepth == 0) {
+          blockLines.closers[_lineOf(_tok)] = _lineOf(opener);
+        }
+        _advance();
+        _advance();
+        _endOfStatement();
+        break;
+      }
+      final t = _tok;
+      final k = t.keyword;
+      final modified =
+          k == Keyword.kwPublic || k == Keyword.kwPrivate || k == Keyword.kwDim;
+      final procedure = _closerAt() == _Closer.procedureStart;
+      if (procedure && _endStructureAhead()) {
+        // A procedure inside the Structure: only fields go there (D123).
+        _errorAt(t, DiagnosticCode.structureFieldsOnly, [t.text]);
+        _skipProcedureInStructure();
+        continue;
+      }
+      if (procedure ||
+          _atStructure() ||
+          (modified && _atStructure(1)) ||
+          k == Keyword.kwClass) {
+        _unclosed(_Frame(_BlockKind.structure, opener));
+        break;
+      }
+      if (t.kind == TokenKind.identifier ||
+          (modified && _peek(1).kind == TokenKind.identifier)) {
+        fields.add(_structureField());
+      } else {
+        _errorAt(t, DiagnosticCode.structureFieldsOnly, [t.text]);
+        _skipLine();
+      }
     }
+    if (fields.isEmpty && name.name.isNotEmpty) {
+      _error(DiagnosticCode.structureEmpty, name.start, name.end, [name.name]);
+    }
+    return StructureDecl(modifier, name, fields, start.offset, _lastEnd);
+  }
+
+  /// Whether an `End Structure` comes before the next Structure or the end
+  /// of the file: then a procedure here is inside the Structure.
+  bool _endStructureAhead() {
+    for (var i = 1; _peek(i).kind != TokenKind.eof; i++) {
+      if (_peek(i - 1).kind != TokenKind.newline) continue;
+      final word = _peek(i);
+      final next = _peek(i + 1).text.toLowerCase();
+      if (word.keyword == Keyword.kwEnd &&
+          (next == 'structure' || next == 'type')) {
+        return true;
+      }
+      if (_atStructure(i)) return false;
+    }
+    return false;
+  }
+
+  /// Skips a procedure written inside a Structure, to its `End Sub` or
+  /// `End Function`, or to the `End Structure` when it has none.
+  void _skipProcedureInStructure() {
+    _skipLine();
+    while (!_atEof) {
+      _skipNewlines();
+      if (_atEndStructure()) return;
+      final end = _isKw(Keyword.kwEnd) &&
+          (_isKw(Keyword.kwSub, 1) || _isKw(Keyword.kwFunction, 1));
+      _skipLine();
+      if (end) return;
+    }
+  }
+
+  /// A field of a Structure: `[Public | Dim] Name[(4)] As Type`.
+  StructureField _structureField() {
+    final start = _tok;
+    Keyword? modifier;
+    if (_isKw(Keyword.kwPublic) ||
+        _isKw(Keyword.kwPrivate) ||
+        _isKw(Keyword.kwDim)) {
+      final t = _advance();
+      modifier = t.keyword;
+      if (modifier == Keyword.kwPrivate) {
+        _errorAt(t, DiagnosticCode.structureFieldPrivate);
+      }
+    }
+    final name = _name();
+    var isArray = false;
+    Expr? bound;
+    if (_is(TokenKind.leftParen)) {
+      _advance();
+      isArray = true;
+      if (!_is(TokenKind.rightParen)) bound = _expression();
+      _expectSymbol(TokenKind.rightParen, ')');
+    }
+    TypeRef? type;
+    if (_isKw(Keyword.kwAs)) {
+      _advance();
+      if (_isKw(Keyword.kwNew)) {
+        _errorAt(_advance(), DiagnosticCode.unexpectedToken, ['New']);
+      }
+      type = _typeRef();
+    }
+    if (_is(TokenKind.equal)) {
+      _errorAt(_tok, DiagnosticCode.structureFieldValue);
+      while (!_atStatementEnd) {
+        _advance();
+      }
+    }
+    _oneVariablePerLine();
+    _endOfStatement();
+    return StructureField(
+      modifier: modifier,
+      name: name,
+      isArray: isArray,
+      arrayBound: bound,
+      type: type,
+      start: start.offset,
+      end: _lastEnd,
+    );
   }
 
   /// `Class … End Class` is skipped as a whole (P016).
@@ -830,8 +961,14 @@ class _Parser {
 
   Stmt _statementBody() {
     final t = _tok;
-    if (_atStructure() || _atEndStructure()) {
-      _skipStructure();
+    if (_atStructure()) {
+      // Read as a whole, so that the procedure goes on after it.
+      _errorAt(t, DiagnosticCode.structureInProcedure);
+      _structure(t, null);
+      return ErrorStmt(t.offset, _lastEnd);
+    }
+    if (_atEndStructure()) {
+      _strayEndStructure();
       return ErrorStmt(t.offset, _lastEnd);
     }
     if (t.kind != TokenKind.keyword) return _callOrAssignment();
@@ -1405,11 +1542,18 @@ class _Parser {
       preserve = true;
     }
     final name = _name();
+    Expr target = NameExpr(name.name, name.start, name.end);
+    // An array field of a Structure: `ReDim s.Marks(9)` (D131).
+    while (_is(TokenKind.dot)) {
+      _advance();
+      final member = _memberName();
+      target = MemberExpr(target, member, target.start, member.end);
+    }
     _expectSymbol(TokenKind.leftParen, '(');
     final bound = _expression();
     _expectSymbol(TokenKind.rightParen, ')');
     _endOfStatement();
-    return ReDimStmt(preserve, name, bound, reDimToken.offset, _lastEnd);
+    return ReDimStmt(preserve, target, bound, reDimToken.offset, _lastEnd);
   }
 
   // -------------------------------------------------------------------------

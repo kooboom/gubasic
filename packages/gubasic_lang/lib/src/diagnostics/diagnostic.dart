@@ -147,9 +147,26 @@ enum DiagnosticCode {
   /// Visual Basic 6's `Open path For Input As #1` (D113).
   openStatement('P030'),
 
-  /// `Structure … End Structure`, or Visual Basic 6's `Type … End Type`:
-  /// not yet in GuBASIC (D123). Args: the word written.
-  structureNotYet('P031'),
+  /// Visual Basic 6's `Type … End Type`: GuBASIC writes `Structure … End
+  /// Structure` (D131); the block is read as one. Args: the name.
+  vb6Type('P031'),
+
+  /// A field of a Structure given a value where it is declared (D131).
+  structureFieldValue('P032'),
+
+  /// A `Private` field of a Structure: it has fields only, all of them
+  /// usable (D131).
+  structureFieldPrivate('P033'),
+
+  /// A Structure without fields (D131). Args: the name.
+  structureEmpty('P034'),
+
+  /// A Structure declared inside a procedure (D131).
+  structureInProcedure('P035'),
+
+  /// Something other than a field inside a Structure (D123, D131). Args:
+  /// the first word of the line.
+  structureFieldsOnly('P036'),
 
   // Analyzer: names
 
@@ -397,6 +414,40 @@ enum DiagnosticCode {
   /// value can break it; a `?` and the value after the SQL cannot. Args:
   /// the method.
   sqlJoined('A060', DiagnosticSeverity.warning),
+
+  /// A Structure that contains itself, directly or through other
+  /// Structures (D131). Args: the Structure, the fields on the way.
+  structureContainsItself('A061'),
+
+  /// `Public Structure` in a form: a form's Structure is for that form
+  /// (D131).
+  structurePublicInForm('A062'),
+
+  /// Two Structures compared (D131). Args: the operator.
+  structureCompared('A063'),
+
+  /// A Structure where text is needed (D131).
+  structureNotText('A064'),
+
+  /// A field changed in a Structure value that is kept nowhere, as a
+  /// function's result (D131). Args: the field.
+  structureCopyNotKept('A065'),
+
+  /// A field changed in a For Each variable of a Structure: the change
+  /// stays in the copy (D131). Args: the variable, the collection, the
+  /// field.
+  forEachCopy('A066', DiagnosticSeverity.warning),
+
+  /// A Structure kept in an Object (D131). Args: the Structure.
+  structureToObject('A067'),
+
+  /// A Structure named as a type or another Structure of the project is
+  /// (D131). Args: the name, what has it.
+  structureNameTaken('A068'),
+
+  /// The size of an array field written other than as a whole number
+  /// (D131).
+  structureArraySize('A069'),
 
   // Form and project files (.form.yaml, .gbproj)
 

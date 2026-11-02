@@ -71,6 +71,16 @@ void main() {
       );
     });
 
+    test('Structure is a keyword where it opens or closes one (D131)', () {
+      expect(
+        marks('Structure P\n  type As Integer\nEnd Structure'),
+        'kkkkkkkkkppp'
+        'pppppppkkppppppppp'
+        'kkkpkkkkkkkkk',
+      );
+      expect(marks('Dim structure = 1'), 'kkkpppppppppppppn');
+    });
+
     test('a string or comment being typed is coloured as one', () {
       expect(marks('x = "한'), 'ppppss');
       expect(marks("' 한글 ㄱ"), 'cccccc');

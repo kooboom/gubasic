@@ -1,0 +1,24 @@
+' A module's Structure is used in every form, and a form's own Structure
+' in that form (D131). A field of another form's variable is changed
+' where it is kept.
+Structure Pair
+    Left As Student
+    Right As Student
+End Structure
+
+Dim added As Integer
+
+Sub btnAdd_Click()
+    added = added + 1
+    Dim s As Student
+    s.Name = "No. " & added
+    s.Score = added * 10
+    Roster.Add(s)
+    Form2.Picked = s
+    Form2.Picked.Score = Form2.Picked.Score + 1
+    Dim p As Pair
+    p.Left = Best()
+    p.Right = Form2.Picked
+    lblBest.Caption = p.Left.Name & " / " & p.Right.Name
+    Debug.Print(Roster(added - 1).Score & " " & Form2.Picked.Score & " " & Form2.Describe())
+End Sub

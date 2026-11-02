@@ -1,0 +1,46 @@
+' Arrays and Lists of a Structure (D131). Each item starts as a new value;
+' Add puts in a copy; a field of an item is changed where the item is,
+' list(0).Score = 1 included (VB.NET does not allow that one). For Each
+' gives each item as a copy. An array field gets its size with ReDim.
+Structure Student
+    Name As String
+    Score As Integer
+    Extra() As Integer
+End Structure
+
+Sub Main()
+    Dim group(2) As Student
+    group(0).Name = "Kim"
+    group(1).Name = "Lee"
+    group(1).Score = 70
+    Debug.Print(group(2).Name = "" And group(2).Score = 0)
+    ReDim Preserve group(3)
+    Debug.Print(group(1).Name & " " & group(1).Score & " " & UBound(group))
+
+    Dim list As New List(Of Student)
+    Dim s As Student
+    s.Name = "Park"
+    s.Score = 50
+    list.Add(s)
+    s.Score = 99
+    list.Add(s)
+    list(0).Score = list(0).Score + 1
+    Debug.Print(list(0).Score & " " & list(1).Score & " " & s.Score)
+    list.Insert(0, group(0))
+    list(0).Name = "Choi"
+    Debug.Print(list(0).Name & " " & group(0).Name & " " & list.Count)
+
+    For Each one In list
+        Debug.Print(one.Name & ": " & one.Score)
+    Next
+    For i = 0 To list.Count - 1
+        list(i).Score = 0
+    Next
+    Debug.Print(list(1).Score + list(2).Score)
+
+    Debug.Print(s.Extra Is Nothing)
+    ReDim s.Extra(2)
+    s.Extra(2) = 3
+    ReDim Preserve s.Extra(4)
+    Debug.Print(s.Extra(2) & " " & UBound(s.Extra))
+End Sub

@@ -27,17 +27,23 @@ class CompileResult {
 
 /// Lexes, parses and analyzes [source]; [form] is the form the code
 /// belongs to, if any, [pictures] the project's pictures, [forms] the
-/// project's forms and [modules] its modules (see [analyze]).
+/// project's forms, [modules] its modules and [moduleName] the module the
+/// code is, if it is one (see [analyze]).
 CompileResult compile(
   String source, {
   FormFile? form,
   List<String>? pictures,
   Map<String, FormInterface>? forms,
   Map<String, ModuleInterface>? modules,
+  String? moduleName,
 }) {
   final parsed = parse(source);
   return CompileResult(
       parsed,
       analyze(parsed,
-          form: form, pictures: pictures, forms: forms, modules: modules));
+          form: form,
+          pictures: pictures,
+          forms: forms,
+          modules: modules,
+          moduleName: moduleName));
 }

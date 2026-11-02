@@ -332,6 +332,40 @@ String _functionsPage(_Words w) {
   return '${'$b'.trimRight()}\n';
 }
 
+/// Structures (D131): what is copied and what is shared, and where
+/// GuBASIC differs from Visual Basic .NET, which LANGUAGE §4.1 explains.
+const _structuresEn = '''## Structures
+
+A program's own types: `Structure Student … End Structure`, fields only,
+in a module for the whole project or in a form for that form.
+Explained in [LANGUAGE.md §4.1](../LANGUAGE.md).
+
+- A Structure is copied when it is stored (assigned, passed, returned, put
+  into an array or a List), **its array fields too**. A plain array
+  assigned to another variable (`y = x`) is **the same array**.
+- A field is changed where the value is: `list(0).Score = 95` changes the
+  item of a `List(Of Student)`. Visual Basic .NET refuses this (BC30068).
+- For Each gives copies (A066). Not done with a Structure: comparing it
+  (A063), text (A064), `Object` (A067).
+
+''';
+
+const _structuresKo = '''## Structure
+
+프로그램이 만드는 형식입니다. `Structure Student … End Structure`로 쓰고
+필드만 있으며, 모듈에 두면 프로젝트 전체에서, 폼에 두면 그 폼에서 씁니다.
+설명은 [LANGUAGE.ko.md 4.1절](../LANGUAGE.ko.md)에 있습니다.
+
+- Structure는 담을 때(대입, 인수, `Return`, 배열이나 List에 넣기) 복사되고,
+  **배열 필드도 함께 복사됩니다**. 그냥 배열을 다른 변수에 대입하면(`y = x`)
+  **같은 배열**입니다.
+- 필드는 값이 있는 자리에서 바뀝니다. `list(0).Score = 95`는
+  `List(Of Student)`의 항목을 바꿉니다. Visual Basic .NET은 이것을 막습니다(BC30068).
+- For Each는 복사본을 줍니다(A066). Structure로 하지 않는 것: 비교(A063),
+  글(A064), `Object`(A067).
+
+''';
+
 String _objectsPage(_Words w) {
   final b =
       StringBuffer('# ${w.objects}\n\n${w.back.replaceAll('../', '')}\n\n');
@@ -359,6 +393,7 @@ String _objectsPage(_Words w) {
     }
     b.write('\n');
   }
+  b.write(w.ko ? _structuresKo : _structuresEn);
   b.write('## ${w.constants}\n\n');
   for (final MapEntry(:key, :value) in builtinConstants.entries) {
     final shown = value

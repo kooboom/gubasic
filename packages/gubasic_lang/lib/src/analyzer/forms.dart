@@ -3,8 +3,10 @@ import '../ast/line_map.dart';
 import '../diagnostics/diagnostic.dart';
 import '../forms/form_file.dart';
 import '../lexer/keyword.dart';
+import '../parser/parser.dart' show parse;
 import 'compile.dart';
 import 'symbols.dart';
+import 'types.dart';
 
 /// What the code of a project's forms can use of a form besides its
 /// component's properties and methods (docs/DESIGN.md D88): its controls,
@@ -30,7 +32,8 @@ class FormInterface {
 /// (`Module1.Total`). The symbols are from compiling the module on its
 /// own; [ProjectProgram.canonical] gives the ones that run.
 class ModuleInterface {
-  ModuleInterface(this.name, this.variables, this.procedures);
+  ModuleInterface(this.name, this.variables, this.procedures,
+      {this.structures = const {}});
 
   /// The module's name (`Module1`), as its file is named.
   final String name;
@@ -40,6 +43,10 @@ class ModuleInterface {
 
   /// By lower-case name.
   final Map<String, Symbol> procedures;
+
+  /// Its Structures that are not `Private` (D131), by lower-case name:
+  /// types of the whole project.
+  final Map<String, StructureType> structures;
 }
 
 /// One module of a project, compiled (D102).
@@ -134,10 +141,75 @@ typedef FormSource = ({FormFile file, String source});
 /// give it `As Integer`).
 /// What each of [modules] shows the others and the forms (D102), by
 /// lower-case module name: each compiled on its own first, as forms are.
-Map<String, ModuleInterface> moduleInterfaces(List<ModuleSource> modules) => {
-      for (final m in modules)
-        m.name.toLowerCase(): moduleInterfaceOf(m.name, compile(m.source)),
-    };
+Map<String, ModuleInterface> moduleInterfaces(List<ModuleSource> modules) {
+  final shared = structureInterfaces(modules);
+  return {
+    for (final m in modules)
+      m.name.toLowerCase(): moduleInterfaceOf(
+          m.name, compile(m.source, modules: shared, moduleName: m.name)),
+  };
+}
+
+/// The Structures of [modules] (D131), before any code is compiled: each
+/// module's that are not `Private`, as modules with nothing else, their
+/// fields' types worked out among them. A module's or a form's code is
+/// compiled on its own with them, so that its interface already knows the
+/// project's Structures (`Public Current As Student`).
+Map<String, ModuleInterface> structureInterfaces(List<ModuleSource> modules) {
+  final declared = <(String, StructureDecl, StructureType)>[];
+  final all = <String, StructureType>{};
+  for (final m in modules) {
+    for (final d in parse(m.source).unit.members.whereType<StructureDecl>()) {
+      if (d.modifier == Keyword.kwPrivate || d.name.name.isEmpty) continue;
+      final type = StructureType(d.name.name);
+      all.putIfAbsent(d.name.name.toLowerCase(), () => type);
+      declared.add((m.name, d, type));
+    }
+  }
+  for (final (_, d, type) in declared) {
+    final names = <String>{};
+    for (final f in d.fields) {
+      if (f.name.name.isEmpty || !names.add(f.name.name.toLowerCase())) {
+        continue;
+      }
+      final t = f.type == null ? GbType.unknown : quietType(f.type!, all);
+      type.fields.add(StructureFieldType(
+          f.name.name, f.isArray ? ArrayType(t) : t,
+          size:
+              f.arrayBound == null ? null : structureArraySize(f.arrayBound!)));
+    }
+  }
+  return {
+    for (final m in modules)
+      m.name.toLowerCase():
+          ModuleInterface(m.name, const {}, const {}, structures: {
+        for (final (module, _, type) in declared)
+          if (module == m.name) type.name.toLowerCase(): type,
+      }),
+  };
+}
+
+/// The type [ref] names, among the built-in types, the control types and
+/// [structures] (by lower-case name), without reporting anything: unknown
+/// when it names none.
+GbType quietType(TypeRef ref, Map<String, StructureType> structures) {
+  final lower = ref.name.name.toLowerCase();
+  if (lower == 'list') {
+    return ListType(ref.typeArguments.isEmpty
+        ? GbType.object
+        : quietType(ref.typeArguments.first, structures));
+  }
+  return lookupNamedType(lower) ?? structures[lower] ?? GbType.unknown;
+}
+
+/// The upper bound of a Structure's array field, `Marks(4)` (D131): a
+/// whole number written out, from -1 (no items) to a million; null for
+/// anything else (A069).
+int? structureArraySize(Expr bound) {
+  if (bound is! IntegerLiteral) return null;
+  final v = bound.value;
+  return v != null && v >= -1 && v <= 1000000 ? v : null;
+}
 
 /// The interface of a form whose code is compiled already, as
 /// [formInterfaces] gives it (the debugger's Immediate window, D128).
@@ -167,16 +239,24 @@ ModuleInterface moduleInterfaceOf(String name, CompileResult alone) {
       default:
     }
   }
-  return ModuleInterface(name, variables, procedures);
+  return ModuleInterface(name, variables, procedures, structures: {
+    for (final MapEntry(key: decl, value: type)
+        in alone.analysis.structureTypes.entries)
+      if (decl.modifier != Keyword.kwPrivate) type.name.toLowerCase(): type,
+  });
 }
 
+/// [modules], when given, are the project's modules, whose Structures the
+/// forms' code may use (D131).
 Map<String, FormInterface> formInterfaces(
   List<FormSource> forms, {
   List<String>? pictures,
+  Map<String, ModuleInterface>? modules,
 }) {
   final interfaces = <String, FormInterface>{};
   for (final f in forms) {
-    final alone = compile(f.source, form: f.file, pictures: pictures);
+    final alone =
+        compile(f.source, form: f.file, pictures: pictures, modules: modules);
     final symbols = alone.analysis.symbols;
     final variables = <String, Symbol>{};
     final procedures = <String, Symbol>{};
@@ -211,8 +291,9 @@ ProjectProgram compileProject(
   List<ModuleSource> modules = const [],
   bool startsWithMain = false,
 }) {
-  final interfaces = formInterfaces(forms, pictures: pictures);
   final moduleFaces = moduleInterfaces(modules);
+  final interfaces =
+      formInterfaces(forms, pictures: pictures, modules: moduleFaces);
   final programs = [
     for (final f in forms)
       FormProgram(
@@ -230,7 +311,10 @@ ProjectProgram compileProject(
       ModuleProgram(
         m.name,
         compile(m.source,
-            pictures: pictures, forms: interfaces, modules: moduleFaces),
+            pictures: pictures,
+            forms: interfaces,
+            modules: moduleFaces,
+            moduleName: m.name),
       ),
   ];
   final canonical = Map<Symbol, Symbol>.identity();

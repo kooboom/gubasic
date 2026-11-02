@@ -1,0 +1,44 @@
+' Assigning a Structure copies it whole, its array fields too (D131); a
+' plain array assigned to another variable is the same array, as before.
+' Objects in a Structure (a List) stay the same objects, as an argument's
+' do (LANGUAGE §7.1).
+Structure Card
+    Name As String
+    Marks(2) As Integer
+    Notes As List(Of String)
+End Structure
+
+Sub Main()
+    Dim a As Card
+    a.Name = "A"
+    a.Marks(0) = 1
+    a.Notes = New List(Of String)
+    a.Notes.Add("first")
+
+    Dim b As Card = a
+    b.Name = "B"
+    b.Marks(0) = 9
+    b.Notes.Add("second")
+    Debug.Print(a.Name & " " & a.Marks(0) & " " & a.Notes.Count)
+    Debug.Print(b.Name & " " & b.Marks(0) & " " & b.Notes.Count)
+
+    ' A plain array: the same array.
+    Dim x(2) As Integer
+    Dim y() As Integer
+    y = x
+    y(0) = 5
+    Debug.Print("x(0) = " & x(0))
+
+    ' An array taken out of a Structure is the Structure's array;
+    ' a copy of the Structure has its own.
+    Dim m() As Integer
+    m = a.Marks
+    m(1) = 7
+    Dim c As Card = a
+    c.Marks(1) = 8
+    Debug.Print(a.Marks(1) & " " & c.Marks(1))
+
+    ' Assigned again, the old value is gone.
+    b = a
+    Debug.Print(b.Name & " " & b.Marks(0) & " " & b.Marks(1))
+End Sub

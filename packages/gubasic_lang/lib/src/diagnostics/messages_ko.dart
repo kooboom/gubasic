@@ -155,8 +155,6 @@ const Map<DiagnosticCode, String> koreanMessages = {
       '"{0}" 값은 단축키가 아니어서, 실행하면 여기서 프로그램이 멈춥니다. "Ctrl+O"나 "F5"처럼 Ctrl, Shift, Alt와 키 하나를 +로 이어 적거나, 없으면 ""로 적어 주세요. 글자나 숫자 키에는 Ctrl이나 Alt가 있어야 합니다.',
   DiagnosticCode.openStatement:
       'GuBASIC에서는 텍스트 파일을 File로 읽고 씁니다. text = File.ReadAllText(path), File.ReadAllLines(path), File.WriteAllText(path, text), File.AppendAllText(path, text) 형태로 써 주세요.',
-  DiagnosticCode.structureNotYet:
-      '{0} 문은 아직 GuBASIC에 없습니다. v0.5 다음에 들어올 예정입니다. 지금은 필드마다 배열을 하나씩 두고(Dim x(9) As Integer, Dim y(9) As Integer) 같은 번호로 한 물체를 나타내세요.',
   DiagnosticCode.fileNotFound:
       '{0} 파일이 없습니다. 이름을 확인하거나 OpenFileDialog로 사용자가 고르게 해 주세요. 있는지는 File.Exists로 알 수 있습니다.',
   DiagnosticCode.fileNotChosen:
@@ -196,6 +194,36 @@ const Map<DiagnosticCode, String> koreanMessages = {
       '데이터베이스 {0} 파일을 열지 못했습니다({1}). 앱이 데이터 폴더에 쓸 수 있는지, 웹에서는 브라우저가 이 사이트의 데이터 저장을 막지 않았는지와 저장 공간이 남았는지 확인해 주세요.',
   DiagnosticCode.databaseNotFile:
       '{0} 파일은 SQLite 데이터베이스 파일이 아닙니다. Database.Import에는 Database.Export가 쓴 파일을 주세요.',
+  DiagnosticCode.vb6Type:
+      '`Type … End Type` 블록은 Visual Basic 6의 표기입니다. `Structure {0} … End Structure` 형태로 씁니다. 필드는 그대로 씁니다.',
+  DiagnosticCode.structureFieldValue:
+      'Structure의 필드는 형의 기본값에서 시작하므로 여기서 값을 줄 수 없습니다. 변수를 선언한 뒤 대입합니다(s.Score = 100).',
+  DiagnosticCode.structureFieldPrivate:
+      'Structure에는 필드만 있고 모든 필드를 쓸 수 있습니다. Private 키워드를 지웁니다.',
+  DiagnosticCode.structureEmpty:
+      'Structure {0} 블록에 필드가 없습니다. Name As String처럼 하나 이상 씁니다.',
+  DiagnosticCode.structureInProcedure:
+      'Structure는 Sub 또는 Function 안이 아니라 모듈이나 폼 코드의 맨 위 수준에 선언합니다. 프로시저들 위로 옮깁니다.',
+  DiagnosticCode.structureFieldsOnly:
+      'Structure에는 필드만 씁니다({0} 줄은 필드가 아닙니다). 필드는 Name As String처럼 쓰고, 프로시저는 End Structure 뒤에 씁니다.',
+  DiagnosticCode.structureContainsItself:
+      'Structure {0} 블록이 ({1} 필드를 거쳐) 자기 자신을 담아서 값이 끝나지 않습니다. 그 필드를 빼거나 List(Of {0}) 형으로 둡니다.',
+  DiagnosticCode.structurePublicInForm:
+      '폼의 Structure는 그 폼에서만 씁니다. 다른 폼에서도 쓰려면 모듈에 둡니다.',
+  DiagnosticCode.structureCompared:
+      '두 Structure 값은 {0} 연산자로 비교할 수 없습니다. 필드끼리 비교합니다(a.Name = b.Name And a.Score = b.Score).',
+  DiagnosticCode.structureNotText:
+      'Structure 값은 글이 아닙니다. 필드를 씁니다(s.Name & " " & s.Score).',
+  DiagnosticCode.structureCopyNotKept:
+      '이 값은 어디에도 담기지 않은 복사본이라 {0} 필드를 바꿔도 사라집니다. 변수에 담아 필드를 바꾼 뒤 다시 넣습니다.',
+  DiagnosticCode.forEachCopy:
+      '{0} 변수는 항목의 복사본이라 이 변경이 {1} 목록에 가지 않습니다. For i = 0 To …로 돌며 {1}(i).{2} 필드를 바꿉니다.',
+  DiagnosticCode.structureToObject:
+      'Structure 값은 아직 Object 변수에 담을 수 없습니다. {0} 형의 변수, 배열, List를 씁니다.',
+  DiagnosticCode.structureNameTaken:
+      '{0} 이름은 이미 형 이름입니다({1}). Structure 이름을 바꿉니다.',
+  DiagnosticCode.structureArraySize:
+      'Structure 안 배열의 크기는 Marks(4) As Integer처럼 정수로 적습니다. 실행 중에 정해지는 크기라면 Marks() As Integer로 쓰고 ReDim으로 정합니다.',
   DiagnosticCode.sqlJoined:
       '이 SQL은 &로 이어 붙였습니다. 값이 들어갈 자리에 ?를 쓰고 값은 SQL 뒤에 넘겨 주세요. Database.{0}("… WHERE name = ?", name)처럼 쓰면 값에 든 따옴표가 문장을 깨뜨리지 못합니다.',
   DiagnosticCode.popupWithoutItems:

@@ -1,0 +1,6 @@
+Debug.Print: [] 0 False 0 0001-01-01 00:00:00
+Debug.Print: Kim 90 True 22.5
+Debug.Print: Seoul 4524
+Debug.Print: inside: 190
+Debug.Print: after: 90
+Debug.Print: Lee False

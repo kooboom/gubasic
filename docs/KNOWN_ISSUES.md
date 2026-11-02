@@ -6,6 +6,12 @@ Problems we know about and have **deliberately** left unfixed for now. Each entr
 
 ---
 
+## A Structure is made field by field, and is not kept in an Object
+
+- **What:** a Structure's value is filled one field at a time (`s.Name = "Kim"`); there is no way yet to write it in one line, as Visual Basic .NET's `New Student With {.Name = "Kim"}` does ([Microsoft](https://learn.microsoft.com/en-us/dotnet/visual-basic/programming-guide/language-features/objects-and-classes/object-initializers-named-and-anonymous-types)). A Structure cannot be kept in an `Object` (A067), compared with `=` (A063), or turned into text (A064). It is not read from or written to a CSV file or a database by itself: each field goes in and out on its own.
+- **Why deferred:** `With {…}` is a change of its own, planned right after Structure (D131). The rest needs `CType` for Structures, a rule for comparing every field, and a text form, none of which the first programs with Structures need.
+- **When to revisit:** `With {…}` next; the others when a program needs them, for CSV and databases with the transpiler's generated code in mind.
+
 ## Very long loops are slow
 
 - **What:** a loop of a million rounds (`total = total + i * 2 - 1`) takes about 3.3 seconds in the player in Chrome, 1.1 seconds in WebKit and 1.3 seconds in the macOS player, since the interpreter pauses by time (STAGE2_PLAN §7); before, 7.5, 7.1 and 1.4 seconds.

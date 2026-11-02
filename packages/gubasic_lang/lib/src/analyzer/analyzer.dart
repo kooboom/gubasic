@@ -36,15 +36,19 @@ import 'types.dart';
 /// and their controls, `Public` variables and procedures (D88).
 ///
 /// [modules] are the project's modules, by lower-case name (D102): their
-/// `Public` names can be used anywhere, also with the module's name.
+/// `Public` names can be used anywhere, also with the module's name, and
+/// their Structures are the project's types (D131). [moduleName] is the
+/// module the code is, when it is one: its own entry in [modules] is
+/// then the code itself.
 AnalysisResult analyze(
   ParseResult parsed, {
   FormFile? form,
   List<String>? pictures,
   Map<String, FormInterface>? forms,
   Map<String, ModuleInterface>? modules,
+  String? moduleName,
 }) =>
-    _Analyzer(parsed, form, pictures, forms, modules).run();
+    _Analyzer(parsed, form, pictures, forms, modules, moduleName).run();
 
 /// Analyzes [expression] (parsed from [parsed]'s source) in [scope], for
 /// the debugger's Immediate window (docs/DESIGN.md D128): the scope is a
@@ -60,7 +64,7 @@ AnalysisResult analyzeExpression(
   Map<String, FormInterface>? forms,
   Map<String, ModuleInterface>? modules,
 }) {
-  final analyzer = _Analyzer(parsed, form, pictures, forms, modules)
+  final analyzer = _Analyzer(parsed, form, pictures, forms, modules, null)
     .._scope = scope;
   analyzer._value(expression);
   return analyzer._result;
@@ -90,8 +94,8 @@ class _ProcedureContext {
 }
 
 class _Analyzer {
-  _Analyzer(
-      this.parsed, this.form, List<String>? pictures, this.forms, this.modules)
+  _Analyzer(this.parsed, this.form, List<String>? pictures, this.forms,
+      this.modules, String? moduleName)
       : _lines = LineMap(parsed.source),
         _builtins = Scope(ScopeKind.builtins, null) {
     for (final f in builtinFunctions.values) {
@@ -113,6 +117,13 @@ class _Analyzer {
     }
     Scope outer = _builtins;
     final modules = this.modules ?? const {};
+    // The project's Structures (D131): the other modules'.
+    for (final m in modules.values) {
+      if (m.name.toLowerCase() == moduleName?.toLowerCase()) continue;
+      for (final t in m.structures.values) {
+        _projectStructures.putIfAbsent(t.name.toLowerCase(), () => (t, m.name));
+      }
+    }
     if (modules.isNotEmpty) {
       // The modules' Public names (D102); a name two of them have is
       // written with its module's name.
@@ -166,6 +177,9 @@ class _Analyzer {
           ? null
           : {for (final p in pictures) pictureKey(p): p},
     );
+    for (final MapEntry(:key, value: (type, _)) in _projectStructures.entries) {
+      _result.projectStructures[key] = type;
+    }
   }
 
   final ParseResult parsed;
@@ -182,6 +196,17 @@ class _Analyzer {
 
   /// The names two or more modules make Public, and those modules.
   final _ambiguous = <String, List<String>>{};
+
+  /// The file's own Structures, by lower-case name (D131).
+  final _structures = <String, StructureType>{};
+
+  /// The other modules' Structures, and the module of each, by lower-case
+  /// name (D131).
+  final _projectStructures = <String, (StructureType, String)>{};
+
+  /// The For Each variables of Structures whose loop is being analyzed:
+  /// a change to one's field stays in the copy (A066).
+  final _copies = Map<Symbol, ForEachStmt>.identity();
 
   /// The form's controls, when there is a form.
   Scope? _controls;
@@ -227,6 +252,9 @@ class _Analyzer {
     final unit = parsed.unit;
     _scope = _file;
 
+    // 0. Structures (D131), so that every type after can name them.
+    _declareStructures(unit);
+
     // 1. Names declared outside procedures, so that procedures and fields
     //    can be used anywhere in the file.
     for (final member in unit.members) {
@@ -253,7 +281,7 @@ class _Analyzer {
                 declaration: member,
                 procedure: member,
               ));
-        case InvalidMember():
+        case InvalidMember() || StructureDecl():
           break;
       }
     }
@@ -307,6 +335,121 @@ class _Analyzer {
       }
     }
     return _result;
+  }
+
+  /// The file's Structures (D131): their names first, so that they can
+  /// name one another, then their fields; and none may contain itself.
+  void _declareStructures(CompilationUnit unit) {
+    final decls = unit.members.whereType<StructureDecl>().toList();
+    final owner = form?.name ?? '';
+    for (final d in decls) {
+      final name = d.name.name;
+      if (name.isEmpty) continue;
+      final lower = name.toLowerCase();
+      if (_structures.containsKey(lower)) {
+        final first =
+            decls.firstWhere((o) => o.name.name.toLowerCase() == lower);
+        _reportAt(d.name, DiagnosticCode.duplicateDeclaration,
+            [name, '${_line(first.name)}']);
+        continue;
+      }
+      if (_typeNameTaken(lower) case final where?) {
+        _reportAt(d.name, DiagnosticCode.structureNameTaken, [name, where]);
+      }
+      if (form != null && d.modifier == Keyword.kwPublic) {
+        _reportAt(d.name, DiagnosticCode.structurePublicInForm);
+      }
+      final type = StructureType(name, owner: owner);
+      _structures[lower] = type;
+      _result.structures[lower] = type;
+      _result.structureTypes[d] = type;
+    }
+    for (final d in decls) {
+      final type = _result.structureTypes[d];
+      if (type == null) continue;
+      final seen = <String, StructureField>{};
+      for (final f in d.fields) {
+        final name = f.name.name;
+        if (name.isEmpty) continue;
+        if (seen[name.toLowerCase()] case final first?) {
+          _reportAt(f.name, DiagnosticCode.duplicateDeclaration,
+              [name, '${_line(first.name)}']);
+          continue;
+        }
+        seen[name.toLowerCase()] = f;
+        GbType t = GbType.unknown;
+        if (f.type == null) {
+          _reportAt(f.name, DiagnosticCode.missingTypeAndValue, [name]);
+        } else {
+          t = _resolveType(f.type!);
+        }
+        int? size;
+        if (f.isArray) {
+          if (f.arrayBound case final bound?) {
+            size = structureArraySize(bound);
+            if (size == null) {
+              _reportAt(bound, DiagnosticCode.structureArraySize);
+            }
+          }
+          t = ArrayType(t);
+        }
+        type.fields.add(StructureFieldType(name, t, size: size));
+      }
+    }
+    for (final d in decls) {
+      final type = _result.structureTypes[d];
+      if (type == null) continue;
+      if (_containing(type) case final path?) {
+        _reportAt(d.name, DiagnosticCode.structureContainsItself,
+            [type.name, path.join('.')]);
+      }
+    }
+  }
+
+  /// Where a type named [lower] already is, for a Structure of that name
+  /// (A068): GuBASIC's own, a form, a module or another module's
+  /// Structure; null when the name is free.
+  String? _typeNameTaken(String lower) {
+    if (lookupNamedType(lower) != null ||
+        lower == 'list' ||
+        componentAliased(lower) != null ||
+        allBuiltinObjects.any((o) => o.toLowerCase() == lower)) {
+      return 'GuBASIC';
+    }
+    if (forms?[lower] case final f?) return f.name;
+    if (form?.name.toLowerCase() == lower) return form!.name;
+    if (modules?[lower] case final m?) return m.name;
+    if (_projectStructures[lower] case (_, final module)) return module;
+    return null;
+  }
+
+  /// The Structure named [lower]: the file's own, or another module's.
+  StructureType? _structureNamed(String lower) =>
+      _structures[lower] ?? _projectStructures[lower]?.$1;
+
+  /// The fields through which [start] contains itself, or null (A061): a
+  /// field that is a Structure, or an array of one with a size, holds its
+  /// value; a List or an array without a size holds none at first.
+  List<String>? _containing(StructureType start) {
+    final path = <String>[];
+    final visited = <StructureType>{};
+    bool visit(StructureType t) {
+      for (final f in t.fields) {
+        final inner = switch (f.type) {
+          final StructureType s => s,
+          ArrayType(element: final StructureType s) when f.size != null => s,
+          _ => null,
+        };
+        if (inner == null) continue;
+        path.add(f.name);
+        if (inner == start) return true;
+        if (visited.add(inner) && visit(inner)) return true;
+        path.removeLast();
+      }
+      return false;
+    }
+
+    return visit(start) ? path : null;
   }
 
   /// Declares [symbol] in [scope] unless the name is taken (A005).
@@ -646,6 +789,7 @@ class _Analyzer {
     }
     final named = lookupNamedType(lower);
     if (named != null) return named;
+    if (_structureNamed(lower) case final t?) return t;
     if (componentAliased(name) case final c?) {
       // `RadioButton` (Visual Basic .NET) for OptionButton (D104).
       _reportAt(
@@ -932,6 +1076,7 @@ class _Analyzer {
           targetType = t;
           _pictureName(target, s.value);
           _anchorValue(target, s.value);
+          _structureTarget(target);
         }
       case InvokeExpr():
         final t = _invoke(target, valueNeeded: true);
@@ -952,6 +1097,7 @@ class _Analyzer {
           return;
         } else {
           targetType = t;
+          _structureTarget(target);
         }
       case ErrorExpr():
         targetType = GbType.unknown;
@@ -961,6 +1107,50 @@ class _Analyzer {
     }
     _expect(s.value, targetType);
   }
+
+  /// A field of a Structure changed (`s.Score = 1`, `s.Marks(1) = 1`,
+  /// `ReDim s.Marks(9)`; D131): the value it is in must be kept somewhere
+  /// (A065), and a For Each variable's change stays in its copy (A066).
+  void _structureTarget(Expr target) {
+    MemberExpr? field;
+    if (target is MemberExpr) {
+      field = target;
+    } else if (target is InvokeExpr &&
+        _result.invokeKinds[target] == InvokeKind.item &&
+        target.target is MemberExpr) {
+      field = target.target as MemberExpr;
+    }
+    if (field == null || _result.types[field.target] is! StructureType) return;
+    // The value that holds the Structure, outside its Structures.
+    var holder = field.target;
+    while (
+        holder is MemberExpr && _result.types[holder.target] is StructureType) {
+      holder = holder.target;
+    }
+    if (!_isPlace(holder)) {
+      _reportAt(target, DiagnosticCode.structureCopyNotKept, [field.name.name]);
+      return;
+    }
+    if (holder is NameExpr) {
+      final loop = _copies[_result.symbols[holder]];
+      if (loop != null) {
+        _reportAt(target, DiagnosticCode.forEachCopy,
+            [holder.name, _text(loop.collection), field.name.name]);
+      }
+    }
+  }
+
+  /// Whether [e] is somewhere a value is kept: a variable, an item of an
+  /// array or a List, a form's or a module's variable; not a function's
+  /// result.
+  bool _isPlace(Expr e) => switch (e) {
+        NameExpr() => _result.symbols[e]?.isVariable ?? false,
+        InvokeExpr() => _result.invokeKinds[e] == InvokeKind.item,
+        MemberExpr() => _result.types[e.target] is StructureType
+            ? _isPlace(e.target)
+            : !(_result.members[e]?.isMethod ?? true),
+        _ => false,
+      };
 
   /// Whether [target] is the Name of a form, or of a control drawn on the
   /// form, which can only be read: only a control made with New gets a
@@ -1141,9 +1331,13 @@ class _Analyzer {
             [element.displayName, variable.type.displayName]);
       }
     }
+    // Each item of Structures comes as a copy (D131).
+    final copy = variable != null && element is StructureType;
+    if (copy) _copies[variable] = s;
     _proc?.loops.add(Keyword.kwFor);
     _block(s.body);
     _proc?.loops.removeLast();
+    if (copy) _copies.remove(variable);
     _scope = saved;
   }
 
@@ -1239,17 +1433,34 @@ class _Analyzer {
   }
 
   void _reDim(ReDimStmt s) {
-    final symbol = _scope.lookup(s.name.name);
-    if (symbol == null) {
-      if (s.name.name.isNotEmpty) {
-        _reportAt(s.name, DiagnosticCode.unknownName, [s.name.name]);
+    final target = s.target;
+    if (target is NameExpr) {
+      final symbol = _scope.lookup(target.name);
+      if (symbol == null) {
+        if (target.name.isNotEmpty) {
+          _reportAt(target, DiagnosticCode.unknownName, [target.name]);
+        }
+      } else {
+        symbol.used = true;
+        _result.symbols[target] = symbol;
+        _result.types[target] = symbol.type;
+        if (symbol.type is! ArrayType && symbol.type != GbType.unknown) {
+          _reportAt(
+              target, DiagnosticCode.notIndexable, [symbol.type.displayName]);
+        }
       }
-    } else {
-      symbol.used = true;
-      _result.symbols[s.name] = symbol;
-      if (symbol.type is! ArrayType && symbol.type != GbType.unknown) {
-        _reportAt(
-            s.name, DiagnosticCode.notIndexable, [symbol.type.displayName]);
+    } else if (target is MemberExpr) {
+      // An array field of a Structure (D131).
+      final t = _member(target, asCall: false, valueNeeded: true);
+      _result.types[target] = t;
+      if (_result.types[target.target] is! StructureType) {
+        if (t != GbType.unknown) {
+          _reportAt(target, DiagnosticCode.notAssignable, [_text(target)]);
+        }
+      } else if (t is! ArrayType && t != GbType.unknown) {
+        _reportAt(target, DiagnosticCode.notIndexable, [t.displayName]);
+      } else {
+        _structureTarget(target);
       }
     }
     _expect(s.bound, GbType.integer);
@@ -1624,6 +1835,12 @@ class _Analyzer {
     for (var i = 0; i < args.length; i++) {
       _argument(args[i], types[i], callable.parameters[i < last ? i : last]);
     }
+    if (receiver is ListType &&
+        receiver.element is StructureType &&
+        const {'Contains', 'IndexOf', 'Remove'}.contains(callable.name)) {
+      // Each compares Structures (D131).
+      _reportAt(e, DiagnosticCode.structureCompared, [callable.name]);
+    }
     if (target is MemberExpr && args.isNotEmpty && _joinsValue(args.first)) {
       final object = _result.symbols[target.target];
       if (object?.kind == SymbolKind.builtinObject &&
@@ -1655,6 +1872,19 @@ class _Analyzer {
 
   void _argument(Expr arg, GbType type, ParamSpec param) {
     if (type == GbType.unknown || type == GbType.object) return;
+    if (type is StructureType &&
+        const {
+          ArgKind.anyValue,
+          ArgKind.numeric,
+          ArgKind.numericOrString,
+          ArgKind.convertible,
+          ArgKind.jsonValue,
+          ArgKind.sqlValue,
+        }.contains(param.kind)) {
+      // `Debug.Print(s)`, `CStr(s)` (D131).
+      _reportAt(arg, DiagnosticCode.structureNotText);
+      return;
+    }
     bool ok;
     switch (param.kind) {
       case ArgKind.typed:
@@ -1729,7 +1959,7 @@ class _Analyzer {
       return;
     }
     final params = switch (type) {
-      ListType() => const <ParamSpec>[],
+      ListType() || StructureType() => const <ParamSpec>[],
       GbType.table || GbType.pdfDocument || GbType.json => const <ParamSpec>[],
       GbType.exception => const [
           ParamSpec('message', GbType.string, optional: true)
@@ -1772,7 +2002,9 @@ class _Analyzer {
     switch (op) {
       case BinaryOp.concat:
         for (final (side, t) in [(e.left, l), (e.right, r)]) {
-          if (t.isValueType || t == GbType.object) {
+          if (t is StructureType) {
+            _reportAt(side, DiagnosticCode.structureNotText);
+          } else if (t.isValueType || t == GbType.object) {
             if (t != GbType.string && t != GbType.object) {
               _result.conversions[side] = GbType.string;
             }
@@ -1853,6 +2085,10 @@ class _Analyzer {
   /// Whether [l] and [r] can be compared with [op]; reports at [at].
   void _compare(BinaryOp op, GbType l, GbType r, Node at) {
     if (_eitherUnknown(l, r)) return;
+    if (l is StructureType || r is StructureType) {
+      _reportAt(at, DiagnosticCode.structureCompared, [op.symbol]);
+      return;
+    }
     final bool ok;
     if (op == BinaryOp.identity) {
       bool isObject(GbType t) => t.isReferenceType || t == GbType.nothing;

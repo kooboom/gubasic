@@ -1,0 +1,4 @@
+formatVersion: 1
+controls:
+  - { name: btnAdd, type: Button, properties: { Caption: Add } }
+  - { name: lblBest, type: Label, properties: { Top: 40 } }

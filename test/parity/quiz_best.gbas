@@ -2,53 +2,55 @@
 ' 맞았는지 알려 주며 점수를 셉니다. 최고 점수는 저장해 두었다가 다음에
 ' 실행할 때도 보여 줍니다. 그림 문제는 프로젝트의 그림(pictures 폴더)을
 ' Image에 보여 줍니다.
-Dim questions(6) As String
-Dim choices(6) As String    ' 보기들을 | 로 이어 붙인 글자
-Dim answers(6) As Integer   ' 정답 보기의 번호(0부터)
-Dim pictures(6) As String   ' 문제의 그림 이름. 그림이 없는 문제는 ""
+
+' 문제 하나에 딸린 것을 한 이름으로 묶습니다(Structure).
+Structure Question
+    Text As String
+    Choices(3) As String    ' 보기 네 개
+    Answer As Integer       ' 정답 보기의 번호(0부터)
+    Picture As String       ' 문제의 그림 이름. 그림이 없는 문제는 ""
+End Structure
+
+Dim questions(6) As Question
 Dim current As Integer
 Dim score As Integer
 Dim best As Integer
 
 Sub Form_Load()
-    questions(0) = "대한민국의 수도는 어디일까요?"
-    choices(0) = "부산|서울|대구|인천"
-    answers(0) = 1
-    questions(1) = "윤년이 아닌 해는 며칠일까요?"
-    choices(1) = "360일|365일|366일|370일"
-    answers(1) = 1
-    questions(2) = "1기압에서 물이 끓는 온도는?"
-    choices(2) = "50도|80도|100도|120도"
-    answers(2) = 2
-    questions(3) = "세종대왕이 만든 글자는?"
-    choices(3) = "한자|한글|가나|알파벳"
-    answers(3) = 1
-    questions(4) = "7 × 8은 얼마일까요?"
-    choices(4) = "54|56|58|64"
-    answers(4) = 1
-    questions(5) = "이 도형의 이름은?"
-    choices(5) = "사각형|원|삼각형|오각형"
-    answers(5) = 2
-    pictures(5) = "triangle.png"
-    questions(6) = "이 도형의 꼭짓점은 몇 개일까요?"
-    choices(6) = "4개|5개|6개|8개"
-    answers(6) = 1
-    pictures(6) = "pentagon.png"
+    SetQuestion(0, "대한민국의 수도는 어디일까요?", "부산|서울|대구|인천", 1, "")
+    SetQuestion(1, "윤년이 아닌 해는 며칠일까요?", "360일|365일|366일|370일", 1, "")
+    SetQuestion(2, "1기압에서 물이 끓는 온도는?", "50도|80도|100도|120도", 2, "")
+    SetQuestion(3, "세종대왕이 만든 글자는?", "한자|한글|가나|알파벳", 1, "")
+    SetQuestion(4, "7 × 8은 얼마일까요?", "54|56|58|64", 1, "")
+    SetQuestion(5, "이 도형의 이름은?", "사각형|원|삼각형|오각형", 2, "triangle.png")
+    SetQuestion(6, "이 도형의 꼭짓점은 몇 개일까요?", "4개|5개|6개|8개", 1, "pentagon.png")
     ' 지난 실행까지의 최고 점수. 저장된 것이 없으면 "0"입니다.
     best = CInt(GetSetting("best", "0"))
     ShowQuestion(0)
 End Sub
 
+' 문제 하나를 채웁니다. 보기는 | 로 이어 붙여 받아서 나눕니다.
+Sub SetQuestion(number As Integer, text As String, choices As String, answer As Integer, picture As String)
+    questions(number).Text = text
+    Dim parts() As String = Split(choices, "|")
+    For i = 0 To UBound(parts)
+        questions(number).Choices(i) = parts(i)
+    Next
+    questions(number).Answer = answer
+    questions(number).Picture = picture
+End Sub
+
 Sub ShowQuestion(number As Integer)
     current = number
+    Dim q As Question = questions(number)
     lblNumber.Caption = "문제 " & (number + 1) & " / " & (UBound(questions) + 1)
-    lblQuestion.Caption = questions(number)
+    lblQuestion.Caption = q.Text
     ' 그림 이름을 넣으면 그 그림을, ""을 넣으면 아무것도 보여 주지 않습니다.
-    imgQuestion.Picture = pictures(number)
+    imgQuestion.Picture = q.Picture
     ' Clear()는 고른 항목도 지웁니다. 그래서 고른 것이 있었다면
     ' lstChoices_Changed가 실행되고, ListIndex는 -1(고른 것 없음)이 됩니다.
     lstChoices.Clear()
-    For Each choice In Split(choices(number), "|")
+    For Each choice In q.Choices
         lstChoices.AddItem(choice)
     Next
     lblScore.Caption = "점수: " & score & " · 최고 점수: " & best
@@ -69,11 +71,11 @@ Sub btnCheck_Click()
         MsgBox("먼저 보기를 하나 고르세요.")
         Exit Sub
     End If
-    If lstChoices.ListIndex = answers(current) Then
+    If lstChoices.ListIndex = questions(current).Answer Then
         score = score + 1
         MsgBox("정답입니다!")
     ElseIf chkShowAnswer.Checked Then
-        MsgBox("틀렸습니다. 정답: " & lstChoices.List(answers(current)))
+        MsgBox("틀렸습니다. 정답: " & lstChoices.List(questions(current).Answer))
     Else
         MsgBox("틀렸습니다.")
     End If

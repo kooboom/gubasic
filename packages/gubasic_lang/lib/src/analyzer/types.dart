@@ -149,6 +149,54 @@ final class ModuleType extends GbType {
   String get displayName => module.name;
 }
 
+/// A Structure of the program (docs/DESIGN.md D131): a value type of
+/// fields. Two are the same type when they are declared by the same name
+/// in the same place: [owner] is the form whose Structure it is, or ""
+/// for a module's (whose names are the project's alone, A068) or a
+/// program without a project. Its [fields] are filled in after it is
+/// made, as Structures may name one another.
+final class StructureType extends GbType {
+  StructureType(this.name, {this.owner = ''});
+
+  final String name;
+  final String owner;
+
+  /// In the order declared.
+  final fields = <StructureFieldType>[];
+
+  /// The field named [lower] (lower case), or null.
+  StructureFieldType? field(String lower) {
+    for (final f in fields) {
+      if (f.name.toLowerCase() == lower) return f;
+    }
+    return null;
+  }
+
+  @override
+  String get displayName => name;
+
+  @override
+  bool operator ==(Object other) =>
+      other is StructureType &&
+      other.name.toLowerCase() == name.toLowerCase() &&
+      other.owner.toLowerCase() == owner.toLowerCase();
+
+  @override
+  int get hashCode =>
+      Object.hash(StructureType, name.toLowerCase(), owner.toLowerCase());
+}
+
+/// A field of a [StructureType]: its [type] is an [ArrayType] for an array
+/// field, which a new value makes with [size] + 1 items, or leaves Nothing
+/// when [size] is null (`Marks() As Integer`, for ReDim).
+class StructureFieldType {
+  const StructureFieldType(this.name, this.type, {this.size});
+
+  final String name;
+  final GbType type;
+  final int? size;
+}
+
 /// The controls on a form, `Me.Controls` (docs/DESIGN.md D98): counted,
 /// numbered from 0, gone through with For Each, added to and removed from.
 final class ControlsType extends GbType {

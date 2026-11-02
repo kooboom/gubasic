@@ -43,13 +43,13 @@ TypeOf CType AddHandler AddressOf
 | `GoTo`, `GoSub` | 지원하지 않음 | 반복문, `Exit`, 프로시저 |
 | `Variant` | 지원하지 않음 | `Object` |
 | `Class` | 1.0에는 없음 | — |
-| `Structure`, `Type` | v0.5 다음 예정(D123) | 필드마다 배열 하나, 한 물체는 같은 번호 |
+| `Type` (`Type … End Type`) | 지원하지 않음 | `Structure … End Structure`(4.1절) |
 | `AndAlso`, `OrElse` | 지원하지 않음 | `And`, `Or` (이미 단락 평가함) |
 | `Wend` | 지원하지 않음 | `Do While … Loop` |
 | `Call` | 지원하지 않음 | 프로시저를 바로 호출: `ShowScore("Kim", 90)` |
 | `Set`, `Let` | 지원하지 않음 | 그냥 대입: `x = 값` |
 
-타입 이름(`Integer`, `String` 등)과 내장 함수(`MsgBox` 등)는 키워드가 아니라 보통의 식별자입니다.
+타입 이름(`Integer`, `String` 등)과 내장 함수(`MsgBox` 등)는 키워드가 아니라 보통의 식별자입니다. `Structure`(4.1절)도 그렇습니다. 줄의 맨 앞에서 이름이 뒤따를 때만 Structure를 시작합니다.
 
 점(`.`) 뒤에서는 키워드도 멤버 이름으로 쓸 수 있습니다: `obj.End`, `list.Next` (VB.NET과 같음).
 
@@ -114,7 +114,12 @@ TypeOf CType AddHandler AddressOf
 | P028 | `Unload Command1(1)` | `Me.Controls.Remove`로 컨트롤을 뺌(11.4절) |
 | P029 | `PopupMenu mnuEdit` | `Me.PopupMenu(mnuEdit)`(11.1절) |
 | P030 | `Open path For Input As #1` | `File.ReadAllText(path)`와 다른 `File` 함수(11.6절) |
-| P031 | `Structure … End Structure`, 또는 Visual Basic 6의 `Type … End Type` | 블록을 건너뜀. 아직 GuBASIC에 없음(D123). 필드마다 배열을 씀 |
+| P031 | Visual Basic 6의 `Type … End Type` | Structure로 읽음. `Structure … End Structure`로 씀(4.1절) |
+| P032 | 선언하는 자리에서 값을 준 Structure의 필드(`Score As Integer = 100`) | 변수를 선언한 뒤 대입함(4.1절) |
+| P033 | `Private`을 붙인 Structure의 필드 | 모든 필드를 쓸 수 있음. `Private`을 지움(4.1절) |
+| P034 | 필드가 없는 Structure | 하나 이상 씀(4.1절) |
+| P035 | `Sub` 또는 `Function` 안에 선언한 Structure | 모듈이나 폼 코드의 맨 위 수준에 선언함(4.1절) |
+| P036 | Structure 안의 필드가 아닌 것(`Sub`, `Const`) | 그 줄이나 프로시저를 건너뜀. Structure에는 필드만 있음(4.1절) |
 
 **분석기**
 
@@ -182,6 +187,15 @@ TypeOf CType AddHandler AddressOf
 | A058 | `Me.` 없이 부른 폼 메서드: `Me.Hide`, `Me.PopupMenu(mnuEdit)` 대신 `Hide`, `PopupMenu(mnuEdit)`(11.1절) |
 | A059 | Visual Basic 6의 `MouseDown(Button, Shift, X, Y)`: GuBASIC에서는 `MouseDown(e As MouseEventArgs)`(11.1절) |
 | A060 | `Database`에 주는 SQL을 `&`로 이어 붙임. `?`를 쓰고 값은 SQL 뒤에 넘김(경고, 11.10절) |
+| A061 | 바로든 다른 Structure를 거쳐서든 자기 자신을 담는 Structure(4.1절) |
+| A062 | 폼의 `Public Structure`. 폼의 Structure는 그 폼의 것이고, 함께 쓸 것은 모듈에 둠(4.1절) |
+| A063 | 두 Structure를 비교함(`=`, `<>`, `Is`, List의 `Contains`, `IndexOf`, `Remove`). 필드끼리 비교함(4.1절) |
+| A064 | 글이 필요한 곳의 Structure(`&`, `CStr`, `Debug.Print`, `String`). 필드를 씀(4.1절) |
+| A065 | 함수의 결과처럼 어디에도 담기지 않은 Structure 값의 필드를 바꿈(`GetStudent().Score = 1`)(4.1절) |
+| A066 | Structure의 `For Each` 변수의 필드를 바꿈. 변경이 복사본에만 남음(경고, 4.1절) |
+| A067 | Structure를 `Object`에 담음(4.1절) |
+| A068 | 형, 폼, 모듈, 다른 모듈의 Structure와 같은 이름의 Structure(4.1절) |
+| A069 | 정수로 적지 않은 배열 필드의 크기(`Marks(n)`)(4.1절) |
 
 **폼·프로젝트 파일**
 
@@ -277,6 +291,7 @@ TypeOf CType AddHandler AddressOf
 | `List(Of T)` | `List<T>` | 빈 목록 (`New`로 선언할 때) |
 | `Json`(11.9절) | JSON 값 | `Nothing` (`New`로 선언하면 빈 객체) |
 | `HttpResponse`(11.9절) | 요청에 대한 답 | `Nothing` |
+| Structure(4.1절) | 그 Structure의 클래스 | 필드마다 그 형의 기본값. `Nothing`이 되지 않음 |
 | 컨트롤·컴포넌트 타입 (`Button`, `Label` 등) | 런타임 클래스 | `Nothing` |
 
 - **`Integer`는 모든 플랫폼에서 정확한 64비트 정수**이며, 웹도 마찬가지입니다(D26). 범위는 `Integer.MinValue`(-9223372036854775808)부터 `Integer.MaxValue`(9223372036854775807)까지입니다. 이 범위를 넘는 결과는 조용히 틀린 수가 되지 않고 실행 중 오류(R001)가 됩니다.
@@ -373,6 +388,7 @@ Const MaxScore As Integer = 100
   ```
 
 - `UBound(a)`는 마지막 번호를 돌려줍니다.
+- **배열을 다른 변수에 대입하면 같은 배열입니다**(VB.NET과 같음). `y = x` 다음 `y(0) = 5`는 `x(0)`도 바꿉니다. Structure의 배열 필드는 다릅니다. Structure와 함께 복사됩니다(4.1절).
 - 새 코드에서는 목록을 권장합니다.
 
   ```vb
@@ -382,6 +398,52 @@ Const MaxScore As Integer = 100
       lstNames.AddItem(n)
   Next
   ```
+
+### 4.1 Structure
+
+**Structure**(DESIGN.md D123, D131)는 관련된 값 여러 개를 한 이름으로 묶습니다. Visual Basic .NET의 `Structure`와 같고([Microsoft](https://learn.microsoft.com/ko-kr/dotnet/visual-basic/language-reference/statements/structure-statement)), 필드만 있습니다. 필드마다 배열을 두고 같은 번호로 맞추는 대신, Structure의 배열 하나를 씁니다.
+
+```vb
+Structure Student
+    Name As String
+    Score As Integer
+    Marks(4) As Integer
+End Structure
+
+Dim students As New List(Of Student)
+
+Sub btnAdd_Click()
+    Dim s As Student
+    s.Name = txtName.Text
+    s.Score = CInt(txtScore.Text)
+    students.Add(s)
+End Sub
+```
+
+- **어디에.** 모듈이나 폼 코드의 맨 위 수준에 쓰고, 프로시저 안에는 쓰지 않습니다(P035). 모듈의 Structure는 프로젝트 전체의 것이고(`Private Structure`는 그 모듈만), 폼의 것은 그 폼의 것입니다(폼의 `Public Structure`는 A062). 이름은 형, 폼, 모듈, 다른 모듈의 Structure와 겹치지 않습니다(A068). Visual Basic 6의 `Type … End Type`에는 `Structure`로 쓰라고 알려 줍니다(P031).
+- **필드.** 한 줄에 하나씩 `Name As String`으로 씁니다. `Public Name As String`, `Dim Name As String`도 같은 뜻입니다. 필드의 형은 무엇이든 되고 다른 Structure도 되지만, 바로든 다른 것을 거쳐서든 자기 자신은 안 됩니다(A061. 자기의 `List`는 됩니다). 필드에는 초깃값(P032)과 `Private`(P033)이 없고, 하나 이상 있어야 하며(P034), 필드 말고는 아무것도 없습니다. 프로시저도 상수도 없습니다(P036). 배열 필드의 크기는 `Marks(4)`처럼 정수로 주거나(A069), `Marks()`처럼 주지 않고 나중에 `ReDim s.Marks(9)`로 정합니다.
+- **값.** `Dim s As Student`나 `Dim s As New Student`는 필드마다 그 형의 기본값을, 배열 필드마다 그 칸들을 가진 값입니다. `Nothing`이 되지 않습니다. `Dim group(29) As Student`의 칸마다, `ReDim Preserve`로 늘어난 칸마다 이런 값이 들어 있습니다.
+- **담을 때 복사됩니다.** 대입(`b = a`), 인수로 넘기기, `Return`, 배열이나 List에 넣기(`Add`, `Insert`, `list(i) = s`)는 값 전체의 복사본을 담습니다. 배열 필드도 함께 복사됩니다. 복사본을 바꿔도 원래 값은 바뀌지 않습니다. 필드에 든 객체(`List`, 컨트롤, `Json`)는 인수가 그렇듯(7.1절) 양쪽이 같은 객체입니다.
+- **필드는 값이 있는 자리에서 바뀝니다.** `s.Name = …`, `s.Home.City = …`, `group(3).Score = …`, `list(0).Score = …`, `Form2.Current.Score = …`는 그 변수, 칸, 폼에 있는 값을 바꿉니다. 함수의 결과처럼 어디에도 담기지 않은 값의 필드는 바꿀 수 없습니다(`GetStudent().Score = 1`, A065). 변수에 담아 바꾼 뒤 다시 넣습니다.
+- **For Each**는 항목을 하나씩 복사해서 줍니다. 그래서 그 필드를 바꿔도 목록은 바뀌지 않습니다(경고 A066). `For i = 0 To list.Count - 1`로 돌며 `list(i).Score`를 바꿉니다.
+- **Structure로 하지 않는 것:** 두 값을 비교하기(`=`, `<>`, `Is`, 그리고 비교하는 List의 `Contains`, `IndexOf`, `Remove`: A063. 필드끼리 비교합니다), 글로 바꾸기(`&`, `CStr`, `Debug.Print`, `Caption`: A064. 필드를 씁니다), `Object`에 담기(A067). 디버거의 변수 창과 직접 실행 창은 Structure를 필드와 함께 보여 줍니다: `Student { Name = "Kim", Score = 90, Marks = (0, 0, 0, 0, 0) }`
+
+**복사되는 배열과 함께 쓰는 배열.** 배열 필드는 Structure와 함께 복사되고, 그냥 배열을 다른 변수에 대입하면 같은 배열입니다(4절).
+
+| | 무슨 일이 일어나나 | 그 뒤 |
+|---|---|---|
+| `b = a`. `a`와 `b`는 배열 필드 `Marks`가 있는 Structure | `b`가 `a`의 복사본을 받고, `a.Marks`도 복사됨 | `b.Marks(0) = 9`를 해도 `a.Marks(0)`은 그대로 |
+| `y = x`. `x`와 `y`는 배열 | `y`는 `x`와 같은 배열 | `y(0) = 5`가 `x(0)`도 바꿈 |
+| `m = a.Marks`. Structure에서 꺼낸 배열 | `m`은 그 Structure의 배열 | `m(1) = 7`이 `a.Marks(1)`을 바꿈 |
+
+**Visual Basic .NET과 다른 점.**
+
+| | GuBASIC | Visual Basic .NET |
+|---|---|---|
+| `List(Of Student)`에 `list(0).Score = 95` | List의 항목을 바꿈 | 오류(BC30068). List의 항목처럼 속성을 거쳐 얻은 Structure는 어디에도 담기지 않은 복사본임([Microsoft](https://learn.microsoft.com/ko-kr/dotnet/visual-basic/language-reference/error-messages/expression-is-a-value-and-therefore-cannot-be-the-target-of-an-assignment)) |
+| 크기를 준 배열 필드 `Marks(4) As Integer` | 됨 | 안 됨. Structure의 선언은 배열에 처음 크기를 줄 수 없음([Microsoft](https://learn.microsoft.com/ko-kr/dotnet/visual-basic/programming-guide/language-features/data-types/structures-and-classes)) |
+| `Dim`이나 `Public` 없이 `Name As String`으로 쓴 필드 | 됨. Visual Basic 6의 `Type`처럼 | 모든 멤버를 선언함([Microsoft](https://learn.microsoft.com/ko-kr/dotnet/visual-basic/language-reference/statements/structure-statement)) |
+| Structure 안의 프로시저, 속성, 생성자 | GuBASIC에는 없음. 필드만(D123) | 됨 |
 
 ## 5. 연산자
 

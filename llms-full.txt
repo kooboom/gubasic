@@ -49,13 +49,13 @@ These Visual Basic keywords are **reserved but not supported**, so that the edit
 | `GoTo`, `GoSub` | not supported | loops, `Exit`, procedures |
 | `Variant` | not supported | `Object` |
 | `Class` | not in 1.0 | — |
-| `Structure`, `Type` | planned after v0.5 (D123) | an array for each field, one index for one thing |
+| `Type` (`Type … End Type`) | not supported | `Structure … End Structure` (§4.1) |
 | `AndAlso`, `OrElse` | not supported | `And`, `Or` (they already short-circuit) |
 | `Wend` | not supported | `Do While … Loop` |
 | `Call` | not supported | call the procedure directly: `ShowScore("Kim", 90)` |
 | `Set`, `Let` | not supported | plain assignment: `x = value` |
 
-Type names (`Integer`, `String`, …) and built-in functions (`MsgBox`, …) are ordinary identifiers, not keywords.
+Type names (`Integer`, `String`, …) and built-in functions (`MsgBox`, …) are ordinary identifiers, not keywords. So is `Structure` (§4.1), which starts a Structure only at the start of a line followed by a name.
 
 After a dot, a keyword can be used as a member name: `obj.End`, `list.Next` (as in VB.NET).
 
@@ -120,7 +120,12 @@ How the parser recovers:
 | P028 | `Unload Command1(1)` | Take a control off with `Me.Controls.Remove` (§11.4) |
 | P029 | `PopupMenu mnuEdit` | `Me.PopupMenu(mnuEdit)` (§11.1) |
 | P030 | `Open path For Input As #1` | `File.ReadAllText(path)` and the other `File` functions (§11.6) |
-| P031 | `Structure … End Structure`, or Visual Basic 6's `Type … End Type` | Skips the block: not in GuBASIC yet (D123); use an array for each field |
+| P031 | Visual Basic 6's `Type … End Type` | Reads it as a Structure; write `Structure … End Structure` (§4.1) |
+| P032 | A field of a Structure given a value where it is declared (`Score As Integer = 100`) | Set it after the variable is declared (§4.1) |
+| P033 | A `Private` field of a Structure | Every field can be used; leave out `Private` (§4.1) |
+| P034 | A Structure without fields | Write at least one (§4.1) |
+| P035 | A Structure declared inside a `Sub` or `Function` | Declare it at the top of a module or a form (§4.1) |
+| P036 | Something other than a field inside a Structure (a `Sub`, a `Const`) | Skips the line, or the procedure; a Structure has fields only (§4.1) |
 
 **Analyzer**
 
@@ -188,6 +193,15 @@ The analyzer checks names and types (§2.1, §3.2, §5.2). It runs even when the
 | A058 | A method of the form called without `Me.`: `Hide`, `PopupMenu(mnuEdit)` for `Me.Hide`, `Me.PopupMenu(mnuEdit)` (§11.1) |
 | A059 | Visual Basic 6's `MouseDown(Button, Shift, X, Y)`: GuBASIC's is `MouseDown(e As MouseEventArgs)` (§11.1) |
 | A060 | SQL given to `Database` joined with `&`: write `?` and pass the value after the SQL (warning, §11.10) |
+| A061 | A Structure that contains itself, directly or through other Structures (§4.1) |
+| A062 | `Public Structure` in a form: a form's Structure is that form's; put a shared one in a module (§4.1) |
+| A063 | Two Structures compared (`=`, `<>`, `Is`, and a List's `Contains`, `IndexOf`, `Remove`): compare their fields (§4.1) |
+| A064 | A Structure where text is needed (`&`, `CStr`, `Debug.Print`, a `String`): use its fields (§4.1) |
+| A065 | A field changed in a Structure value kept nowhere, as a function's result (`GetStudent().Score = 1`) (§4.1) |
+| A066 | A field changed in a `For Each` variable of a Structure: the change stays in the copy (warning, §4.1) |
+| A067 | A Structure kept in an `Object` (§4.1) |
+| A068 | A Structure named as a type, a form, a module or another module's Structure is (§4.1) |
+| A069 | The size of an array field written other than as a whole number (`Marks(n)`) (§4.1) |
 
 **Form and project files**
 
@@ -283,6 +297,7 @@ Errors found while a program runs. Each stops the program and points at its line
 | `List(Of T)` | `List<T>` | empty list (when declared with `New`) |
 | `Json` (§11.9) | a JSON value | `Nothing` (an empty object when declared with `New`) |
 | `HttpResponse` (§11.9) | the answer to a request | `Nothing` |
+| a Structure (§4.1) | a class of its own | each field its type's default; never `Nothing` |
 | Control / component types (`Button`, `Label`, …) | runtime classes | `Nothing` |
 
 - **`Integer` is an exact 64-bit integer on every platform**, the web included (D26): from `Integer.MinValue` (−9223372036854775808) to `Integer.MaxValue` (9223372036854775807). A result outside this range is a run-time error (R001), never a silently wrong number.
@@ -379,6 +394,7 @@ Const MaxScore As Integer = 100
   ```
 
 - `UBound(a)` returns the upper bound.
+- **An array assigned to another variable is the same array** (as in VB.NET): after `y = x`, `y(0) = 5` changes `x(0)` too. An array field of a Structure is different: it is copied with the Structure (§4.1).
 - New code is encouraged to use lists:
 
   ```vb
@@ -388,6 +404,52 @@ Const MaxScore As Integer = 100
       lstNames.AddItem(n)
   Next
   ```
+
+### 4.1 Structures
+
+A **Structure** (DESIGN.md D123, D131) puts related values under one name, as Visual Basic .NET's `Structure` does ([Microsoft](https://learn.microsoft.com/en-us/dotnet/visual-basic/language-reference/statements/structure-statement)), with fields only. Instead of an array for each field, kept in step by one index, there is one array of Structures.
+
+```vb
+Structure Student
+    Name As String
+    Score As Integer
+    Marks(4) As Integer
+End Structure
+
+Dim students As New List(Of Student)
+
+Sub btnAdd_Click()
+    Dim s As Student
+    s.Name = txtName.Text
+    s.Score = CInt(txtScore.Text)
+    students.Add(s)
+End Sub
+```
+
+- **Where.** At the top of a module or of a form's code, not inside a procedure (P035). A module's Structure is the whole project's (`Private Structure`: that module's only); a form's is that form's (`Public Structure` in a form is A062). Its name is not that of a type, a form, a module or another module's Structure (A068). Visual Basic 6's `Type … End Type` is pointed to `Structure` (P031).
+- **Fields.** One a line, `Name As String`; `Public Name As String` and `Dim Name As String` mean the same. A field has any type, another Structure too, but not the Structure itself, directly or through others (A061; a `List` of it is fine). A field has no initial value (P032) and no `Private` (P033); there is at least one (P034), and nothing else: no procedures, no constants (P036). An array field is given its size as a whole number, `Marks(4)` (A069), or none, `Marks()`, and later `ReDim s.Marks(9)`.
+- **A value.** `Dim s As Student`, or `Dim s As New Student`, is a value with each field at its type's default and each array field with its items. It is never `Nothing`. Each item of `Dim group(29) As Student` is such a value, and so is each new item of `ReDim Preserve`.
+- **Copied when stored.** Assigning (`b = a`), passing as an argument, `Return`, and putting into an array or a List (`Add`, `Insert`, `list(i) = s`) store a copy of the whole value, its array fields too. Changing the copy does not change the original. An object in a field (a `List`, a control, `Json`) is the same object in both, as an argument's is (§7.1).
+- **A field is changed where the value is.** `s.Name = …`, `s.Home.City = …`, `group(3).Score = …`, `list(0).Score = …`, `Form2.Current.Score = …` change the value in that variable, item or form. A value kept nowhere, as a function's result, cannot have a field changed (`GetStudent().Score = 1`, A065): put it in a variable, change it, and store it back.
+- **For Each** gives each item as a copy, so changing its field does not change the list (warning A066). Write `For i = 0 To list.Count - 1` and change `list(i).Score`.
+- **Not done with a Structure:** comparing two (`=`, `<>`, `Is`, and a List's `Contains`, `IndexOf` and `Remove`, which compare: A063; compare the fields); turning one into text (`&`, `CStr`, `Debug.Print`, a `Caption`: A064; use the fields); keeping one in an `Object` (A067). The debugger's variables and Immediate window show a Structure with its fields: `Student { Name = "Kim", Score = 90, Marks = (0, 0, 0, 0, 0) }`.
+
+**Arrays copied, and arrays shared.** An array field is copied with its Structure; a plain array assigned to another variable is the same array (§4):
+
+| | What happens | Afterwards |
+|---|---|---|
+| `b = a`, where `a` and `b` are Structures with an array field `Marks` | `b` gets a copy of `a`, with a copy of `a.Marks` | `b.Marks(0) = 9` leaves `a.Marks(0)` as it was |
+| `y = x`, where `x` and `y` are arrays | `y` is the same array as `x` | `y(0) = 5` changes `x(0)` too |
+| `m = a.Marks`, an array taken out of a Structure | `m` is the Structure's array | `m(1) = 7` changes `a.Marks(1)` |
+
+**Where GuBASIC differs from Visual Basic .NET.**
+
+| | GuBASIC | Visual Basic .NET |
+|---|---|---|
+| `list(0).Score = 95` for a `List(Of Student)` | changes the item in the List | an error (BC30068): a Structure got through a property, as a List's item is, is a copy kept nowhere ([Microsoft](https://learn.microsoft.com/en-us/dotnet/visual-basic/language-reference/error-messages/expression-is-a-value-and-therefore-cannot-be-the-target-of-an-assignment)) |
+| An array field with a size, `Marks(4) As Integer` | allowed | not allowed: a Structure's declarations give arrays no initial size ([Microsoft](https://learn.microsoft.com/en-us/dotnet/visual-basic/programming-guide/language-features/data-types/structures-and-classes)) |
+| Fields written as `Name As String`, without `Dim` or `Public` | allowed, as Visual Basic 6's `Type` wrote them | every member is declared ([Microsoft](https://learn.microsoft.com/en-us/dotnet/visual-basic/language-reference/statements/structure-statement)) |
+| Procedures, properties, constructors in a Structure | not in GuBASIC: fields only (D123) | allowed |
 
 ## 5. Operators
 
@@ -1874,6 +1936,20 @@ Talks to web servers over HTTP (docs/DESIGN.md D124, D125), the way Visual Basic
 - `Text As String`
 - `Json As Json`
 - `Header(name As String) As String`
+
+## Structures
+
+A program's own types: `Structure Student … End Structure`, fields only,
+in a module for the whole project or in a form for that form.
+Explained in [LANGUAGE.md §4.1](../LANGUAGE.md).
+
+- A Structure is copied when it is stored (assigned, passed, returned, put
+  into an array or a List), **its array fields too**. A plain array
+  assigned to another variable (`y = x`) is **the same array**.
+- A field is changed where the value is: `list(0).Score = 95` changes the
+  item of a `List(Of Student)`. Visual Basic .NET refuses this (BC30068).
+- For Each gives copies (A066). Not done with a Structure: comparing it
+  (A063), text (A064), `Object` (A067).
 
 ## Constants
 

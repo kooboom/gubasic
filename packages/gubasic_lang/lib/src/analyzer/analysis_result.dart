@@ -81,5 +81,15 @@ class AnalysisResult {
   /// The type each `CType` and `TypeOf … Is` names, when it is a control's.
   final Map<Expr, ControlType> castTypes = Map.identity();
 
+  /// The file's Structures (D131), by lower-case name.
+  final Map<String, StructureType> structures = {};
+
+  /// The type each Structure of the file declares.
+  final Map<StructureDecl, StructureType> structureTypes = Map.identity();
+
+  /// The other modules' Structures the code can use (D131), by lower-case
+  /// name.
+  final Map<String, StructureType> projectStructures = {};
+
   bool get hasErrors => diagnostics.any((d) => d.isError);
 }

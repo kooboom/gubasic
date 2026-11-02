@@ -112,6 +112,63 @@ class ProcedureDecl extends Member {
       ];
 }
 
+/// `Structure Student … End Structure` (docs/DESIGN.md D123, D131): a
+/// value type of fields, declared in a module or a form. Visual Basic 6's
+/// `Type … End Type` is read the same way and reported (P031).
+class StructureDecl extends Member {
+  const StructureDecl(
+      this.modifier, this.name, this.fields, super.start, super.end);
+
+  /// `kwPublic`, `kwPrivate`, or null.
+  final Keyword? modifier;
+  final Identifier name;
+  final List<StructureField> fields;
+
+  @override
+  String get label => [
+        if (modifier != null) modifier!.spelling,
+        'Structure',
+        name.name,
+      ].join(' ');
+
+  @override
+  List<Node> get children => fields;
+}
+
+/// A field of a Structure: `Name As String`, `Marks(4) As Integer`, also
+/// written with `Public` or `Dim` before it.
+class StructureField extends Node {
+  const StructureField({
+    required this.modifier,
+    required this.name,
+    required this.isArray,
+    required this.arrayBound,
+    required this.type,
+    required int start,
+    required int end,
+  }) : super(start, end);
+
+  /// `kwPublic`, `kwDim`, `kwPrivate` (reported), or null.
+  final Keyword? modifier;
+  final Identifier name;
+
+  /// True for `Marks()` and `Marks(4)`.
+  final bool isArray;
+
+  /// The upper bound in `Marks(4)`; null for `Marks()`.
+  final Expr? arrayBound;
+  final TypeRef? type;
+
+  @override
+  String get label => 'Field ${name.name}${isArray ? '()' : ''}';
+
+  @override
+  List<Node> get children => [
+        if (arrayBound != null) arrayBound!,
+        if (type != null) type!,
+      ];
+}
+
 /// A statement written outside any procedure (reported as P008). Kept so
 /// that tools can still show it.
 class InvalidMember extends Member {
@@ -583,19 +640,23 @@ class ThrowStmt extends Stmt {
   List<Node> get children => [value];
 }
 
-/// `ReDim [Preserve] a(bound)`.
+/// `ReDim [Preserve] a(bound)`, or an array field: `ReDim s.Marks(9)`.
 class ReDimStmt extends Stmt {
-  const ReDimStmt(this.preserve, this.name, this.bound, super.start, super.end);
+  const ReDimStmt(
+      this.preserve, this.target, this.bound, super.start, super.end);
 
   final bool preserve;
-  final Identifier name;
+
+  /// The array: a [NameExpr], or a [MemberExpr] for a Structure's field.
+  final Expr target;
   final Expr bound;
 
   @override
-  String get label => 'ReDim${preserve ? ' Preserve' : ''} ${name.name}';
+  String get label => 'ReDim${preserve ? ' Preserve' : ''}'
+      '${target is NameExpr ? ' ${(target as NameExpr).name}' : ''}';
 
   @override
-  List<Node> get children => [bound];
+  List<Node> get children => [if (target is! NameExpr) target, bound];
 }
 
 /// `AddHandler btn.Click, AddressOf Digit_Click`: [procedure] handles the

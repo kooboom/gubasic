@@ -48,6 +48,13 @@ ConversionCheck checkConversion(GbType from, GbType to) {
     return const ConversionCheck.allowed(ImplicitConversion.unchecked);
   }
   if (from == to) return const ConversionCheck.allowed(ImplicitConversion.none);
+  // A Structure is neither text nor kept in an Object (D131).
+  if (from is StructureType && to == GbType.string) {
+    return const ConversionCheck.refused(DiagnosticCode.structureNotText);
+  }
+  if (from is StructureType && to == GbType.object) {
+    return const ConversionCheck.refused(DiagnosticCode.structureToObject);
+  }
   if (to == GbType.object && from != GbType.void_) {
     return const ConversionCheck.allowed(ImplicitConversion.toObject);
   }

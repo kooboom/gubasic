@@ -154,7 +154,15 @@ Completions? completionsAt(
     all = members;
   } else if (const {Keyword.kwAs, Keyword.kwNew, Keyword.kwOf}
       .contains(previous?.keyword)) {
-    all = _typeNames;
+    all = [
+      ..._typeNames,
+      // The program's Structures (D131).
+      for (final t in [
+        ...analysis.structures.values,
+        ...analysis.projectStructures.values,
+      ])
+        Completion(t.name, CompletionKind.type),
+    ];
   } else if (const {
     Keyword.kwDim,
     Keyword.kwConst,

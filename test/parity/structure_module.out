@@ -1,0 +1,9 @@
+Forms: Form1
+> btnAdd.Click
+Set Form1.lblBest.Caption: No. 1 / No. 1
+Debug.Print: 10 11 No. 1 has 11
+> btnAdd.Click
+Set Form1.lblBest.Caption: No. 2 / No. 2
+Debug.Print: 20 21 No. 2 has 21
+> Close
+Closed

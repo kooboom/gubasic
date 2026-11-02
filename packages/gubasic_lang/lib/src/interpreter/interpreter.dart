@@ -57,6 +57,9 @@ const int _microsecondsPerYield = 10000;
 /// where the web IDE keeps its projects too (D48).
 const settingsLimit = 65536;
 
+/// No receiver worked out yet, for [Interpreter._assign]: Nothing is one.
+const _noReceiver = Object();
+
 /// What became of an event passed to [Interpreter.raiseEvent].
 enum EventOutcome {
   /// Its handler started, or waits for the running handler (D28).
@@ -1069,7 +1072,8 @@ class Interpreter {
       case ThrowStmt():
         throw _Thrown(_valueSync(s.value)! as GbException, s, _frame.form);
       case ReDimStmt():
-        _reDim(s, _valueSync(s.bound));
+        _reDim(s, _valueSync(s.bound),
+            s.target is MemberExpr ? _memberReceiverSync(s.target) : null);
       case EndStmt():
         throw const _EndProgram();
       case ErrorStmt():
@@ -1087,8 +1091,15 @@ class Interpreter {
         await _declare(s);
       case AssignmentStmt():
         final value = await _value(s.value);
-        final index = await _indexAsync(s.target);
-        final changed = _assign(s.target, value, (_) => index);
+        final target = s.target;
+        // The value whose member is assigned, worked out first, as it may
+        // call a procedure (`students(Pick()).Score = 1`, D131).
+        final receiver = target is MemberExpr && _awaits(target.target)
+            ? await _memberReceiverAsync(target)
+            : _noReceiver;
+        final index = await _indexAsync(target);
+        final changed =
+            _assign(target, value, (_) => index, receiver: receiver);
         if (changed != null) await _runNow(changed.handler, changed.control);
         final call = _pendingCall;
         if (call != null) {
@@ -1128,7 +1139,10 @@ class Interpreter {
       case ThrowStmt():
         throw _Thrown((await _value(s.value))! as GbException, s, _frame.form);
       case ReDimStmt():
-        _reDim(s, await _value(s.bound));
+        final receiver = s.target is MemberExpr
+            ? await _memberReceiverAsync(s.target)
+            : null;
+        _reDim(s, await _value(s.bound), receiver);
       default:
         return _statementSync(s);
     }
@@ -1342,7 +1356,8 @@ class Interpreter {
           ['For Each', typeNameOf(collection)]),
     };
     for (final item in items) {
-      _write(variable, item);
+      // Each Structure as a copy (D131).
+      _write(variable, item is GbStruct ? item.copy() : item);
       final run = _body(s.body);
       final flow = run is Future<_Flow> ? await run : run;
       if (flow == _Flow.exitFor) break;
@@ -1403,16 +1418,34 @@ class Interpreter {
     return _block(c.body);
   }
 
-  void _reDim(ReDimStmt s, Object? bound) {
-    final symbol = _a.symbols[s.name]!;
-    final old = _read(symbol);
-    final fresh = _newArray(symbol.type, bound, s);
+  void _reDim(ReDimStmt s, Object? bound, [Object? receiver]) {
+    final target = s.target;
+    // A variable, or an array field of a Structure (D131).
+    final symbol = target is NameExpr ? _a.symbols[target]! : null;
+    final struct = receiver is GbStruct ? receiver : null;
+    final field = target is MemberExpr && struct != null
+        ? struct.indexOf(target.name.name.toLowerCase())
+        : -1;
+    final old = symbol != null
+        ? _read(symbol)
+        : field >= 0
+            ? struct!.values[field]
+            : null;
+    final fresh = _newArray(_a.types[target] ?? symbol!.type, bound, s);
     if (s.preserve && old is GbArray) {
       for (var i = 0; i < fresh.items.length && i < old.items.length; i++) {
-        fresh.items[i] = old.items[i];
+        // Another variable may have the old array: its Structures stay
+        // its own.
+        fresh.items[i] = copyStored(old.items[i]);
       }
     }
-    _write(symbol, fresh);
+    if (symbol != null) {
+      _write(symbol, fresh);
+    } else if (field >= 0) {
+      struct!.values[field] = fresh;
+    } else {
+      _fail(DiagnosticCode.nothingReference, target);
+    }
   }
 
   bool _caseMatches(
@@ -1482,7 +1515,8 @@ class Interpreter {
 
   /// Assigns [value]. Returns the handler of a change event the
   /// assignment has to run (TextBox.Text -> txtName_Changed), if any.
-  _Change? _assign(Expr target, Object? value, Object? Function(Expr) index) {
+  _Change? _assign(Expr target, Object? value, Object? Function(Expr) index,
+      {Object? receiver = _noReceiver}) {
     switch (target) {
       case NameExpr():
         _write(_a.symbols[target]!, value);
@@ -1494,7 +1528,15 @@ class Interpreter {
         final container = _evalSync(target.target);
         _setItem(container, index(target), value, target);
       case MemberExpr():
-        final receiver = _memberReceiverSync(target);
+        if (identical(receiver, _noReceiver)) {
+          receiver = _memberReceiverSync(target);
+        }
+        if (receiver is GbStruct) {
+          // A field, in the value where it is kept (D131).
+          receiver.values[receiver.indexOf(target.name.name.toLowerCase())] =
+              value;
+          return null;
+        }
         if (receiver is GbControl) {
           return _setProperty(receiver, target, value);
         }
@@ -2505,7 +2547,12 @@ class Interpreter {
 
   Object? _valueSync(Expr e) => _convert(e, _evalSync(e));
 
+  /// [value] after the conversion the analyzer recorded for [e]. A
+  /// Structure is copied: every value is worked out to be stored
+  /// somewhere, or passed, which stores it (D131); the value whose member
+  /// is used is not ([_memberReceiverSync]).
   Object? _convert(Expr e, Object? value) {
+    if (value is GbStruct) return value.copy();
     final target = _a.conversions[e];
     if (target == null) return value;
     if (target == GbType.double_ && isGbInt(value)) {
@@ -2640,12 +2687,16 @@ class Interpreter {
     return Future.value(_callBuiltin(symbol.callable!, args, at));
   }
 
+  /// The value whose member [target] is: itself, not a copy, so that a
+  /// Structure's field is read and written where the Structure is kept
+  /// (D131).
   Object? _memberReceiverSync(Expr target) {
     final t = target is MemberExpr ? target.target : target;
     if (t is NameExpr && _a.symbols[t]?.kind == SymbolKind.builtinObject) {
       return _BuiltinObject(_a.symbols[t]!.name);
     }
-    return _valueSync(t);
+    final value = _evalSync(t);
+    return value is GbStruct ? value : _convert(t, value);
   }
 
   Future<Object?> _memberReceiverAsync(Expr target) async {
@@ -2653,7 +2704,8 @@ class Interpreter {
     if (t is NameExpr && _a.symbols[t]?.kind == SymbolKind.builtinObject) {
       return _BuiltinObject(_a.symbols[t]!.name);
     }
-    return _value(t);
+    final value = await _eval(t);
+    return value is GbStruct ? value : _convert(t, value);
   }
 
   /// `target(args)`: a call or an item.
@@ -2957,6 +3009,9 @@ class Interpreter {
         return _controlsMember(cs, name, args, node, e);
       case GbModule m:
         return _moduleMember(m, name, args, node, e);
+      case GbStruct st when args.isEmpty:
+        // A field (D131): the value itself, copied only when it is stored.
+        return st.values[st.indexOf(name)];
       default:
     }
     _fail(DiagnosticCode.memberNotFound, node,

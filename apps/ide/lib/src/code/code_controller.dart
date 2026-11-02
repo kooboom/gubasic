@@ -14,6 +14,28 @@ const codeColors = {
   CodeKind.control: Color(0xFF7B3FA0),
 };
 
+/// Whether the name at [i] is the word of `Structure Student`, `Public
+/// Structure Student` or `End Structure` (and Visual Basic 6's `Type`,
+/// which the parser reads the same way): an ordinary name to the lexer,
+/// a keyword where it opens or closes a Structure (D131).
+bool _structureWord(List<Token> tokens, int i) {
+  final word = tokens[i].text.toLowerCase();
+  if (word != 'structure' && word != 'type') return false;
+  final before = i == 0 ? null : tokens[i - 1];
+  if (before?.keyword == Keyword.kwEnd) return true;
+  final lineStart =
+      before == null ||
+      before.kind == TokenKind.newline ||
+      ((before.keyword == Keyword.kwPublic ||
+              before.keyword == Keyword.kwPrivate) &&
+          (i < 2 || tokens[i - 2].kind == TokenKind.newline));
+  return lineStart &&
+      i + 2 < tokens.length &&
+      tokens[i + 1].kind == TokenKind.identifier &&
+      (tokens[i + 2].kind == TokenKind.newline ||
+          tokens[i + 2].kind == TokenKind.eof);
+}
+
 /// The kind of each UTF-16 unit of [text], from the lexer (D36): the
 /// same tokens the interpreter reads, so the colours never disagree with
 /// the language. [controls] are the form's control names, in lower case.
@@ -27,9 +49,12 @@ Uint8List codeKinds(String text, Set<String> controls) {
   }
 
   final lexed = lex(text);
-  for (final t in lexed.tokens) {
+  final tokens = lexed.tokens;
+  for (var i = 0; i < tokens.length; i++) {
+    final t = tokens[i];
     final kind = switch (t.kind) {
       TokenKind.keyword => CodeKind.keyword,
+      TokenKind.identifier when _structureWord(tokens, i) => CodeKind.keyword,
       TokenKind.stringLiteral => CodeKind.string,
       TokenKind.integerLiteral ||
       TokenKind.doubleLiteral ||

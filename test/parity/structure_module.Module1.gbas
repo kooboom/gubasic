@@ -1,0 +1,15 @@
+' The project's Structures and the values every form shares (D131).
+Public Structure Student
+    Name As String
+    Score As Integer
+End Structure
+
+Public Roster As New List(Of Student)
+
+Function Best() As Student
+    Dim top As Student
+    For Each s In Roster
+        If s.Score > top.Score Then top = s
+    Next
+    Return top
+End Function
