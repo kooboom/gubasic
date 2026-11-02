@@ -1,0 +1,12 @@
+' A control made while the program runs, given its properties in one
+' expression with New … With (D132), then put on the form.
+Sub btnAdd_Click()
+    Dim b As New Button With {.Caption = "Made", .Top = 60, .Name = "btnMade"}
+    Me.Controls.Add(b)
+    Dim l = New Label With {
+        .Caption = "Label " & Me.Controls.Count,
+        .Left = 120
+    }
+    Me.Controls.Add(l)
+    Debug.Print(b.Name & " " & b.Caption & " " & b.Top & ", " & l.Name & " " & l.Caption & " " & l.Left)
+End Sub

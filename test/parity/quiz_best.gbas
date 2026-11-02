@@ -17,27 +17,26 @@ Dim score As Integer
 Dim best As Integer
 
 Sub Form_Load()
-    SetQuestion(0, "대한민국의 수도는 어디일까요?", "부산|서울|대구|인천", 1, "")
-    SetQuestion(1, "윤년이 아닌 해는 며칠일까요?", "360일|365일|366일|370일", 1, "")
-    SetQuestion(2, "1기압에서 물이 끓는 온도는?", "50도|80도|100도|120도", 2, "")
-    SetQuestion(3, "세종대왕이 만든 글자는?", "한자|한글|가나|알파벳", 1, "")
-    SetQuestion(4, "7 × 8은 얼마일까요?", "54|56|58|64", 1, "")
-    SetQuestion(5, "이 도형의 이름은?", "사각형|원|삼각형|오각형", 2, "triangle.png")
-    SetQuestion(6, "이 도형의 꼭짓점은 몇 개일까요?", "4개|5개|6개|8개", 1, "pentagon.png")
+    ' New … With { }로 문제 하나를 한 번에 만듭니다. 보기는 { }로 적은 배열입니다.
+    questions(0) = New Question With {.Text = "대한민국의 수도는 어디일까요?",
+                                      .Choices = {"부산", "서울", "대구", "인천"}, .Answer = 1}
+    questions(1) = New Question With {.Text = "윤년이 아닌 해는 며칠일까요?",
+                                      .Choices = {"360일", "365일", "366일", "370일"}, .Answer = 1}
+    questions(2) = New Question With {.Text = "1기압에서 물이 끓는 온도는?",
+                                      .Choices = {"50도", "80도", "100도", "120도"}, .Answer = 2}
+    questions(3) = New Question With {.Text = "세종대왕이 만든 글자는?",
+                                      .Choices = {"한자", "한글", "가나", "알파벳"}, .Answer = 1}
+    questions(4) = New Question With {.Text = "7 × 8은 얼마일까요?",
+                                      .Choices = {"54", "56", "58", "64"}, .Answer = 1}
+    questions(5) = New Question With {.Text = "이 도형의 이름은?",
+                                      .Choices = {"사각형", "원", "삼각형", "오각형"}, .Answer = 2,
+                                      .Picture = "triangle.png"}
+    questions(6) = New Question With {.Text = "이 도형의 꼭짓점은 몇 개일까요?",
+                                      .Choices = {"4개", "5개", "6개", "8개"}, .Answer = 1,
+                                      .Picture = "pentagon.png"}
     ' 지난 실행까지의 최고 점수. 저장된 것이 없으면 "0"입니다.
     best = CInt(GetSetting("best", "0"))
     ShowQuestion(0)
-End Sub
-
-' 문제 하나를 채웁니다. 보기는 | 로 이어 붙여 받아서 나눕니다.
-Sub SetQuestion(number As Integer, text As String, choices As String, answer As Integer, picture As String)
-    questions(number).Text = text
-    Dim parts() As String = Split(choices, "|")
-    For i = 0 To UBound(parts)
-        questions(number).Choices(i) = parts(i)
-    Next
-    questions(number).Answer = answer
-    questions(number).Picture = picture
 End Sub
 
 Sub ShowQuestion(number As Integer)

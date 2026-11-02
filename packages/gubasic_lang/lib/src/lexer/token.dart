@@ -31,6 +31,10 @@ enum TokenKind {
   comma, // ,
   dot, // .
 
+  /// `{` and `}`: an array's items, or a With list (D132).
+  leftBrace, // {
+  rightBrace, // }
+
   /// End of a statement: a line break, or a `:` (reported as L003).
   newline,
 

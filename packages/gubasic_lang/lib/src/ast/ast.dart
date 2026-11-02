@@ -261,9 +261,13 @@ class VariableDeclarator extends Node {
     required this.initializer,
     required int start,
     required int end,
+    this.initializers,
   }) : super(start, end);
 
   final Identifier name;
+
+  /// `As New Student With {.Name = "Kim"}` (D132), or null.
+  final List<FieldInitializer>? initializers;
 
   /// True for `a()` and `a(5)`.
   final bool isArray;
@@ -289,6 +293,7 @@ class VariableDeclarator extends Node {
         if (arrayBound != null) arrayBound!,
         if (type != null) type!,
         ...?newArguments,
+        ...?initializers,
         if (initializer != null) initializer!,
       ];
 }
@@ -823,16 +828,48 @@ class InvokeExpr extends Expr {
 
 /// `New Type[(arguments)]`.
 class NewExpr extends Expr {
-  const NewExpr(this.type, this.arguments, super.start, super.end);
+  const NewExpr(this.type, this.arguments, super.start, super.end,
+      {this.initializers});
 
   final TypeRef type;
   final List<Expr>? arguments;
+
+  /// `With {.Name = "Kim", .Score = 90}` (D132), or null.
+  final List<FieldInitializer>? initializers;
 
   @override
   String get label => 'New';
 
   @override
-  List<Node> get children => [type, ...?arguments];
+  List<Node> get children => [type, ...?arguments, ...?initializers];
+}
+
+/// `.Name = "Kim"` in a With list (D132): a field or property given a
+/// value as the new value is made.
+class FieldInitializer extends Node {
+  const FieldInitializer(this.name, this.value, super.start, super.end);
+
+  final Identifier name;
+  final Expr value;
+
+  @override
+  String get label => 'Init ${name.name}';
+
+  @override
+  List<Node> get children => [value];
+}
+
+/// `{90, 80, 70}`: an array of these items (D132).
+class ArrayLiteral extends Expr {
+  const ArrayLiteral(this.elements, super.start, super.end);
+
+  final List<Expr> elements;
+
+  @override
+  String get label => 'Array ${elements.length}';
+
+  @override
+  List<Node> get children => elements;
 }
 
 /// `TypeOf c Is TextBox`: whether [operand] is a control of [type]

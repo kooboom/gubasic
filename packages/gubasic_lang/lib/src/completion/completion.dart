@@ -146,10 +146,19 @@ Completions? completionsAt(
   final List<Completion> all;
   final afterDot = previous?.kind == TokenKind.dot;
   if (afterDot) {
-    final members = _membersBefore(
-      rest.sublist(0, rest.length - 1),
-      _Names(source, lineStart, program, analysis),
-    );
+    final before = rest.length < 2 ? null : rest[rest.length - 2];
+    final itemStart = before == null ||
+        before.kind == TokenKind.leftBrace ||
+        before.kind == TokenKind.comma;
+    final listType = itemStart
+        ? _withListType(source, offset - prefix.length - 1, analysis)
+        : null;
+    final members = listType != null
+        ? _settable(listType)
+        : _membersBefore(
+            rest.sublist(0, rest.length - 1),
+            _Names(source, lineStart, program, analysis),
+          );
     if (members == null) return null;
     all = members;
   } else if (const {Keyword.kwAs, Keyword.kwNew, Keyword.kwOf}
@@ -438,6 +447,61 @@ List<Completion>? _membersBefore(List<Token> tokens, _Names names) {
               detail: m.type.displayName, readOnly: m.readOnly),
   ];
 }
+
+/// The type made by the With list that [dot] (the offset of a `.`) starts
+/// an item of, `New Student With {.` (D132), looking back up to 30 lines,
+/// as a list may run over several; null when the dot is in none.
+GbType? _withListType(String source, int dot, AnalysisResult analysis) {
+  var from = dot;
+  for (var lines = 0; lines < 30 && from > 0; lines++) {
+    from = source.lastIndexOf('\n', from - 1);
+    if (from < 0) {
+      from = 0;
+      break;
+    }
+  }
+  final tokens = lex(source.substring(from, dot)).tokens;
+  var depth = 0;
+  for (var i = tokens.length - 1; i >= 0; i--) {
+    final t = tokens[i];
+    if (t.kind == TokenKind.rightBrace) depth++;
+    if (t.kind != TokenKind.leftBrace) continue;
+    if (depth > 0) {
+      depth--;
+      continue;
+    }
+    // The innermost open brace: a With list's, or an array's.
+    if (i < 1 || tokens[i - 1].text.toLowerCase() != 'with') return null;
+    var j = i - 2;
+    if (j >= 0 && tokens[j].kind == TokenKind.rightParen) {
+      var parens = 0;
+      for (; j >= 0; j--) {
+        if (tokens[j].kind == TokenKind.rightParen) parens++;
+        if (tokens[j].kind == TokenKind.leftParen && --parens == 0) break;
+      }
+      j--;
+    }
+    if (j < 1 ||
+        tokens[j].kind != TokenKind.identifier ||
+        tokens[j - 1].keyword != Keyword.kwNew) {
+      return null;
+    }
+    final lower = tokens[j].text.toLowerCase();
+    return lookupNamedType(lower) ??
+        analysis.structures[lower] ??
+        analysis.projectStructures[lower];
+  }
+  return null;
+}
+
+/// What a With list of [type] can set (D132): its fields, or its
+/// properties that are not read only.
+List<Completion> _settable(GbType type) => [
+      for (final m in (membersOf(type) ?? const <String, MemberSpec>{}).values)
+        if (!m.isMethod && !m.readOnly)
+          Completion(m.name, CompletionKind.property,
+              detail: m.type.displayName),
+    ];
 
 /// The type of an item of [t], for `name(i).`; null if it has none.
 GbType? _element(GbType t) => switch (t) {

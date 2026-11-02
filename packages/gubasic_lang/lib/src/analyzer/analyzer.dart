@@ -813,8 +813,14 @@ class _Analyzer {
     }
     if (d.isNew && declared != null) {
       _newArguments(declared, d.newArguments ?? const [], d);
+      if (d.initializers case final items?) _initializers(declared, items, d);
     }
     final init = d.initializer;
+    if (init is ArrayLiteral && d.arrayBound != null) {
+      // `Dim a(2) As Integer = …` a list: the list gives the size (D132).
+      _reportAt(
+          d.arrayBound!, DiagnosticCode.arrayBoundWithList, [d.name.name]);
+    }
     if (init == null) {
       if (declared == null && d.name.name.isNotEmpty) {
         _reportAt(d.name, DiagnosticCode.missingTypeAndValue, [d.name.name]);
@@ -1077,6 +1083,7 @@ class _Analyzer {
           _pictureName(target, s.value);
           _anchorValue(target, s.value);
           _structureTarget(target);
+          _listFits(_result.types[target.target], target.name.name, s.value);
         }
       case InvokeExpr():
         final t = _invoke(target, valueNeeded: true);
@@ -1471,7 +1478,117 @@ class _Analyzer {
 
   /// Analyzes [e] where a value is needed and checks that it can be stored
   /// as [target], recording any automatic conversion.
-  void _expect(Expr e, GbType target) => _convert(e, _value(e), target);
+  void _expect(Expr e, GbType target) {
+    if (e is ArrayLiteral && target is ArrayType) {
+      // A list of items takes the array type it goes to (D132).
+      _result.types[e] = _arrayLiteral(e, target);
+      return;
+    }
+    _convert(e, _value(e), target);
+  }
+
+  /// `{90, 80, 70}` (D132): each item goes into [target]'s element type;
+  /// without a target, the type is the items' own, Double for Integers
+  /// with Doubles, and A073 when it cannot be told.
+  GbType _arrayLiteral(ArrayLiteral e, ArrayType? target) {
+    if (target != null) {
+      for (final item in e.elements) {
+        _expect(item, target.element);
+      }
+      return target;
+    }
+    final types = [for (final item in e.elements) _value(item)];
+    if (types.contains(GbType.unknown)) return GbType.unknown;
+    final GbType element;
+    if (types.isNotEmpty && types.every((t) => t == types.first)) {
+      element = types.first;
+    } else if (types.isNotEmpty && types.every((t) => t.isNumeric)) {
+      element = GbType.double_;
+      for (var i = 0; i < types.length; i++) {
+        if (types[i] == GbType.integer) {
+          _result.conversions[e.elements[i]] = GbType.double_;
+        }
+      }
+    } else {
+      element = GbType.unknown;
+    }
+    if (element == GbType.unknown ||
+        element == GbType.nothing ||
+        element == GbType.void_) {
+      _reportAt(e, DiagnosticCode.arrayLiteralType);
+      return GbType.unknown;
+    }
+    return ArrayType(element);
+  }
+
+  /// A list of items given to an array field with a size (D132): it has
+  /// as many items as the field (A072).
+  void _listFits(GbType? holder, String field, Expr value) {
+    if (value is! ArrayLiteral || holder is! StructureType) return;
+    final f = holder.field(field.toLowerCase());
+    final size = f?.size;
+    if (f == null || size == null) return;
+    if (value.elements.length != size + 1) {
+      _reportAt(value, DiagnosticCode.arraySizeMismatch,
+          [f.name, '${size + 1}', '${value.elements.length}']);
+    }
+  }
+
+  /// A With list (D132): each item a field, or a settable property, of
+  /// [type], given once, with a value of its type.
+  void _initializers(GbType type, List<FieldInitializer> items, Node at) {
+    final allowed = type is StructureType ||
+        (isControlType(type) &&
+            (type as ControlType).component != controlComponent) ||
+        type == GbType.pdfDocument;
+    if (!allowed) {
+      if (type != GbType.unknown) {
+        _reportAt(at, DiagnosticCode.withNotAllowed, [type.displayName]);
+      }
+      for (final i in items) {
+        _value(i.value);
+      }
+      return;
+    }
+    final members = membersOf(type) ?? const {};
+    final given = <String>{};
+    for (final i in items) {
+      final name = i.name.name;
+      final spec = members[name.toLowerCase()];
+      if (name.isEmpty) {
+        _value(i.value);
+        continue;
+      }
+      if (spec == null) {
+        final suggestion =
+            closestName(name, [for (final m in members.values) m.name]);
+        if (suggestion != null) {
+          _reportAt(i.name, DiagnosticCode.unknownMemberDidYouMean,
+              [type.displayName, name, suggestion], [suggestion]);
+        } else {
+          _reportAt(
+              i.name, DiagnosticCode.unknownMember, [type.displayName, name]);
+        }
+        _value(i.value);
+        continue;
+      }
+      if (!given.add(name.toLowerCase())) {
+        _reportAt(i.name, DiagnosticCode.withTwice, [spec.name]);
+      }
+      if (spec.isMethod) {
+        _reportAt(i.name, DiagnosticCode.notAssignable, ['.$name']);
+        _value(i.value);
+        continue;
+      }
+      if (spec.readOnly) {
+        _reportAt(i.name, DiagnosticCode.readOnlyProperty, ['.$name']);
+        _value(i.value);
+        continue;
+      }
+      _expect(i.value, spec.type);
+      _listFits(type, name, i.value);
+    }
+  }
 
   void _convert(Expr e, GbType from, GbType target) {
     final check = checkConversion(from, target);
@@ -1501,6 +1618,7 @@ class _Analyzer {
       MemberExpr() => _member(e, asCall: false, valueNeeded: valueNeeded),
       InvokeExpr() => _invoke(e, valueNeeded: valueNeeded),
       NewExpr() => _new(e),
+      ArrayLiteral() => _arrayLiteral(e, null),
       UnaryExpr() => _unary(e),
       BinaryExpr() => _binary(e),
       ParenExpr() => _value(e.inner),
@@ -1824,7 +1942,10 @@ class _Analyzer {
           ['${_text(target.target)}.ShowDialog']);
       return GbType.void_;
     }
-    final types = [for (final a in args) _value(a)];
+    final types = [
+      for (var i = 0; i < args.length; i++)
+        _argumentType(args[i], callable.parameters, i),
+    ];
     if (args.length < callable.requiredCount ||
         !callable.isVariadic && args.length > callable.parameters.length) {
       _reportAt(e, DiagnosticCode.wrongArgumentCount,
@@ -1860,6 +1981,19 @@ class _Analyzer {
               ? GbType.integer
               : GbType.unknown,
     };
+  }
+
+  /// The type of argument [i], [arg]: a list of items takes the array
+  /// type of its parameter (D132).
+  GbType _argumentType(Expr arg, List<ParamSpec> params, int i) {
+    final param = params.isEmpty
+        ? null
+        : params[i < params.length ? i : params.length - 1];
+    final type = param?.kind == ArgKind.typed ? param!.type : null;
+    if (arg is ArrayLiteral && type is ArrayType) {
+      return _result.types[arg] = _arrayLiteral(arg, type);
+    }
+    return _value(arg);
   }
 
   /// Whether [e] joins something that is not written out with `&`:
@@ -1939,6 +2073,7 @@ class _Analyzer {
   GbType _new(NewExpr e) {
     final type = _resolveType(e.type);
     _newArguments(type, e.arguments ?? const [], e);
+    if (e.initializers case final items?) _initializers(type, items, e);
     return type;
   }
 

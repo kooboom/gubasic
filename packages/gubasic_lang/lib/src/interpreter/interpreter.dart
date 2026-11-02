@@ -848,7 +848,11 @@ class Interpreter {
       final args = [
         for (final a in d.newArguments ?? const <Expr>[]) await _value(a)
       ];
-      return _construct(type, args);
+      final made = _construct(type, args);
+      for (final i in d.initializers ?? const <FieldInitializer>[]) {
+        _initialize(made, i, await _value(i.value));
+      }
+      return made;
     }
     return defaultValue(type);
   }
@@ -1295,6 +1299,9 @@ class Interpreter {
     } else if (d.isNew) {
       value = _construct(symbol.type,
           [for (final a in d.newArguments ?? const <Expr>[]) _valueSync(a)]);
+      for (final i in d.initializers ?? const <FieldInitializer>[]) {
+        _initialize(value, i, _valueSync(i.value));
+      }
     } else {
       value = defaultValue(symbol.type);
     }
@@ -2590,8 +2597,15 @@ class Interpreter {
         final args = [for (final a in e.arguments) _valueSync(a)];
         return _noChange(_invoke(e, args, _memberReceiverSync));
       case NewExpr():
-        return _construct(_a.types[e] ?? GbType.unknown,
+        final made = _construct(_a.types[e] ?? GbType.unknown,
             [for (final a in e.arguments ?? const <Expr>[]) _valueSync(a)]);
+        for (final i in e.initializers ?? const <FieldInitializer>[]) {
+          _initialize(made, i, _valueSync(i.value));
+        }
+        return made;
+      case ArrayLiteral():
+        return GbArray(
+            _elementOf(e), [for (final item in e.elements) _valueSync(item)]);
       case UnaryExpr():
         return _unary(e, _valueSync(e.operand));
       case BinaryExpr():
@@ -2632,8 +2646,15 @@ class Interpreter {
         return _afterChange(_invoke(e, args, (_) => receiver,
             container: target is MemberExpr ? null : await _value(target)));
       case NewExpr():
-        return _construct(_a.types[e] ?? GbType.unknown,
+        final made = _construct(_a.types[e] ?? GbType.unknown,
             [for (final a in e.arguments ?? const <Expr>[]) await _value(a)]);
+        for (final i in e.initializers ?? const <FieldInitializer>[]) {
+          _initialize(made, i, await _value(i.value));
+        }
+        return made;
+      case ArrayLiteral():
+        return GbArray(
+            _elementOf(e), [for (final item in e.elements) await _value(item)]);
       case UnaryExpr():
         return _unary(e, await _value(e.operand));
       case BinaryExpr():
@@ -2650,6 +2671,33 @@ class Interpreter {
         return _castTo(await _value(e.operand), e);
       default:
         return _evalSync(e);
+    }
+  }
+
+  /// The element type of a list of items (D132), as the analyzer gave it.
+  GbType _elementOf(ArrayLiteral e) => switch (_a.types[e]) {
+        ArrayType(:final element) => element,
+        _ => GbType.unknown,
+      };
+
+  /// Gives [made] the value of one item of its With list (D132), in the
+  /// list's order: a Structure's field, a control's property, a
+  /// PdfDocument's setting.
+  void _initialize(Object? made, FieldInitializer i, Object? value) {
+    final name = i.name.name.toLowerCase();
+    switch (made) {
+      case GbStruct s:
+        s.values[s.indexOf(name)] = value;
+      case GbControl c:
+        _setProperty(
+            c,
+            MemberExpr(NameExpr('', i.start, i.start), i.name, i.start, i.end),
+            value);
+      case GbPdfDocument d:
+        _setPdf(d, name, value, i);
+      default:
+        _fail(
+            DiagnosticCode.memberNotFound, i, [i.name.name, typeNameOf(made)]);
     }
   }
 

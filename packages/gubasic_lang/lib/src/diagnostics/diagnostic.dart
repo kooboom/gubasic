@@ -168,6 +168,18 @@ enum DiagnosticCode {
   /// the first word of the line.
   structureFieldsOnly('P036'),
 
+  /// An item of a With list without its dot: `Name = "Kim"` (D132).
+  withNeedsDot('P037'),
+
+  /// A field's field or item in a With list: `.Home.City = …` (D132).
+  withQualified('P038'),
+
+  /// A field read inside a With list: `.Title = .Name & "!"` (D132).
+  withOwnField('P039'),
+
+  /// A With list with nothing in it (D132).
+  withEmpty('P040'),
+
   // Analyzer: names
 
   /// A name that is not declared. Args: the name.
@@ -448,6 +460,24 @@ enum DiagnosticCode {
   /// The size of an array field written other than as a whole number
   /// (D131).
   structureArraySize('A069'),
+
+  /// A With list on a type with nothing it can set (D132). Args: the type.
+  withNotAllowed('A070'),
+
+  /// A field given a value twice in one With list (D132). Args: the field.
+  withTwice('A071'),
+
+  /// A list of items for an array field of a size, of another number of
+  /// items (D132). Args: the field, its items, the list's.
+  arraySizeMismatch('A072'),
+
+  /// A list of items whose type cannot be told: empty, or of types that do
+  /// not go together, where no type is expected (D132).
+  arrayLiteralType('A073'),
+
+  /// `Dim a(2) As Integer = …` a list: the list gives the size (D132).
+  /// Args: the variable.
+  arrayBoundWithList('A074'),
 
   // Form and project files (.form.yaml, .gbproj)
 

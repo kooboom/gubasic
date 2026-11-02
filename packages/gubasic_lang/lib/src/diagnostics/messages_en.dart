@@ -282,6 +282,30 @@ const Map<DiagnosticCode, String> englishMessages = {
   DiagnosticCode.structureArraySize: 'The size of an array in a Structure is a '
       'whole number written out, as Marks(4) As Integer. For a size worked '
       'out while the program runs, write Marks() As Integer and ReDim it.',
+  DiagnosticCode.withNeedsDot: 'Each item of a With list is a field with a dot '
+      'before it: .Name = "Kim".',
+  DiagnosticCode.withQualified: 'A With list gives values to the fields '
+      'themselves, not to their fields or items. For a field of a field, '
+      'give it a New value with a With list of its own.',
+  DiagnosticCode.withOwnField: 'A field cannot be read inside a With list. '
+      'Write the value itself.',
+  DiagnosticCode.withEmpty: 'A With list gives at least one field a value. '
+      'Leave out With and the braces if there is none.',
+  DiagnosticCode.withNotAllowed:
+      '{0} has nothing a With list can set. A With list '
+          'is for a Structure, a control made with New and a PdfDocument.',
+  DiagnosticCode.withTwice:
+      '{0} is given a value twice in this With list. Keep '
+          'one.',
+  DiagnosticCode.arraySizeMismatch:
+      '{0} has {1} items, but this list has {2}. Give '
+          '{1}, or declare it without a size, as {0}() As …, to take any number.',
+  DiagnosticCode.arrayLiteralType:
+      'The type of this list cannot be told from its '
+          'items. Give it a type: Dim a() As String = and then the list.',
+  DiagnosticCode.arrayBoundWithList:
+      'An array given a list takes its size from the '
+          'list. Write {0}() without the size.',
   DiagnosticCode.sqlJoined: 'This SQL is put together with &. Write ? '
       'where a value goes and pass the value after the SQL, as in '
       'Database.{0}("… WHERE name = ?", name): then a quote in the value '

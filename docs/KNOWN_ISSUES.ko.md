@@ -6,11 +6,11 @@
 
 ---
 
-## Structure는 필드마다 채우고, Object에 담지 못함
+## Structure는 비교하거나 글로 바꾸거나 Object에 담지 못함
 
-- **무엇:** Structure의 값은 필드 하나씩 채웁니다(`s.Name = "Kim"`). Visual Basic .NET의 `New Student With {.Name = "Kim"}`처럼 한 줄로 쓰는 방법은 아직 없습니다([Microsoft](https://learn.microsoft.com/ko-kr/dotnet/visual-basic/programming-guide/language-features/objects-and-classes/object-initializers-named-and-anonymous-types)). Structure는 `Object`에 담을 수 없고(A067), `=`로 비교할 수 없으며(A063), 글로 바꿀 수 없습니다(A064). CSV 파일이나 데이터베이스에 스스로 읽히고 쓰이지 않습니다. 필드마다 따로 넣고 뺍니다.
-- **왜 미뤘나:** `With {…}`는 따로 하는 변경으로, Structure 바로 다음에 계획합니다(D131). 나머지는 Structure를 위한 `CType`, 필드를 모두 비교하는 규칙, 글로 쓰는 모양이 필요한데, Structure를 쓰는 첫 프로그램들에는 필요하지 않습니다.
-- **다시 볼 때:** `With {…}`는 바로 다음. 나머지는 프로그램이 필요로 할 때. CSV와 데이터베이스는 트랜스파일러가 만들 코드를 함께 생각해서.
+- **무엇:** Structure는 `Object`에 담을 수 없고(A067), `=`로 비교할 수 없으며(A063), 글로 바꿀 수 없습니다(A064). CSV 파일이나 데이터베이스에 스스로 읽히고 쓰이지 않습니다. 필드마다 따로 넣고 뺍니다.
+- **왜 미뤘나:** 저마다 따로 정할 규칙(Structure를 위한 `CType`, 필드를 모두 비교하는 규칙, 글로 쓰는 모양)이 필요한데, Structure를 쓰는 첫 프로그램들에는 필요하지 않습니다. 값을 식 하나로 만드는 `New … With {…}`는 D132에서 들어왔습니다.
+- **다시 볼 때:** 프로그램이 필요로 할 때. CSV와 데이터베이스는 트랜스파일러가 만들 코드를 함께 생각해서.
 
 ## 아주 긴 반복이 느림
 

@@ -1,0 +1,65 @@
+' A Structure's value in one expression, New … With (D132), and lists of
+' items for arrays: in a declaration, for an array field, as an argument.
+' Inside braces a line may break without _. The values go in in the order
+' written; a field left out keeps its default.
+Structure Address
+    City As String
+End Structure
+
+Structure Question
+    Text As String
+    Choices(3) As String
+    Answer As Integer
+    Home As Address
+    Extra() As Integer
+End Structure
+
+Dim calls As Integer
+
+Function Pick(n As Integer) As Integer
+    calls = calls + 1
+    Debug.Print("Pick " & n)
+    Return n
+End Function
+
+Function Total(values() As Integer) As Integer
+    Dim sum As Integer
+    For Each v In values
+        sum = sum + v
+    Next
+    Return sum
+End Function
+
+Sub Main()
+    Dim q As Question = New Question With {
+        .Text = "Capital?",
+        .Answer = Pick(1),
+        .Choices = {"Busan", "Seoul", "Daegu", "Incheon"},
+        .Home = New Address With {.City = "Seoul"}
+    }
+    Debug.Print(q.Text & " " & q.Choices(q.Answer) & " " & q.Home.City)
+
+    Dim empty As New Question With {.Text = "Empty"}
+    Debug.Print(empty.Text & " [" & empty.Choices(0) & "] " & empty.Answer & " " & (empty.Extra Is Nothing))
+
+    Dim list As New List(Of Question)
+    list.Add(New Question With {.Text = "Sum", .Extra = {1, 2, 3}})
+    list.Add(q)
+    Debug.Print(list(0).Text & " " & Total(list(0).Extra) & " " & list.Count)
+
+    Dim names() As String = {"Kim", "Lee", "Park"}
+    Debug.Print(names(2) & " " & UBound(names))
+    Debug.Print(Total({4, 5, 6}) & " " & Total({}))
+    Dim mixed = {1, 2.5}
+    Debug.Print(mixed(0) + mixed(1))
+    names = {"Choi"}
+    Debug.Print(names(0) & " " & UBound(names))
+
+    ' The list is a new array each time it runs.
+    For i = 1 To 2
+        Dim fresh() As Integer = {0, 0}
+        fresh(0) = fresh(0) + i
+        Debug.Print(fresh(0))
+    Next
+    Debug.Print("calls: " & calls)
+End Sub

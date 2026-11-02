@@ -240,6 +240,10 @@ class _Parser {
   /// Parentheses opened (in an expression or a call) and not yet closed.
   int _openParens = 0;
 
+  /// How many With lists the parser is inside (D132): a `.Name` there is
+  /// a field read, which the list does not allow (P039).
+  int _withDepth = 0;
+
   // -------------------------------------------------------------------------
   // Tokens
 
@@ -922,6 +926,7 @@ class _Parser {
     TypeRef? type;
     var isNew = false;
     List<Expr>? newArguments;
+    List<FieldInitializer>? initializers;
     if (_isKw(Keyword.kwAs)) {
       _advance();
       if (_isKw(Keyword.kwNew)) {
@@ -930,6 +935,7 @@ class _Parser {
       }
       type = _typeRef();
       if (isNew && _is(TokenKind.leftParen)) newArguments = _arguments();
+      if (isNew && _atWith) initializers = _withList();
     }
     Expr? initializer;
     if (_is(TokenKind.equal)) {
@@ -945,6 +951,7 @@ class _Parser {
       type: type,
       isNew: isNew,
       newArguments: newArguments,
+      initializers: initializers,
       initializer: initializer,
       start: name.start,
       end: _lastEnd,
@@ -1566,6 +1573,7 @@ class _Parser {
         TokenKind.stringLiteral ||
         TokenKind.dateLiteral ||
         TokenKind.leftParen ||
+        TokenKind.leftBrace ||
         TokenKind.minus ||
         TokenKind.plus ||
         TokenKind.error =>
@@ -1663,6 +1671,120 @@ class _Parser {
     return CastExpr(operand, type, t.offset, _lastEnd);
   }
 
+  /// `With {` after `New Type`: a With list (D132). `With` is a name
+  /// anywhere else.
+  bool get _atWith =>
+      _is(TokenKind.identifier) &&
+      _tok.text.toLowerCase() == 'with' &&
+      _peek(1).kind == TokenKind.leftBrace;
+
+  /// Whether the next token, after any line breaks, is one [accept] takes;
+  /// if so the line breaks are skipped. Inside braces a line may break
+  /// without `_` (D132); a line that starts with anything else ends the
+  /// list, so that a missing `}` does not swallow the code after it.
+  bool _skipBreaksBefore(bool Function(Token) accept) {
+    var i = 0;
+    while (_peek(i).kind == TokenKind.newline) {
+      i++;
+    }
+    if (!accept(_peek(i))) return false;
+    for (var k = 0; k < i; k++) {
+      _advance();
+    }
+    return true;
+  }
+
+  /// `{90, 80, 70}` (D132).
+  ArrayLiteral _arrayLiteral() {
+    final open = _advance();
+    final items = <Expr>[];
+    bool closing(Token t) => t.kind == TokenKind.rightBrace;
+    bool comma(Token t) => t.kind == TokenKind.comma;
+    if (_skipBreaksBefore(closing)) {
+      _advance();
+      return ArrayLiteral(items, open.offset, _lastEnd);
+    }
+    // Inside a With list, `.Name` is read as an item, to say P039.
+    bool startsItem(Token t) =>
+        _startsExpression(t) || (_withDepth > 0 && t.kind == TokenKind.dot);
+    while (true) {
+      if (!_skipBreaksBefore(startsItem)) {
+        _errorHere(DiagnosticCode.expectedSymbol, ['}']);
+        break;
+      }
+      items.add(_expression());
+      if (_skipBreaksBefore(comma)) {
+        _advance();
+        continue;
+      }
+      if (_skipBreaksBefore(closing)) {
+        _advance();
+        break;
+      }
+      _errorHere(DiagnosticCode.expectedSymbol, ['}']);
+      break;
+    }
+    return ArrayLiteral(items, open.offset, _lastEnd);
+  }
+
+  /// `With {.Name = "Kim", .Score = 90}` (D132), at `With`.
+  List<FieldInitializer> _withList() {
+    final withToken = _advance();
+    _advance(); // {
+    final items = <FieldInitializer>[];
+    bool closing(Token t) => t.kind == TokenKind.rightBrace;
+    bool comma(Token t) => t.kind == TokenKind.comma;
+    if (_skipBreaksBefore(closing)) {
+      _errorAt(withToken, DiagnosticCode.withEmpty);
+      _advance();
+      return items;
+    }
+    while (true) {
+      if (!_skipBreaksBefore(
+          (t) => t.kind == TokenKind.dot || t.kind == TokenKind.identifier)) {
+        _errorHere(DiagnosticCode.expectedSymbol, ['}']);
+        break;
+      }
+      final start = _tok;
+      if (_is(TokenKind.dot)) {
+        _advance();
+      } else {
+        _errorAt(_tok, DiagnosticCode.withNeedsDot);
+      }
+      final name = _memberName();
+      final qualified = _is(TokenKind.dot) || _is(TokenKind.leftParen);
+      if (qualified) {
+        _errorAt(_tok, DiagnosticCode.withQualified);
+        while (!_is(TokenKind.equal) &&
+            !_atStatementEnd &&
+            !_is(TokenKind.comma) &&
+            !_is(TokenKind.rightBrace)) {
+          _advance();
+        }
+      }
+      _expectSymbol(TokenKind.equal, '=');
+      _withDepth++;
+      final value = _expression();
+      _withDepth--;
+      // A field's field is left out, so that its value is not checked
+      // against the field itself.
+      if (!qualified) {
+        items.add(FieldInitializer(name, value, start.offset, _lastEnd));
+      }
+      if (_skipBreaksBefore(comma)) {
+        _advance();
+        continue;
+      }
+      if (_skipBreaksBefore(closing)) {
+        _advance();
+        break;
+      }
+      _errorHere(DiagnosticCode.expectedSymbol, ['}']);
+      break;
+    }
+    return items;
+  }
+
   Expr _primary() {
     final t = _tok;
     switch (t.kind) {
@@ -1700,6 +1822,14 @@ class _Parser {
         // Already reported by the lexer.
         _advance();
         return ErrorExpr(t.offset, t.end);
+      case TokenKind.leftBrace:
+        return _arrayLiteral();
+      case TokenKind.dot when _withDepth > 0:
+        // `.Title = .Name & "!"`: a field read inside a With list (P039).
+        _errorAt(t, DiagnosticCode.withOwnField);
+        _advance();
+        _memberName();
+        return ErrorExpr(t.offset, _lastEnd);
       case TokenKind.keyword:
         switch (t.keyword) {
           case Keyword.kwTrue || Keyword.kwFalse:
@@ -1715,7 +1845,9 @@ class _Parser {
             _advance();
             final type = _typeRef();
             final arguments = _is(TokenKind.leftParen) ? _arguments() : null;
-            return NewExpr(type, arguments, t.offset, _lastEnd);
+            final initializers = _atWith ? _withList() : null;
+            return NewExpr(type, arguments, t.offset, _lastEnd,
+                initializers: initializers);
           case Keyword.kwTypeOf:
             _advance();
             final operand = _postfix();

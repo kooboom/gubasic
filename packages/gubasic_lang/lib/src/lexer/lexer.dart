@@ -42,6 +42,8 @@ const _plus = 0x2B;
 const _comma = 0x2C;
 const _minus = 0x2D;
 const _dot = 0x2E;
+const _leftBrace = 0x7B;
+const _rightBrace = 0x7D;
 const _slash = 0x2F;
 const _digit0 = 0x30;
 const _digit9 = 0x39;
@@ -81,6 +83,8 @@ const _singleCharTokens = {
   _rightParen: TokenKind.rightParen,
   _comma: TokenKind.comma,
   _dot: TokenKind.dot,
+  _leftBrace: TokenKind.leftBrace,
+  _rightBrace: TokenKind.rightBrace,
 };
 
 class _Lexer {

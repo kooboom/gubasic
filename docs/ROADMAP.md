@@ -94,7 +94,9 @@ Three releases, then the rest (D94–D96). The order follows who GuBASIC is for 
 ### Between v0.5 and v0.6
 
 - [x] `Structure … End Structure`: fields only, copied when assigned (its array fields too), arrays and Lists of it, in a module for every form or in a form for that form (D123, D131). Example: [Quiz](../examples/quiz)
-- [ ] `New Student With {.Name = "Kim", .Score = 90}`: a Structure's value in one line (D131; planned next)
+- [x] `New Student With {.Name = "Kim", .Score = 90}` and lists of items, `{"a", "b"}`, for arrays; inside braces a line may break without `_` (D132). Example: [Quiz](../examples/quiz)
+- [ ] The editor writes keywords and names as they are declared (`dim total as integer` → `Dim total As Integer`, `TOTAL` → `total`), as Visual Basic's editor does; LANGUAGE §1 says it is planned. Small; next, before `With … End With`
+- [ ] `With … End With`: several members of one value without repeating its name (D132's W4)
 
 ### v0.6 — Together (candidate, D122)
 

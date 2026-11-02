@@ -40,8 +40,14 @@ String exprToSexp(Expr e) => switch (e) {
           exprToSexp(target),
           ...arguments.map(exprToSexp)
         ].join(' ')})',
-      NewExpr(:final type, :final arguments) =>
-        '(new ${[_type(type), ...?arguments?.map(exprToSexp)].join(' ')})',
+      NewExpr(:final type, :final arguments, :final initializers) => '(new ${[
+          _type(type),
+          ...?arguments?.map(exprToSexp),
+          for (final i in initializers ?? const <FieldInitializer>[])
+            '.${i.name.name}=${exprToSexp(i.value)}',
+        ].join(' ')})',
+      ArrayLiteral(:final elements) =>
+        '{${elements.map(exprToSexp).join(' ')}}',
       UnaryExpr(:final operator, :final operand) =>
         '(${operator.symbol} ${exprToSexp(operand)})',
       BinaryExpr(:final operator, :final left, :final right) =>

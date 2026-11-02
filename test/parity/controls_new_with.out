@@ -1,0 +1,6 @@
+> btnAdd.Click
+Add btnMade (Button)
+Add Label1 (Label)
+Debug.Print: btnMade Made 60, Label1 Label 2 120
+> Close
+Closed

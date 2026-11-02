@@ -224,6 +224,21 @@ const Map<DiagnosticCode, String> koreanMessages = {
       '{0} 이름은 이미 형 이름입니다({1}). Structure 이름을 바꿉니다.',
   DiagnosticCode.structureArraySize:
       'Structure 안 배열의 크기는 Marks(4) As Integer처럼 정수로 적습니다. 실행 중에 정해지는 크기라면 Marks() As Integer로 쓰고 ReDim으로 정합니다.',
+  DiagnosticCode.withNeedsDot: 'With 목록의 항목은 앞에 점을 붙인 필드입니다(.Name = "Kim").',
+  DiagnosticCode.withQualified:
+      'With 목록은 필드 자체에 값을 줍니다. 필드의 필드에는 그 필드에 New 값과 그 값의 With 목록을 따로 줍니다.',
+  DiagnosticCode.withOwnField: 'With 목록 안에서는 필드를 읽을 수 없습니다. 값을 직접 씁니다.',
+  DiagnosticCode.withEmpty:
+      'With 목록에는 값을 줄 필드가 하나 이상 있어야 합니다. 없으면 With와 괄호를 지웁니다.',
+  DiagnosticCode.withNotAllowed:
+      '{0} 형에는 With 목록으로 정할 것이 없습니다. With 목록은 Structure, New로 만드는 컨트롤, PdfDocument에 씁니다.',
+  DiagnosticCode.withTwice: '{0} 필드에 이 With 목록에서 값을 두 번 줍니다. 하나만 남깁니다.',
+  DiagnosticCode.arraySizeMismatch:
+      '{0} 필드와 이 목록의 항목 수가 다릅니다(필드 {1}, 목록 {2}). 필드만큼 주거나, 크기 없이 {0}() As … 형태로 선언해 몇 개든 받게 합니다.',
+  DiagnosticCode.arrayLiteralType:
+      '이 목록은 항목만으로 형을 알 수 없습니다. 형을 정해 선언한 배열 변수에 대입하거나, 그 형의 배열을 받는 인수로 넘깁니다.',
+  DiagnosticCode.arrayBoundWithList:
+      '목록을 받는 배열은 목록에서 크기를 정합니다. {0}() 형태로 크기 없이 씁니다.',
   DiagnosticCode.sqlJoined:
       '이 SQL은 &로 이어 붙였습니다. 값이 들어갈 자리에 ?를 쓰고 값은 SQL 뒤에 넘겨 주세요. Database.{0}("… WHERE name = ?", name)처럼 쓰면 값에 든 따옴표가 문장을 깨뜨리지 못합니다.',
   DiagnosticCode.popupWithoutItems:

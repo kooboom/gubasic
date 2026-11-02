@@ -263,6 +263,10 @@
   `List(Of Student)`의 항목을 바꿉니다. Visual Basic .NET은 이것을 막습니다(BC30068).
 - For Each는 복사본을 줍니다(A066). Structure로 하지 않는 것: 비교(A063),
   글(A064), `Object`(A067).
+- 값을 식 하나로: `New Student With {.Name = "Kim", .Score = 90}`.
+  배열의 항목 목록: `.Choices = {"a", "b", "c", "d"}`,
+  `Dim names() As String = {"Kim", "Lee"}`, `Total({4, 5, 6})`. 중괄호
+  안에서는 `_` 없이 줄을 바꿀 수 있습니다(LANGUAGE 1절, 4절).
 
 ## 상수
 

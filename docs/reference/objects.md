@@ -267,6 +267,10 @@ Explained in [LANGUAGE.md §4.1](../LANGUAGE.md).
   item of a `List(Of Student)`. Visual Basic .NET refuses this (BC30068).
 - For Each gives copies (A066). Not done with a Structure: comparing it
   (A063), text (A064), `Object` (A067).
+- A value in one expression: `New Student With {.Name = "Kim", .Score = 90}`.
+  Lists of items for arrays: `.Choices = {"a", "b", "c", "d"}`,
+  `Dim names() As String = {"Kim", "Lee"}`, `Total({4, 5, 6})`. Inside the
+  braces a line may break without `_` (LANGUAGE §1, §4).
 
 ## Constants
 

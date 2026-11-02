@@ -81,6 +81,11 @@ void main() {
       expect(marks('Dim structure = 1'), 'kkkpppppppppppppn');
     });
 
+    test('With is a keyword before a brace (D132)', () {
+      expect(marks('x = New P With {.A = 1}'), 'ppppkkkpppkkkkpppppppnp');
+      expect(marks('with = 1'), 'pppppppn');
+    });
+
     test('a string or comment being typed is coloured as one', () {
       expect(marks('x = "한'), 'ppppss');
       expect(marks("' 한글 ㄱ"), 'cccccc');

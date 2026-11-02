@@ -55,6 +55,12 @@ Uint8List codeKinds(String text, Set<String> controls) {
     final kind = switch (t.kind) {
       TokenKind.keyword => CodeKind.keyword,
       TokenKind.identifier when _structureWord(tokens, i) => CodeKind.keyword,
+      // `New Student With {` (D132): With is a name anywhere else.
+      TokenKind.identifier
+          when t.text.toLowerCase() == 'with' &&
+              i + 1 < tokens.length &&
+              tokens[i + 1].kind == TokenKind.leftBrace =>
+        CodeKind.keyword,
       TokenKind.stringLiteral => CodeKind.string,
       TokenKind.integerLiteral ||
       TokenKind.doubleLiteral ||

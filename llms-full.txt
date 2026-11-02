@@ -16,10 +16,10 @@ GuBASIC is a simplified, VB.NET-flavored BASIC. This is a **draft**: it fixes th
 
 | Rule | Decision |
 |---|---|
-| Case | **Case-insensitive.** The editor rewrites every use to the spelling of its declaration, as VB did. The transpiler emits that spelling. |
+| Case | **Case-insensitive.** Planned (ROADMAP): the editor will rewrite keywords and names to the spelling of their declaration, as Visual Basic's editor does; until then each is kept as written. The transpiler will emit the declaration's spelling. |
 | Identifiers | **ASCII only:** a letter, then letters, digits or `_`. Korean (and any non-ASCII) text is allowed in strings and comments. |
 | Comments | `'` to end of line. `REM` also accepted, but only as a whole word (`REM note` is a comment; `Remark` is an identifier). It can also follow a statement: `x = 1 REM note`. |
-| Line continuation | A `_` that is the last thing on a line (only spaces or tabs may follow) continues the statement on the next line. A `_` anywhere else is an error (L005). `x_` is simply an identifier. |
+| Line continuation | A `_` that is the last thing on a line (only spaces or tabs may follow) continues the statement on the next line. A `_` anywhere else is an error (L005). `x_` is simply an identifier. Inside braces, a list of items or a With list (§4, §4.1), a line may also break without `_` after `{`, after a comma and before `}`, as in Visual Basic .NET ([Microsoft](https://learn.microsoft.com/en-us/dotnet/visual-basic/programming-guide/language-features/statements#implicit-line-continuation)); a line that cannot go on with the list ends it (P003). |
 | Statements per line | One. A `:` separator is an error (L003); the lexer still treats it as the end of a statement so that the rest of the line is checked. |
 | Numbers | Integers (`123`) and reals (`1.5`). A real needs digits on **both** sides of the dot: `.5` and `1.` are not numbers (write `0.5` and `1.0`). **Exponent notation** is allowed: `1E+21`, `1.5E-7`, `2e10` — `E` in either case, an optional sign, then digits; such a literal is always a `Double`. It is the same notation the text form uses (§2.2), so printed values can be written back as they are. A literal beyond the `Double` range (`1E400`) is an error (L008); a non-zero literal so small that it becomes exactly 0 (`1E-400`) gets a warning (L009); one that only loses precision but stays non-zero (`4E-324`) does not. A minus sign is an operator, not part of the number. |
 | String literals | `"..."`; a doubled quote `""` is a literal quote. A string must close on the line where it starts (L001). |
@@ -126,6 +126,10 @@ How the parser recovers:
 | P034 | A Structure without fields | Write at least one (§4.1) |
 | P035 | A Structure declared inside a `Sub` or `Function` | Declare it at the top of a module or a form (§4.1) |
 | P036 | Something other than a field inside a Structure (a `Sub`, a `Const`) | Skips the line, or the procedure; a Structure has fields only (§4.1) |
+| P037 | An item of a With list without its dot (`Name = "Kim"`) | Write `.Name = "Kim"` (§4.1) |
+| P038 | A field's field or item in a With list (`.Home.City = …`, `.Marks(0) = …`) | Leaves it out; give `.Home` a `New Address With …` of its own (§4.1) |
+| P039 | A field read inside a With list (`.Title = .Name & "!"`) | Write the value itself (§4.1) |
+| P040 | A With list with nothing in it | Leave out `With` and the braces (§4.1) |
 
 **Analyzer**
 
@@ -202,6 +206,11 @@ The analyzer checks names and types (§2.1, §3.2, §5.2). It runs even when the
 | A067 | A Structure kept in an `Object` (§4.1) |
 | A068 | A Structure named as a type, a form, a module or another module's Structure is (§4.1) |
 | A069 | The size of an array field written other than as a whole number (`Marks(n)`) (§4.1) |
+| A070 | A With list on a type with nothing it can set (`New List(Of String) With …`): it is for a Structure, a control made with `New` and a `PdfDocument` (§4.1) |
+| A071 | A field given a value twice in one With list (§4.1) |
+| A072 | A list of items for an array field with a size, of another number of items (`Choices(3)` given two) (§4.1) |
+| A073 | A list of items whose type cannot be told where no type is expected: empty, or of types that do not go together (`Dim a = {1, "x"}`) (§4) |
+| A074 | `Dim a(2) As Integer = {…}`: an array given a list takes its size from the list; write `a()` (§4) |
 
 **Form and project files**
 
@@ -394,6 +403,7 @@ Const MaxScore As Integer = 100
   ```
 
 - `UBound(a)` returns the upper bound.
+- **A list of items** (DESIGN.md D132), as Visual Basic .NET writes an array literal ([Microsoft](https://learn.microsoft.com/en-us/dotnet/visual-basic/programming-guide/language-features/arrays/)), makes a new array: `Dim names() As String = {"Kim", "Lee"}`, `names = {"Park"}`, `Total({4, 5, 6})` for a parameter `values() As Integer`, and an array field, `.Choices = {"a", "b", "c", "d"}`. Its items take the element type of where it goes; where no type is expected (`Dim scores = {90, 85.5}`) it is the items' type, Double for Integers with Doubles, and A073 when it cannot be told (`{}`, `{1, "x"}`). The size comes from the list: `Dim a(2) As Integer = {…}` is A074, as Visual Basic .NET refuses it too ([Microsoft](https://learn.microsoft.com/en-us/dotnet/visual-basic/misc/bc30672)). Given to an array field with a size, the list has that many items (A072). Inside the braces a line may break without `_` (§1).
 - **An array assigned to another variable is the same array** (as in VB.NET): after `y = x`, `y(0) = 5` changes `x(0)` too. An array field of a Structure is different: it is copied with the Structure (§4.1).
 - New code is encouraged to use lists:
 
@@ -431,6 +441,7 @@ End Sub
 - **A value.** `Dim s As Student`, or `Dim s As New Student`, is a value with each field at its type's default and each array field with its items. It is never `Nothing`. Each item of `Dim group(29) As Student` is such a value, and so is each new item of `ReDim Preserve`.
 - **Copied when stored.** Assigning (`b = a`), passing as an argument, `Return`, and putting into an array or a List (`Add`, `Insert`, `list(i) = s`) store a copy of the whole value, its array fields too. Changing the copy does not change the original. An object in a field (a `List`, a control, `Json`) is the same object in both, as an argument's is (§7.1).
 - **A field is changed where the value is.** `s.Name = …`, `s.Home.City = …`, `group(3).Score = …`, `list(0).Score = …`, `Form2.Current.Score = …` change the value in that variable, item or form. A value kept nowhere, as a function's result, cannot have a field changed (`GetStudent().Score = 1`, A065): put it in a variable, change it, and store it back.
+- **A value in one expression:** `New Student With {.Name = "Kim", .Score = 90}` (DESIGN.md D132), Visual Basic .NET's object initializer ([Microsoft](https://learn.microsoft.com/en-us/dotnet/visual-basic/programming-guide/language-features/objects-and-classes/object-initializers-named-and-anonymous-types)), makes a value and gives the fields listed their values, in the order written; the others keep their defaults. `Dim s As New Student With {…}` means the same. The braces may run over several lines (§1), and a field may get another value made the same way: `.Home = New Address With {.City = "Seoul"}`. Each field is listed once (A071), with its dot (P037), by itself (no `.Home.City`, P038), and is not read inside the list (P039); the list has at least one (P040). A With list also sets a control made with `New` (`New Button With {.Caption = "OK", .Top = 40}`) and a `PdfDocument`; another type has nothing to set (A070).
 - **For Each** gives each item as a copy, so changing its field does not change the list (warning A066). Write `For i = 0 To list.Count - 1` and change `list(i).Score`.
 - **Not done with a Structure:** comparing two (`=`, `<>`, `Is`, and a List's `Contains`, `IndexOf` and `Remove`, which compare: A063; compare the fields); turning one into text (`&`, `CStr`, `Debug.Print`, a `Caption`: A064; use the fields); keeping one in an `Object` (A067). The debugger's variables and Immediate window show a Structure with its fields: `Student { Name = "Kim", Score = 90, Marks = (0, 0, 0, 0, 0) }`.
 
@@ -450,6 +461,8 @@ End Sub
 | An array field with a size, `Marks(4) As Integer` | allowed | not allowed: a Structure's declarations give arrays no initial size ([Microsoft](https://learn.microsoft.com/en-us/dotnet/visual-basic/programming-guide/language-features/data-types/structures-and-classes)) |
 | Fields written as `Name As String`, without `Dim` or `Public` | allowed, as Visual Basic 6's `Type` wrote them | every member is declared ([Microsoft](https://learn.microsoft.com/en-us/dotnet/visual-basic/language-reference/statements/structure-statement)) |
 | Procedures, properties, constructors in a Structure | not in GuBASIC: fields only (D123) | allowed |
+| A list of items whose type cannot be told, `Dim a = {1, "x"}` | A073 | an array of `Object` ([Microsoft](https://learn.microsoft.com/en-us/dotnet/visual-basic/programming-guide/language-features/arrays/)); GuBASIC has no `Variant` and keeps `Object` for what must hold anything |
+| A field read inside a With list, `.Title = .Name & "!"` | not allowed (P039): write the value | allowed; a field not given yet reads as its default ([Microsoft](https://learn.microsoft.com/en-us/dotnet/visual-basic/programming-guide/language-features/objects-and-classes/object-initializers-named-and-anonymous-types)) |
 
 ## 5. Operators
 
@@ -1950,6 +1963,10 @@ Explained in [LANGUAGE.md §4.1](../LANGUAGE.md).
   item of a `List(Of Student)`. Visual Basic .NET refuses this (BC30068).
 - For Each gives copies (A066). Not done with a Structure: comparing it
   (A063), text (A064), `Object` (A067).
+- A value in one expression: `New Student With {.Name = "Kim", .Score = 90}`.
+  Lists of items for arrays: `.Choices = {"a", "b", "c", "d"}`,
+  `Dim names() As String = {"Kim", "Lee"}`, `Total({4, 5, 6})`. Inside the
+  braces a line may break without `_` (LANGUAGE §1, §4).
 
 ## Constants
 
