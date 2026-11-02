@@ -124,6 +124,7 @@ TypeOf CType AddHandler AddressOf
 | P038 | With 목록의 필드의 필드나 칸(`.Home.City = …`, `.Marks(0) = …`) | 빼고 읽음. `.Home`에 따로 `New Address With …`를 줌(4.1절) |
 | P039 | With 목록 안에서 필드를 읽음(`.Title = .Name & "!"`) | 값을 직접 씀(4.1절) |
 | P040 | 빈 With 목록 | `With`와 중괄호를 지움(4.1절) |
+| P041 | With 블록 밖의 점만 쓴 멤버(`.Caption = "x"`) | 점 앞에 이름을 쓰거나 그 줄을 `With … End With` 안에 둠(6절) |
 
 **분석기**
 
@@ -205,6 +206,7 @@ TypeOf CType AddHandler AddressOf
 | A072 | 크기가 있는 배열 필드에 항목 수가 다른 목록을 줌(`Choices(3)`에 두 개)(4.1절) |
 | A073 | 형을 기대하는 곳이 아닌데 항목만으로 형을 알 수 없는 목록: 비었거나 형이 섞임(`Dim a = {1, "x"}`)(4절) |
 | A074 | `Dim a(2) As Integer = {…}`. 목록을 받는 배열은 목록에서 크기를 정함. `a()`로 씀(4절) |
+| A075 | 값이 아닌 것에 쓴 `With`: 내장 객체(`With Http`)(6절) |
 
 **폼·프로젝트 파일**
 
@@ -568,6 +570,16 @@ Loop Until done
 - **한 줄 `If`.** `If x > 0 Then y = 1 Else y = 2`는 문장 하나이며 `End If`가 필요 없습니다. 한 줄에는 간단한 문장(대입, 호출, `Exit`, `Return` 등)만 쓸 수 있고, 반복문 같은 블록은 여러 줄 형태로 씁니다.
 - **반복 변수에 타입을 붙일 수 있습니다:** `For i As Integer = 1 To 10`, `For Each name As String In names`.
 - **선언하지 않은 반복 변수는 그 반복문 안에서만 쓰는 변수로 자동 선언합니다.** `i`를 선언하지 않고 `For i = 1 To 10`이라고 쓰면, 반복문 안에서만 있는 `i`가 생깁니다. 타입은 시작, 끝, Step 값에서 정합니다(하나라도 `Double`이면 `Double`, 아니면 `Integer`). `For Each`이면 목록이나 배열의 항목 타입을 따릅니다. 이미 선언된 변수는 그대로 씁니다. Visual Basic도 같습니다([For...Next, Counter Argument](https://learn.microsoft.com/en-us/dotnet/visual-basic/language-reference/statements/for-next-statement)).
+- **`With … End With`**(DESIGN.md D134)는 Visual Basic .NET처럼([Microsoft](https://learn.microsoft.com/ko-kr/dotnet/visual-basic/language-reference/statements/with-end-with-statement)) 한 값의 멤버를 그 이름을 되풀이하지 않고 씁니다.
+
+  ```vb
+  With lblResult
+      .Caption = "합계: " & total
+      .Left = 16
+  End With
+  ```
+
+  `With` 뒤의 값은 블록에 들어갈 때 한 번 계산합니다. 블록 안에서 점으로만 시작하는 멤버(`.Caption`, `.Marks(0)`, `.Add("x")`, `.Home.City`)는 그 값의 멤버입니다. 안쪽 블록은 자기 값을 가지며, 바깥 값의 멤버는 이름을 다 써서 부릅니다. 어딘가에 담긴 Structure(변수, 칸, 필드, 다른 폼의 변수)는 그 자리에서 필드가 바뀝니다(4.1절). 함수의 결과처럼 담기지 않은 것은 읽을 수만 있고 바꾸지 못하며(A065), `For Each` 변수의 변경은 복사본에만 남습니다(A066). 블록의 값은 들어갈 때의 것이며, 블록 안에서 그 변수에 다른 값을 넣어도 그대로입니다. With 블록 밖의 점만 쓴 멤버는 P041, 값이 아닌 것에 쓴 `With`(`With Http`)는 A075입니다. `With`는 이름으로 쓰인 곳(`with = 1`, `with(0) = 2`)에서는 이름 그대로입니다(D132). 직접 실행 창은 점만 쓴 멤버를 받지 않습니다.
 
 ## 7. 프로시저
 

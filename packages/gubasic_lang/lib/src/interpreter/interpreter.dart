@@ -1078,6 +1078,15 @@ class Interpreter {
       case ReDimStmt():
         _reDim(s, _valueSync(s.bound),
             s.target is MemberExpr ? _memberReceiverSync(s.target) : null);
+      case WithStmt():
+        // The value itself, not a copy: a field is written where it is.
+        final v = _evalSync(s.target);
+        _frame.withValues[s] = v is GbStruct ? v : _convert(s.target, v);
+        try {
+          return _blockSync(s.body);
+        } finally {
+          _frame.withValues.remove(s);
+        }
       case EndStmt():
         throw const _EndProgram();
       case ErrorStmt():
@@ -1142,6 +1151,15 @@ class Interpreter {
         return _Flow.exitProcedure;
       case ThrowStmt():
         throw _Thrown((await _value(s.value))! as GbException, s, _frame.form);
+      case WithStmt():
+        final v = await _eval(s.target);
+        final frame = _frame;
+        frame.withValues[s] = v is GbStruct ? v : _convert(s.target, v);
+        try {
+          return await _block(s.body);
+        } finally {
+          frame.withValues.remove(s);
+        }
       case ReDimStmt():
         final receiver = s.target is MemberExpr
             ? await _memberReceiverAsync(s.target)
@@ -2606,6 +2624,8 @@ class Interpreter {
       case ArrayLiteral():
         return GbArray(
             _elementOf(e), [for (final item in e.elements) _valueSync(item)]);
+      case WithValueExpr():
+        return _frame.withValues[_a.withTargets[e]];
       case UnaryExpr():
         return _unary(e, _valueSync(e.operand));
       case BinaryExpr():
@@ -3443,6 +3463,9 @@ class _Frame {
   final _FormRun form;
   final Map<Symbol, Object?> vars = Map.identity();
   Object? result;
+
+  /// The value of each With block running in this frame (D134).
+  final Map<WithStmt, Object?> withValues = Map.identity();
 }
 
 class _BuiltinObject {

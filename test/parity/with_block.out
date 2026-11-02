@@ -1,0 +1,10 @@
+> btnGo.Click
+Set lblResult.Caption: Working
+Set lblResult.Left: 24
+Debug.Print: Working at 24
+Debug.Print: Kim 10 7 Seoul, picks: 1
+Debug.Print: 2 90
+Debug.Print: 1 11 0
+Set lblResult.Caption: Done 10
+> Close
+Closed

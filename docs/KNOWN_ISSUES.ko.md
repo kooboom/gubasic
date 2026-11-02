@@ -26,7 +26,7 @@
 
 ## 직접 실행 창은 식만 받음
 
-- **무엇:** 멈춘 동안 직접 실행 창(D128)은 `? 식`에 답하지만, 문장(`x = 5`, `lblA.Caption = "..."`)은 실행하지 않습니다. Visual Basic 6의 직접 실행 창은 둘 다 했습니다([Microsoft](https://learn.microsoft.com/en-us/previous-versions/visualstudio/visual-studio-2008/ms172685(v=vs.90))). 식 안의 호출은 그 프로시저를 실행합니다.
+- **무엇:** 멈춘 동안 직접 실행 창(D128)은 `? 식`에 답하지만, 문장(`x = 5`, `lblA.Caption = "..."`)은 실행하지 않습니다. Visual Basic 6의 직접 실행 창은 둘 다 했습니다([Microsoft](https://learn.microsoft.com/en-us/previous-versions/visualstudio/visual-studio-2008/ms172685(v=vs.90))). 식 안의 호출은 그 프로시저를 실행합니다. With 블록(D134) 안에서 멈췄을 때 점만 쓴 멤버(`? .Caption`)도 받지 않으므로 이름을 다 써서 봅니다(`? lblResult.Caption`).
 - **왜 미뤘나:** 문장은 아직 도는 처리기 아래에서 멈춘 프레임을 바꿉니다. 저자가 식부터 하기로 정했습니다(D128).
 - **다시 볼 때:** 멈춘 채 문장이 필요해질 때. 같은 분석기 입구로 대입부터.
 

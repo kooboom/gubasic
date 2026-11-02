@@ -306,6 +306,12 @@ const Map<DiagnosticCode, String> englishMessages = {
   DiagnosticCode.arrayBoundWithList:
       'An array given a list takes its size from the '
           'list. Write {0}() without the size.',
+  DiagnosticCode.dotWithoutWith:
+      'A member written with a dot alone belongs to a With block. Write '
+          'the name before the dot, or put the line inside With … End With.',
+  DiagnosticCode.withNotValue:
+      'With needs a value, such as a control, a variable or an item: {0} '
+          'is not one. Write its members in full.',
   DiagnosticCode.sqlJoined: 'This SQL is put together with &. Write ? '
       'where a value goes and pass the value after the SQL, as in '
       'Database.{0}("… WHERE name = ?", name): then a quote in the value '

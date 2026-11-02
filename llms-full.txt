@@ -130,6 +130,7 @@ How the parser recovers:
 | P038 | A field's field or item in a With list (`.Home.City = …`, `.Marks(0) = …`) | Leaves it out; give `.Home` a `New Address With …` of its own (§4.1) |
 | P039 | A field read inside a With list (`.Title = .Name & "!"`) | Write the value itself (§4.1) |
 | P040 | A With list with nothing in it | Leave out `With` and the braces (§4.1) |
+| P041 | A member written with a dot alone outside a With block (`.Caption = "x"`) | Write the name before the dot, or put the line in `With … End With` (§6) |
 
 **Analyzer**
 
@@ -211,6 +212,7 @@ The analyzer checks names and types (§2.1, §3.2, §5.2). It runs even when the
 | A072 | A list of items for an array field with a size, of another number of items (`Choices(3)` given two) (§4.1) |
 | A073 | A list of items whose type cannot be told where no type is expected: empty, or of types that do not go together (`Dim a = {1, "x"}`) (§4) |
 | A074 | `Dim a(2) As Integer = {…}`: an array given a list takes its size from the list; write `a()` (§4) |
+| A075 | `With` on what is not a value: a built-in object (`With Http`) (§6) |
 
 **Form and project files**
 
@@ -574,6 +576,16 @@ Loop Until done
 - **Single-line `If`.** `If x > 0 Then y = 1 Else y = 2` is one statement and needs no `End If`. Only simple statements fit on the line (assignments, calls, `Exit`, `Return`, …); loops and other blocks need the block form.
 - **The loop variable may carry its type:** `For i As Integer = 1 To 10`, `For Each name As String In names`.
 - **An undeclared loop variable is declared automatically, only for that loop.** `For i = 1 To 10` with no `i` declared creates an `i` that exists only inside the loop. Its type comes from the start, end and step values (`Double` if any of them is a `Double`, otherwise `Integer`); for `For Each`, from the items of the list or array. A variable that is already declared is used as it is. Visual Basic does the same ([For...Next, Counter Argument](https://learn.microsoft.com/en-us/dotnet/visual-basic/language-reference/statements/for-next-statement)).
+- **`With … End With`** (DESIGN.md D134), as Visual Basic .NET has it ([Microsoft](https://learn.microsoft.com/en-us/dotnet/visual-basic/language-reference/statements/with-end-with-statement)), uses one value's members without writing its name each time:
+
+  ```vb
+  With lblResult
+      .Caption = "Total: " & total
+      .Left = 16
+  End With
+  ```
+
+  The value after `With` is worked out once, as the block starts; inside, a member written with a dot alone (`.Caption`, `.Marks(0)`, `.Add("x")`, `.Home.City`) is its member. A block inside another has its own value; the outer one's members are written in full. A Structure kept somewhere (a variable, an item, a field, a form's variable) has its fields changed where it is (§4.1); one kept nowhere, as a function's result, can be read but not changed (A065), and a `For Each` variable's change stays in its copy (A066). The value is the one the block started with, also if the variable gets another value inside. A dot alone outside a With block is P041; `With` on what is not a value (`With Http`) is A075. `With` stays a name where it is used as one (`with = 1`, `with(0) = 2`, D132). The Immediate window does not take a dot alone.
 
 ## 7. Procedures
 

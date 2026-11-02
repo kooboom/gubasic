@@ -153,12 +153,17 @@ Completions? completionsAt(
     final listType = itemStart
         ? _withListType(source, offset - prefix.length - 1, analysis)
         : null;
+    final blockType = itemStart && listType == null
+        ? _withBlockType(program, offset - prefix.length - 1)
+        : null;
     final members = listType != null
         ? _settable(listType)
-        : _membersBefore(
-            rest.sublist(0, rest.length - 1),
-            _Names(source, lineStart, program, analysis),
-          );
+        : blockType != null
+            ? _memberCompletions(membersOf(blockType))
+            : _membersBefore(
+                rest.sublist(0, rest.length - 1),
+                _Names(source, lineStart, program, analysis),
+              );
     if (members == null) return null;
     all = members;
   } else if (const {Keyword.kwAs, Keyword.kwNew, Keyword.kwOf}
@@ -437,6 +442,11 @@ List<Completion>? _membersBefore(List<Token> tokens, _Names names) {
   }
 
   members ??= type == null ? null : membersOf(type);
+  return _memberCompletions(members);
+}
+
+/// [members] as completions; null when there are none to offer.
+List<Completion>? _memberCompletions(Map<String, MemberSpec>? members) {
   if (members == null) return null;
   return [
     for (final m in members.values)
@@ -446,6 +456,23 @@ List<Completion>? _membersBefore(List<Token> tokens, _Names names) {
           : Completion(m.name, CompletionKind.property,
               detail: m.type.displayName, readOnly: m.readOnly),
   ];
+}
+
+/// The type of the innermost With block whose body the `.` at [dot] is
+/// in (D134), from the last compilation; null when it is in none.
+GbType? _withBlockType(CompileResult? program, int dot) {
+  if (program == null) return null;
+  WithStmt? found;
+  void visit(Node n) {
+    if (n is WithStmt && n.target.end < dot && dot <= n.end) found = n;
+    for (final c in n.children) {
+      visit(c);
+    }
+  }
+
+  visit(program.parseResult.unit);
+  final block = found;
+  return block == null ? null : program.analysis.types[block.target];
 }
 
 /// The type made by the With list that [dot] (the offset of a `.`) starts

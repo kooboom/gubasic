@@ -1,0 +1,63 @@
+' With … End With (D134): the value is worked out once, as the block
+' starts, and a member written with a dot alone is its member: a control's
+' properties, a Structure's fields where the Structure is kept (an item
+' of an array or a List), a List's methods. Blocks nest; the inner one's
+' value is the dot's.
+Structure Address
+    City As String
+End Structure
+
+Structure Student
+    Name As String
+    Score As Integer
+    Marks(2) As Integer
+    Home As Address
+End Structure
+
+Dim group(2) As Student
+Dim roster As New List(Of Student)
+Dim picks As Integer
+
+Function Pick() As Integer
+    picks = picks + 1
+    Return 1
+End Function
+
+Sub btnGo_Click()
+    With lblResult
+        .Caption = "Working"
+        .Left = 24
+        Debug.Print(.Caption & " at " & .Left)
+    End With
+
+    With group(Pick())
+        .Name = "Kim"
+        .Score = .Score + 10
+        .Marks(0) = 7
+        With .Home
+            .City = "Seoul"
+        End With
+    End With
+    Debug.Print(group(1).Name & " " & group(1).Score & " " & group(1).Marks(0) & " " & group(1).Home.City & ", picks: " & picks)
+
+    roster.Add(New Student With {.Name = "Lee"})
+    With roster(0)
+        .Score = 90
+    End With
+    With roster
+        .Add(New Student With {.Name = "Park"})
+        Debug.Print(.Count & " " & roster(0).Score)
+    End With
+
+    For i = 0 To 2
+        With group(i)
+            .Score = .Score + 1
+            If i = 1 Then Exit For
+        End With
+    Next
+    Debug.Print(group(0).Score & " " & group(1).Score & " " & group(2).Score)
+
+    Dim with As Integer = 5
+    with = with * 2
+    lblResult.Caption = "Done " & with
+End Sub

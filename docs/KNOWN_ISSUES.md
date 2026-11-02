@@ -26,7 +26,7 @@ Problems we know about and have **deliberately** left unfixed for now. Each entr
 
 ## The Immediate window takes expressions only
 
-- **What:** while the program is paused, the Immediate window (D128) answers `? expression`, but does not run a statement (`x = 5`, `lblA.Caption = "..."`), as Visual Basic 6's did ([Microsoft](https://learn.microsoft.com/en-us/previous-versions/visualstudio/visual-studio-2008/ms172685(v=vs.90))). A call in an expression does run its procedure.
+- **What:** while the program is paused, the Immediate window (D128) answers `? expression`, but does not run a statement (`x = 5`, `lblA.Caption = "..."`), as Visual Basic 6's did ([Microsoft](https://learn.microsoft.com/en-us/previous-versions/visualstudio/visual-studio-2008/ms172685(v=vs.90))). A call in an expression does run its procedure. Paused inside a With block (D134), a member written with a dot alone (`? .Caption`) is not taken either: write it in full (`? lblResult.Caption`).
 - **Why deferred:** a statement changes the paused frame under a handler that is still running; the author chose expressions first (D128).
 - **Revisit:** when a statement is wanted while paused: an assignment first, through the same analyzer entry.
 

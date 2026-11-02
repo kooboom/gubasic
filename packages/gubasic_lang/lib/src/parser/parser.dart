@@ -62,7 +62,8 @@ enum _BlockKind {
   while_('While', 'Wend'),
   select('Select Case', 'End Select'),
   try_('Try', 'End Try'),
-  structure('Structure', 'End Structure');
+  structure('Structure', 'End Structure'),
+  with_('With', 'End With');
 
   const _BlockKind(this.opener, this.closer);
   final String opener;
@@ -84,6 +85,7 @@ enum _Closer {
   endTry('End Try', 'Try'),
   endWhile('End While', 'While'),
   endClass('End Class', 'Class'),
+  endWith('End With', 'With'),
   next('Next', 'For'),
   loop('Loop', 'Do'),
   wend('Wend', 'While'),
@@ -141,6 +143,7 @@ bool _accepts(_BlockKind kind, _Closer c) => switch (kind) {
         c == _Closer.catch_ || c == _Closer.finally_ || c == _Closer.endTry,
       // A Structure is read on its own (_structure), never as an open frame.
       _BlockKind.structure => false,
+      _BlockKind.with_ => c == _Closer.endWith,
     };
 
 const _binaryTokens = {
@@ -243,6 +246,10 @@ class _Parser {
   /// How many With lists the parser is inside (D132): a `.Name` there is
   /// a field read, which the list does not allow (P039).
   int _withDepth = 0;
+
+  /// How many With blocks the parser is inside (D134): a `.Name` there is
+  /// a member of the innermost one's value.
+  int _withBlockDepth = 0;
 
   // -------------------------------------------------------------------------
   // Tokens
@@ -395,7 +402,15 @@ class _Parser {
     final t = _tok;
     if (t.kind != TokenKind.keyword) return null;
     final k = t.keyword!;
-    if (k == Keyword.kwEnd) return _endPairs[_peek(1).keyword];
+    if (k == Keyword.kwEnd) {
+      final next = _peek(1);
+      // `End With`: With is a name to the lexer (D132, D134).
+      if (next.kind == TokenKind.identifier &&
+          next.text.toLowerCase() == 'with') {
+        return _Closer.endWith;
+      }
+      return _endPairs[next.keyword];
+    }
     if (k == Keyword.kwSub || k == Keyword.kwFunction) {
       return _Closer.procedureStart;
     }
@@ -681,6 +696,48 @@ class _Parser {
       events.add(MemberExpr(target, event, target.start, _lastEnd));
     } while (_is(TokenKind.comma) && _advance().kind == TokenKind.comma);
     return HandlesClause(events, handlesToken.offset, _lastEnd);
+  }
+
+  /// A With block's first line (D134): `With` at the start of a statement,
+  /// not a name used there, which `with = 1`, `with(0) = 2` and
+  /// `with.Count` are: a `=` outside parentheses on the line, or a `(` or
+  /// `.` right after the word, makes it a name, as D132 keeps it.
+  bool get _atWithBlock {
+    final t = _tok;
+    if (t.kind != TokenKind.identifier || t.text.toLowerCase() != 'with') {
+      return false;
+    }
+    final next = _peek(1);
+    if (next.offset == t.end &&
+        (next.kind == TokenKind.leftParen || next.kind == TokenKind.dot)) {
+      return false;
+    }
+    var depth = 0;
+    for (var i = 1;; i++) {
+      final k = _peek(i).kind;
+      if (k == TokenKind.newline || k == TokenKind.eof) return true;
+      if (k == TokenKind.leftParen || k == TokenKind.leftBrace) depth++;
+      if (k == TokenKind.rightParen || k == TokenKind.rightBrace) depth--;
+      if (k == TokenKind.equal && depth == 0) return false;
+    }
+  }
+
+  /// `With lblResult … End With` (D134).
+  WithStmt _withBlock() {
+    final withToken = _advance();
+    final target = _expression();
+    _endOfStatement();
+    final frame = _Frame(_BlockKind.with_, withToken);
+    _withBlockDepth++;
+    final body = _block('Body', frame);
+    _withBlockDepth--;
+    if (_closerAt() == _Closer.endWith) {
+      _consumeCloser(_Closer.endWith, frame);
+      _endOfStatement();
+    } else {
+      _unclosed(frame);
+    }
+    return WithStmt(target, body, withToken.offset, _lastEnd);
   }
 
   /// `Structure Point` or Visual Basic 6's `Type Point` at [ahead]: the word,
@@ -978,6 +1035,7 @@ class _Parser {
       _strayEndStructure();
       return ErrorStmt(t.offset, _lastEnd);
     }
+    if (_atWithBlock) return _withBlock();
     if (t.kind != TokenKind.keyword) return _callOrAssignment();
     switch (t.keyword!) {
       case Keyword.kwDim || Keyword.kwStatic || Keyword.kwConst:
@@ -1078,7 +1136,9 @@ class _Parser {
   /// `target = value`, or a call used as a statement.
   Stmt _callOrAssignment({int? start}) {
     final from = start ?? _tok.offset;
-    if (!_startsExpression(_tok) ||
+    // `.Caption = "x"`: a member of the With block's value (D134), or
+    // P041 outside one.
+    if (!(_startsExpression(_tok) || _is(TokenKind.dot)) ||
         _is(TokenKind.minus) ||
         _is(TokenKind.plus) ||
         _isKw(Keyword.kwNot)) {
@@ -1827,6 +1887,18 @@ class _Parser {
       case TokenKind.dot when _withDepth > 0:
         // `.Title = .Name & "!"`: a field read inside a With list (P039).
         _errorAt(t, DiagnosticCode.withOwnField);
+        _advance();
+        _memberName();
+        return ErrorExpr(t.offset, _lastEnd);
+      case TokenKind.dot when _withBlockDepth > 0:
+        // `.Caption`: a member of the With block's value (D134).
+        _advance();
+        final name = _memberName();
+        return MemberExpr(
+            WithValueExpr(t.offset, t.offset), name, t.offset, _lastEnd);
+      case TokenKind.dot:
+        // `.Caption` with no With block around it (P041).
+        _errorAt(t, DiagnosticCode.dotWithoutWith);
         _advance();
         _memberName();
         return ErrorExpr(t.offset, _lastEnd);

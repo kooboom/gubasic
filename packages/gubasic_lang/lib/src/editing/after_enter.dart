@@ -20,13 +20,13 @@ import '../parser/parser.dart';
 typedef AfterEnter = ({int? indentLine, int newIndent, String? closer});
 
 final _opener = RegExp(
-  r'^[ \t]*(?:(?:public|private)[ \t]+)?(?:if|for|do|while|select|sub|function|try)\b',
+  r'^[ \t]*(?:(?:public|private)[ \t]+)?(?:if|for|do|while|select|sub|function|try|with)\b',
   caseSensitive: false,
 );
 
 final _goesOn = RegExp(
   r'^[ \t]*(?:else|elseif|case|catch|finally|next|loop|wend|'
-  r'end[ \t]+(?:if|sub|function|select|try|while))\b',
+  r'end[ \t]+(?:if|sub|function|select|try|while|with))\b',
   caseSensitive: false,
 );
 

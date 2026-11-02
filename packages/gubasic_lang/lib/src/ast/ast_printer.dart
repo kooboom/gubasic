@@ -46,6 +46,7 @@ String exprToSexp(Expr e) => switch (e) {
           for (final i in initializers ?? const <FieldInitializer>[])
             '.${i.name.name}=${exprToSexp(i.value)}',
         ].join(' ')})',
+      WithValueExpr() => '<with>',
       ArrayLiteral(:final elements) =>
         '{${elements.map(exprToSexp).join(' ')}}',
       UnaryExpr(:final operator, :final operand) =>

@@ -964,9 +964,27 @@ class _Analyzer {
         _reDim(s);
       case AddHandlerStmt():
         _addHandler(s);
+      case WithStmt():
+        _with(s);
       case EndStmt() || ErrorStmt():
         break;
     }
+  }
+
+  /// The With blocks being analyzed, innermost last, with their values'
+  /// types (D134).
+  final _withs = <(WithStmt, GbType)>[];
+
+  /// `With lblResult … End With` (D134): a value, whose members `.Name`
+  /// inside are.
+  void _with(WithStmt s) {
+    final type = _value(s.target);
+    if (type == GbType.builtinObject) {
+      _reportAt(s.target, DiagnosticCode.withNotValue, [_text(s.target)]);
+    }
+    _withs.add((s, type == GbType.builtinObject ? GbType.unknown : type));
+    _block(s.body);
+    _withs.removeLast();
   }
 
   /// `AddHandler btn.Click, AddressOf Digit_Click` (D98): the control's
@@ -1137,11 +1155,19 @@ class _Analyzer {
       field = target.target as MemberExpr;
     }
     if (field == null || _result.types[field.target] is! StructureType) return;
-    // The value that holds the Structure, outside its Structures.
+    // The value that holds the Structure, outside its Structures and the
+    // With blocks it is reached through (D134).
     var holder = field.target;
-    while (
-        holder is MemberExpr && _result.types[holder.target] is StructureType) {
-      holder = holder.target;
+    while (true) {
+      if (holder is MemberExpr &&
+          _result.types[holder.target] is StructureType) {
+        holder = holder.target;
+      } else if (holder is WithValueExpr &&
+          _result.withTargets[holder] != null) {
+        holder = _result.withTargets[holder]!.target;
+      } else {
+        break;
+      }
     }
     if (!_isPlace(holder)) {
       _reportAt(target, DiagnosticCode.structureCopyNotKept, [field.name.name]);
@@ -1629,6 +1655,7 @@ class _Analyzer {
       InvokeExpr() => _invoke(e, valueNeeded: valueNeeded),
       NewExpr() => _new(e),
       ArrayLiteral() => _arrayLiteral(e, null),
+      WithValueExpr() => _withValue(e),
       UnaryExpr() => _unary(e),
       BinaryExpr() => _binary(e),
       ParenExpr() => _value(e.inner),
@@ -1637,6 +1664,14 @@ class _Analyzer {
       ErrorExpr() => GbType.unknown,
     };
     _result.types[e] = type;
+    return type;
+  }
+
+  /// The value of the innermost With block (D134).
+  GbType _withValue(WithValueExpr e) {
+    if (_withs.isEmpty) return GbType.unknown; // the parser reported it
+    final (block, type) = _withs.last;
+    _result.withTargets[e] = block;
     return type;
   }
 

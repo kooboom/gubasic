@@ -1204,4 +1204,18 @@ const parityCases = <(
     {},
     "GET https://api.open-meteo.com/v1/forecast?latitude=37.57&longitude=126.98&current=temperature_2m,wind_speed_10m,weather_code&timezone=Asia%2FSeoul\n200 application/json; charset=utf-8\n{\"latitude\":37.5625,\"longitude\":127.0,\"current_units\":{\"time\":\"iso8601\",\"interval\":\"seconds\",\"temperature_2m\":\"°C\",\"wind_speed_10m\":\"km/h\",\"weather_code\":\"wmo code\"},\"current\":{\"time\":\"2026-11-02T10:15\",\"interval\":900,\"temperature_2m\":12.3,\"wind_speed_10m\":5.4,\"weather_code\":3}}\n\nGET https://api.open-meteo.com/v1/forecast?latitude=35.18&longitude=129.08&current=temperature_2m,wind_speed_10m,weather_code&timezone=Asia%2FSeoul\n200 application/json; charset=utf-8\n{\"current_units\":{\"temperature_2m\":\"°C\",\"wind_speed_10m\":\"km/h\"},\"current\":{\"time\":\"2026-11-02T10:15\",\"temperature_2m\":15,\"wind_speed_10m\":12.0,\"weather_code\":61}}\n\nGET https://api.open-meteo.com/v1/forecast?latitude=33.50&longitude=126.53&current=temperature_2m,wind_speed_10m,weather_code&timezone=Asia%2FSeoul\nfails connection refused\n",
   ),
+  (
+    "with_block",
+    "' With … End With (D134): the value is worked out once, as the block\n' starts, and a member written with a dot alone is its member: a control's\n' properties, a Structure's fields where the Structure is kept (an item\n' of an array or a List), a List's methods. Blocks nest; the inner one's\n' value is the dot's.\nStructure Address\n    City As String\nEnd Structure\n\nStructure Student\n    Name As String\n    Score As Integer\n    Marks(2) As Integer\n    Home As Address\nEnd Structure\n\nDim group(2) As Student\nDim roster As New List(Of Student)\nDim picks As Integer\n\nFunction Pick() As Integer\n    picks = picks + 1\n    Return 1\nEnd Function\n\nSub btnGo_Click()\n    With lblResult\n        .Caption = \"Working\"\n        .Left = 24\n        Debug.Print(.Caption & \" at \" & .Left)\n    End With\n\n    With group(Pick())\n        .Name = \"Kim\"\n        .Score = .Score + 10\n        .Marks(0) = 7\n        With .Home\n            .City = \"Seoul\"\n        End With\n    End With\n    Debug.Print(group(1).Name & \" \" & group(1).Score & \" \" & group(1).Marks(0) & \" \" & group(1).Home.City & \", picks: \" & picks)\n\n    roster.Add(New Student With {.Name = \"Lee\"})\n    With roster(0)\n        .Score = 90\n    End With\n    With roster\n        .Add(New Student With {.Name = \"Park\"})\n        Debug.Print(.Count & \" \" & roster(0).Score)\n    End With\n\n    For i = 0 To 2\n        With group(i)\n            .Score = .Score + 1\n            If i = 1 Then Exit For\n        End With\n    Next\n    Debug.Print(group(0).Score & \" \" & group(1).Score & \" \" & group(2).Score)\n\n    Dim with As Integer = 5\n    with = with * 2\n    lblResult.Caption = \"Done \" & with\nEnd Sub\n",
+    [],
+    "> btnGo.Click\nSet lblResult.Caption: Working\nSet lblResult.Left: 24\nDebug.Print: Working at 24\nDebug.Print: Kim 10 7 Seoul, picks: 1\nDebug.Print: 2 90\nDebug.Print: 1 11 0\nSet lblResult.Caption: Done 10\n> Close\nClosed\n",
+    "formatVersion: 1\ncontrols:\n  - { name: lblResult, type: Label }\n  - { name: btnGo, type: Button, properties: { Caption: Go, Top: 40 } }\n",
+    "btnGo.Click\nClose\n",
+    null,
+    [],
+    [],
+    false,
+    {},
+    null,
+  ),
 ];

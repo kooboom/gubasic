@@ -96,5 +96,8 @@ class AnalysisResult {
   /// list, an event after Handles or AddHandler.
   final Map<Identifier, String> spellings = Map.identity();
 
+  /// The With block whose value each `.Name` is a member of (D134).
+  final Map<WithValueExpr, WithStmt> withTargets = Map.identity();
+
   bool get hasErrors => diagnostics.any((d) => d.isError);
 }

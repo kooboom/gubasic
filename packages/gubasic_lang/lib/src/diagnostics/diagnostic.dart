@@ -180,6 +180,9 @@ enum DiagnosticCode {
   /// A With list with nothing in it (D132).
   withEmpty('P040'),
 
+  /// A member written with a dot alone outside a With block (D134).
+  dotWithoutWith('P041'),
+
   // Analyzer: names
 
   /// A name that is not declared. Args: the name.
@@ -478,6 +481,10 @@ enum DiagnosticCode {
   /// `Dim a(2) As Integer = …` a list: the list gives the size (D132).
   /// Args: the variable.
   arrayBoundWithList('A074'),
+
+  /// A With block on something that is not a value: a built-in object
+  /// (`With Http`), a Sub (D134).
+  withNotValue('A075'),
 
   // Form and project files (.form.yaml, .gbproj)
 

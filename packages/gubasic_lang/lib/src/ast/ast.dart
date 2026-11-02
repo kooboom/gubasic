@@ -664,6 +664,22 @@ class ReDimStmt extends Stmt {
   List<Node> get children => [if (target is! NameExpr) target, bound];
 }
 
+/// `With lblResult … End With` (docs/DESIGN.md D134): [target] is worked
+/// out once, as the block starts; inside, a member written with a dot
+/// alone (`.Caption`) is its member.
+class WithStmt extends Stmt {
+  const WithStmt(this.target, this.body, super.start, super.end);
+
+  final Expr target;
+  final Block body;
+
+  @override
+  String get label => 'With';
+
+  @override
+  List<Node> get children => [target, body];
+}
+
 /// `AddHandler btn.Click, AddressOf Digit_Click`: [procedure] handles the
 /// event of a control from now on (docs/DESIGN.md D98).
 class AddHandlerStmt extends Stmt {
@@ -857,6 +873,18 @@ class FieldInitializer extends Node {
 
   @override
   List<Node> get children => [value];
+}
+
+/// The value of the innermost With block, before a member written with a
+/// dot alone (`.Caption`, D134): it takes no room in the source.
+class WithValueExpr extends Expr {
+  const WithValueExpr(super.start, super.end);
+
+  @override
+  String get label => 'WithValue';
+
+  @override
+  List<Node> get children => const [];
 }
 
 /// `{90, 80, 70}`: an array of these items (D132).

@@ -239,6 +239,10 @@ const Map<DiagnosticCode, String> koreanMessages = {
       '이 목록은 항목만으로 형을 알 수 없습니다. 형을 정해 선언한 배열 변수에 대입하거나, 그 형의 배열을 받는 인수로 넘깁니다.',
   DiagnosticCode.arrayBoundWithList:
       '목록을 받는 배열은 목록에서 크기를 정합니다. {0}() 형태로 크기 없이 씁니다.',
+  DiagnosticCode.dotWithoutWith:
+      '점으로만 시작하는 멤버는 With 블록 안에서만 씁니다. 점 앞에 이름을 쓰거나, 그 줄을 With … End With 안에 둡니다.',
+  DiagnosticCode.withNotValue:
+      'With에는 컨트롤, 변수, 칸처럼 값을 줍니다. {0} 항목은 값이 아닙니다. 멤버를 이름과 함께 씁니다.',
   DiagnosticCode.sqlJoined:
       '이 SQL은 &로 이어 붙였습니다. 값이 들어갈 자리에 ?를 쓰고 값은 SQL 뒤에 넘겨 주세요. Database.{0}("… WHERE name = ?", name)처럼 쓰면 값에 든 따옴표가 문장을 깨뜨리지 못합니다.',
   DiagnosticCode.popupWithoutItems:

@@ -96,7 +96,7 @@ IDE 안에서 완결되는 비주얼 베이직의 핵심 경험입니다.
 - [x] `Structure … End Structure`: 필드만, 대입하면 복사(배열 필드도), 그 배열과 List, 모듈에 두면 모든 폼에서, 폼에 두면 그 폼에서(D123, D131). 예제: [Quiz](../examples/quiz)
 - [x] `New Student With {.Name = "Kim", .Score = 90}`과 배열의 항목 목록 `{"a", "b"}`. 중괄호 안에서는 `_` 없이 줄을 바꿈(D132). 예제: [Quiz](../examples/quiz)
 - [x] 편집기가 키워드와 이름을 선언한 표기대로 맞춤(`dim total as integer` → `Dim total As Integer`, `TOTAL` → `total`). Visual Basic의 편집기처럼(D133)
-- [ ] `With … End With`: 한 값의 멤버 여러 개를 이름을 되풀이하지 않고 씀(D132의 W4)
+- [x] `With … End With`: 한 값의 멤버 여러 개를 이름을 되풀이하지 않고 씀(D134)
 
 ### v0.6 — 함께 쓰기(후보, D122)
 
