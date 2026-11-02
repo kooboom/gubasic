@@ -1,0 +1,5 @@
+btnWeather.Click
+cboCity.Select 1
+btnWeather.Click
+cboCity.Select 2
+btnWeather.Click

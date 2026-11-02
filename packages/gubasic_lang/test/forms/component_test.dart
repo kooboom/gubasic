@@ -85,6 +85,39 @@ void main() {
         'Changed');
   });
 
+  test('Http is a built-in object through the component channel (D125)', () {
+    final http = builtinComponents['http']!;
+    expect(http.object, isTrue);
+    expect(http.visual, isFalse);
+    expect(http.platforms, ['web', 'macos', 'windows']);
+    expect(http.defaultEvent, '');
+    expect(http.events, isEmpty);
+    expect(controlComponents.containsKey('http'), isFalse);
+    expect(objectComponents.keys, ['http']);
+    expect(lookupNamedType('http'), isNull);
+    expect([for (final m in http.methods.values) m.name],
+        ['Get', 'Post', 'GetJson', 'PostJson', 'Send', 'Header']);
+    expect(http.methods['send']!.returnType, GbType.httpResponse);
+    expect(http.methods['postjson']!.parameters[1].type, GbType.json);
+    expect(http.methods['header']!.settable, isTrue);
+    expect(http.properties['timeout']!.defaultValue, 30);
+    expect(builtinObjectMembers('Http').keys,
+        ['timeout', 'get', 'post', 'getjson', 'postjson', 'send', 'header']);
+    // An object is not visual, and only an object names its platforms.
+    expect(
+        () => readComponentFile('name: X\nversion: 1\nobject: true\n'
+            'visual: true\nproperties: []\nevents: []\n'),
+        throwsFormatException);
+    expect(
+        () => readComponentFile('name: X\nversion: 1\ndefaultEvent: A\n'
+            'platforms: [web]\nproperties: []\nevents: [A()]\n'),
+        throwsFormatException);
+    expect(
+        () => readComponentFile('name: X\nversion: 1\nobject: true\n'
+            'platforms: [linux]\nproperties: []\nevents: []\n'),
+        throwsFormatException);
+  });
+
   test('ranges and change events', () {
     final box = builtinComponents['textbox']!;
     expect(box.properties['text']!.changeEvent, 'Changed');

@@ -72,6 +72,11 @@ void main() {
           : <String>[];
       final List<String> lines;
       final base = program.path.substring(0, program.path.length - 5);
+      // What servers answer the program (D125): NAME.http.
+      final httpFile = File('$base.http');
+      final http = httpFile.existsSync()
+          ? parseHttpScript(httpFile.readAsStringSync())
+          : const <HttpStub>[];
       // The files the program reads (D113): NAME.files/, by name.
       final filesDir = Directory('$base.files');
       final disk = <String, List<int>>{
@@ -132,7 +137,8 @@ void main() {
             pictures: pictures,
             modules: modules,
             startsWithMain: startsWithMain,
-            disk: disk);
+            disk: disk,
+            http: http);
       } else if (formFile.existsSync()) {
         final form = readFormFile(formFile.readAsStringSync(),
             name: 'Form1', pictures: pictures);
@@ -144,7 +150,8 @@ void main() {
                 .readAsStringSync(),
             settings: settings,
             pictures: pictures,
-            disk: disk);
+            disk: disk,
+            http: http);
       } else {
         final input = File(program.path.replaceFirst('.gbas', '.in'));
         final answers =

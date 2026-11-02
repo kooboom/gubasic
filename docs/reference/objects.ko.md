@@ -129,6 +129,21 @@
 - `DateInterval.Minute As String`
 - `DateInterval.Second As String`
 
+### Json
+
+- `Json.Parse(text As String) As Json`
+- `Json.Array() As Json`
+
+### Http
+
+- `Http.Timeout As Integer (can be set)`
+- `Http.Get(url As String) As String`
+- `Http.Post(url As String, body As String) As String`
+- `Http.GetJson(url As String) As Json`
+- `Http.PostJson(url As String, body As Json) As Json`
+- `Http.Send(method As String, url As String, body As String) As HttpResponse`
+- `Http.Header(name As String) As String (can be assigned to)`
+
 ## 형식의 멤버
 
 ### String
@@ -199,6 +214,28 @@
 - `AddTable(table As Table or Grid)`
 - `NewPage()`
 - `Save(path As String)`
+
+### Json
+
+- `Kind As String`
+- `Count As Integer`
+- `AsString As String`
+- `AsInteger As Integer`
+- `AsDouble As Double`
+- `AsBoolean As Boolean`
+- `Keys As String()`
+- `Text As String`
+- `Has(name As String) As Boolean`
+- `Add(value As number, Boolean, String, Json or Nothing)`
+- `Remove(member As number or String)`
+
+### HttpResponse
+
+- `Status As Integer`
+- `Ok As Boolean`
+- `Text As String`
+- `Json As Json`
+- `Header(name As String) As String`
 
 ## 상수
 

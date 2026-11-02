@@ -10,7 +10,7 @@
 /// (name, null, code) NAME.MODULE.gbas (D102); the last is
 /// whether NAME.startup says it starts with Sub Main; then the
 /// files of NAME.files/ the program reads (D113), name to
-/// base64.
+/// base64; last, what servers answer it, NAME.http (D125).
 const parityCases = <(
   String,
   String,
@@ -22,7 +22,8 @@ const parityCases = <(
   List<String>,
   List<(String, String?, String)>,
   bool,
-  Map<String, String>
+  Map<String, String>,
+  String?
 )>[
   (
     "arithmetic",
@@ -36,6 +37,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
   ),
   (
     "askname_example",
@@ -55,6 +57,7 @@ const parityCases = <(
     ],
     false,
     {},
+    null,
   ),
   (
     "big_integers",
@@ -68,6 +71,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
   ),
   (
     "calculator_example",
@@ -81,6 +85,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
   ),
   (
     "conditions",
@@ -94,6 +99,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
   ),
   (
     "controls_cast_error",
@@ -107,6 +113,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
   ),
   (
     "controls_loop",
@@ -120,6 +127,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
   ),
   (
     "controls_new",
@@ -133,6 +141,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
   ),
   (
     "csv_table",
@@ -149,6 +158,7 @@ const parityCases = <(
       "명단.csv":
           "wMy4pyy53SzBobz2DQqx6MfPs6osMbndLDkwDQoiudosILXRIiwyud0sODUNCsDMvMIsLDcwDQo=",
     },
+    null,
   ),
   (
     "dates_format",
@@ -162,6 +172,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
   ),
   (
     "dialogs",
@@ -175,6 +186,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
   ),
   (
     "divide_by_zero",
@@ -188,6 +200,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
   ),
   (
     "end_statement",
@@ -201,6 +214,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
   ),
   (
     "events_anchor",
@@ -214,6 +228,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
   ),
   (
     "events_changed",
@@ -227,6 +242,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
   ),
   (
     "events_checkbox",
@@ -240,6 +256,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
   ),
   (
     "events_combobox",
@@ -253,6 +270,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
   ),
   (
     "events_end",
@@ -266,6 +284,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
   ),
   (
     "events_error",
@@ -279,6 +298,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
   ),
   (
     "events_frame",
@@ -292,6 +312,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
   ),
   (
     "events_image",
@@ -305,6 +326,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
   ),
   (
     "events_listbox",
@@ -318,6 +340,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
   ),
   (
     "events_load",
@@ -331,6 +354,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
   ),
   (
     "events_menu",
@@ -344,6 +368,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
   ),
   (
     "events_modal",
@@ -357,6 +382,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
   ),
   (
     "events_mouse",
@@ -370,6 +396,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
   ),
   (
     "events_mouse_sender",
@@ -383,6 +410,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
   ),
   (
     "events_option",
@@ -396,6 +424,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
   ),
   (
     "events_popup",
@@ -409,6 +438,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
   ),
   (
     "events_reentry",
@@ -422,6 +452,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
   ),
   (
     "events_resize",
@@ -435,6 +466,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
   ),
   (
     "events_shared",
@@ -448,6 +480,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
   ),
   (
     "events_static",
@@ -461,6 +494,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
   ),
   (
     "files_text",
@@ -477,6 +511,7 @@ const parityCases = <(
       "memo.txt": "77u/7JWI64WV7ZWY7IS47JqUCuuRmOynuCDspIQK",
       "old.csv": "wMy4pyzBobz2DQqx6MfPs6osOTANCg==",
     },
+    null,
   ),
   (
     "forms_dialog",
@@ -496,6 +531,7 @@ const parityCases = <(
     ],
     false,
     {},
+    null,
   ),
   (
     "forms_dialogresult",
@@ -515,6 +551,7 @@ const parityCases = <(
     ],
     false,
     {},
+    null,
   ),
   (
     "forms_error",
@@ -534,6 +571,7 @@ const parityCases = <(
     ],
     false,
     {},
+    null,
   ),
   (
     "forms_last",
@@ -553,6 +591,7 @@ const parityCases = <(
     ],
     false,
     {},
+    null,
   ),
   (
     "forms_show",
@@ -572,6 +611,7 @@ const parityCases = <(
     ],
     false,
     {},
+    null,
   ),
   (
     "forms_window",
@@ -596,6 +636,7 @@ const parityCases = <(
     ],
     false,
     {},
+    null,
   ),
   (
     "grid_scores",
@@ -612,6 +653,7 @@ const parityCases = <(
       "명단.csv":
           "wMy4pyy53SzBobz2DQqx6MfPs6osMbndLDkwDQq52rXRLDK53Sw4NQ0KwMy8wiwxud0sNzANCg==",
     },
+    null,
   ),
   (
     "handles_shared",
@@ -625,6 +667,21 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
+  ),
+  (
+    "http_json",
+    "' Http and JSON (D124, D125): Get, GetJson, Post, PostJson and Send, a\n' header sent with every request, Timeout, and the errors: no answer\n' (R036), a status from 400 (R037), text that is not JSON (R039).\nSub btnGet_Click()\n    Debug.Print(Http.Timeout)\n    Debug.Print(Http.Get(\"https://api.example.com/hello\"))\n    Http.Header(\"Authorization\") = \"Bearer abc\"\n    Http.Timeout = 5\n    Debug.Print(Http.Header(\"authorization\") & \" / \" & Http.Timeout)\n    Debug.Print(Http.Get(\"https://api.example.com/hello\"))\n    Http.Header(\"Authorization\") = \"\"\n    Debug.Print(\"[\" & Http.Header(\"Authorization\") & \"]\")\nEnd Sub\n\nSub btnJson_Click()\n    Dim scores As Json = Http.GetJson(\"https://api.example.com/scores\")\n    Debug.Print(scores.Kind & \" of \" & scores.Count)\n    For Each s In scores\n        Debug.Print(s(\"name\").AsString & \": \" & s(\"points\").AsInteger & \" (\" & s(\"ok\").AsBoolean & \")\")\n    Next\n    Dim first As Json = scores(0)\n    Debug.Print(first.Text)\n    Debug.Print(first(\"points\").AsDouble / 4)\nEnd Sub\n\nSub btnPost_Click()\n    Debug.Print(Http.Post(\"https://api.example.com/echo\", \"hello\" & vbLf & \"world\"))\n    Dim score As New Json\n    score(\"name\") = \"박둘\"\n    score(\"points\") = 85\n    score(\"tags\") = Json.Array()\n    score(\"tags\").Add(\"quiz\")\n    score(\"tags\").Add(2.5)\n    Dim reply As Json = Http.PostJson(\"https://api.example.com/scores\", score)\n    Debug.Print(reply(\"ok\").AsBoolean & \" #\" & reply(\"id\").AsInteger)\nEnd Sub\n\nSub btnSend_Click()\n    Dim r As HttpResponse = Http.Send(\"get\", \"https://api.example.com/missing\", \"\")\n    Debug.Print(r.Status & \" \" & r.Ok & \" \" & r.Header(\"Content-Type\") & \" \" & r.Text)\n    r = Http.Send(\"POST\", \"https://api.example.com/echo\", \"sent\")\n    Debug.Print(r.Status & \" \" & r.Ok & \" [\" & r.Header(\"X-None\") & \"] \" & r.Text)\n    Debug.Print(Http.Send(\"GET\", \"https://api.example.com/scores\", \"\").Json(1)(\"name\").AsString)\nEnd Sub\n\nSub btnErrors_Click()\n    Try\n        Http.Get(\"https://api.example.com/missing\")\n    Catch ex As Exception\n        Debug.Print(ex.Message)\n    End Try\n    Try\n        Http.GetJson(\"https://api.example.com/hello\")\n    Catch ex As Exception\n        Debug.Print(ex.Message)\n    End Try\n    Try\n        Http.Get(\"https://api.example.com/down\")\n    Catch ex As Exception\n        Debug.Print(ex.Message)\n    End Try\n    Http.Get(\"https://nowhere.example.com/\")\nEnd Sub\n",
+    [],
+    "> btnGet.Click\nDebug.Print: 30\nHttp: GET https://api.example.com/hello\nDebug.Print: 안녕하세요\nDebug.Print: Bearer abc / 5\nHttp: GET https://api.example.com/hello [Authorization: Bearer abc]\nDebug.Print: 안녕하세요\nDebug.Print: []\n> btnJson.Click\nHttp: GET https://api.example.com/scores [Accept: application/json]\nDebug.Print: Array of 2\nDebug.Print: 김하나: 10 (True)\nDebug.Print: Lee: 7 (False)\nDebug.Print: {\"name\":\"김하나\",\"points\":10,\"ok\":true}\nDebug.Print: 2.5\n> btnPost.Click\nHttp: POST https://api.example.com/echo [Content-Type: text/plain; charset=utf-8] hello\\nworld\nDebug.Print: echoed\nHttp: POST https://api.example.com/scores [Content-Type: application/json; charset=utf-8; Accept: application/json] {\"name\":\"박둘\",\"points\":85,\"tags\":[\"quiz\",2.5]}\nDebug.Print: True #3\n> btnSend.Click\nHttp: GET https://api.example.com/missing\nDebug.Print: 404 False text/html <html>Not here</html>\nHttp: POST https://api.example.com/echo [Content-Type: text/plain; charset=utf-8] sent\nDebug.Print: 201 True [] echoed\nHttp: GET https://api.example.com/scores\nDebug.Print: Lee\n> btnErrors.Click\nHttp: GET https://api.example.com/missing\nDebug.Print: The server answered 404 to https://api.example.com/missing: <html>Not here</html>. Check the address and what the server expects; Http.Send gives the answer whatever its status.\nHttp: GET https://api.example.com/hello [Accept: application/json]\nDebug.Print: This text is not JSON: unexpected \"안\" at line 1, column 1. Check it at the place named; Http.Get gives the text as it came.\nHttp: GET https://api.example.com/down\nDebug.Print: No answer came from https://api.example.com/down (connection refused). Check the address and the network connection; on the web the server must allow pages from other sites to call it (CORS).\nHttp: GET https://nowhere.example.com/\nError R036 @ 62\n",
+    "formatVersion: 1\nproperties: { Caption: Http, Width: 540, Height: 120 }\ncontrols:\n  - { name: btnGet, type: Button, properties: { Caption: Get, Left: 16, Top: 16 } }\n  - { name: btnJson, type: Button, properties: { Caption: Json, Left: 120, Top: 16 } }\n  - { name: btnPost, type: Button, properties: { Caption: Post, Left: 224, Top: 16 } }\n  - { name: btnSend, type: Button, properties: { Caption: Send, Left: 328, Top: 16 } }\n  - { name: btnErrors, type: Button, properties: { Caption: Errors, Left: 432, Top: 16 } }\n",
+    "btnGet.Click\nbtnJson.Click\nbtnPost.Click\nbtnSend.Click\nbtnErrors.Click\n",
+    null,
+    [],
+    [],
+    false,
+    {},
+    "GET https://api.example.com/hello\n200 text/plain; charset=utf-8\n안녕하세요\n\nGET https://api.example.com/scores\n200 application/json\nX-Count: 2\n[{\"name\":\"김하나\",\"points\":10,\"ok\":true},\n {\"name\":\"Lee\",\"points\":7.0,\"ok\":false}]\n\nPOST https://api.example.com/echo\n201 text/plain\nechoed\n\nPOST https://api.example.com/scores\n200 application/json\n{\"ok\": true, \"id\": 3}\n\nGET https://api.example.com/missing\n404 text/html\n<html>Not here</html>\n\nGET https://api.example.com/down\nfails connection refused\n",
   ),
   (
     "integer_overflow",
@@ -638,6 +695,21 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
+  ),
+  (
+    "json_values",
+    "' JSON values (D125): read from text, built member by member, their\n' kinds, taken out as the type they are, and the errors when they are\n' not: R040 for the wrong kind, R041 for a member that is not there.\nSub Main()\n    Dim j As Json = Json.Parse(\"{\"\"name\"\": \"\"Kim\"\", \"\"age\"\": 12.0, \"\"height\"\": 151.5, \"\"big\"\": 1e3, \"\"ok\"\": true, \"\"none\"\": null, \"\"tags\"\": [\"\"a\"\", \"\"b\"\"], \"\"address\"\": {\"\"city\"\": \"\"서울\"\"}}\")\n    Debug.Print(j.Kind & \" \" & j.Count & \" \" & Join(j.Keys, \",\"))\n    Debug.Print(j(\"name\").Kind & \" \" & j(\"age\").Kind & \" \" & j(\"ok\").Kind & \" \" & j(\"none\").Kind & \" \" & j(\"tags\").Kind & \" \" & j(\"address\").Kind)\n    Debug.Print(j(\"name\").AsString & \" \" & j(\"age\").AsInteger & \" \" & j(\"height\").AsDouble & \" \" & j(\"big\").AsInteger & \" \" & j(\"ok\").AsBoolean)\n    Debug.Print(CStr(j(\"name\")) & \" \" & CInt(j(\"age\")) & \" \" & CDbl(j(\"height\")) & \" \" & CBool(j(\"ok\")) & \" [\" & CStr(j(\"none\")) & \"]\")\n    Debug.Print(j(\"address\")(\"city\").AsString & \" \" & j(\"tags\")(1).AsString & \" \" & j(\"tags\").Count)\n    Debug.Print(j.Has(\"age\") & \" \" & j.Has(\"weight\"))\n    Debug.Print(j(\"age\").Text & \" \" & j(\"name\").Text & \" \" & j(\"tags\").Text & \" \" & j(\"none\").Text)\n    Debug.Print(j)\n    Debug.Print(j(\"name\"))\n    Debug.Print(j(\"height\"))\n\n    Dim built As New Json\n    built(\"n\") = 1\n    built(\"x\") = 2.5\n    built(\"whole\") = 3.0\n    built(\"s\") = \"quote \"\" and \\ slash\"\n    built(\"b\") = False\n    built(\"nothing\") = Nothing\n    built(\"inner\") = j(\"address\")\n    built(\"list\") = Json.Array()\n    built(\"list\").Add(1)\n    built(\"list\").Add(\"two\")\n    built(\"list\").Add(Json.Parse(\"[3]\"))\n    built(\"list\")(0) = 10\n    built(\"n\") = built(\"n\").AsInteger + 1\n    Debug.Print(built.Text)\n    built.Remove(\"nothing\")\n    built(\"list\").Remove(1)\n    Debug.Print(built.Text)\n    j(\"address\")(\"city\") = \"부산\"\n    Debug.Print(built(\"inner\")(\"city\").AsString)\n\n    Dim total As Integer = 0\n    For Each item In Json.Parse(\"[1, 2, 3.0, 40]\")\n        total = total + item.AsInteger\n    Next\n    Debug.Print(total)\n    Debug.Print(Json.Parse(\"\"\"just text\"\"\").AsString & \" \" & Json.Parse(\"12345678901234567890\").AsDouble & \" \" & Json.Parse(\"-0.5\").AsDouble)\n    Debug.Print(Json.Parse(\"\"\"é\\n\\\"\"x\\\"\"\"\"\").Text)\n\n    Try\n        Debug.Print(j(\"age\").AsString)\n    Catch ex As Exception\n        Debug.Print(ex.Message)\n    End Try\n    Try\n        Debug.Print(j(\"height\").AsInteger)\n    Catch ex As Exception\n        Debug.Print(ex.Message)\n    End Try\n    Try\n        Debug.Print(j(\"tags\")(2).AsString)\n    Catch ex As Exception\n        Debug.Print(ex.Message)\n    End Try\n    Try\n        Debug.Print(j(\"name\")(0).AsString)\n    Catch ex As Exception\n        Debug.Print(ex.Message)\n    End Try\n    Try\n        For Each k In j\n        Next\n    Catch ex As Exception\n        Debug.Print(ex.Message)\n    End Try\n    Try\n        Json.Parse(\"{\"\"a\"\": }\")\n    Catch ex As Exception\n        Debug.Print(ex.Message)\n    End Try\n    Try\n        Json.Parse(\"[1, 2\")\n    Catch ex As Exception\n        Debug.Print(ex.Message)\n    End Try\n    Try\n        Json.Parse(\"{\"\"a\"\": 1} x\")\n    Catch ex As Exception\n        Debug.Print(ex.Message)\n    End Try\n    Debug.Print(j(\"weight\").AsInteger)\nEnd Sub\n",
+    [],
+    "Debug.Print: Object 8 name,age,height,big,ok,none,tags,address\nDebug.Print: String Number Boolean Null Array Object\nDebug.Print: Kim 12 151.5 1000 True\nDebug.Print: Kim 12 151.5 True []\nDebug.Print: 서울 b 2\nDebug.Print: True False\nDebug.Print: 12 \"Kim\" [\"a\",\"b\"] null\nDebug.Print: {\"name\":\"Kim\",\"age\":12,\"height\":151.5,\"big\":1000,\"ok\":true,\"none\":null,\"tags\":[\"a\",\"b\"],\"address\":{\"city\":\"서울\"}}\nDebug.Print: Kim\nDebug.Print: 151.5\nDebug.Print: {\"n\":2,\"x\":2.5,\"whole\":3,\"s\":\"quote \\\" and \\\\ slash\",\"b\":false,\"nothing\":null,\"inner\":{\"city\":\"서울\"},\"list\":[10,\"two\",[3]]}\nDebug.Print: {\"n\":2,\"x\":2.5,\"whole\":3,\"s\":\"quote \\\" and \\\\ slash\",\"b\":false,\"inner\":{\"city\":\"서울\"},\"list\":[10,[3]]}\nDebug.Print: 부산\nDebug.Print: 46\nDebug.Print: just text 1.2345678901234567E+19 -0.5\nDebug.Print: \"é\\n\\\"x\\\"\"\nDebug.Print: This JSON value is of kind Number, so it does not fit AsString. Check Kind first, and take the value out with the As… that matches it.\nDebug.Print: This JSON value is of kind Number (151.5), so it does not fit AsInteger. Check Kind first, and take the value out with the As… that matches it.\nDebug.Print: There is no item number 2: there are 2 items, numbered from 0. Check the number.\nDebug.Print: This JSON value is of kind String, so it does not fit an item number. Check Kind first, and take the value out with the As… that matches it.\nDebug.Print: This JSON value is of kind Object, so it does not fit For Each. Check Kind first, and take the value out with the As… that matches it.\nDebug.Print: This text is not JSON: unexpected \"}\" at line 1, column 7. Check it at the place named; Http.Get gives the text as it came.\nDebug.Print: This text is not JSON: the text ends too soon. Check it at the place named; Http.Get gives the text as it came.\nDebug.Print: This text is not JSON: unexpected \"x\" at line 1, column 10. Check it at the place named; Http.Get gives the text as it came.\nError R041 @ 87\n",
+    null,
+    null,
+    null,
+    [],
+    [],
+    false,
+    {},
+    null,
   ),
   (
     "keys_move",
@@ -651,6 +723,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
   ),
   (
     "keys_preview",
@@ -664,6 +737,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
   ),
   (
     "lists_arrays",
@@ -677,6 +751,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
   ),
   (
     "loops",
@@ -690,6 +765,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
   ),
   (
     "modules_error",
@@ -709,6 +785,7 @@ const parityCases = <(
     ],
     false,
     {},
+    null,
   ),
   (
     "modules_main",
@@ -728,6 +805,7 @@ const parityCases = <(
     ],
     true,
     {},
+    null,
   ),
   (
     "modules_main_ends",
@@ -747,6 +825,7 @@ const parityCases = <(
     ],
     true,
     {},
+    null,
   ),
   (
     "modules_shared",
@@ -771,6 +850,7 @@ const parityCases = <(
     ],
     false,
     {},
+    null,
   ),
   (
     "overflow_caught",
@@ -784,6 +864,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
   ),
   (
     "overflow_edges",
@@ -797,6 +878,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
   ),
   (
     "quiz_best",
@@ -810,6 +892,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
   ),
   (
     "quiz_example",
@@ -823,6 +906,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
   ),
   (
     "random_seeded",
@@ -836,6 +920,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
   ),
   (
     "recursion",
@@ -849,6 +934,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
   ),
   (
     "rounding",
@@ -862,6 +948,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
   ),
   (
     "scores_example",
@@ -880,6 +967,7 @@ const parityCases = <(
       "명단.csv":
           "wMy4pyy53SzBobz2DQqx6MfPs6osMbndLDkwDQq52rXRLDK53Sw4NQ0KwMy8wiwxud0sNzANCg==",
     },
+    null,
   ),
   (
     "settings",
@@ -893,6 +981,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
   ),
   (
     "settings_limit",
@@ -906,6 +995,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
   ),
   (
     "static_and_scope",
@@ -919,6 +1009,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
   ),
   (
     "strings",
@@ -932,6 +1023,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
   ),
   (
     "text_form",
@@ -945,6 +1037,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
   ),
   (
     "timer_clock",
@@ -958,6 +1051,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
   ),
   (
     "timer_many",
@@ -971,6 +1065,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
   ),
   (
     "timer_turns",
@@ -984,6 +1079,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
   ),
   (
     "try_catch",
@@ -997,5 +1093,20 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
+  ),
+  (
+    "weather_example",
+    "' The weather now (docs/DESIGN.md D125): Http.GetJson asks Open-Meteo, a\n' free weather service that needs no key (https://open-meteo.com/), and\n' the answer's JSON is read member by member. The program waits where it\n' asks; the pointer shows waiting meanwhile. An answer that does not\n' come, or is not what was expected, is caught and shown.\nSub Form_Load()\n    cboCity.AddItem(\"서울\")\n    cboCity.AddItem(\"부산\")\n    cboCity.AddItem(\"제주\")\n    cboCity.ListIndex = 0\n    lblStatus.Caption = \"도시를 고르고 날씨 보기를 누르세요.\"\nEnd Sub\n\nSub btnWeather_Click()\n    Dim latitude As String = \"37.57\"\n    Dim longitude As String = \"126.98\"\n    Select Case cboCity.Text\n        Case \"부산\"\n            latitude = \"35.18\"\n            longitude = \"129.08\"\n        Case \"제주\"\n            latitude = \"33.50\"\n            longitude = \"126.53\"\n    End Select\n    Dim url As String = \"https://api.open-meteo.com/v1/forecast?latitude=\" & latitude & \"&longitude=\" & longitude & \"&current=temperature_2m,wind_speed_10m,weather_code&timezone=Asia%2FSeoul\"\n    lblStatus.Caption = \"가져오는 중…\"\n    Try\n        Dim reply As Json = Http.GetJson(url)\n        Dim now As Json = reply(\"current\")\n        Dim units As Json = reply(\"current_units\")\n        lblTemp.Caption = cboCity.Text & \" \" & now(\"temperature_2m\").AsDouble & units(\"temperature_2m\").AsString\n        lblSky.Caption = SkyOf(now(\"weather_code\").AsInteger)\n        lblWind.Caption = \"바람 \" & now(\"wind_speed_10m\").AsDouble & \" \" & units(\"wind_speed_10m\").AsString\n        lblStatus.Caption = now(\"time\").AsString & \" 기준\"\n    Catch ex As Exception\n        lblStatus.Caption = ex.Message\n    End Try\nEnd Sub\n\n' The sky from a WMO weather code, as Open-Meteo gives it.\nFunction SkyOf(code As Integer) As String\n    Select Case code\n        Case 0\n            Return \"맑음\"\n        Case 1, 2, 3\n            Return \"구름 조금에서 흐림\"\n        Case 45, 48\n            Return \"안개\"\n        Case 51 To 67\n            Return \"비\"\n        Case 71 To 77\n            Return \"눈\"\n        Case 80 To 82\n            Return \"소나기\"\n        Case 95 To 99\n            Return \"뇌우\"\n    End Select\n    Return \"날씨 코드 \" & code\nEnd Function\n",
+    [],
+    "Set cboCity.Items: [서울]\nSet cboCity.Items: [서울, 부산]\nSet cboCity.Items: [서울, 부산, 제주]\nSet cboCity.ListIndex: 0\nSet lblStatus.Caption: 도시를 고르고 날씨 보기를 누르세요.\n> btnWeather.Click\nSet lblStatus.Caption: 가져오는 중…\nHttp: GET https://api.open-meteo.com/v1/forecast?latitude=37.57&longitude=126.98&current=temperature_2m,wind_speed_10m,weather_code&timezone=Asia%2FSeoul [Accept: application/json]\nSet lblTemp.Caption: 서울 12.3°C\nSet lblSky.Caption: 구름 조금에서 흐림\nSet lblWind.Caption: 바람 5.4 km/h\nSet lblStatus.Caption: 2026-11-02T10:15 기준\n> cboCity.Select 1\n> btnWeather.Click\nSet lblStatus.Caption: 가져오는 중…\nHttp: GET https://api.open-meteo.com/v1/forecast?latitude=35.18&longitude=129.08&current=temperature_2m,wind_speed_10m,weather_code&timezone=Asia%2FSeoul [Accept: application/json]\nSet lblTemp.Caption: 부산 15°C\nSet lblSky.Caption: 비\nSet lblWind.Caption: 바람 12 km/h\nSet lblStatus.Caption: 2026-11-02T10:15 기준\n> cboCity.Select 2\n> btnWeather.Click\nSet lblStatus.Caption: 가져오는 중…\nHttp: GET https://api.open-meteo.com/v1/forecast?latitude=33.50&longitude=126.53&current=temperature_2m,wind_speed_10m,weather_code&timezone=Asia%2FSeoul [Accept: application/json]\nSet lblStatus.Caption: No answer came from https://api.open-meteo.com/v1/forecast?latitude=33.50&longitude=126.53&current=temperature_2m,wind_speed_10m,weather_code&timezone=Asia%2FSeoul (connection refused). Check the address and the network connection; on the web the server must allow pages from other sites to call it (CORS).\nStill open\nClosed\n",
+    "formatVersion: 1\nproperties:\n  Caption: 지금 날씨\n  Width: 360\n  Height: 220\ncontrols:\n  - name: lblCity\n    type: Label\n    properties:\n      Caption: 도시\n      Left: 16\n      Top: 20\n      Width: 48\n  - name: cboCity\n    type: ComboBox\n    properties:\n      Left: 64\n      Top: 16\n      Width: 160\n  - name: btnWeather\n    type: Button\n    properties:\n      Caption: 날씨 보기\n      Left: 240\n      Top: 16\n      Width: 104\n  - name: lblTemp\n    type: Label\n    properties:\n      Left: 16\n      Top: 64\n      Width: 328\n      Height: 32\n  - name: lblSky\n    type: Label\n    properties:\n      Left: 16\n      Top: 104\n      Width: 328\n  - name: lblWind\n    type: Label\n    properties:\n      Left: 16\n      Top: 136\n      Width: 328\n  - name: lblStatus\n    type: Label\n    properties:\n      Left: 16\n      Top: 176\n      Width: 328\n      Anchor: Left Top Right\n",
+    "btnWeather.Click\ncboCity.Select 1\nbtnWeather.Click\ncboCity.Select 2\nbtnWeather.Click\n",
+    null,
+    [],
+    [],
+    false,
+    {},
+    "GET https://api.open-meteo.com/v1/forecast?latitude=37.57&longitude=126.98&current=temperature_2m,wind_speed_10m,weather_code&timezone=Asia%2FSeoul\n200 application/json; charset=utf-8\n{\"latitude\":37.5625,\"longitude\":127.0,\"current_units\":{\"time\":\"iso8601\",\"interval\":\"seconds\",\"temperature_2m\":\"°C\",\"wind_speed_10m\":\"km/h\",\"weather_code\":\"wmo code\"},\"current\":{\"time\":\"2026-11-02T10:15\",\"interval\":900,\"temperature_2m\":12.3,\"wind_speed_10m\":5.4,\"weather_code\":3}}\n\nGET https://api.open-meteo.com/v1/forecast?latitude=35.18&longitude=129.08&current=temperature_2m,wind_speed_10m,weather_code&timezone=Asia%2FSeoul\n200 application/json; charset=utf-8\n{\"current_units\":{\"temperature_2m\":\"°C\",\"wind_speed_10m\":\"km/h\"},\"current\":{\"time\":\"2026-11-02T10:15\",\"temperature_2m\":15,\"wind_speed_10m\":12.0,\"weather_code\":61}}\n\nGET https://api.open-meteo.com/v1/forecast?latitude=33.50&longitude=126.53&current=temperature_2m,wind_speed_10m,weather_code&timezone=Asia%2FSeoul\nfails connection refused\n",
   ),
 ];

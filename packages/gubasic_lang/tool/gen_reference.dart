@@ -139,6 +139,8 @@ final _types = <GbType>[
   GbType.mouseEventArgs,
   GbType.table,
   GbType.pdfDocument,
+  GbType.json,
+  GbType.httpResponse,
 ];
 
 String _param(ParamSpec p) {
@@ -151,6 +153,7 @@ String _param(ParamSpec p) {
     ArgKind.array => 'array',
     ArgKind.menu => 'Menu',
     ArgKind.tableOrGrid => 'Table or Grid',
+    ArgKind.jsonValue => 'number, Boolean, String, Json or Nothing',
   };
   return '${p.optional ? '[' : ''}${p.name} As $type${p.optional ? ']' : ''}';
 }
@@ -331,10 +334,14 @@ String _objectsPage(_Words w) {
   final b =
       StringBuffer('# ${w.objects}\n\n${w.back.replaceAll('../', '')}\n\n');
   b.write('## ${w.builtinObjects}\n\n');
-  for (final name in builtinObjects.values) {
+  for (final name in allBuiltinObjects) {
     final members = builtinObjectMembers(name);
     if (members.isEmpty) continue;
     b.write('### $name\n\n');
+    // An object of the component channel (Http, D125) says what it is.
+    if (!w.ko && objectComponents.containsKey(name.toLowerCase())) {
+      b.write('${_description(name)}\n\n');
+    }
     for (final m in members.values) {
       b.write('- `$name.${_member(m)}`\n');
     }
@@ -361,8 +368,10 @@ String _objectsPage(_Words w) {
   return '${'$b'.trimRight()}\n';
 }
 
+/// The controls, each with a page of its own; the objects of the
+/// component channel (Http) are on the objects page.
 List<ComponentSpec> get _components {
-  final list = builtinComponents.values.toList()
+  final list = controlComponents.values.toList()
     ..sort((a, b) => a.name.compareTo(b.name));
   return list;
 }
@@ -407,7 +416,7 @@ Write GuBASIC code as the documents below describe; it is close to Visual Basic 
     '- [Functions]($_site/docs/reference/functions.md): text, conversion, '
     'math, dates, dialogs, settings\n'
     '- [Objects and types]($_site/docs/reference/objects.md): File, Csv, '
-    'Keys, Table, PdfDocument and the others\n\n'
+    'Http, Json, Keys, Table, PdfDocument and the others\n\n'
     '## Optional\n\n'
     '- [Design](https://github.com/kooboom/gubasic/blob/main/docs/DESIGN.md): '
     'how GuBASIC is built, and its decisions\n'

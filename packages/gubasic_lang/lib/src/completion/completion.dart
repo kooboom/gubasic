@@ -228,7 +228,7 @@ final List<Completion> _typeNames = [
   for (final t in namedTypes.values)
     Completion(t.displayName, CompletionKind.type),
   const Completion('List', CompletionKind.type, detail: 'List(Of T)'),
-  for (final c in builtinComponents.values)
+  for (final c in controlComponents.values)
     Completion(c.name, CompletionKind.type),
   // The type of any control (D98).
   Completion(controlComponent.name, CompletionKind.type),
@@ -346,6 +346,7 @@ String _signature(Callable c) {
       switch (p) {
         ParamSpec(kind: ArgKind.menu) => '${p.name} As Menu',
         ParamSpec(kind: ArgKind.tableOrGrid) => '${p.name} As Table',
+        ParamSpec(kind: ArgKind.jsonValue) => '${p.name} As Json',
         ParamSpec(:final type?) when type != GbType.unknown => p.optional
             ? '[${p.name} As ${type.displayName}]'
             : '${p.name} As '

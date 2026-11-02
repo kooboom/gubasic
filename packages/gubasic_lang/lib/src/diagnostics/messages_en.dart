@@ -212,6 +212,21 @@ const Map<DiagnosticCode, String> englishMessages = {
       'are: {1}. Column(name) gives -1 for a name no column has.',
   DiagnosticCode.noFiles: 'Files cannot be read or written here. Run the '
       'program in the IDE or as an app.',
+  DiagnosticCode.httpFailed: 'No answer came from {0} ({1}). Check the '
+      'address and the network connection; on the web the server must '
+      'allow pages from other sites to call it (CORS).',
+  DiagnosticCode.httpStatus: 'The server answered {0} to {1}: {2}. Check '
+      'the address and what the server expects; Http.Send gives the answer '
+      'whatever its status.',
+  DiagnosticCode.componentUnavailable: '{0} cannot be used here. Run the '
+      'program in the IDE or as an app.',
+  DiagnosticCode.jsonInvalid: 'This text is not JSON: {0}. Check it at '
+      'the place named; Http.Get gives the text as it came.',
+  DiagnosticCode.jsonKind: 'This JSON value is of kind {1}, so it does not '
+      'fit {0}. Check Kind first, and take the value out with the As… that '
+      'matches it.',
+  DiagnosticCode.jsonKey: 'This JSON object has no member "{0}". Its '
+      'members are: {1}. Has(name) says whether one is there.',
   DiagnosticCode.popupWithoutItems: '{0} has no items, so PopupMenu has '
       'nothing to show. Give it items in the menu editor, or show the menu '
       'it is in.',

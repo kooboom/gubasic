@@ -1,0 +1,88 @@
+' JSON values (D125): read from text, built member by member, their
+' kinds, taken out as the type they are, and the errors when they are
+' not: R040 for the wrong kind, R041 for a member that is not there.
+Sub Main()
+    Dim j As Json = Json.Parse("{""name"": ""Kim"", ""age"": 12.0, ""height"": 151.5, ""big"": 1e3, ""ok"": true, ""none"": null, ""tags"": [""a"", ""b""], ""address"": {""city"": ""서울""}}")
+    Debug.Print(j.Kind & " " & j.Count & " " & Join(j.Keys, ","))
+    Debug.Print(j("name").Kind & " " & j("age").Kind & " " & j("ok").Kind & " " & j("none").Kind & " " & j("tags").Kind & " " & j("address").Kind)
+    Debug.Print(j("name").AsString & " " & j("age").AsInteger & " " & j("height").AsDouble & " " & j("big").AsInteger & " " & j("ok").AsBoolean)
+    Debug.Print(CStr(j("name")) & " " & CInt(j("age")) & " " & CDbl(j("height")) & " " & CBool(j("ok")) & " [" & CStr(j("none")) & "]")
+    Debug.Print(j("address")("city").AsString & " " & j("tags")(1).AsString & " " & j("tags").Count)
+    Debug.Print(j.Has("age") & " " & j.Has("weight"))
+    Debug.Print(j("age").Text & " " & j("name").Text & " " & j("tags").Text & " " & j("none").Text)
+    Debug.Print(j)
+    Debug.Print(j("name"))
+    Debug.Print(j("height"))
+
+    Dim built As New Json
+    built("n") = 1
+    built("x") = 2.5
+    built("whole") = 3.0
+    built("s") = "quote "" and \ slash"
+    built("b") = False
+    built("nothing") = Nothing
+    built("inner") = j("address")
+    built("list") = Json.Array()
+    built("list").Add(1)
+    built("list").Add("two")
+    built("list").Add(Json.Parse("[3]"))
+    built("list")(0) = 10
+    built("n") = built("n").AsInteger + 1
+    Debug.Print(built.Text)
+    built.Remove("nothing")
+    built("list").Remove(1)
+    Debug.Print(built.Text)
+    j("address")("city") = "부산"
+    Debug.Print(built("inner")("city").AsString)
+
+    Dim total As Integer = 0
+    For Each item In Json.Parse("[1, 2, 3.0, 40]")
+        total = total + item.AsInteger
+    Next
+    Debug.Print(total)
+    Debug.Print(Json.Parse("""just text""").AsString & " " & Json.Parse("12345678901234567890").AsDouble & " " & Json.Parse("-0.5").AsDouble)
+    Debug.Print(Json.Parse("""é\n\""x\""""").Text)
+
+    Try
+        Debug.Print(j("age").AsString)
+    Catch ex As Exception
+        Debug.Print(ex.Message)
+    End Try
+    Try
+        Debug.Print(j("height").AsInteger)
+    Catch ex As Exception
+        Debug.Print(ex.Message)
+    End Try
+    Try
+        Debug.Print(j("tags")(2).AsString)
+    Catch ex As Exception
+        Debug.Print(ex.Message)
+    End Try
+    Try
+        Debug.Print(j("name")(0).AsString)
+    Catch ex As Exception
+        Debug.Print(ex.Message)
+    End Try
+    Try
+        For Each k In j
+        Next
+    Catch ex As Exception
+        Debug.Print(ex.Message)
+    End Try
+    Try
+        Json.Parse("{""a"": }")
+    Catch ex As Exception
+        Debug.Print(ex.Message)
+    End Try
+    Try
+        Json.Parse("[1, 2")
+    Catch ex As Exception
+        Debug.Print(ex.Message)
+    End Try
+    Try
+        Json.Parse("{""a"": 1} x")
+    Catch ex As Exception
+        Debug.Print(ex.Message)
+    End Try
+    Debug.Print(j("weight").AsInteger)
+End Sub

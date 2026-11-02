@@ -1,0 +1,59 @@
+' The weather now (docs/DESIGN.md D125): Http.GetJson asks Open-Meteo, a
+' free weather service that needs no key (https://open-meteo.com/), and
+' the answer's JSON is read member by member. The program waits where it
+' asks; the pointer shows waiting meanwhile. An answer that does not
+' come, or is not what was expected, is caught and shown.
+Sub Form_Load()
+    cboCity.AddItem("서울")
+    cboCity.AddItem("부산")
+    cboCity.AddItem("제주")
+    cboCity.ListIndex = 0
+    lblStatus.Caption = "도시를 고르고 날씨 보기를 누르세요."
+End Sub
+
+Sub btnWeather_Click()
+    Dim latitude As String = "37.57"
+    Dim longitude As String = "126.98"
+    Select Case cboCity.Text
+        Case "부산"
+            latitude = "35.18"
+            longitude = "129.08"
+        Case "제주"
+            latitude = "33.50"
+            longitude = "126.53"
+    End Select
+    Dim url As String = "https://api.open-meteo.com/v1/forecast?latitude=" & latitude & "&longitude=" & longitude & "&current=temperature_2m,wind_speed_10m,weather_code&timezone=Asia%2FSeoul"
+    lblStatus.Caption = "가져오는 중…"
+    Try
+        Dim reply As Json = Http.GetJson(url)
+        Dim now As Json = reply("current")
+        Dim units As Json = reply("current_units")
+        lblTemp.Caption = cboCity.Text & " " & now("temperature_2m").AsDouble & units("temperature_2m").AsString
+        lblSky.Caption = SkyOf(now("weather_code").AsInteger)
+        lblWind.Caption = "바람 " & now("wind_speed_10m").AsDouble & " " & units("wind_speed_10m").AsString
+        lblStatus.Caption = now("time").AsString & " 기준"
+    Catch ex As Exception
+        lblStatus.Caption = ex.Message
+    End Try
+End Sub
+
+' The sky from a WMO weather code, as Open-Meteo gives it.
+Function SkyOf(code As Integer) As String
+    Select Case code
+        Case 0
+            Return "맑음"
+        Case 1, 2, 3
+            Return "구름 조금에서 흐림"
+        Case 45, 48
+            Return "안개"
+        Case 51 To 67
+            Return "비"
+        Case 71 To 77
+            Return "눈"
+        Case 80 To 82
+            Return "소나기"
+        Case 95 To 99
+            Return "뇌우"
+    End Select
+    Return "날씨 코드 " & code
+End Function

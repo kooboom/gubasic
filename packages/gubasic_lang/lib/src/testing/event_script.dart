@@ -1,7 +1,10 @@
 import 'dart:async';
 
+import 'dart:convert';
+
 import '../analyzer/compile.dart';
 import '../analyzer/forms.dart';
+import '../components/http_component.dart';
 import '../forms/anchor.dart';
 import '../forms/form_file.dart';
 import '../forms/keys.dart';
@@ -309,6 +312,112 @@ abstract final class TranscriptLine {
   /// the back to the front.
   static String forms(List<ShownForm> forms) =>
       forms.isEmpty ? 'Forms: (none)' : 'Forms: ${forms.join(' > ')}';
+
+  /// The program sent an HTTP request (D125): its method and address, the
+  /// headers it set and the ones the method adds, in brackets, then its
+  /// body with line breaks as `\n`.
+  static String http(HttpRequest request) {
+    final headers =
+        request.headers.entries.map((e) => '${e.key}: ${e.value}').join('; ');
+    final body =
+        request.bodyText.replaceAll('\r', '\\r').replaceAll('\n', '\\n');
+    return 'Http: ${request.method} ${request.url}'
+        '${headers.isEmpty ? '' : ' [$headers]'}'
+        '${body.isEmpty ? '' : ' $body'}';
+  }
+}
+
+/// What a test's server answers to one request (D125): a stanza of a
+/// `NAME.http` file.
+///
+///     GET https://api.example.com/scores
+///     200 application/json
+///     X-Count: 2
+///     [{"name":"Kim","points":10}]
+///
+///     GET https://api.example.com/down
+///     fails connection refused
+///
+/// The first line is the method and the address; the second the status
+/// and, after a space, the Content-Type, or `fails` and why no answer
+/// comes; then header lines (`Name: value`); the rest is the body. Stanzas
+/// are parted by an empty line.
+class HttpStub {
+  const HttpStub(this.method, this.url, this.status, this.headers, this.body,
+      {this.failure});
+
+  final String method;
+  final String url;
+  final int status;
+
+  /// By lower-case name.
+  final Map<String, String> headers;
+  final String body;
+
+  /// Why no answer comes, for a `fails` stanza; null otherwise.
+  final String? failure;
+}
+
+/// Reads a `NAME.http` file ([HttpStub]).
+List<HttpStub> parseHttpScript(String text) {
+  final stubs = <HttpStub>[];
+  final header = RegExp(r'^([A-Za-z][A-Za-z0-9-]*):\s*(.*)$');
+  for (final stanza
+      in text.replaceAll('\r\n', '\n').split(RegExp(r'\n\s*\n'))) {
+    final lines = stanza.split('\n').where((l) => l.isNotEmpty).toList();
+    if (lines.isEmpty) continue;
+    if (lines.length < 2) {
+      throw FormatException('a stub needs two lines: $stanza');
+    }
+    final request = lines[0].trim().split(RegExp(r'\s+'));
+    if (request.length != 2) {
+      throw FormatException('a stub starts with METHOD url: ${lines[0]}');
+    }
+    final second = lines[1].trim();
+    if (second.startsWith('fails')) {
+      stubs.add(HttpStub(request[0].toUpperCase(), request[1], 0, const {}, '',
+          failure: second.substring(5).trim()));
+      continue;
+    }
+    final space = second.indexOf(' ');
+    final status =
+        int.tryParse(space < 0 ? second : second.substring(0, space));
+    if (status == null) throw FormatException('a stub needs a status: $second');
+    final headers = <String, String>{
+      if (space >= 0) 'content-type': second.substring(space + 1).trim(),
+    };
+    var i = 2;
+    for (; i < lines.length; i++) {
+      final m = header.firstMatch(lines[i]);
+      if (m == null) break;
+      headers[m[1]!.toLowerCase()] = m[2]!;
+    }
+    stubs.add(HttpStub(request[0].toUpperCase(), request[1], status, headers,
+        lines.sublist(i).join('\n')));
+  }
+  return stubs;
+}
+
+/// The `Http` object of a test (D125): answers from [stubs], and records
+/// each request in [transcript].
+class _ScriptedHttp extends HttpComponent {
+  _ScriptedHttp(this.stubs, this.transcript);
+
+  final List<HttpStub> stubs;
+  final List<String> transcript;
+
+  @override
+  Future<HttpReply> send(HttpRequest request, Duration timeout) async {
+    transcript.add(TranscriptLine.http(request));
+    final stub = stubs
+        .where((s) => s.method == request.method && s.url == request.url)
+        .firstOrNull;
+    if (stub == null) {
+      throw const HttpFailure('no server answers in this test');
+    }
+    if (stub.failure != null) throw HttpFailure(stub.failure!);
+    return HttpReply(stub.status, stub.headers, utf8.encode(stub.body));
+  }
 }
 
 /// A [FormHost] for tests: properties start as in the form files, dialogs
@@ -327,16 +436,21 @@ abstract final class TranscriptLine {
 ///
 /// The program's settings start as [settings] (a test's NAME.settings),
 /// as if an earlier run had saved them.
-class ScriptedHost implements FormHost, FileHost {
+class ScriptedHost implements FormHost, FileHost, ComponentHost {
   /// A host for a program with one form.
   ScriptedHost(FormFile form,
-      {String? settings, Map<String, List<int>> disk = const {}})
-      : this.forms([form], settings: settings, disk: disk);
+      {String? settings,
+      Map<String, List<int>> disk = const {},
+      List<HttpStub> http = const []})
+      : this.forms([form], settings: settings, disk: disk, http: http);
 
   /// A host for a program with [forms] (D88). [disk] holds the files it
-  /// can read (D113), by name: a test's NAME.files folder.
+  /// can read (D113), by name: a test's NAME.files folder; [http] what
+  /// servers answer it (D125): a test's NAME.http.
   ScriptedHost.forms(List<FormFile> forms,
-      {this.settings, Map<String, List<int>> disk = const {}})
+      {this.settings,
+      Map<String, List<int>> disk = const {},
+      this.http = const []})
       : _files = {for (final f in forms) f.name.toLowerCase(): f},
         disk = Map.of(disk),
         _several = forms.length > 1 {
@@ -347,6 +461,13 @@ class ScriptedHost implements FormHost, FileHost {
 
   final Map<String, FormFile> _files;
   final bool _several;
+
+  /// What servers answer the program's requests (D125).
+  final List<HttpStub> http;
+
+  @override
+  ComponentInstance? createComponent(String component) =>
+      component == 'Http' ? _ScriptedHttp(http, transcript) : null;
 
   /// The files the program reads and writes, by path (D113).
   final Map<String, List<int>> disk;
@@ -776,7 +897,8 @@ Future<List<String>> runProjectScript(List<FormSource> forms, String script,
     List<String> pictures = const [],
     List<ModuleSource> modules = const [],
     bool startsWithMain = false,
-    Map<String, List<int>> disk = const {}}) async {
+    Map<String, List<int>> disk = const {},
+    List<HttpStub> http = const []}) async {
   final steps = parseEventScript(script);
   final project = compileProject(forms,
       startup: startup,
@@ -795,7 +917,7 @@ Future<List<String>> runProjectScript(List<FormSource> forms, String script,
     ];
   }
   final host = ScriptedHost.forms([for (final f in forms) f.file],
-      settings: settings, disk: disk);
+      settings: settings, disk: disk, http: http);
   return driveEventScript(
       steps, _HostDriver(Interpreter.project(project, host), host),
       namesFile: forms.length > 1 || modules.isNotEmpty);
@@ -808,7 +930,8 @@ Future<List<String>> runProjectScript(List<FormSource> forms, String script,
 Future<List<String>> runEventScript(String source, FormFile form, String script,
     {String? settings,
     List<String> pictures = const [],
-    Map<String, List<int>> disk = const {}}) async {
+    Map<String, List<int>> disk = const {},
+    List<HttpStub> http = const []}) async {
   final steps = parseEventScript(script);
   final program = compile(source, form: form, pictures: pictures);
   if (program.hasErrors) {
@@ -817,7 +940,7 @@ Future<List<String>> runEventScript(String source, FormFile form, String script,
         if (d.isError) 'Not started: ${d.code.code} @ ${d.line}'
     ];
   }
-  final host = ScriptedHost(form, settings: settings, disk: disk);
+  final host = ScriptedHost(form, settings: settings, disk: disk, http: http);
   return driveEventScript(steps, _HostDriver(Interpreter(program, host), host));
 }
 

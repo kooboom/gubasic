@@ -1,0 +1,36 @@
+# Talks to web servers over HTTP (docs/DESIGN.md D124, D125), the way
+# Visual Basic 6's Internet Transfer Control did with OpenURL
+# (https://learn.microsoft.com/en-us/previous-versions/visualstudio/visual-basic-6/aa733648(v=vs.60)). A built-in
+# object used by its name, not put on a form: Http.Get(url) gives the
+# answer's text, Http.GetJson(url) its JSON, Http.Post(url, body) and
+# Http.PostJson(url, json) send a body and give the answer, and
+# Http.Send(method, url, body) gives the whole answer as an HttpResponse,
+# whatever its status. A call waits where it is, as File.ReadAllText
+# does: the screen keeps drawing, the pointer shows waiting, and clicks
+# made meanwhile run after it, in turn. Header(name) is a header sent
+# with every request from then on ("" takes it away); Timeout is how many
+# seconds to wait for an answer. A request that gets no answer is R036; a
+# status from 400 is R037 in all but Send; text that is not JSON is R039.
+# The first component through the component channel
+# (docs/COMPONENT_CHANNEL.md).
+name: Http
+version: 1
+object: true
+platforms: [web, macos, windows]
+properties:
+  # Seconds to wait for the answer, from 1 to 600.
+  - { name: Timeout, type: Integer, min: 1, max: 600, default: 30 }
+events: []
+methods:
+  - Get(url As String) As String
+  - Post(url As String, body As String) As String
+  - GetJson(url As String) As Json
+  - PostJson(url As String, body As Json) As Json
+  - Send(method As String, url As String, body As String) As HttpResponse
+  - Header(name As String) As String Settable
+# Names other versions of BASIC use, pointed to GuBASIC's (A036,
+# docs/DESIGN.md D50): the Internet Transfer Control's.
+otherNames:
+  OpenURL: Get
+  Execute: Send
+  RequestTimeout: Timeout

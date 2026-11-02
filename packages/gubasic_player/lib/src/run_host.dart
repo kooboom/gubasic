@@ -6,12 +6,13 @@ import 'package:gubasic_runtime/gubasic_runtime.dart';
 
 import 'bench/probe.dart';
 import 'form_window.dart';
+import 'http_component.dart';
 
 /// Connects the interpreter to gubasic_runtime (docs/DESIGN.md §2.3): each
 /// form's properties live in a model ([modelOf]), which the run window
 /// shows, and MsgBox and InputBox are [dialogs]. What the user does on a
 /// form goes to the interpreter as events.
-class RunHost implements FormHost, FileHost {
+class RunHost implements FormHost, FileHost, ComponentHost {
   /// [form] is the startup form, [others] the project's other forms (D88).
   RunHost(
     FormFile form, {
@@ -22,8 +23,10 @@ class RunHost implements FormHost, FileHost {
     this._settings,
     this._pictures,
     GbFiles? files,
+    GbHttp? http,
     this.pdfFont,
   }) : _fileSystem = files,
+       _httpSender = http,
        settingsKey = settingsKey ?? project,
        dialogs = GbDialogs(strings: strings),
        _startup = form.name {
@@ -385,6 +388,21 @@ class RunHost implements FormHost, FileHost {
       }, e.detail);
     }
   }
+
+  /// How the program's requests are sent (D125): the runtime's, made when
+  /// first used, unless a test gave one.
+  GbHttp? _httpSender;
+
+  /// How many HTTP requests are under way: the run window shows the
+  /// pointer as waiting while there is one (D124 A).
+  final busyRequests = ValueNotifier<int>(0);
+
+  /// The built-in objects of the component channel (D125): `Http`.
+  @override
+  ComponentInstance? createComponent(String component) => switch (component) {
+    'Http' => PlayerHttp(_httpSender ??= GbHttp(), busyRequests),
+    _ => null,
+  };
 
   @override
   void endProgram() {

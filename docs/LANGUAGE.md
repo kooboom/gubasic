@@ -252,6 +252,12 @@ Errors found while a program runs. Each stops the program and points at its line
 | R033 | An interval `DateAdd` or `DateDiff` does not know (§10) |
 | R034 | No font to write a PDF file with: an app exported before (§11.8) |
 | R035 | A PDF letter size out of 4 to 72 points (§11.8) |
+| R036 | An HTTP request that got no answer (§11.9) |
+| R037 | An HTTP answer with a status from 400, in all but `Send` (§11.9) |
+| R038 | A built-in object where the program runs without it, `Http` in the playground (§11.9) |
+| R039 | Text that is not JSON (§11.9) |
+| R040 | A `Json` value asked for as another kind: `AsInteger` of text (§11.9) |
+| R041 | A member no JSON object has (§11.9) |
 
 ## 2. Types
 
@@ -264,6 +270,8 @@ Errors found while a program runs. Each stops the program and points at its line
 | `Date` | `DateTime` | 0001-01-01 |
 | `Object` | `Object?` | `Nothing` |
 | `List(Of T)` | `List<T>` | empty list (when declared with `New`) |
+| `Json` (§11.9) | a JSON value | `Nothing` (an empty object when declared with `New`) |
+| `HttpResponse` (§11.9) | the answer to a request | `Nothing` |
 | Control / component types (`Button`, `Label`, …) | runtime classes | `Nothing` |
 
 - **`Integer` is an exact 64-bit integer on every platform**, the web included (D26): from `Integer.MinValue` (−9223372036854775808) to `Integer.MaxValue` (9223372036854775807). A result outside this range is a run-time error (R001), never a silently wrong number.
@@ -921,6 +929,39 @@ pdf.Save(dlgSave.FileName)
 ```
 
 The properties apply to the whole file, as they are when `Save` runs. Pages are A4. A table is as wide as the page; its columns share it by their widest text, a cell's text wraps, and a table that goes on to another page draws its header row again there. The text is in NanumGothic, which the IDE carries; an app exported from a project whose code uses `PdfDocument` carries it too, and other apps are not made larger by it. The PDF file holds only the letters it uses. An app exported before it used `PdfDocument` has no font: `Save` is R034, and exporting it again mends it. The examples have one: **Scores** shows a list in a Grid, its total and average, and saves them as a PDF file.
+
+### 11.9 Http and JSON
+
+(DESIGN.md D124, D125.) **`Http`** talks to web servers, as Visual Basic 6's Internet Transfer Control did with `OpenURL` ([Microsoft](https://learn.microsoft.com/en-us/previous-versions/visualstudio/visual-basic-6/aa733648(v=vs.60))). It is a built-in object used by its name, as `File` is, not put on a form:
+
+| Member | What it does |
+|---|---|
+| `Get(url)` | the answer's text |
+| `GetJson(url)` | the answer as a `Json` |
+| `Post(url, body)` | sends text (`Content-Type: text/plain; charset=utf-8` unless `Header` set another) and gives the answer's text |
+| `PostJson(url, json)` | sends a `Json` as `application/json` and gives the answer as a `Json` |
+| `Send(method, url, body)` | sends any method (`"GET"`, `"PUT"`, `"DELETE"`, …; `""` for no body) and gives the whole answer as an **`HttpResponse`**: `Status`, `Ok` (a status below 400), `Text`, `Json` and `Header(name)` |
+| `Header(name)` | a header sent with every request from then on: `Http.Header("Authorization") = "Bearer …"`; `""` takes it away |
+| `Timeout` | how many seconds to wait for an answer: 30 at first, from 1 to 600 |
+
+```vb
+Dim scores As Json = Http.GetJson("https://example.com/scores")
+For Each s In scores
+    lstScores.AddItem(s("name").AsString & ": " & s("points").AsInteger)
+Next
+Dim mine As New Json
+mine("name") = txtName.Text
+mine("points") = points
+Http.PostJson("https://example.com/scores", mine)
+```
+
+**Waiting.** A call waits where it is, as `File.ReadAllText` does (§11.6), with nothing to write for it (Visual Basic .NET makes the program write `Await`: [Microsoft](https://learn.microsoft.com/en-us/dotnet/visual-basic/programming-guide/concepts/async/)): the screen keeps drawing and the Stop button works; the mouse pointer shows waiting meanwhile; clicks made meanwhile run after it, in turn (§8.1), and the same handler is not started again (D5). There is no completion event.
+
+**Errors.** No answer, because the address is wrong, there is no connection, none came within `Timeout`, or on the web the server does not allow the page to call it (CORS), is R036 with what the system said; a status from 400 is R037 in all but `Send`, with the status and the start of the answer; an answer that is not JSON is R039. All of them can be caught with `Try` (§9). The answer's text is read as its `Content-Type` charset says: UTF-8 when it names none, code page 949 for `euc-kr` and its other names, Latin-1 for `iso-8859-1`; bodies are sent as UTF-8.
+
+**`Json`** is a JSON value ([RFC 8259](https://www.rfc-editor.org/rfc/rfc8259)): an object, an array, text, a number, `True` or `False`, or null. `Json.Parse(text)` reads one; `Dim j As New Json` makes an empty object and `Json.Array()` an empty array. `j("name")` is a member of an object and `j(0)` an item of an array, each a `Json` again, so `j("address")("city")` goes down a level. A value is taken out as the type it is, so that nothing is a `Variant` (§2): `AsString`, `AsInteger` (a whole number), `AsDouble` and `AsBoolean`, or `CStr`, `CInt`, `CDbl` and `CBool` of the `Json`. `Kind` says which it is: `"Object"`, `"Array"`, `"String"`, `"Number"`, `"Boolean"` or `"Null"`; `Count` is the number of members or items; `Has(name)` whether an object has a member; `Keys` an object's member names as a `String` array; `For Each item In arr` goes through an array's items. Writing: `j("name") = "Kim"` and `j("age") = 12` add or change a member (an `Integer`, `Double`, `Boolean`, `String`, `Json` or `Nothing`), `j(0) = …` changes an item, `arr.Add(value)` adds one, `Remove(name)` and `Remove(index)` take one away, and `Text` is the value as compact JSON text. Two `Json` values that share an object or an array see each other's changes, as two `List` variables do. A number read from JSON is whole when it is written whole (`12.0` is 12); one too large to be exact, `12345678901234567890`, is a `Double`. `Debug.Print(j)` and `CStr(j)` show a string's own text, a number as GuBASIC writes it (§2.2), `True` or `False`, "" for null, and an object or an array as JSON text. The wrong kind (`AsString` of a number, `j(0)` of an object, `For Each` over an object) is R040; a member that is not there R041; an item that is not there R003. A `Json` is not compared or joined with `=` or `&` (A013): take the value out first.
+
+**Where it runs.** In the IDE and in exported apps; the playground has no `Http` (R038). Exported macOS apps may reach the network. `Http` is the first component through the component channel ([COMPONENT_CHANNEL.md](COMPONENT_CHANNEL.md)): `components/Http/component.yaml` describes it as a control's file does, and what it does is written once for the IDE and the apps. The examples have one: **Weather** shows the weather now from Open-Meteo.
 
 ## 12. Open questions
 

@@ -28,7 +28,7 @@ Write GuBASIC code as the documents below describe; it is close to Visual Basic 
 - [TextBox](https://github.com/kooboom/gubasic/blob/main/docs/reference/controls/TextBox.md): A box the user types a line of text into: its Text.
 - [Timer](https://github.com/kooboom/gubasic/blob/main/docs/reference/controls/Timer.md): A Timer runs its Tick every Interval milliseconds while Enabled.
 - [Functions](https://github.com/kooboom/gubasic/blob/main/docs/reference/functions.md): text, conversion, math, dates, dialogs, settings
-- [Objects and types](https://github.com/kooboom/gubasic/blob/main/docs/reference/objects.md): File, Csv, Keys, Table, PdfDocument and the others
+- [Objects and types](https://github.com/kooboom/gubasic/blob/main/docs/reference/objects.md): File, Csv, Http, Json, Keys, Table, PdfDocument and the others
 
 ## Optional
 

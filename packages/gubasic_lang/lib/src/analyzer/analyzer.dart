@@ -85,7 +85,7 @@ class _Analyzer {
       _builtins.declare(
           Symbol(name: name, kind: SymbolKind.constant, type: GbType.string));
     }
-    for (final name in builtinObjects.values) {
+    for (final name in allBuiltinObjects) {
       _builtins.declare(Symbol(
           name: name,
           kind: SymbolKind.builtinObject,
@@ -925,6 +925,11 @@ class _Analyzer {
         } else if (_result.invokeKinds[target] == InvokeKind.call) {
           _reportAt(target, DiagnosticCode.notAssignable, [_text(target)]);
           targetType = GbType.unknown;
+        } else if (t == GbType.json && _result.types[callee] == GbType.json) {
+          // `j("age") = 13` (D125): any JSON value goes in.
+          _argument(s.value, _value(s.value),
+              const ParamSpec.of('value', ArgKind.jsonValue));
+          return;
         } else {
           targetType = t;
         }
@@ -1085,6 +1090,9 @@ class _Analyzer {
         element = e;
       case ControlsType():
         element = controlComponent.type;
+      case GbType.json:
+        // The items of a JSON array (D125); an object is R040.
+        element = GbType.json;
       case GbType.object:
         element = GbType.object;
       case GbType.unknown:
@@ -1436,10 +1444,20 @@ class _Analyzer {
   void _unknownMember(MemberExpr e, Map<String, MemberSpec> members) {
     final type = _result.types[e.target];
     final name = e.name.name;
-    final args = [type?.displayName ?? '?', name];
-    final others = type is ControlType
-        ? type.component.otherNames[name.toLowerCase()]
-        : null;
+    final target = e.target;
+    // A built-in object of the component channel (Http, D125) has other
+    // names too, from its component.yaml.
+    final component = type is ControlType
+        ? type.component
+        : target is NameExpr &&
+                _result.symbols[target]?.kind == SymbolKind.builtinObject
+            ? objectComponents[target.name.toLowerCase()]
+            : null;
+    final args = [
+      component?.object == true ? component!.name : type?.displayName ?? '?',
+      name,
+    ];
+    final others = component?.otherNames[name.toLowerCase()];
     final suggestion =
         closestName(name, [for (final m in members.values) m.name]);
     if (others != null) {
@@ -1511,6 +1529,18 @@ class _Analyzer {
       case ControlsType():
         element = controlComponent.type;
         _result.invokeKinds[e] = InvokeKind.item;
+      case GbType.json:
+        // `j("name")`, `j(0)` (D125): a member or an item, itself a Json.
+        _result.invokeKinds[e] = InvokeKind.item;
+        if (e.arguments.length != 1) {
+          _reportAt(e, DiagnosticCode.wrongArgumentCount,
+              [_text(target), '1', '${e.arguments.length}']);
+          _analyzeArguments(e.arguments);
+        } else {
+          _argument(e.arguments.single, _value(e.arguments.single),
+              const ParamSpec.of('member', ArgKind.numericOrString));
+        }
+        return GbType.json;
       case GbType.object || GbType.unknown || null:
         // Not known: decided at run time, and nothing more to report.
         _analyzeArguments(e.arguments);
@@ -1596,9 +1626,19 @@ class _Analyzer {
       case ArgKind.numeric:
         ok = type.isNumeric;
       case ArgKind.numericOrString:
-        ok = type.isNumeric || type == GbType.string;
+        // A Json value's number or text, too: CInt(j("age")) (D125).
+        ok = type.isNumeric || type == GbType.string || type == GbType.json;
       case ArgKind.convertible:
-        ok = type.isNumeric || type == GbType.string || type == GbType.boolean;
+        ok = type.isNumeric ||
+            type == GbType.string ||
+            type == GbType.boolean ||
+            type == GbType.json;
+      case ArgKind.jsonValue:
+        ok = type.isNumeric ||
+            type == GbType.string ||
+            type == GbType.boolean ||
+            type == GbType.json ||
+            type == GbType.nothing;
       case ArgKind.array:
         ok = type is ArrayType;
       case ArgKind.menu:
@@ -1613,6 +1653,7 @@ class _Analyzer {
         ArgKind.array => const ArrayType(GbType.object),
         ArgKind.menu => menuComponent.type,
         ArgKind.tableOrGrid => GbType.table,
+        ArgKind.jsonValue => GbType.json,
         _ => GbType.string,
       };
       _reportAt(arg, DiagnosticCode.typeMismatch,
@@ -1644,7 +1685,7 @@ class _Analyzer {
     }
     final params = switch (type) {
       ListType() => const <ParamSpec>[],
-      GbType.table || GbType.pdfDocument => const <ParamSpec>[],
+      GbType.table || GbType.pdfDocument || GbType.json => const <ParamSpec>[],
       GbType.exception => const [
           ParamSpec('message', GbType.string, optional: true)
         ],

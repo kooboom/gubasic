@@ -1,0 +1,8 @@
+formatVersion: 1
+properties: { Caption: Http, Width: 540, Height: 120 }
+controls:
+  - { name: btnGet, type: Button, properties: { Caption: Get, Left: 16, Top: 16 } }
+  - { name: btnJson, type: Button, properties: { Caption: Json, Left: 120, Top: 16 } }
+  - { name: btnPost, type: Button, properties: { Caption: Post, Left: 224, Top: 16 } }
+  - { name: btnSend, type: Button, properties: { Caption: Send, Left: 328, Top: 16 } }
+  - { name: btnErrors, type: Button, properties: { Caption: Errors, Left: 432, Top: 16 } }

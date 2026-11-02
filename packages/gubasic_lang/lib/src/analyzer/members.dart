@@ -136,6 +136,34 @@ Map<String, MemberSpec>? membersOf(GbType type) {
         MemberSpec.property('X', _i),
         MemberSpec.property('Y', _i),
       ];
+    case GbType.json:
+      // A JSON value (D125): what kind it is, its value taken out as the
+      // type it is (R040 for another), an object's members and an
+      // array's items by `j("name")` and `j(0)`, and its text.
+      list = [
+        const MemberSpec.property('Kind', _s),
+        const MemberSpec.property('Count', _i),
+        const MemberSpec.property('AsString', _s),
+        const MemberSpec.property('AsInteger', _i),
+        const MemberSpec.property('AsDouble', GbType.double_),
+        const MemberSpec.property('AsBoolean', _b),
+        const MemberSpec.property('Keys', ArrayType(_s)),
+        const MemberSpec.property('Text', _s),
+        MemberSpec.method('Has', [const ParamSpec('name', _s)], _b),
+        MemberSpec.method(
+            'Add', [const ParamSpec.of('value', ArgKind.jsonValue)], _v),
+        MemberSpec.method('Remove',
+            [const ParamSpec.of('member', ArgKind.numericOrString)], _v),
+      ];
+    case GbType.httpResponse:
+      // The whole answer to an HTTP request (D125).
+      list = [
+        const MemberSpec.property('Status', _i),
+        const MemberSpec.property('Ok', _b),
+        const MemberSpec.property('Text', _s),
+        const MemberSpec.property('Json', GbType.json),
+        MemberSpec.method('Header', [const ParamSpec('name', _s)], _s),
+      ];
     case ModuleType(:final module):
       list = [
         for (final v in module.variables.values)
@@ -192,7 +220,32 @@ Map<String, MemberSpec>? membersOf(GbType type) {
 }
 
 /// The members of the built-in object [name] (`Debug`), by lower-case name.
-Map<String, MemberSpec> builtinObjectMembers(String name) => switch (name) {
+/// An object that comes through the component channel (`Http`, D125) has
+/// its component.yaml's.
+Map<String, MemberSpec> builtinObjectMembers(String name) {
+  if (objectComponents[name.toLowerCase()] case final c?) {
+    return {
+      for (final p in c.properties.values)
+        if (!p.internal)
+          p.name.toLowerCase():
+              MemberSpec.property(p.name, p.type, readOnly: p.readOnly),
+      for (final m in c.methods.values)
+        m.name.toLowerCase(): MemberSpec.method(
+            m.name, m.parameters, m.returnType,
+            settable: m.settable),
+    };
+  }
+  return _builtinObjectMembers(name);
+}
+
+/// The names of every built-in object, those of the component channel
+/// included (D125), as they are written.
+Iterable<String> get allBuiltinObjects => [
+      ...builtinObjects.values,
+      for (final c in objectComponents.values) c.name,
+    ];
+
+Map<String, MemberSpec> _builtinObjectMembers(String name) => switch (name) {
       'Debug' => {
           'print': MemberSpec.method(
               'Print', [const ParamSpec.of('value', ArgKind.anyValue)], _v),
@@ -233,6 +286,13 @@ Map<String, MemberSpec> builtinObjectMembers(String name) => switch (name) {
                 const ParamSpec('table', GbType.table)
               ],
               _v),
+        },
+      // JSON (D125): text read as a value, and an empty array; an empty
+      // object is `New Json`.
+      'Json' => {
+          'parse': MemberSpec.method(
+              'Parse', [const ParamSpec('text', _s)], GbType.json),
+          'array': MemberSpec.method('Array', [], GbType.json),
         },
       // Text files (D113): read, written, added to, there or not.
       'File' => {

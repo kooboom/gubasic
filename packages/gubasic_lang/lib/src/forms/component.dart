@@ -139,6 +139,8 @@ class ComponentSpec {
     this.aliases = const [],
     this.container = false,
     this.menu = false,
+    this.object = false,
+    this.platforms = const [],
   })  : properties = {for (final p in properties) p.name.toLowerCase(): p},
         events = {for (final e in events) e.name.toLowerCase(): e},
         methods = {for (final m in methods) m.name.toLowerCase(): m};
@@ -188,6 +190,16 @@ class ComponentSpec {
   /// and not in the designer's tray: the menu editor makes them.
   final bool menu;
 
+  /// Whether this is a built-in object used by its name (`Http`, D125),
+  /// through the component channel (COMPONENT_CHANNEL.md): one instance
+  /// for the program, never on a form, in the toolbox or made with New.
+  /// Its properties are set only by the program.
+  final bool object;
+
+  /// Where an [object] component runs (`web`, `macos`, `windows`), as its
+  /// component.yaml says; empty for everywhere.
+  final List<String> platforms;
+
   /// The properties the form file and the Properties window can set.
   Iterable<PropertySpec> get designProperties =>
       properties.values.where((p) => p.designTime);
@@ -204,6 +216,20 @@ final Map<String, ComponentSpec> builtinComponents = {
     for (final c in [readComponentFile(text)]) c.name.toLowerCase(): c,
 };
 
+/// The built-in components that are control types, by lower-case name:
+/// all but the built-in objects (`Http`, D125).
+final Map<String, ComponentSpec> controlComponents = {
+  for (final MapEntry(:key, :value) in builtinComponents.entries)
+    if (!value.object) key: value,
+};
+
+/// The built-in objects that come through the component channel (D125),
+/// by lower-case name: `Http`.
+final Map<String, ComponentSpec> objectComponents = {
+  for (final MapEntry(:key, :value) in builtinComponents.entries)
+    if (value.object) key: value,
+};
+
 /// The form's own component.
 ComponentSpec get formComponent => builtinComponents['form']!;
 
@@ -214,7 +240,7 @@ ComponentSpec get menuComponent => builtinComponents['menu']!;
 /// case), or null (D104).
 ComponentSpec? componentAliased(String name) {
   final lower = name.toLowerCase();
-  for (final c in builtinComponents.values) {
+  for (final c in controlComponents.values) {
     if (c.aliases.any((a) => a.toLowerCase() == lower)) return c;
   }
   return null;
@@ -367,7 +393,7 @@ ComponentSpec readComponentFile(String text) {
     final mm = m is String ? methodPattern.firstMatch(m.trim()) : null;
     if (mm == null) throw FormatException('bad method: $m');
     final returnType =
-        mm[3] == null ? GbType.void_ : _valueTypes[mm[3]!.toLowerCase()];
+        mm[3] == null ? GbType.void_ : _returnTypes[mm[3]!.toLowerCase()];
     if (returnType == null) throw FormatException('bad return type: $m');
     methods.add(MethodSpec(mm[1]!, _parameters(mm[2]!), returnType,
         settable: mm[4] != null));
@@ -401,7 +427,10 @@ ComponentSpec readComponentFile(String text) {
     }
     otherEvents[key.toLowerCase()] = value;
   }
-  final visual = doc['visual'] ?? true;
+  // A built-in object (D125): used by its name, never on a form.
+  final object = doc['object'] ?? false;
+  if (object is! bool) throw const FormatException('object is true or false');
+  final visual = doc['visual'] ?? !object;
   if (visual is! bool) throw const FormatException('visual is true or false');
   final container = doc['container'] ?? false;
   final menu = doc['menu'] ?? false;
@@ -412,11 +441,25 @@ ComponentSpec readComponentFile(String text) {
   if (aliases is! List || aliases.any((a) => a is! String)) {
     throw const FormatException('aliases is a list of names');
   }
+  final platforms = doc['platforms'] ?? YamlList();
+  if (platforms is! List ||
+      platforms.any((p) => !const {'web', 'macos', 'windows'}.contains(p))) {
+    throw const FormatException('platforms is a list of web, macos, windows');
+  }
+  if (object && (visual || container || menu || aliases.isNotEmpty)) {
+    throw const FormatException(
+        'an object is not visual, a container, a menu or aliased');
+  }
+  if (!object && (platforms.isNotEmpty || doc['object'] != null)) {
+    throw const FormatException('only an object names its platforms');
+  }
 
   final spec = ComponentSpec(
     name: field<String>(doc, 'name'),
     version: field<int>(doc, 'version'),
-    defaultEvent: field<String>(doc, 'defaultEvent'),
+    defaultEvent: object && events.isEmpty
+        ? (doc['defaultEvent'] as String? ?? '')
+        : field<String>(doc, 'defaultEvent'),
     properties: properties,
     events: events,
     methods: methods,
@@ -427,6 +470,8 @@ ComponentSpec readComponentFile(String text) {
     aliases: List.unmodifiable(aliases.cast<String>()),
     container: container,
     menu: menu,
+    object: object,
+    platforms: List.unmodifiable(platforms.cast<String>()),
   );
   for (final MapEntry(:key, :value) in spec.otherEvents.entries) {
     if (spec.events.containsKey(key) ||
@@ -435,7 +480,8 @@ ComponentSpec readComponentFile(String text) {
           'event GuBASIC calls $value');
     }
   }
-  if (!spec.events.containsKey(spec.defaultEvent.toLowerCase())) {
+  if (!spec.events.containsKey(spec.defaultEvent.toLowerCase()) &&
+      !(object && events.isEmpty && spec.defaultEvent.isEmpty)) {
     throw FormatException('${spec.name}: defaultEvent is not an event');
   }
   for (final p in spec.properties.values) {
@@ -464,12 +510,20 @@ ComponentSpec readComponentFile(String text) {
   return spec;
 }
 
-/// The types an event's or a method's parameter can have: the values, and
-/// a key event's (D101).
+/// The types an event's or a method's parameter can have: the values, a
+/// key event's (D101), and a JSON value's (D125).
 const _parameterTypes = {
   ..._valueTypes,
   'keyeventargs': GbType.keyEventArgs,
   'mouseeventargs': GbType.mouseEventArgs,
+  'json': GbType.json,
+};
+
+/// The types a method can give back: a parameter's, and the whole answer
+/// to an HTTP request (D125).
+const _returnTypes = {
+  ..._parameterTypes,
+  'httpresponse': GbType.httpResponse,
 };
 
 /// `a As Integer, b As String`: the parameters of an event or a method.

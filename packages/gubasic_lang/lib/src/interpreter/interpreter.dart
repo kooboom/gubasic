@@ -25,6 +25,7 @@ import '../pdf/pdf_document.dart';
 import '../text/csv.dart';
 import '../text/dates.dart';
 import '../text/format.dart';
+import '../text/json.dart';
 import '../text/text_codec.dart';
 import '../lexer/keyword.dart';
 import 'checked_math.dart';
@@ -848,6 +849,7 @@ class Interpreter {
           GbException(args.isEmpty ? '' : args.first as String),
         GbType.table => GbTable(),
         GbType.pdfDocument => GbPdfDocument(),
+        GbType.json => GbJson.object(),
         _ => defaultValue(type),
       };
 
@@ -937,10 +939,13 @@ class Interpreter {
   /// methods never wait.
   bool _methodMayRunEvent(MemberExpr target) {
     final type = _a.types[target.target];
-    // File's functions wait for the file (D113).
+    // File's functions wait for the file (D113); a built-in object of the
+    // component channel waits for its answer (Http, D125).
     if (target.target case final NameExpr t
         when _a.symbols[t]?.kind == SymbolKind.builtinObject &&
-            const {'File', 'Csv'}.contains(_a.symbols[t]!.name)) {
+            (const {'File', 'Csv'}.contains(_a.symbols[t]!.name) ||
+                objectComponents
+                    .containsKey(_a.symbols[t]!.name.toLowerCase()))) {
       return true;
     }
     // A PDF file is saved as a file is written (D117).
@@ -1174,6 +1179,10 @@ class Interpreter {
       GbList l => List.of(l.items), // a snapshot: changes do not disturb
       GbArray a => List.of(a.items),
       GbControls c => List.of(c.items),
+      // The items of a JSON array, each a Json (D125).
+      GbJson j => [
+          for (final v in _jsonArray(j, 'For Each', s.collection)) GbJson(v)
+        ],
       null => _fail(DiagnosticCode.nothingReference, s.collection),
       _ => _fail(DiagnosticCode.memberNotFound, s.collection,
           ['For Each', typeNameOf(collection)]),
@@ -1325,18 +1334,27 @@ class Interpreter {
         _write(_a.symbols[target]!, value);
       case InvokeExpr() when _a.settableCalls.contains(target):
         final member = target.target as MemberExpr;
-        _setByCall(_evalSync(member.target), member.name.name.toLowerCase(),
+        _setByCall(_memberReceiverSync(member), member.name.name.toLowerCase(),
             index(target) as List<Object?>, value, target);
       case InvokeExpr():
         final container = _evalSync(target.target);
         _setItem(container, index(target), value, target);
       case MemberExpr():
-        final receiver = _evalSync(target.target);
+        final receiver = _memberReceiverSync(target);
         if (receiver is GbControl) {
           return _setProperty(receiver, target, value);
         }
         if (receiver is GbPdfDocument) {
           _setPdf(receiver, target.name.name.toLowerCase(), value, target);
+          return null;
+        }
+        if (receiver is _BuiltinObject) {
+          // `Http.Timeout = 10` (D125): a property of a component.
+          final spec = objectComponents[receiver.name.toLowerCase()]!
+              .properties[target.name.name.toLowerCase()]!;
+          final checked = _propertyValue(spec, value, target);
+          _componentDo(receiver.name, target,
+              (c) => c.setProperty(spec.name, _gbValue(spec.type, checked)));
           return null;
         }
         if (receiver is GbModule) {
@@ -1834,6 +1852,187 @@ class Interpreter {
     return dialogResults['OK']!;
   }
 
+  // -------------------------------------------------------------------------
+  // JSON values (D125)
+
+  /// [text] as a JSON value; text that is not JSON is R039.
+  Object? _parseJson(String text, Node at) {
+    try {
+      return parseJson(text);
+    } on FormatException catch (e) {
+      _fail(DiagnosticCode.jsonInvalid, at, [e.message]);
+    }
+  }
+
+  /// A GuBASIC value as it goes into a JSON value: an Integer that is
+  /// exact as an int, else as a double; a whole Double as an int.
+  Object? _toJsonValue(Object? v, Node at) {
+    if (v == null || v is bool || v is String) return v;
+    if (v is GbJson) return v.value;
+    if (isGbInt(v)) {
+      final n = v as GbInt;
+      return n.toSmallInt() ?? n.toDouble();
+    }
+    final d = toDoubleValue(v);
+    if (!d.isFinite) {
+      _fail(DiagnosticCode.conversionFailed, at, [formatValue(v), 'Json']);
+    }
+    return normalizeJson(d);
+  }
+
+  /// The items of [j], an array; another kind is R040 for [use].
+  List<Object?> _jsonArray(GbJson j, String use, Node at) =>
+      j.value is List<Object?>
+          ? j.value as List<Object?>
+          : _fail(DiagnosticCode.jsonKind, at, [use, j.kind]);
+
+  /// The members of [j], an object; another kind is R040 for [use].
+  Map<String, Object?> _jsonObject(GbJson j, String use, Node at) =>
+      j.value is Map<String, Object?>
+          ? j.value as Map<String, Object?>
+          : _fail(DiagnosticCode.jsonKind, at, [use, j.kind]);
+
+  /// [j]'s number; another kind is R040 for [use].
+  num _jsonNumber(GbJson j, String use, Node at) => j.value is num
+      ? j.value as num
+      : _fail(DiagnosticCode.jsonKind, at, [use, j.kind]);
+
+  /// [j]'s whole number as an Integer; a number with a fraction, or
+  /// another kind, is R040 for [use].
+  GbInt _jsonInteger(GbJson j, String use, Node at) {
+    final n = _jsonNumber(j, use, at);
+    if (n is int) return GbInt.of(n);
+    final d = n as double;
+    if (d != d.truncateToDouble() || !d.isFinite) {
+      _fail(DiagnosticCode.jsonKind, at, [use, 'Number (${formatDouble(d)})']);
+    }
+    return _wholeToInteger(d, at);
+  }
+
+  /// `j("name")` or `j(0)`: a member of an object, or an item of an array.
+  Object? _jsonItem(GbJson j, Object? index, Node at) {
+    if (index is String) {
+      final members = _jsonObject(j, 'a member name', at);
+      if (!members.containsKey(index)) {
+        _fail(DiagnosticCode.jsonKey, at, [index, members.keys.join(', ')]);
+      }
+      return members[index];
+    }
+    final items = _jsonArray(j, 'an item number', at);
+    return items[_itemIndex(items, _toInteger(index, at), at)];
+  }
+
+  /// `j("name") = value` adds or changes a member; `j(0) = value` changes
+  /// an item.
+  void _setJsonItem(GbJson j, Object? index, Object? value, Node at) {
+    final v = _toJsonValue(value, at);
+    if (index is String) {
+      _jsonObject(j, 'a member name', at)[index] = v;
+      return;
+    }
+    final items = _jsonArray(j, 'an item number', at);
+    items[_itemIndex(items, _toInteger(index, at), at)] = v;
+  }
+
+  /// A Json value's members (D125), [name] in lower case.
+  Object? _jsonMember(GbJson j, String name, List<Object?> args, Node at) {
+    switch (name) {
+      case 'kind':
+        return j.kind;
+      case 'count':
+        return GbInt.of(switch (j.value) {
+          final List<Object?> l => l.length,
+          final Map<String, Object?> m => m.length,
+          _ => _fail(DiagnosticCode.jsonKind, at, ['Count', j.kind]),
+        });
+      case 'asstring':
+        return j.value is String
+            ? j.value
+            : _fail(DiagnosticCode.jsonKind, at, ['AsString', j.kind]);
+      case 'asinteger':
+        return _jsonInteger(j, 'AsInteger', at);
+      case 'asdouble':
+        return _jsonNumber(j, 'AsDouble', at).toDouble();
+      case 'asboolean':
+        return j.value is bool
+            ? j.value
+            : _fail(DiagnosticCode.jsonKind, at, ['AsBoolean', j.kind]);
+      case 'keys':
+        return GbArray(GbType.string, _jsonObject(j, 'Keys', at).keys.toList());
+      case 'text':
+        return j.json;
+      case 'has':
+        return _jsonObject(j, 'Has', at).containsKey(args[0] as String);
+      case 'add':
+        _jsonArray(j, 'Add', at).add(_toJsonValue(args[0], at));
+        return null;
+      case 'remove':
+        final member = args[0];
+        if (member is String) {
+          final members = _jsonObject(j, 'Remove', at);
+          if (!members.containsKey(member)) {
+            _fail(
+                DiagnosticCode.jsonKey, at, [member, members.keys.join(', ')]);
+          }
+          members.remove(member);
+        } else {
+          final items = _jsonArray(j, 'Remove', at);
+          items.removeAt(_itemIndex(items, _toInteger(member, at), at));
+        }
+        return null;
+    }
+    throw StateError('no code for Json.$name');
+  }
+
+  // -------------------------------------------------------------------------
+  // The component channel (D125)
+
+  /// The instances of the built-in objects that come through the channel,
+  /// by lower-case name, made when first used.
+  final _components = <String, ComponentInstance>{};
+
+  /// The instance of [object] (`Http`); R038 where the host has none.
+  ComponentInstance _component(String object, Node at) =>
+      _components[object.toLowerCase()] ??= (host is ComponentHost
+              ? (host as ComponentHost).createComponent(object)
+              : null) ??
+          _fail(DiagnosticCode.componentUnavailable, at, [object]);
+
+  /// [body] on [object]'s instance; a problem it reports stops the
+  /// program with its code.
+  T _componentDo<T>(
+      String object, Node at, T Function(ComponentInstance c) body) {
+    try {
+      return body(_component(object, at));
+    } on ComponentProblem catch (p) {
+      _fail(p.code, at, p.args);
+    }
+  }
+
+  /// Calls [method] of [object] and waits for its answer. A program that
+  /// ended or was stopped meanwhile goes no further, as after a dialog.
+  Future<Object?> _componentCall(
+      String object, String method, List<Object?> args, Node at) async {
+    final c = _component(object, at);
+    final Object? result;
+    try {
+      result = await c.call(method, args);
+    } on ComponentProblem catch (p) {
+      if (_ended != null) throw const _Abandoned();
+      _fail(p.code, at, p.args);
+    }
+    if (_ended != null) throw const _Abandoned();
+    if (_stopRequested) throw const _Stop();
+    return result;
+  }
+
+  /// A property's value, as a host stores it, as a GuBASIC value.
+  static Object _gbValue(GbType type, Object value) => switch (type) {
+        GbType.integer => GbInt.of(value as int),
+        GbType.double_ => (value as num).toDouble(),
+        _ => value,
+      };
+
   /// Stops the program for [p], met reading or writing [path].
   Never _fileProblem(FileProblem p, String path, Node at) => _fail(
       switch (p.kind) {
@@ -2093,6 +2292,10 @@ class Interpreter {
         final t = _gridTable(c);
         _setByCall(t, name, args, value, at);
         _setGridTable(c, t);
+      case _BuiltinObject(name: final object):
+        // `Http.Header("Accept") = "application/json"` (D125).
+        final method = objectComponents[object.toLowerCase()]!.methods[name]!;
+        _componentDo(object, at, (c) => c.assign(method.name, args, value));
       case null:
         _fail(DiagnosticCode.nothingReference, at);
       default:
@@ -2362,6 +2565,7 @@ class Interpreter {
         GbList l => l.items[_itemIndex(l.items, index, at)],
         GbArray a => a.items[_itemIndex(a.items, index, at)],
         GbControls c => c.items[_itemIndex(c.items, index, at)],
+        GbJson j => GbJson(_jsonItem(j, index, at)),
         null => _fail(DiagnosticCode.nothingReference, at),
         _ => _fail(DiagnosticCode.memberNotFound, at,
             ['(item)', typeNameOf(container)]),
@@ -2373,6 +2577,8 @@ class Interpreter {
         l.items[_itemIndex(l.items, index, at)] = value;
       case GbArray a:
         a.items[_itemIndex(a.items, index, at)] = value;
+      case GbJson j:
+        _setJsonItem(j, index, value, at);
       case null:
         _fail(DiagnosticCode.nothingReference, at);
       default:
@@ -2506,6 +2712,32 @@ class Interpreter {
       case _BuiltinObject(name: 'Csv'):
         _pendingCall = () => _csv(name, args, node);
         return null;
+      case _BuiltinObject(name: 'Json'):
+        // Json.Parse(text) and Json.Array() (D125).
+        return name == 'parse'
+            ? GbJson(_parseJson(args[0] as String, node))
+            : GbJson.array();
+      case _BuiltinObject(name: final object)
+          when objectComponents.containsKey(object.toLowerCase()):
+        // A built-in object of the component channel (Http, D125): its
+        // methods wait for the component's answer.
+        final spec = objectComponents[object.toLowerCase()]!;
+        if (spec.methods[name] case final method?) {
+          _pendingCall = () => _componentCall(object, method.name, args, node);
+          return null;
+        }
+        final property = spec.properties[name]!;
+        return _componentDo(object, node, (c) => c.getProperty(property.name));
+      case GbJson j:
+        return _jsonMember(j, name, args, node);
+      case GbHttpResponse r:
+        return switch (name) {
+          'status' => GbInt.of(r.status),
+          'ok' => r.ok,
+          'text' => r.text,
+          'json' => GbJson(_parseJson(r.text, node)),
+          _ => r.headers[(args[0] as String).toLowerCase()] ?? '',
+        };
       case GbTable t:
         return _tableMember(t, name, args, node);
       case GbPdfDocument d when name == 'save':
@@ -2865,6 +3097,7 @@ class Interpreter {
   }
 
   GbInt _toInteger(Object? v, Node at) {
+    if (v is GbJson) return _jsonInteger(v, 'CInt', at);
     if (isGbInt(v)) return v as GbInt;
     if (isGbDouble(v)) return _roundDouble(toDoubleValue(v), at);
     if (v is String) {
@@ -2896,6 +3129,7 @@ class Interpreter {
   }
 
   double _toDouble(Object? v, Node at) {
+    if (v is GbJson) return _jsonNumber(v, 'CDbl', at).toDouble();
     if (isGbInt(v) || isGbDouble(v)) return toDoubleValue(v);
     if (v is String) {
       final d = double.tryParse(v.trim());
@@ -2906,6 +3140,11 @@ class Interpreter {
   }
 
   bool _toBoolean(Object? v, Node at) {
+    if (v is GbJson) {
+      return v.value is bool
+          ? v.value as bool
+          : _fail(DiagnosticCode.jsonKind, at, ['CBool', v.kind]);
+    }
     if (v is bool) return v;
     if (isGbInt(v)) return !(v as GbInt).isZero;
     if (isGbDouble(v)) return toDoubleValue(v) != 0;

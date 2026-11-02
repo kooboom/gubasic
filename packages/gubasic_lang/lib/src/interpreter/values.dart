@@ -2,6 +2,7 @@ import '../analyzer/conversions.dart';
 import '../analyzer/types.dart';
 import '../forms/component.dart';
 import '../pdf/pdf_document.dart';
+import '../text/json.dart';
 import 'checked_math.dart';
 
 /// Values while a program runs:
@@ -18,6 +19,8 @@ import 'checked_math.dart';
 /// | array | [GbArray] |
 /// | Exception | [GbException] |
 /// | a control, the form | [GbControl] |
+/// | Json | [GbJson] |
+/// | HttpResponse | [GbHttpResponse] |
 
 class GbList {
   GbList(this.element, [List<Object?>? items]) : items = items ?? [];
@@ -151,6 +154,8 @@ String formatValue(Object? value) {
     GbMouseEvent() => 'MouseEventArgs',
     GbTable() => 'Table',
     GbPdfDocument() => 'PdfDocument',
+    GbJson j => j.text,
+    GbHttpResponse() => 'HttpResponse',
     GbModule m => m.name,
     _ => '$value',
   };
@@ -174,6 +179,8 @@ String typeNameOf(Object? value) {
     GbMouseEvent() => 'MouseEventArgs',
     GbTable() => 'Table',
     GbPdfDocument() => 'PdfDocument',
+    GbJson() => 'Json',
+    GbHttpResponse() => 'HttpResponse',
     GbModule m => m.name,
     _ => 'Object',
   };
@@ -225,4 +232,56 @@ class GbTable {
     final lower = name.toLowerCase();
     return headers.indexWhere((h) => h.toLowerCase() == lower);
   }
+}
+
+/// A JSON value (docs/DESIGN.md D125): [value] as json.dart keeps it, an
+/// object (`Map<String, Object?>`), an array (`List<Object?>`), a
+/// `String`, an `int` or `double`, a `bool` or null. Two Json values that
+/// share an object or array see each other's changes, as two List
+/// variables do.
+class GbJson {
+  GbJson(this.value);
+
+  /// An empty object, `New Json`.
+  GbJson.object() : value = <String, Object?>{};
+
+  /// An empty array, `Json.Array()`.
+  GbJson.array() : value = <Object?>[];
+
+  Object? value;
+
+  /// `Kind`: `Object`, `Array`, `String`, `Number`, `Boolean` or `Null`.
+  String get kind => jsonKind(value);
+
+  /// The value as compact JSON text.
+  String get json => writeJson(value);
+
+  /// The text form (docs/LANGUAGE.md §2.2): a string's own text, a number
+  /// as GuBASIC writes it, `True` or `False`, "" for null, and an object
+  /// or an array as JSON text.
+  String get text => switch (value) {
+        null => '',
+        final String s => s,
+        final bool b => formatBoolean(b),
+        final int i => '$i',
+        final double d => formatDouble(d),
+        _ => json,
+      };
+}
+
+/// The whole answer to an HTTP request, from `Http.Send` (D125).
+class GbHttpResponse {
+  GbHttpResponse(this.status, this.headers, this.text);
+
+  /// The status code, 200 or 404.
+  final int status;
+
+  /// The answer's headers, by lower-case name.
+  final Map<String, String> headers;
+
+  /// The body as text.
+  final String text;
+
+  /// `Ok`: a status below 400.
+  bool get ok => status < 400;
 }

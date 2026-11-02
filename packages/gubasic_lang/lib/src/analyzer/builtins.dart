@@ -25,6 +25,10 @@ enum ArgKind {
 
   /// A Table or a Grid (`PdfDocument.AddTable`, D117).
   tableOrGrid,
+
+  /// What goes into a JSON value (D125): Integer, Double, Boolean,
+  /// String, Json or Nothing.
+  jsonValue,
 }
 
 class ParamSpec {
@@ -221,4 +225,5 @@ const Map<String, String> builtinObjects = {
   'file': 'File',
   'csv': 'Csv',
   'dateinterval': 'DateInterval',
+  'json': 'Json',
 };

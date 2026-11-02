@@ -1,10 +1,10 @@
-# 컴포넌트 통로(설계, 아직 만들지 않음)
+# 컴포넌트 통로
 
-> 끝의 질문 세 개는 권장안대로 답을 받았습니다(DESIGN D123).
+> 끝의 질문 세 개는 권장안대로 답을 받았습니다(DESIGN D123). 첫 컴포넌트 `Http`가 v0.5에서 이 통로로 들어왔고(D125), 나머지는 설계입니다.
 
 [English](COMPONENT_CHANNEL.md)
 
-GuBASIC 바깥의 기능, 곧 Dart·Flutter 패키지를 GuBASIC 컴포넌트로 받아들이는 방법입니다(DESIGN D121 c). 아직 아무것도 구현하지 않았습니다.
+GuBASIC 바깥의 기능, 곧 Dart·Flutter 패키지를 GuBASIC 컴포넌트로 받아들이는 방법입니다(DESIGN D121 c).
 
 ## 왜
 
@@ -13,7 +13,8 @@ Visual Basic은 `Declare`로 Windows 라이브러리의 어떤 함수든 부를 
 ## 지금 있는 것
 
 - 모든 컨트롤은 `components/NAME/component.yaml`로 설명되는 컴포넌트입니다(하드 규칙 7). 속성, 메서드, 이벤트가 적혀 있고, 분석기와 IDE의 도구 상자, 속성 창이 이것을 읽습니다.
-- 컴포넌트가 하는 일은 Dart로 두 곳에 씁니다. 인터프리터(`gubasic_lang`)와 위젯(`gubasic_runtime`)입니다. `File`, `Csv`, `PdfDocument` 같은 화면 없는 객체는 언어에 들어 있습니다.
+- 컨트롤이 하는 일은 Dart로 두 곳에 씁니다. 인터프리터(`gubasic_lang`)와 위젯(`gubasic_runtime`)입니다. `File`, `Csv`, `PdfDocument` 같은 화면 없는 객체는 언어에 들어 있습니다.
+- **통로의 첫 컴포넌트 `Http`(v0.5, D125):** `components/Http/component.yaml`은 `object: true`, 곧 이름으로 쓰는 내장 객체라고 말하고 `platforms`를 적습니다. 인터프리터는 호스트에 인스턴스를 달라고 하고(`ComponentHost.createComponent`) `ComponentInstance`로 이야기합니다: `getProperty`, `setProperty`, `call`, `assign`, 양쪽 다 GuBASIC의 값, 그리고 잘못된 것은 R 코드가 든 `ComponentProblem`. 컴포넌트 자체의 코드(`HttpComponent`)는 `gubasic_lang`의 순수 Dart이고, 보내는 일은 프로그램이 도는 곳의 하위 클래스가 합니다: 플레이어는 package:http로, 테스트는 미리 적은 답으로. 인터페이스는 아직 공개하지 않았습니다(질문 3).
 - 내보낸 앱은 미리 만든 플레이어에 프로젝트를 넣은 것입니다(D80). 플레이어에는 컴파일해 넣은 Dart 코드만 들어 있습니다.
 
 ## 설계
@@ -38,7 +39,7 @@ Visual Basic은 `Declare`로 Windows 라이브러리의 어떤 함수든 부를 
 
 ## 그래서 권하는 단계
 
-1. **v0.5:** `Http`와 `Database`를 기본 객체로 더 넣지 말고, 어댑터 인터페이스를 거치는 컴포넌트로 씁니다. 그러면 인터페이스가 GuBASIC 자신의 컴포넌트로 먼저 검증됩니다.
+1. **v0.5:** `Http`(완료, D125)와 `Database`를 기본 객체로 더 넣지 말고, 어댑터 인터페이스를 거치는 컴포넌트로 씁니다. 그러면 인터페이스가 GuBASIC 자신의 컴포넌트로 먼저 검증됩니다.
 2. **v0.6:** `WebSocket`과 `Room`도 같은 방식으로.
 3. **트랜스파일러와 함께:** "프로젝트를 위해 빌드해서" 길과, "패키지를 GuBASIC 컴포넌트로 감싸는 법" 안내.
 4. **UserControl**(IDEAS)은 나머지 반쪽입니다. 이쪽이 Dart로 만든 컴포넌트라면, 그쪽은 GuBASIC 컨트롤과 코드로 만든 컴포넌트입니다. 둘 다 같은 도구 상자에 들어갑니다.

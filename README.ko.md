@@ -24,11 +24,11 @@
 |---|---|
 | <img src="docs/images/calculator.png" width="273" alt="실행 중인 계산기 예제"> | <img src="docs/images/scores.png" width="505" alt="실행 중인 Scores 예제"> |
 
-둘 다 IDE의 예제에 있고, hello, quiz, typing, askname도 함께 있습니다.
+둘 다 IDE의 예제에 있고, hello, quiz, typing, askname, weather(`Http`와 JSON으로 보는 지금 날씨)도 함께 있습니다.
 
 > **상태: 3단계 v0.4 "업무에 쓰기" 완료**([v0.4.0](https://github.com/kooboom/gubasic/releases/tag/v0.4.0), 개발판).
 >
-> - **지금 할 수 있는 것:** 버튼, 레이블, 텍스트 상자, 목록, 그리드, 메뉴 들로 폼을 그리고, 색을 입히고 이름을 완성하고 오류를 설명해 주는 편집기로 이벤트 처리기를 쓰고, F5로 실행합니다. 프로젝트는 브라우저나 폴더에 보관하고, 웹·Windows·macOS 앱으로 내보냅니다. 업무에 쓰는 것: 열기·저장 대화상자, 텍스트·CSV 파일, 날짜와 `Format`, `Grid` 컨트롤, PDF 파일.
+> - **지금 할 수 있는 것:** 버튼, 레이블, 텍스트 상자, 목록, 그리드, 메뉴 들로 폼을 그리고, 색을 입히고 이름을 완성하고 오류를 설명해 주는 편집기로 이벤트 처리기를 쓰고, F5로 실행합니다. 프로젝트는 브라우저나 폴더에 보관하고, 웹·Windows·macOS 앱으로 내보냅니다. 업무에 쓰는 것: 열기·저장 대화상자, 텍스트·CSV 파일, 날짜와 `Format`, `Grid` 컨트롤, PDF 파일, 웹 서비스를 위한 `Http`와 JSON.
 > - **그 밖에:** macOS·Windows용 IDE 앱([apps/ide](apps/ide)), 언어만 따로 실행하는 [놀이터](https://kooboom.github.io/gubasic).
 > - **알려진 한계:** macOS·Windows 앱은 서명하지 않은 개발판입니다. 휴대폰 앱(3단계)과 디버거(v0.5)는 나중에 옵니다. 전체 목록: [docs/KNOWN_ISSUES.ko.md](docs/KNOWN_ISSUES.ko.md). 다음 계획: [로드맵](docs/ROADMAP.ko.md).
 >

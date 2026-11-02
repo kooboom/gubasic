@@ -191,7 +191,7 @@ void _controls(
     } else {
       final typeName = r.text(typeNode, 'type', 'type: Button');
       if (typeName != null) {
-        component = builtinComponents[typeName.toLowerCase()];
+        component = controlComponents[typeName.toLowerCase()];
         if (component == null || component == formComponent || component.menu) {
           component = null;
           if (componentAliased(typeName) case final c?) {
@@ -237,7 +237,7 @@ void _controls(
 }
 
 String _controlTypeNames() => [
-      for (final c in builtinComponents.values)
+      for (final c in controlComponents.values)
         if (c != formComponent && !c.menu) c.name
     ].join(', ');
 

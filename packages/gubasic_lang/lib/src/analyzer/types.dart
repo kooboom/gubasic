@@ -25,6 +25,13 @@ sealed class GbType {
   /// A PDF file being put together (docs/DESIGN.md D117).
   static const pdfDocument = PrimitiveType._('PdfDocument');
 
+  /// A JSON value: an object, an array, text, a number, True or False, or
+  /// null (docs/DESIGN.md D125).
+  static const json = PrimitiveType._('Json');
+
+  /// The whole answer to an HTTP request, from `Http.Send` (D125).
+  static const httpResponse = PrimitiveType._('HttpResponse');
+
   /// The type of the `Nothing` literal.
   static const nothing = SpecialType._('Nothing');
 
@@ -52,6 +59,8 @@ sealed class GbType {
   bool get isReferenceType =>
       this == object ||
       this == exception ||
+      this == json ||
+      this == httpResponse ||
       this is ListType ||
       this is ArrayType ||
       this is ControlType ||
@@ -164,13 +173,16 @@ const Map<String, GbType> namedTypes = {
   'mouseeventargs': GbType.mouseEventArgs,
   'table': GbType.table,
   'pdfdocument': GbType.pdfDocument,
+  'json': GbType.json,
+  'httpresponse': GbType.httpResponse,
 };
 
 /// A type name written after `As` or `New` (not `List`): a built-in type
-/// or a control type. Null if there is none. [name] is lower case.
+/// or a control type. Null if there is none; a built-in object such as
+/// `Http` (D125) is no type. [name] is lower case.
 GbType? lookupNamedType(String name) =>
     namedTypes[name] ??
-    builtinComponents[name]?.type ??
+    controlComponents[name]?.type ??
     (name == 'control' ? controlComponent.type : null);
 
 /// Whether [type] is a control's: a component's other than the form's, or

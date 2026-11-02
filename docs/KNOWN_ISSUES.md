@@ -18,6 +18,12 @@ Problems we know about and have **deliberately** left unfixed for now. Each entr
 - **Why deferred:** the playground is pure Dart without Flutter; imitating controls in HTML would create a second runtime (D24). The IDE's web build (E1e) runs forms in the browser instead.
 - **Revisit:** when the IDE's web build is published; then decide whether the playground still needs its Run tab.
 
+## The playground has no `Http`
+
+- **What:** `Http` (D125) works in the IDE's run window and in exported apps; in the playground, which runs programs without a form, using it stops the program with R038.
+- **Why deferred:** the playground is pure Dart without the runtime (D24), and the sending lives in the runtime's `GbHttp` beside the files; a second sender would be a second copy of the same code.
+- **Revisit:** with the playground's future (see above): if it stays, give it a sender of its own on the browser's requests.
+
 ## Projects kept in the web IDE's browser can be lost
 
 - **What:** on the web, projects are kept in the browser, in IndexedDB (D33, D53). Clearing the browser's data removes them, shared PCs may do that at every logout, and Safari removes them after seven days without a visit. Two tabs with the same project keep whichever saved last.

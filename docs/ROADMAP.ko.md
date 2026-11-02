@@ -82,7 +82,8 @@ IDE 안에서 완결되는 비주얼 베이직의 핵심 경험입니다.
 ### v0.5 — 실제 개발 도구
 
 - [ ] 디버거: 중단점, 그다음 한 줄씩 실행, 그다음 변수 보기, 그다음 직접 실행 창
-- [ ] `Database` (SQLite)와 `Http` + JSON. 컴포넌트 통로를 거치는 첫 컴포넌트로([COMPONENT_CHANNEL.ko.md](COMPONENT_CHANNEL.ko.md), 권장)
+- [x] `Http` + JSON. 컴포넌트 통로를 거치는 첫 컴포넌트([COMPONENT_CHANNEL.ko.md](COMPONENT_CHANNEL.ko.md), D125): `Get`, `Post`, `GetJson`, `PostJson`, `Send`, `Header`, `Timeout`과 `Json` 형식. 예제: [Weather](../examples/weather)
+- [ ] `Database` (SQLite). 컴포넌트 통로를 거쳐
 - [x] 언어·컨트롤·함수를 한곳에 모은 참조 문서, 그리고 AI용 참조(`llms.txt`)(D121 d, D124): [docs/reference](reference/README.ko.md), [llms.txt](../llms.txt)
 
 **v0.5를 시작하기 전에 정할 질문:**

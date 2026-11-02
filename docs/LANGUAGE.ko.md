@@ -252,6 +252,12 @@ TypeOf CType AddHandler AddressOf
 | R033 | `DateAdd`나 `DateDiff`가 모르는 구간(10절) |
 | R034 | PDF 파일을 쓸 글꼴이 없음: 전에 내보낸 앱(11.8절) |
 | R035 | 4포인트에서 72포인트를 벗어난 PDF 글자 크기(11.8절) |
+| R036 | 답이 오지 않은 HTTP 요청(11.9절) |
+| R037 | 상태가 400 이상인 HTTP 답. `Send`만 빼고(11.9절) |
+| R038 | 내장 객체가 없는 곳에서 그것을 씀. 놀이터의 `Http`(11.9절) |
+| R039 | JSON이 아닌 글(11.9절) |
+| R040 | `Json` 값을 다른 종류로 꺼냄. 글의 `AsInteger`(11.9절) |
+| R041 | JSON 객체에 없는 멤버(11.9절) |
 
 ## 2. 타입
 
@@ -264,6 +270,8 @@ TypeOf CType AddHandler AddressOf
 | `Date` | `DateTime` | 0001-01-01 |
 | `Object` | `Object?` | `Nothing` |
 | `List(Of T)` | `List<T>` | 빈 목록 (`New`로 선언할 때) |
+| `Json`(11.9절) | JSON 값 | `Nothing` (`New`로 선언하면 빈 객체) |
+| `HttpResponse`(11.9절) | 요청에 대한 답 | `Nothing` |
 | 컨트롤·컴포넌트 타입 (`Button`, `Label` 등) | 런타임 클래스 | `Nothing` |
 
 - **`Integer`는 모든 플랫폼에서 정확한 64비트 정수**이며, 웹도 마찬가지입니다(D26). 범위는 `Integer.MinValue`(-9223372036854775808)부터 `Integer.MaxValue`(9223372036854775807)까지입니다. 이 범위를 넘는 결과는 조용히 틀린 수가 되지 않고 실행 중 오류(R001)가 됩니다.
@@ -921,6 +929,39 @@ pdf.Save(dlgSave.FileName)
 ```
 
 속성은 `Save`할 때의 값으로 파일 전체에 쓰입니다. 쪽은 A4입니다. 표는 쪽 너비만큼 넓고, 열은 가장 긴 글에 맞춰 너비를 나누며, 칸의 글은 줄을 바꿉니다. 다음 쪽으로 넘어간 표는 그 쪽에 머리글 줄을 다시 그립니다. 글꼴은 IDE가 담아 온 나눔고딕입니다. 코드에 `PdfDocument`를 쓰는 프로젝트를 앱으로 내보내면 앱에도 글꼴이 들어가고, 다른 앱은 그 때문에 커지지 않습니다. PDF 파일에는 쓰인 글자만 들어갑니다. `PdfDocument`를 쓰기 전에 내보낸 앱에는 글꼴이 없어서 `Save`가 R034이며, 다시 내보내면 됩니다. 예제에도 있습니다. **Scores**는 Grid에 목록을 보여 주고 합계와 평균을 낸 뒤 PDF 파일로 저장합니다.
+
+### 11.9 Http와 JSON
+
+(DESIGN.ko.md D124, D125.) **`Http`**는 웹 서버와 이야기합니다. Visual Basic 6의 Internet Transfer Control이 `OpenURL`로 하던 일입니다([Microsoft](https://learn.microsoft.com/en-us/previous-versions/visualstudio/visual-basic-6/aa733648(v=vs.60))). `File`처럼 이름으로 쓰는 내장 객체이고, 폼에 놓지 않습니다.
+
+| 멤버 | 하는 일 |
+|---|---|
+| `Get(url)` | 답의 글 |
+| `GetJson(url)` | 답을 `Json`으로 |
+| `Post(url, body)` | 글을 보내고(`Header`로 다른 것을 정하지 않았으면 `Content-Type: text/plain; charset=utf-8`) 답의 글을 줌 |
+| `PostJson(url, json)` | `Json`을 `application/json`으로 보내고 답을 `Json`으로 줌 |
+| `Send(method, url, body)` | 어떤 메서드든(`"GET"`, `"PUT"`, `"DELETE"` 등. 본문이 없으면 `""`) 보내고 답 전체를 **`HttpResponse`**로 줌: `Status`, `Ok`(상태가 400 미만), `Text`, `Json`, `Header(name)` |
+| `Header(name)` | 그때부터 모든 요청에 함께 보내는 헤더: `Http.Header("Authorization") = "Bearer …"`. `""`를 넣으면 뺌 |
+| `Timeout` | 답을 몇 초 기다릴지. 처음에는 30, 1에서 600까지 |
+
+```vb
+Dim scores As Json = Http.GetJson("https://example.com/scores")
+For Each s In scores
+    lstScores.AddItem(s("name").AsString & ": " & s("points").AsInteger)
+Next
+Dim mine As New Json
+mine("name") = txtName.Text
+mine("points") = points
+Http.PostJson("https://example.com/scores", mine)
+```
+
+**기다리기.** 호출은 `File.ReadAllText`처럼(11.6절) 부른 자리에서 기다리고, 그것을 위해 따로 적을 것이 없습니다(Visual Basic .NET은 프로그램이 `Await`를 적게 합니다: [Microsoft](https://learn.microsoft.com/en-us/dotnet/visual-basic/programming-guide/concepts/async/)). 화면은 계속 그려지고 중지 버튼도 됩니다. 그동안 마우스 포인터는 기다림 모양이 되고, 그 사이의 클릭은 끝난 뒤에 차례로 실행되며(8.1절), 같은 처리기는 다시 시작되지 않습니다(D5). 완료 이벤트는 없습니다.
+
+**오류.** 주소가 틀리거나, 연결이 없거나, `Timeout` 안에 답이 없거나, 웹에서 서버가 그 페이지의 호출을 허용하지 않아(CORS) 답이 오지 않으면 시스템이 알려 준 내용과 함께 R036입니다. 상태 400 이상은 `Send`만 빼고 상태와 답의 첫 부분과 함께 R037이고, JSON이 아닌 답은 R039입니다. 모두 `Try`로 잡을 수 있습니다(9절). 답의 글은 `Content-Type`의 charset대로 읽습니다. 없으면 UTF-8, `euc-kr`과 그 다른 이름들은 코드 페이지 949, `iso-8859-1`은 Latin-1입니다. 보내는 본문은 UTF-8입니다.
+
+**`Json`**은 JSON 값입니다([RFC 8259](https://www.rfc-editor.org/rfc/rfc8259)). 객체, 배열, 글, 숫자, `True`나 `False`, 또는 null입니다. `Json.Parse(text)`가 글을 읽고, `Dim j As New Json`은 빈 객체를, `Json.Array()`는 빈 배열을 만듭니다. `j("name")`은 객체의 멤버, `j(0)`은 배열의 항목이며 각각 다시 `Json`이라 `j("address")("city")`처럼 한 단계씩 내려갑니다. 값은 그 형식 그대로 꺼냅니다. 그래서 `Variant`가 없습니다(2절): `AsString`, `AsInteger`(정수인 수), `AsDouble`, `AsBoolean`, 또는 `Json`에 `CStr`, `CInt`, `CDbl`, `CBool`. `Kind`는 어느 것인지 말해 줍니다: `"Object"`, `"Array"`, `"String"`, `"Number"`, `"Boolean"`, `"Null"`. `Count`는 멤버나 항목의 수, `Has(name)`은 객체에 그 멤버가 있는지, `Keys`는 객체의 멤버 이름들을 `String` 배열로, `For Each item In arr`는 배열의 항목을 차례로 돕니다. 쓰기: `j("name") = "Kim"`, `j("age") = 12`는 멤버를 넣거나 바꾸고(`Integer`, `Double`, `Boolean`, `String`, `Json`, `Nothing`), `j(0) = …`은 항목을 바꾸고, `arr.Add(value)`는 항목을 더하며, `Remove(name)`과 `Remove(index)`는 뺍니다. `Text`는 값을 띄어쓰기 없는 JSON 글로 줍니다. 같은 객체나 배열을 가리키는 두 `Json` 값은 `List` 변수 둘처럼 서로의 변화를 봅니다. JSON에서 읽은 수는 정수로 적혀 있으면 정수이고(`12.0`은 12), 정확히 담기에 너무 큰 `12345678901234567890`은 `Double`입니다. `Debug.Print(j)`와 `CStr(j)`는 글은 그 글 그대로, 수는 GuBASIC이 적는 대로(2.2절), `True`나 `False`, null은 "", 객체와 배열은 JSON 글로 보여 줍니다. 종류가 틀리면(수의 `AsString`, 객체의 `j(0)`, 객체의 `For Each`) R040, 없는 멤버는 R041, 없는 항목은 R003입니다. `Json`은 `=`나 `&`로 비교하거나 잇지 않습니다(A013). 먼저 값을 꺼내 주세요.
+
+**도는 곳.** IDE와 내보낸 앱에서 됩니다. 놀이터에는 `Http`가 없습니다(R038). 내보낸 macOS 앱은 네트워크에 닿을 수 있습니다. `Http`는 컴포넌트 통로를 거치는 첫 컴포넌트입니다([COMPONENT_CHANNEL.ko.md](COMPONENT_CHANNEL.ko.md)): `components/Http/component.yaml`이 컨트롤의 파일처럼 그것을 설명하고, 하는 일은 IDE와 앱을 위해 한 번만 씁니다. 예제에도 있습니다. **Weather**는 Open-Meteo에서 지금 날씨를 보여 줍니다.
 
 ## 12. 열린 질문
 

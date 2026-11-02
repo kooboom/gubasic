@@ -1,0 +1,24 @@
+GET https://api.example.com/hello
+200 text/plain; charset=utf-8
+안녕하세요
+
+GET https://api.example.com/scores
+200 application/json
+X-Count: 2
+[{"name":"김하나","points":10,"ok":true},
+ {"name":"Lee","points":7.0,"ok":false}]
+
+POST https://api.example.com/echo
+201 text/plain
+echoed
+
+POST https://api.example.com/scores
+200 application/json
+{"ok": true, "id": 3}
+
+GET https://api.example.com/missing
+404 text/html
+<html>Not here</html>
+
+GET https://api.example.com/down
+fails connection refused

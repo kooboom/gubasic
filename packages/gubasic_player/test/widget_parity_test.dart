@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/gestures.dart';
@@ -93,6 +94,13 @@ void main() {
       final several = sources.length > 1;
       final expected = File('$base.out').readAsStringSync().trimRight();
       final settings = File('$base.settings');
+      // What servers answer the program (D125): NAME.http.
+      final httpFile = File('$base.http');
+      final http = _FakeHttp(
+        httpFile.existsSync()
+            ? parseHttpScript(httpFile.readAsStringSync())
+            : const [],
+      );
       // The files the program reads (D113): NAME.files/.
       final filesDir = Directory('$base.files');
       final files = _FakeFiles({
@@ -105,7 +113,9 @@ void main() {
         [for (final f in sources.skip(1)) f.file],
         settings.existsSync() ? settings.readAsStringSync().trim() : null,
         files,
+        http,
       );
+      http.transcript = host.transcript;
       final session = RunSession(
         StartupForm(
           startup.file,
@@ -188,6 +198,30 @@ class _FakeFiles implements GbFiles {
   Future<bool> exists(String path) async => disk.containsKey(path);
 }
 
+/// Servers answered from a test's NAME.http (D125), behind the run host's
+/// own Http object, each request recorded as [ScriptedHost] records it.
+class _FakeHttp implements GbHttp {
+  _FakeHttp(this.stubs);
+
+  final List<HttpStub> stubs;
+  List<String> transcript = [];
+
+  @override
+  Future<GbHttpReply> send(GbHttpRequest request, Duration timeout) async {
+    transcript.add(
+      TranscriptLine.http(
+        HttpRequest(request.method, request.url, request.headers, request.body),
+      ),
+    );
+    final stub = stubs
+        .where((s) => s.method == request.method && s.url == request.url)
+        .firstOrNull;
+    if (stub == null) throw const GbHttpError('no server answers in this test');
+    if (stub.failure != null) throw GbHttpError(stub.failure!);
+    return GbHttpReply(stub.status, stub.headers, utf8.encode(stub.body));
+  }
+}
+
 /// Records what the program shows, as [ScriptedHost] does.
 class _RecordingHost extends RunHost {
   _RecordingHost(
@@ -195,11 +229,13 @@ class _RecordingHost extends RunHost {
     List<FormFile> others,
     String? settings,
     this.files,
+    _FakeHttp http,
   ) : _several = others.isNotEmpty,
       super(
         others: others,
         settings: GbMemorySettings()..values.addAll({'': ?settings}),
         files: files,
+        http: http,
         pdfFont: () async =>
             File('../../apps/ide/fonts/nanumgothic/NanumGothic-Regular.ttf')
                 .readAsBytesSync(),

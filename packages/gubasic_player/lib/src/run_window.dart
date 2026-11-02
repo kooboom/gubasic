@@ -8,6 +8,7 @@ import 'package:gubasic_runtime/gubasic_runtime.dart';
 import 'fit_view.dart';
 import 'form_window.dart';
 import 'run_session.dart';
+import 'waiting_pointer.dart';
 
 /// The key of the run window's close button.
 const runWindowCloseKey = ValueKey('runWindow.close');
@@ -117,10 +118,13 @@ class _RunWindowState extends State<RunWindow> {
   }
 
   @override
-  Widget build(BuildContext context) => Navigator(
-    key: _navigator,
-    onGenerateRoute: (_) =>
-        PageRouteBuilder<void>(pageBuilder: (_, _, _) => _page()),
+  Widget build(BuildContext context) => WaitingPointer(
+    host: widget.session.host,
+    child: Navigator(
+      key: _navigator,
+      onGenerateRoute: (_) =>
+          PageRouteBuilder<void>(pageBuilder: (_, _, _) => _page()),
+    ),
   );
 
   /// The window, shrunk to fit when [RunWindow.fit] is on and it is too

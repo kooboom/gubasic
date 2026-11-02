@@ -129,6 +129,23 @@
 - `DateInterval.Minute As String`
 - `DateInterval.Second As String`
 
+### Json
+
+- `Json.Parse(text As String) As Json`
+- `Json.Array() As Json`
+
+### Http
+
+Talks to web servers over HTTP (docs/DESIGN.md D124, D125), the way Visual Basic 6's Internet Transfer Control did with OpenURL (https://learn.microsoft.com/en-us/previous-versions/visualstudio/visual-basic-6/aa733648(v=vs.60)). A built-in object used by its name, not put on a form: Http.Get(url) gives the answer's text, Http.GetJson(url) its JSON, Http.Post(url, body) and Http.PostJson(url, json) send a body and give the answer, and Http.Send(method, url, body) gives the whole answer as an HttpResponse, whatever its status. A call waits where it is, as File.ReadAllText does: the screen keeps drawing, the pointer shows waiting, and clicks made meanwhile run after it, in turn. Header(name) is a header sent with every request from then on ("" takes it away); Timeout is how many seconds to wait for an answer. A request that gets no answer is R036; a status from 400 is R037 in all but Send; text that is not JSON is R039. The first component through the component channel (docs/COMPONENT_CHANNEL.md).
+
+- `Http.Timeout As Integer (can be set)`
+- `Http.Get(url As String) As String`
+- `Http.Post(url As String, body As String) As String`
+- `Http.GetJson(url As String) As Json`
+- `Http.PostJson(url As String, body As Json) As Json`
+- `Http.Send(method As String, url As String, body As String) As HttpResponse`
+- `Http.Header(name As String) As String (can be assigned to)`
+
 ## Members of types
 
 ### String
@@ -199,6 +216,28 @@
 - `AddTable(table As Table or Grid)`
 - `NewPage()`
 - `Save(path As String)`
+
+### Json
+
+- `Kind As String`
+- `Count As Integer`
+- `AsString As String`
+- `AsInteger As Integer`
+- `AsDouble As Double`
+- `AsBoolean As Boolean`
+- `Keys As String()`
+- `Text As String`
+- `Has(name As String) As Boolean`
+- `Add(value As number, Boolean, String, Json or Nothing)`
+- `Remove(member As number or String)`
+
+### HttpResponse
+
+- `Status As Integer`
+- `Ok As Boolean`
+- `Text As String`
+- `Json As Json`
+- `Header(name As String) As String`
 
 ## Constants
 

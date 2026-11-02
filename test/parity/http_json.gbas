@@ -1,0 +1,63 @@
+' Http and JSON (D124, D125): Get, GetJson, Post, PostJson and Send, a
+' header sent with every request, Timeout, and the errors: no answer
+' (R036), a status from 400 (R037), text that is not JSON (R039).
+Sub btnGet_Click()
+    Debug.Print(Http.Timeout)
+    Debug.Print(Http.Get("https://api.example.com/hello"))
+    Http.Header("Authorization") = "Bearer abc"
+    Http.Timeout = 5
+    Debug.Print(Http.Header("authorization") & " / " & Http.Timeout)
+    Debug.Print(Http.Get("https://api.example.com/hello"))
+    Http.Header("Authorization") = ""
+    Debug.Print("[" & Http.Header("Authorization") & "]")
+End Sub
+
+Sub btnJson_Click()
+    Dim scores As Json = Http.GetJson("https://api.example.com/scores")
+    Debug.Print(scores.Kind & " of " & scores.Count)
+    For Each s In scores
+        Debug.Print(s("name").AsString & ": " & s("points").AsInteger & " (" & s("ok").AsBoolean & ")")
+    Next
+    Dim first As Json = scores(0)
+    Debug.Print(first.Text)
+    Debug.Print(first("points").AsDouble / 4)
+End Sub
+
+Sub btnPost_Click()
+    Debug.Print(Http.Post("https://api.example.com/echo", "hello" & vbLf & "world"))
+    Dim score As New Json
+    score("name") = "박둘"
+    score("points") = 85
+    score("tags") = Json.Array()
+    score("tags").Add("quiz")
+    score("tags").Add(2.5)
+    Dim reply As Json = Http.PostJson("https://api.example.com/scores", score)
+    Debug.Print(reply("ok").AsBoolean & " #" & reply("id").AsInteger)
+End Sub
+
+Sub btnSend_Click()
+    Dim r As HttpResponse = Http.Send("get", "https://api.example.com/missing", "")
+    Debug.Print(r.Status & " " & r.Ok & " " & r.Header("Content-Type") & " " & r.Text)
+    r = Http.Send("POST", "https://api.example.com/echo", "sent")
+    Debug.Print(r.Status & " " & r.Ok & " [" & r.Header("X-None") & "] " & r.Text)
+    Debug.Print(Http.Send("GET", "https://api.example.com/scores", "").Json(1)("name").AsString)
+End Sub
+
+Sub btnErrors_Click()
+    Try
+        Http.Get("https://api.example.com/missing")
+    Catch ex As Exception
+        Debug.Print(ex.Message)
+    End Try
+    Try
+        Http.GetJson("https://api.example.com/hello")
+    Catch ex As Exception
+        Debug.Print(ex.Message)
+    End Try
+    Try
+        Http.Get("https://api.example.com/down")
+    Catch ex As Exception
+        Debug.Print(ex.Message)
+    End Try
+    Http.Get("https://nowhere.example.com/")
+End Sub

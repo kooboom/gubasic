@@ -39,10 +39,11 @@ void main(List<String> args) {
     ..writeln('/// (name, null, code) NAME.MODULE.gbas (D102); the last is')
     ..writeln('/// whether NAME.startup says it starts with Sub Main; then the')
     ..writeln('/// files of NAME.files/ the program reads (D113), name to')
-    ..writeln('/// base64.')
+    ..writeln('/// base64; last, what servers answer it, NAME.http (D125).')
     ..writeln('const parityCases = <(String, String, List<String>, String, '
         'String?, String?, String?, List<String>, '
-        'List<(String, String?, String)>, bool, Map<String, String>)>[');
+        'List<(String, String?, String)>, bool, Map<String, String>, '
+        'String?)>[');
   for (final p in programs) {
     final name = p.uri.pathSegments.last.replaceFirst('.gbas', '');
     final input = read(p.path.replaceFirst('.gbas', '.in'));
@@ -106,6 +107,7 @@ void main(List<String> args) {
     }
     out
       ..writeln('    },')
+      ..writeln('    ${jsonEncode(read('$base.http'))},')
       ..writeln('  ),');
   }
   out.writeln('];');

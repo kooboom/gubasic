@@ -593,7 +593,30 @@ enum DiagnosticCode {
   noPdfFont('R034'),
 
   /// A PdfDocument letter size out of its range (D118). Args: the value.
-  pdfSize('R035');
+  pdfSize('R035'),
+
+  /// An HTTP request that got no answer (D125): the address is wrong,
+  /// the network is down, the server did not answer in time, or on the
+  /// web the server does not allow the page. Args: the URL, the detail.
+  httpFailed('R036'),
+
+  /// An HTTP answer with a status from 400 (D125). Args: the status, the
+  /// URL, the start of the answer's text.
+  httpStatus('R037'),
+
+  /// A built-in object used where the program runs without it (the
+  /// playground, D125). Args: the object's name.
+  componentUnavailable('R038'),
+
+  /// Text that is not JSON (D125). Args: where it went wrong.
+  jsonInvalid('R039'),
+
+  /// A Json value asked for as another kind (D125): AsInteger of a String.
+  /// Args: what was asked, the kind it is.
+  jsonKind('R040'),
+
+  /// A member no JSON object has (D125). Args: the name, the names it has.
+  jsonKey('R041');
 
   const DiagnosticCode(this.code, [this.severity = DiagnosticSeverity.error]);
 

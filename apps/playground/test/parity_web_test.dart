@@ -57,11 +57,14 @@ void main() {
         others,
         startsWithMain,
         files,
+        httpScript,
       ) in parityCases) {
     final disk = {
       for (final MapEntry(:key, :value) in files.entries)
         key: base64Decode(value),
     };
+    final http =
+        httpScript == null ? const <HttpStub>[] : parseHttpScript(httpScript);
     if (others.isNotEmpty) {
       // A project with several forms (D88), or modules (D102).
       test(name, () async {
@@ -88,7 +91,8 @@ void main() {
                 if (file == null) (name: moduleName, source: code),
             ],
             startsWithMain: startsWithMain,
-            disk: disk);
+            disk: disk,
+            http: http);
         expect('${lines.join('\n')}\n', expected);
       });
       continue;
@@ -97,7 +101,7 @@ void main() {
       test(name, () async {
         final lines = await runEventScript(source,
             readFormFile(form, name: 'Form1', pictures: pictures).form, events!,
-            settings: settings, pictures: pictures, disk: disk);
+            settings: settings, pictures: pictures, disk: disk, http: http);
         expect('${lines.join('\n')}\n', expected);
       });
       continue;

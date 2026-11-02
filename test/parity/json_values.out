@@ -1,0 +1,25 @@
+Debug.Print: Object 8 name,age,height,big,ok,none,tags,address
+Debug.Print: String Number Boolean Null Array Object
+Debug.Print: Kim 12 151.5 1000 True
+Debug.Print: Kim 12 151.5 True []
+Debug.Print: 서울 b 2
+Debug.Print: True False
+Debug.Print: 12 "Kim" ["a","b"] null
+Debug.Print: {"name":"Kim","age":12,"height":151.5,"big":1000,"ok":true,"none":null,"tags":["a","b"],"address":{"city":"서울"}}
+Debug.Print: Kim
+Debug.Print: 151.5
+Debug.Print: {"n":2,"x":2.5,"whole":3,"s":"quote \" and \\ slash","b":false,"nothing":null,"inner":{"city":"서울"},"list":[10,"two",[3]]}
+Debug.Print: {"n":2,"x":2.5,"whole":3,"s":"quote \" and \\ slash","b":false,"inner":{"city":"서울"},"list":[10,[3]]}
+Debug.Print: 부산
+Debug.Print: 46
+Debug.Print: just text 1.2345678901234567E+19 -0.5
+Debug.Print: "é\n\"x\""
+Debug.Print: This JSON value is of kind Number, so it does not fit AsString. Check Kind first, and take the value out with the As… that matches it.
+Debug.Print: This JSON value is of kind Number (151.5), so it does not fit AsInteger. Check Kind first, and take the value out with the As… that matches it.
+Debug.Print: There is no item number 2: there are 2 items, numbered from 0. Check the number.
+Debug.Print: This JSON value is of kind String, so it does not fit an item number. Check Kind first, and take the value out with the As… that matches it.
+Debug.Print: This JSON value is of kind Object, so it does not fit For Each. Check Kind first, and take the value out with the As… that matches it.
+Debug.Print: This text is not JSON: unexpected "}" at line 1, column 7. Check it at the place named; Http.Get gives the text as it came.
+Debug.Print: This text is not JSON: the text ends too soon. Check it at the place named; Http.Get gives the text as it came.
+Debug.Print: This text is not JSON: unexpected "x" at line 1, column 10. Check it at the place named; Http.Get gives the text as it came.
+Error R041 @ 87

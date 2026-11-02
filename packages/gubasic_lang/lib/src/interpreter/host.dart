@@ -1,3 +1,4 @@
+import '../diagnostics/diagnostic.dart';
 import '../pdf/pdf_document.dart';
 
 /// What a running program needs from the screen. The playground shows
@@ -181,4 +182,45 @@ abstract interface class FileHost {
   /// Writes [document] to [path] as a PDF file (D117), with `pdfBytes` and
   /// the font the IDE and the apps carry for it; throws a [FileProblem].
   Future<void> writePdf(String path, GbPdfDocument document);
+}
+
+/// What a component through the component channel
+/// (docs/COMPONENT_CHANNEL.md, D125) needs from where the program runs:
+/// the instance of each built-in object (`Http`). The IDE and the apps
+/// have one; where there is none (the playground), using the object stops
+/// the program with R038.
+abstract interface class ComponentHost {
+  /// A new instance of the component named [component] (`Http`), or null
+  /// where this host does not have it.
+  ComponentInstance? createComponent(String component);
+}
+
+/// One instance of a component written in Dart (docs/COMPONENT_CHANNEL.md):
+/// the interpreter, and later the transpiled code, reads and sets its
+/// properties and calls its methods through this, with GuBASIC's values
+/// (`GbInt`, `double`, `bool`, `String`, `GbJson`, …) on both sides. The
+/// analyzer has checked the names and types against the component.yaml;
+/// an instance reports what goes wrong at run time by throwing a
+/// [ComponentProblem].
+abstract interface class ComponentInstance {
+  /// The value of property [name], as the component.yaml names it.
+  Object? getProperty(String name);
+
+  /// The program sets property [name].
+  void setProperty(String name, Object? value);
+
+  /// Calls method [name] with [args]; waits for the answer.
+  Future<Object?> call(String name, List<Object?> args);
+
+  /// Assigns to the settable method [name]: `Http.Header("Accept") = …`.
+  void assign(String name, List<Object?> args, Object? value);
+}
+
+/// Why a component could not do what it was asked (D125): the program
+/// stops with [code] and [args], as `_fail` would.
+class ComponentProblem implements Exception {
+  const ComponentProblem(this.code, [this.args = const []]);
+
+  final DiagnosticCode code;
+  final List<String> args;
 }

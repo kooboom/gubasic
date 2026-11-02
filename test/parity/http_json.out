@@ -1,0 +1,36 @@
+> btnGet.Click
+Debug.Print: 30
+Http: GET https://api.example.com/hello
+Debug.Print: 안녕하세요
+Debug.Print: Bearer abc / 5
+Http: GET https://api.example.com/hello [Authorization: Bearer abc]
+Debug.Print: 안녕하세요
+Debug.Print: []
+> btnJson.Click
+Http: GET https://api.example.com/scores [Accept: application/json]
+Debug.Print: Array of 2
+Debug.Print: 김하나: 10 (True)
+Debug.Print: Lee: 7 (False)
+Debug.Print: {"name":"김하나","points":10,"ok":true}
+Debug.Print: 2.5
+> btnPost.Click
+Http: POST https://api.example.com/echo [Content-Type: text/plain; charset=utf-8] hello\nworld
+Debug.Print: echoed
+Http: POST https://api.example.com/scores [Content-Type: application/json; charset=utf-8; Accept: application/json] {"name":"박둘","points":85,"tags":["quiz",2.5]}
+Debug.Print: True #3
+> btnSend.Click
+Http: GET https://api.example.com/missing
+Debug.Print: 404 False text/html <html>Not here</html>
+Http: POST https://api.example.com/echo [Content-Type: text/plain; charset=utf-8] sent
+Debug.Print: 201 True [] echoed
+Http: GET https://api.example.com/scores
+Debug.Print: Lee
+> btnErrors.Click
+Http: GET https://api.example.com/missing
+Debug.Print: The server answered 404 to https://api.example.com/missing: <html>Not here</html>. Check the address and what the server expects; Http.Send gives the answer whatever its status.
+Http: GET https://api.example.com/hello [Accept: application/json]
+Debug.Print: This text is not JSON: unexpected "안" at line 1, column 1. Check it at the place named; Http.Get gives the text as it came.
+Http: GET https://api.example.com/down
+Debug.Print: No answer came from https://api.example.com/down (connection refused). Check the address and the network connection; on the web the server must allow pages from other sites to call it (CORS).
+Http: GET https://nowhere.example.com/
+Error R036 @ 62

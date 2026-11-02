@@ -4,6 +4,7 @@ import 'package:gubasic_runtime/gubasic_runtime.dart';
 import 'fit_view.dart';
 import 'run_session.dart';
 import 'run_window.dart';
+import 'waiting_pointer.dart';
 
 /// A running program as an exported app shows it (D84): the form alone,
 /// with no window frame of its own (the browser's page, or the app's
@@ -32,10 +33,13 @@ class _AppViewState extends State<AppView> {
   }
 
   @override
-  Widget build(BuildContext context) => Navigator(
-    key: _navigator,
-    onGenerateRoute: (_) =>
-        PageRouteBuilder<void>(pageBuilder: (_, _, _) => _page()),
+  Widget build(BuildContext context) => WaitingPointer(
+    host: widget.session.host,
+    child: Navigator(
+      key: _navigator,
+      onGenerateRoute: (_) =>
+          PageRouteBuilder<void>(pageBuilder: (_, _, _) => _page()),
+    ),
   );
 
   Widget _page() {

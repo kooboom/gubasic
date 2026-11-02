@@ -1,0 +1,27 @@
+Set cboCity.Items: [서울]
+Set cboCity.Items: [서울, 부산]
+Set cboCity.Items: [서울, 부산, 제주]
+Set cboCity.ListIndex: 0
+Set lblStatus.Caption: 도시를 고르고 날씨 보기를 누르세요.
+> btnWeather.Click
+Set lblStatus.Caption: 가져오는 중…
+Http: GET https://api.open-meteo.com/v1/forecast?latitude=37.57&longitude=126.98&current=temperature_2m,wind_speed_10m,weather_code&timezone=Asia%2FSeoul [Accept: application/json]
+Set lblTemp.Caption: 서울 12.3°C
+Set lblSky.Caption: 구름 조금에서 흐림
+Set lblWind.Caption: 바람 5.4 km/h
+Set lblStatus.Caption: 2026-11-02T10:15 기준
+> cboCity.Select 1
+> btnWeather.Click
+Set lblStatus.Caption: 가져오는 중…
+Http: GET https://api.open-meteo.com/v1/forecast?latitude=35.18&longitude=129.08&current=temperature_2m,wind_speed_10m,weather_code&timezone=Asia%2FSeoul [Accept: application/json]
+Set lblTemp.Caption: 부산 15°C
+Set lblSky.Caption: 비
+Set lblWind.Caption: 바람 12 km/h
+Set lblStatus.Caption: 2026-11-02T10:15 기준
+> cboCity.Select 2
+> btnWeather.Click
+Set lblStatus.Caption: 가져오는 중…
+Http: GET https://api.open-meteo.com/v1/forecast?latitude=33.50&longitude=126.53&current=temperature_2m,wind_speed_10m,weather_code&timezone=Asia%2FSeoul [Accept: application/json]
+Set lblStatus.Caption: No answer came from https://api.open-meteo.com/v1/forecast?latitude=33.50&longitude=126.53&current=temperature_2m,wind_speed_10m,weather_code&timezone=Asia%2FSeoul (connection refused). Check the address and the network connection; on the web the server must allow pages from other sites to call it (CORS).
+Still open
+Closed

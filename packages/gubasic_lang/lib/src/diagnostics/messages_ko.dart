@@ -176,6 +176,18 @@ const Map<DiagnosticCode, String> koreanMessages = {
   DiagnosticCode.tableColumn:
       '그런 열이 없습니다: {0}. 열 이름은 Header로 확인하고, 있는지는 Column(name)이 -1이 아닌지로 알 수 있습니다(있는 열: {1}).',
   DiagnosticCode.noFiles: '여기서는 파일을 읽고 쓸 수 없습니다. IDE에서 실행하거나 앱으로 실행해 주세요.',
+  DiagnosticCode.httpFailed:
+      '{0} 주소에서 답이 오지 않았습니다({1}). 주소와 네트워크 연결을 확인해 주세요. 웹에서는 서버가 다른 사이트의 페이지에서 부르는 것을 허용해야 합니다(CORS).',
+  DiagnosticCode.httpStatus:
+      '서버가 {1} 주소에 {0} 으로 답했습니다: {2}. 주소와 서버가 받는 형식을 확인해 주세요. Http.Send는 상태와 상관없이 답을 줍니다.',
+  DiagnosticCode.componentUnavailable:
+      '{0} 객체는 여기서 쓸 수 없습니다. IDE에서 실행하거나 앱으로 실행해 주세요.',
+  DiagnosticCode.jsonInvalid:
+      '이 글은 JSON이 아닙니다: {0}. 그 자리를 확인해 주세요. Http.Get은 온 글을 그대로 줍니다.',
+  DiagnosticCode.jsonKind:
+      '이 JSON 값은 {1} 종류여서 {0} 자리에는 맞지 않습니다. 먼저 Kind를 확인하고, 맞는 As… 로 꺼내 주세요.',
+  DiagnosticCode.jsonKey:
+      '이 JSON 객체에는 "{0}" 멤버가 없습니다. 있는 멤버: {1}. Has(name)으로 있는지 알 수 있습니다.',
   DiagnosticCode.popupWithoutItems:
       '{0} 메뉴에는 항목이 없어서 PopupMenu로 보일 것이 없습니다. 메뉴 편집기에서 항목을 넣거나, 이 항목이 든 메뉴를 보여 주세요.',
   DiagnosticCode.popupOfOtherForm:
