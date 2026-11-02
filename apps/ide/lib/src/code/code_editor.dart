@@ -58,6 +58,12 @@ const indentWidth = 4;
 /// completion list (D50): names typed since then are not offered yet.
 const completionCompileDelay = Duration(milliseconds: 300);
 
+/// How long the code rests, after the caret left a line, before the line
+/// is written as GuBASIC writes it (D133): longer than the half second in
+/// which the field's undo history keeps one step, so that the line as it
+/// was typed is a step of its own, and one undo takes the fix back.
+const caseFixDelay = Duration(milliseconds: 600);
+
 /// The keys that open the completion list (D50): ⌥Space on a Mac, where
 /// ⌃Space switches the input source, Ctrl+Space elsewhere.
 SingleActivator get completionShortcut =>
@@ -203,6 +209,11 @@ class _CodeEditorState extends State<CodeEditor>
         if (_controller.selection.isValid) _caret = _controller.selection;
         _closeCompletion();
         _commitComposing();
+        // Leaving the editor leaves the line too (D133).
+        if (_caret.isValid) {
+          _leaveLine(_lineAt(_controller.text, _caret.baseOffset));
+          _scheduleCaseFix();
+        }
       } else if (!_controller.selection.isValid) {
         // Back after a run hid the editor: the caret where it was, not at
         // the end of the code.
@@ -264,6 +275,9 @@ class _CodeEditorState extends State<CodeEditor>
     );
     _changing = false;
     _last = _controller.value;
+    _toFix.clear();
+    _keptAsWritten.clear();
+    _lastFix = null;
     setState(() {
       _undo.dispose();
       _undo = UndoHistoryController();
@@ -546,6 +560,7 @@ class _CodeEditorState extends State<CodeEditor>
   void dispose() {
     HardwareKeyboard.instance.removeHandler(_countKey);
     _compileTimer?.cancel();
+    _caseTimer?.cancel();
     _completion.dispose();
     _controller.dispose();
     _focus.dispose();
@@ -573,6 +588,7 @@ class _CodeEditorState extends State<CodeEditor>
     final last = _last;
     _last = value;
     _reportCaret(value);
+    if (!_fixingCase) _caseAfter(last, value);
     if (value.text != last.text) _moveBreakpoints(last.text, value.text);
     if (!widget.locked && _isNewLine(last, value)) {
       // An Enter that committed what was being composed, even when the
@@ -592,7 +608,110 @@ class _CodeEditorState extends State<CodeEditor>
       _committedAt = null;
     }
     _write();
-    _completeAfter(last, value);
+    if (!_fixingCase) _completeAfter(last, value);
+  }
+
+  // ---------------------------------------------------------------------
+  // Words written as GuBASIC writes them (D133)
+
+  /// The lines the caret left, by number, with their text then: written
+  /// as GuBASIC writes them once the code rests ([caseFixDelay]).
+  final _toFix = <int, String>{};
+
+  /// Lines whose fix was undone, with their text: kept as written until
+  /// they change.
+  final _keptAsWritten = <int, String>{};
+
+  /// The last fix: the code before and after it, and the lines it changed
+  /// as they were, to know an undo of it.
+  ({String before, String after, Map<int, String> lines})? _lastFix;
+
+  Timer? _caseTimer;
+  var _fixingCase = false;
+
+  static int _lineAt(String text, int offset) => '\n'
+      .allMatches(text.substring(0, min(max(0, offset), text.length)))
+      .length;
+
+  static String _lineText(String text, int line) {
+    final lines = text.split('\n');
+    return line < lines.length ? lines[line] : '';
+  }
+
+  /// After a change from [last] to [value]: a line left by the caret,
+  /// without a change of text or with an Enter, is to be fixed; an undo
+  /// of the last fix keeps its lines as written.
+  void _caseAfter(TextEditingValue last, TextEditingValue value) {
+    final fix = _lastFix;
+    if (fix != null && value.text != last.text) {
+      if (value.text == fix.before) _keptAsWritten.addAll(fix.lines);
+      if (value.text != fix.after) _lastFix = null;
+    }
+    if (!last.selection.isValid || !value.selection.isValid) return;
+    final was = _lineAt(last.text, last.selection.baseOffset);
+    final now = _lineAt(value.text, value.selection.baseOffset);
+    if (was != now && (value.text == last.text || _isNewLine(last, value))) {
+      _leaveLine(was);
+    }
+    // A commit changes the composing range, not the text: the field's undo
+    // history records it, so the code has not rested yet either.
+    if (value.text != last.text ||
+        value.composing != last.composing ||
+        was != now) {
+      _scheduleCaseFix();
+    }
+  }
+
+  void _leaveLine(int line) => _toFix[line] = _lineText(_controller.text, line);
+
+  void _scheduleCaseFix() {
+    if (_toFix.isEmpty) return;
+    _caseTimer?.cancel();
+    _caseTimer = Timer(caseFixDelay, _fixLines);
+  }
+
+  /// Writes the lines left as GuBASIC writes them: not while anything is
+  /// being composed (D37), not while a program runs, not the caret's line
+  /// while the editor has the focus, not a line changed since it was left,
+  /// and not one whose fix was undone.
+  void _fixLines() {
+    if (!mounted || _toFix.isEmpty || widget.locked) return;
+    final value = _controller.value;
+    if (_composing || _isComposing(value) || value.text != _written) {
+      _scheduleCaseFix();
+      return;
+    }
+    final text = value.text;
+    final caret = _focus.hasFocus && value.selection.isValid
+        ? _lineAt(text, value.selection.baseOffset)
+        : -1;
+    final lines = text.split('\n');
+    final program = _freshProgram();
+    final fixes = <CaseFix>[];
+    final changed = <int, String>{};
+    for (final MapEntry(key: line, value: left) in {..._toFix}.entries) {
+      if (line == caret) continue;
+      _toFix.remove(line);
+      if (line >= lines.length || lines[line] != left) continue;
+      if (_keptAsWritten[line] == left) continue;
+      _keptAsWritten.remove(line);
+      var start = 0;
+      for (var i = 0; i < line; i++) {
+        start += lines[i].length + 1;
+      }
+      final found = caseFixes(program, start, start + left.length);
+      if (found.isEmpty) continue;
+      fixes.addAll(found);
+      changed[line] = left;
+    }
+    if (fixes.isEmpty) return;
+    fixes.sort((a, b) => a.offset.compareTo(b.offset));
+    final fixed = withCaseFixes(text, fixes);
+    _lastFix = (before: text, after: fixed, lines: changed);
+    _fixingCase = true;
+    // As long as before: the caret and anything else stay where they are.
+    _controller.value = value.copyWith(text: fixed);
+    _fixingCase = false;
   }
 
   /// Tells the shell the caret's line, for F9 (D127).

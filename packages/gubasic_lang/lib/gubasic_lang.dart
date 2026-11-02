@@ -24,6 +24,7 @@ export 'src/analyzer/compile.dart';
 export 'src/analyzer/symbols.dart';
 export 'src/completion/completion.dart';
 export 'src/editing/after_enter.dart';
+export 'src/editing/case_fix.dart';
 export 'src/forms/anchor.dart';
 export 'src/forms/shortcut.dart';
 export 'src/forms/component.dart';

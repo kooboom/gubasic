@@ -91,5 +91,10 @@ class AnalysisResult {
   /// name.
   final Map<String, StructureType> projectStructures = {};
 
+  /// How names that are neither symbols nor members are spelled where
+  /// they are declared (D133): a type's name after As, a field in a With
+  /// list, an event after Handles or AddHandler.
+  final Map<Identifier, String> spellings = Map.identity();
+
   bool get hasErrors => diagnostics.any((d) => d.isError);
 }

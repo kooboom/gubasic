@@ -587,6 +587,7 @@ class _Analyzer {
         _unknownEvent(target, e.name, component, component.name);
         continue;
       }
+      _result.spellings[e.name] = event.name;
       final handler = EventHandler(control, event);
       events.add((handler, owner, e));
       senders.add(
@@ -782,14 +783,21 @@ class _Analyzer {
     final lower = name.toLowerCase();
     if (lower == 'variant') return GbType.unknown; // P015
     if (lower == 'list') {
+      _result.spellings[ref.name] = 'List';
       final element = ref.typeArguments.isEmpty
           ? GbType.object
           : _resolveType(ref.typeArguments.first);
       return ListType(element);
     }
     final named = lookupNamedType(lower);
-    if (named != null) return named;
-    if (_structureNamed(lower) case final t?) return t;
+    if (named != null) {
+      _result.spellings[ref.name] = named.displayName;
+      return named;
+    }
+    if (_structureNamed(lower) case final t?) {
+      _result.spellings[ref.name] = t.name;
+      return t;
+    }
     if (componentAliased(name) case final c?) {
       // `RadioButton` (Visual Basic .NET) for OptionButton (D104).
       _reportAt(
@@ -995,6 +1003,7 @@ class _Analyzer {
           s.event.target, s.event.name, type.component, type.displayName);
       return;
     }
+    _result.spellings[s.event.name] = event.name;
     final decl = symbol?.procedure;
     if (decl == null || symbol!.kind != SymbolKind.procedure) return;
     _handlerFits(decl, event, _text(s.event.target),
@@ -1572,6 +1581,7 @@ class _Analyzer {
         _value(i.value);
         continue;
       }
+      _result.spellings[i.name] = spec.name;
       if (!given.add(name.toLowerCase())) {
         _reportAt(i.name, DiagnosticCode.withTwice, [spec.name]);
       }

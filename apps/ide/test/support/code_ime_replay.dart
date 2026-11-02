@@ -255,6 +255,76 @@ void defineCodeImeTests(Map<String, String> logs) {
     }
   }
 
+  // With a line left to be fixed above (D133): while anything is being
+  // composed, no line changes; once all is committed and the code rests,
+  // the line is written as GuBASIC writes it, and the file has it.
+  for (final MapEntry(key: source, value: json) in logs.entries) {
+    final scenarios = (jsonDecode(json)['scenarios'] as Map<String, Object?>)
+        .map((k, v) => MapEntry(k, (v! as List).cast<Map<String, Object?>>()));
+    for (final MapEntry(key: id, value: all) in scenarios.entries) {
+      final resets = [
+        for (var i = 0; i < all.length; i++)
+          if (all[i]['kind'] == 'reset') i,
+      ];
+      final log = all.sublist(resets.isEmpty ? 0 : resets.last + 1);
+      testWidgets(
+        'code editor, $source $id, with a line left to fix (D133)',
+        variant: source.endsWith('-app.json')
+            ? TargetPlatformVariant.only(TargetPlatform.macOS)
+            : const DefaultTestVariant(),
+        (t) async {
+          const left = 'dim total as integer\n';
+          const before = "$left' ";
+          const after = '\n';
+          await open(t, '$before$after');
+          for (final at in [3, before.length]) {
+            t.testTextInput.updateEditingValue(
+              TextEditingValue(
+                text: '$before$after',
+                selection: TextSelection.collapsed(offset: at),
+              ),
+            );
+            await t.pump();
+          }
+          var inField = true;
+          var composedOnce = false;
+          for (final e in log) {
+            switch (e['kind']) {
+              case 'value':
+                final v = shifted(e, before, after);
+                t.testTextInput.updateEditingValue(v);
+                await t.pump();
+                if (file(t) != editor(t).text) {
+                  // Composing: however long the code rests, nothing changes.
+                  composedOnce = true;
+                  await t.pump(caseFixDelay * 2);
+                  expect(
+                    editor(t).text,
+                    v.text,
+                    reason: 'composing at ${e['ms']} ms',
+                  );
+                }
+              case 'focus' when e['hasFocus'] == false && inField:
+                FocusManager.instance.primaryFocus?.unfocus();
+                await t.pump();
+                inField = false;
+              case 'focus' when e['hasFocus'] == true && !inField:
+                await t.tap(find.byKey(codeFieldKey));
+                await t.pump();
+                inField = true;
+            }
+          }
+          expect(composedOnce, isTrue, reason: 'the recording composes');
+          FocusManager.instance.primaryFocus?.unfocus();
+          await t.pump();
+          await t.pump(caseFixDelay * 2);
+          expect(editor(t).text, startsWith('Dim total As Integer\n'));
+          expect(file(t), editor(t).text, reason: 'the file has the fix');
+        },
+      );
+    }
+  }
+
   testWidgets('Enter while composing commits it, then breaks the line', (
     t,
   ) async {
