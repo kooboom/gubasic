@@ -18,6 +18,12 @@ Problems we know about and have **deliberately** left unfixed for now. Each entr
 - **Why deferred:** the playground is pure Dart without Flutter; imitating controls in HTML would create a second runtime (D24). The IDE's web build (E1e) runs forms in the browser instead.
 - **Revisit:** when the IDE's web build is published; then decide whether the playground still needs its Run tab.
 
+## The debugger has no Immediate window
+
+- **What:** the debugger (D127) pauses at breakpoints, steps and shows the variables and the call stack, but there is no window to type an expression or a statement into while the program is paused, as Visual Basic 6's Immediate window let one ([Microsoft](https://learn.microsoft.com/en-us/previous-versions/visualstudio/visual-studio-2008/ms172685(v=vs.90))).
+- **Why deferred:** an expression typed in must be compiled against the paused procedure's scope and run in its frame; that is a second way into the analyzer and the interpreter, worth its own design.
+- **Revisit:** when the debugger has been used for a while and the variables pane is not enough: then evaluate expressions in the paused frame, read-only first.
+
 ## The playground has no `Http` or `Database`
 
 - **What:** `Http` (D125) and `Database` (D126) work in the IDE's run window and in exported apps; in the playground, which runs programs without a form, using either stops the program with R038. The parity programs that use `Database` are left out of the playground's Chrome test for the same reason; the built web player runs them through Playwright instead (`tool/web_check`).

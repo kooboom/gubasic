@@ -101,9 +101,19 @@ class _IdeShellState extends State<IdeShell> {
   /// has the focus.
   final _focus = FocusNode(debugLabel: 'ide');
 
+  /// The debugger (D127), kept across runs so that breakpoints stay.
+  final _debugger = Debugger();
+
+  /// The line the caret is on in the code editor, for F9.
+  final _caretLine = ValueNotifier(1);
+
+  /// Whether the last debugger change left the program paused.
+  var _wasPaused = false;
+
   @override
   void initState() {
     super.initState();
+    _debugger.onChanged = _debugChanged;
     // The project open last (D62), then text brought back from a page
     // that closed too soon (D54); each only once.
     WidgetsBinding.instance.addPostFrameCallback((_) async {
@@ -158,6 +168,11 @@ class _IdeShellState extends State<IdeShell> {
   bool get _running => _session?.isRunning ?? false;
 
   void _run() {
+    // F5 while paused in the debugger goes on (D127).
+    if (_debugger.isPaused) {
+      _debugger.resume();
+      return;
+    }
     if (_running) return;
     final project = _project;
     final s = widget.strings;
@@ -192,6 +207,7 @@ class _IdeShellState extends State<IdeShell> {
         pictures: pictureSource(widget.controller.current.pictures),
         // The run window can always write PDF files (D117).
         pdfFont: () async => (await loadPdfFont())[pdfFontFile],
+        debugger: _debugger,
       );
       _showRun = true;
     });
@@ -201,12 +217,234 @@ class _IdeShellState extends State<IdeShell> {
 
   void _stop() => _session?.stop();
 
+  // -------------------------------------------------------------------------
+  // The debugger (D127)
+
+  bool get _paused => _debugger.isPaused;
+
+  /// F9: the breakpoint of the caret's line in the code file shown.
+  void _toggleBreakpoint() {
+    final file = _file;
+    if (!file.toLowerCase().endsWith('.gbas')) return;
+    _debugger.toggleBreakpoint(file, _caretLine.value);
+  }
+
+  void _clearBreakpoints() => _debugger.clearBreakpoints();
+  void _pause() {
+    if (_running && !_paused) _debugger.pause();
+  }
+
+  void _stepInto() {
+    if (_paused) _debugger.stepInto();
+  }
+
+  void _stepOver() {
+    if (_paused) _debugger.stepOver();
+  }
+
+  void _stepOut() {
+    if (_paused) _debugger.stepOut();
+  }
+
+  /// The program paused or went on: paused, its code file opens at the
+  /// line, with the variables below; going on, the run window comes back.
+  void _debugChanged() {
+    if (!mounted) return;
+    final paused = _debugger.paused;
+    setState(() {
+      if (paused != null && !_wasPaused) {
+        if (_project.files.containsKey(paused.file)) {
+          _file = paused.file;
+          _codeFocusCount++;
+          _goTo = GoTo.line((_goTo?.id ?? 0) + 1, paused.line);
+        }
+        _showRun = false;
+      } else if (paused == null && _wasPaused && _running) {
+        _showRun = true;
+      }
+      _wasPaused = paused != null;
+    });
+  }
+
+  /// The Debug menu: what the toolbar's buttons and the keys do, with the
+  /// keys written next to them.
+  Widget _debugMenu(BuildContext context) {
+    final s = widget.strings;
+    return MenuAnchor(
+      menuChildren: [
+        MenuItemButton(
+          key: const ValueKey('menu.toggleBreakpoint'),
+          onPressed: _toggleBreakpoint,
+          shortcut: const SingleActivator(LogicalKeyboardKey.f9),
+          child: Text(s.toggleBreakpoint),
+        ),
+        MenuItemButton(
+          key: const ValueKey('menu.clearBreakpoints'),
+          onPressed: _clearBreakpoints,
+          shortcut: _shortcut(LogicalKeyboardKey.f9, shift: true),
+          child: Text(s.clearBreakpoints),
+        ),
+        const Divider(),
+        MenuItemButton(
+          key: const ValueKey('menu.stepInto'),
+          onPressed: _paused ? _stepInto : null,
+          shortcut: const SingleActivator(LogicalKeyboardKey.f8),
+          child: Text(s.stepInto),
+        ),
+        MenuItemButton(
+          key: const ValueKey('menu.stepOver'),
+          onPressed: _paused ? _stepOver : null,
+          shortcut: const SingleActivator(LogicalKeyboardKey.f8, shift: true),
+          child: Text(s.stepOver),
+        ),
+        MenuItemButton(
+          key: const ValueKey('menu.stepOut'),
+          onPressed: _paused ? _stepOut : null,
+          shortcut: const SingleActivator(
+            LogicalKeyboardKey.f8,
+            control: true,
+            shift: true,
+          ),
+          child: Text(s.stepOut),
+        ),
+        const Divider(),
+        MenuItemButton(
+          key: const ValueKey('menu.pause'),
+          onPressed: _running && !_paused ? _pause : null,
+          child: Text(s.pauseRun),
+        ),
+        MenuItemButton(
+          key: const ValueKey('menu.continue'),
+          onPressed: _paused ? _run : null,
+          shortcut: const SingleActivator(LogicalKeyboardKey.f5),
+          child: Text(s.continueRun),
+        ),
+        MenuItemButton(
+          key: const ValueKey('menu.stop'),
+          onPressed: _running ? _stop : null,
+          shortcut: const SingleActivator(LogicalKeyboardKey.f5, shift: true),
+          child: Text(s.stop),
+        ),
+      ],
+      builder: (context, menu, _) => TextButton(
+        key: const ValueKey('menu.debug'),
+        onPressed: () => menu.isOpen ? menu.close() : menu.open(),
+        child: Text(s.debugMenu),
+      ),
+    );
+  }
+
+  /// The toolbar's Run, Pause, the steps and Stop, as the program's state
+  /// allows.
+  List<Widget> _runButtons(IdeStrings s) => [
+    TextButton.icon(
+      key: const ValueKey('toolbar.run'),
+      onPressed: !_running || _paused ? _run : null,
+      icon: const Icon(Icons.play_arrow),
+      label: Text('${_paused ? s.continueRun : s.run} (F5)'),
+    ),
+    if (_running && !_paused)
+      IconButton(
+        key: const ValueKey('toolbar.pause'),
+        onPressed: _pause,
+        icon: const Icon(Icons.pause),
+        tooltip: s.pauseRun,
+      ),
+    if (_paused) ...[
+      IconButton(
+        key: const ValueKey('toolbar.stepInto'),
+        onPressed: _stepInto,
+        icon: const Icon(Icons.subdirectory_arrow_right),
+        tooltip: '${s.stepInto} (F8)',
+      ),
+      IconButton(
+        key: const ValueKey('toolbar.stepOver'),
+        onPressed: _stepOver,
+        icon: const Icon(Icons.redo),
+        tooltip: '${s.stepOver} (Shift+F8)',
+      ),
+      IconButton(
+        key: const ValueKey('toolbar.stepOut'),
+        onPressed: _stepOut,
+        icon: const Icon(Icons.subdirectory_arrow_left),
+        tooltip: '${s.stepOut} (Ctrl+Shift+F8)',
+      ),
+    ],
+    TextButton.icon(
+      key: const ValueKey('toolbar.stop'),
+      onPressed: _running ? _stop : null,
+      icon: const Icon(Icons.stop),
+      label: Text('${s.stop} (Shift+F5)'),
+    ),
+  ];
+
+  /// Below the middle: the output, and while the program is paused, its
+  /// variables and call stack beside it.
+  Widget _bottom(BuildContext context) {
+    final paused = _debugger.paused;
+    if (paused == null) return _output(context);
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Expanded(child: _output(context)),
+        const VerticalDivider(width: 1),
+        SizedBox(width: 360, child: _variables(context, paused)),
+      ],
+    );
+  }
+
+  Widget _variables(BuildContext context, DebugPause paused) {
+    final s = widget.strings;
+    final theme = Theme.of(context);
+    final dim = codeStyle.copyWith(color: theme.colorScheme.outline);
+    return ListView(
+      key: const ValueKey('debug.variables'),
+      padding: const EdgeInsets.fromLTRB(12, 6, 12, 4),
+      children: [
+        Text(
+          s.pausedAt
+              .replaceAll('{0}', paused.file)
+              .replaceAll('{1}', '${paused.line}')
+              .replaceAll('{2}', paused.procedure),
+          style: theme.textTheme.labelMedium,
+        ),
+        const SizedBox(height: 4),
+        Text(s.variables, style: theme.textTheme.labelMedium),
+        for (final v in paused.variables)
+          Text.rich(
+            TextSpan(
+              children: [
+                TextSpan(text: '${v.name} = ${v.value}'),
+                TextSpan(text: '  ${v.type}', style: dim),
+              ],
+            ),
+            style: codeStyle,
+          ),
+        const SizedBox(height: 4),
+        Text(s.callStack, style: theme.textTheme.labelMedium),
+        for (final f in paused.stack)
+          MouseRegion(
+            cursor: SystemMouseCursors.click,
+            child: GestureDetector(
+              onTap: () => _goToLine(f.file, f.line),
+              child: Text(
+                '${f.procedure}  ${f.file}:${f.line}',
+                style: codeStyle,
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
   @override
   void dispose() {
     if (widget.explorerFiles == null) _explorerFiles.dispose();
     _clickTimer?.cancel();
     _focus.dispose();
     _session?.dispose();
+    _debugger.onChanged = null;
+    _caretLine.dispose();
     super.dispose();
   }
 
@@ -241,6 +479,27 @@ class _IdeShellState extends State<IdeShell> {
       bindings: {
         const SingleActivator(LogicalKeyboardKey.f5): _run,
         const SingleActivator(LogicalKeyboardKey.f5, shift: true): _stop,
+        // The debugger's keys (D127): Visual Basic 6's.
+        const SingleActivator(LogicalKeyboardKey.f9): _toggleBreakpoint,
+        _shortcut(LogicalKeyboardKey.f9, shift: true): _clearBreakpoints,
+        const SingleActivator(LogicalKeyboardKey.f8): _stepInto,
+        const SingleActivator(LogicalKeyboardKey.f8, shift: true): _stepOver,
+        const SingleActivator(
+          LogicalKeyboardKey.f8,
+          control: true,
+          shift: true,
+        ): _stepOut,
+        // And Xcode's on a Mac, whose function keys need fn: ⌘\ toggles a
+        // breakpoint, ⌃⌘Y goes on.
+        if (_isApple) ...{
+          const SingleActivator(LogicalKeyboardKey.backslash, meta: true):
+              _toggleBreakpoint,
+          const SingleActivator(
+            LogicalKeyboardKey.keyY,
+            control: true,
+            meta: true,
+          ): _run,
+        },
         if (files) ...{
           _shortcut(LogicalKeyboardKey.keyO): _open,
           _shortcut(LogicalKeyboardKey.keyS): _save,
@@ -293,16 +552,8 @@ class _IdeShellState extends State<IdeShell> {
                     ],
                   ),
                 const SizedBox(width: 8),
-                TextButton.icon(
-                  onPressed: _running ? null : _run,
-                  icon: const Icon(Icons.play_arrow),
-                  label: Text('${s.run} (F5)'),
-                ),
-                TextButton.icon(
-                  onPressed: _running ? _stop : null,
-                  icon: const Icon(Icons.stop),
-                  label: Text('${s.stop} (Shift+F5)'),
-                ),
+                ..._runButtons(s),
+                _debugMenu(context),
                 _infoMenu(context),
                 const SizedBox(width: 8),
               ],
@@ -318,7 +569,7 @@ class _IdeShellState extends State<IdeShell> {
                     children: [
                       Expanded(child: _main(context)),
                       const Divider(height: 1),
-                      SizedBox(height: 160, child: _output(context)),
+                      SizedBox(height: 160, child: _bottom(context)),
                     ],
                   ),
                 ),
@@ -975,6 +1226,15 @@ class _IdeShellState extends State<IdeShell> {
             goTo: _goTo,
             errorLine: _errorAt?.file == file ? _errorAt!.line : null,
             problemLines: _problemLinesIn(file),
+            breakpoints: _debugger.breakpointsOf(file),
+            onToggleBreakpoint: (line) =>
+                _debugger.toggleBreakpoint(file, line),
+            onBreakpointsMoved: (lines) =>
+                _debugger.setBreakpoints(file, lines),
+            pausedLine: _debugger.paused?.file == file
+                ? _debugger.paused!.line
+                : null,
+            caretLine: _caretLine,
           )
         : SingleChildScrollView(
             padding: const EdgeInsets.all(12),
@@ -1101,13 +1361,13 @@ class _IdeShellState extends State<IdeShell> {
 }
 
 /// ⌘ and [key] on Apple systems, Ctrl and [key] elsewhere.
-SingleActivator _shortcut(LogicalKeyboardKey key, {bool shift = false}) {
-  final apple = switch (defaultTargetPlatform) {
-    TargetPlatform.macOS || TargetPlatform.iOS => true,
-    _ => false,
-  };
-  return SingleActivator(key, meta: apple, control: !apple, shift: shift);
-}
+SingleActivator _shortcut(LogicalKeyboardKey key, {bool shift = false}) =>
+    SingleActivator(key, meta: _isApple, control: !_isApple, shift: shift);
+
+bool get _isApple => switch (defaultTargetPlatform) {
+  TargetPlatform.macOS || TargetPlatform.iOS => true,
+  _ => false,
+};
 
 /// A listenable that never changes, for when nothing runs.
 class _Never implements Listenable {

@@ -35,6 +35,17 @@ ValueKey<String> codeProblemLineKey(int line) =>
 /// The mark that lights up the line an error in the output led to.
 const codeFlashLineKey = ValueKey('code.flashLine');
 
+/// The mark behind the line the debugger is paused at (D127).
+const codePausedLineKey = ValueKey('code.pausedLine');
+
+/// The breakpoint at line [line], in the gutter.
+ValueKey<String> codeBreakpointKey(int line) =>
+    ValueKey('code.breakpoint.$line');
+
+/// The gutter with the line numbers: a click on a line sets or takes away
+/// its breakpoint.
+const codeGutterKey = ValueKey('code.gutter');
+
 /// The size of the code, and the height of a line, so that the line
 /// numbers stay level with the lines whatever font a character takes.
 const codeFontSize = 13.0;
@@ -94,6 +105,11 @@ class CodeEditor extends StatefulWidget {
     this.goTo,
     this.errorLine,
     this.problemLines = const {},
+    this.breakpoints = const {},
+    this.onToggleBreakpoint,
+    this.onBreakpointsMoved,
+    this.pausedLine,
+    this.caretLine,
   });
 
   final OpenProject project;
@@ -119,6 +135,23 @@ class CodeEditor extends StatefulWidget {
   /// the last time F5 was pressed, marked as [errorLine] is, while the code
   /// is as it was then (D76).
   final Set<int> problemLines;
+
+  /// The lines (1-based) with a breakpoint (D127), marked in the gutter.
+  final Set<int> breakpoints;
+
+  /// A click in the gutter, or F9: the line's breakpoint is set or taken
+  /// away.
+  final void Function(int line)? onToggleBreakpoint;
+
+  /// Lines were added or removed above breakpoints: these are their
+  /// lines now.
+  final void Function(Set<int> lines)? onBreakpointsMoved;
+
+  /// The line the debugger is paused at, marked; null for none.
+  final int? pausedLine;
+
+  /// Told the line (1-based) the caret is on, for F9.
+  final ValueNotifier<int>? caretLine;
 
   @override
   State<CodeEditor> createState() => _CodeEditorState();
@@ -197,7 +230,9 @@ class _CodeEditorState extends State<CodeEditor>
     _updateControls();
     if (widget.locked) _closeCompletion();
     if (widget.errorLine != old.errorLine ||
-        !setEquals(widget.problemLines, old.problemLines)) {
+        !setEquals(widget.problemLines, old.problemLines) ||
+        widget.pausedLine != old.pausedLine ||
+        !setEquals(widget.breakpoints, old.breakpoints)) {
       _built = null;
     }
     final goTo = widget.goTo;
@@ -537,6 +572,8 @@ class _CodeEditorState extends State<CodeEditor>
     final value = _controller.value;
     final last = _last;
     _last = value;
+    _reportCaret(value);
+    if (value.text != last.text) _moveBreakpoints(last.text, value.text);
     if (!widget.locked && _isNewLine(last, value)) {
       // An Enter that committed what was being composed, even when the
       // line break comes in a change of its own after the commit (as
@@ -556,6 +593,49 @@ class _CodeEditorState extends State<CodeEditor>
     }
     _write();
     _completeAfter(last, value);
+  }
+
+  /// Tells the shell the caret's line, for F9 (D127).
+  void _reportCaret(TextEditingValue value) {
+    final notifier = widget.caretLine;
+    if (notifier == null || !value.selection.isValid) return;
+    final offset = min(value.selection.baseOffset, value.text.length);
+    notifier.value =
+        '\n'.allMatches(value.text.substring(0, offset)).length + 1;
+  }
+
+  /// Lines added or removed above a breakpoint move it with its line;
+  /// one on a line that was removed goes.
+  void _moveBreakpoints(String before, String after) {
+    if (widget.breakpoints.isEmpty || widget.onBreakpointsMoved == null) return;
+    final old = before.split('\n');
+    final now = after.split('\n');
+    if (old.length == now.length) return;
+    var prefix = 0;
+    while (prefix < old.length &&
+        prefix < now.length &&
+        old[prefix] == now[prefix]) {
+      prefix++;
+    }
+    var suffix = 0;
+    while (suffix < old.length - prefix &&
+        suffix < now.length - prefix &&
+        old[old.length - 1 - suffix] == now[now.length - 1 - suffix]) {
+      suffix++;
+    }
+    final delta = now.length - old.length;
+    final moved = <int>{
+      for (final line in widget.breakpoints)
+        if (line <= prefix)
+          line
+        else if (line > old.length - suffix)
+          line + delta
+        else if (line <= now.length - suffix)
+          line,
+    };
+    if (!setEquals(moved, widget.breakpoints)) {
+      widget.onBreakpointsMoved!(moved);
+    }
   }
 
   static bool _isComposing(TextEditingValue v) =>
@@ -1273,10 +1353,54 @@ class _CodeEditorState extends State<CodeEditor>
                     ),
                   ),
                 ),
+              // The debugger's marks (D127): the paused line, and the
+              // breakpoints in the gutter.
+              if (widget.pausedLine case final line? when line <= lines)
+                Positioned(
+                  key: codePausedLineKey,
+                  left: 0,
+                  right: 0,
+                  top: (line - 1) * pitch,
+                  height: pitch,
+                  child: ColoredBox(color: scheme.tertiaryContainer),
+                ),
+              for (final line in widget.breakpoints)
+                if (line >= 1 && line <= lines)
+                  Positioned(
+                    key: codeBreakpointKey(line),
+                    left: 4,
+                    top: (line - 1) * pitch + (pitch - 10) / 2,
+                    width: 10,
+                    height: 10,
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: scheme.error,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                  ),
+              if (widget.pausedLine case final line? when line <= lines)
+                Positioned(
+                  left: 14,
+                  top: (line - 1) * pitch,
+                  height: pitch,
+                  child: Icon(
+                    Icons.play_arrow,
+                    size: pitch * 0.8,
+                    color: scheme.onTertiaryContainer,
+                  ),
+                ),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _gutter(lines, style, strut, scheme),
+                  GestureDetector(
+                    key: codeGutterKey,
+                    behavior: HitTestBehavior.opaque,
+                    onTapDown: (d) => widget.onToggleBreakpoint?.call(
+                      (d.localPosition.dy / pitch).floor() + 1,
+                    ),
+                    child: _gutter(lines, style, strut, scheme),
+                  ),
                   Expanded(
                     child: SingleChildScrollView(
                       controller: _horizontal,

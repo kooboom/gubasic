@@ -8,6 +8,17 @@ class IdeStrings {
     required this.player,
     required this.run,
     required this.stop,
+    required this.debugMenu,
+    required this.toggleBreakpoint,
+    required this.clearBreakpoints,
+    required this.stepInto,
+    required this.stepOver,
+    required this.stepOut,
+    required this.pauseRun,
+    required this.continueRun,
+    required this.pausedAt,
+    required this.variables,
+    required this.callStack,
     required this.files,
     required this.runWindow,
     required this.output,
@@ -247,6 +258,21 @@ class IdeStrings {
 
   final String run;
   final String stop;
+
+  /// The Debug menu and the debugger's words (D127).
+  final String debugMenu;
+  final String toggleBreakpoint;
+  final String clearBreakpoints;
+  final String stepInto;
+  final String stepOver;
+  final String stepOut;
+  final String pauseRun;
+  final String continueRun;
+
+  /// `{0}` the file, `{1}` the line, `{2}` the procedure.
+  final String pausedAt;
+  final String variables;
+  final String callStack;
 
   /// The heading of the file list: the files of the project.
   final String files;
@@ -737,6 +763,17 @@ class IdeStrings {
     player: PlayerStrings.en,
     run: 'Run',
     stop: 'Stop',
+    debugMenu: 'Debug',
+    toggleBreakpoint: 'Toggle Breakpoint',
+    clearBreakpoints: 'Clear All Breakpoints',
+    stepInto: 'Step Into',
+    stepOver: 'Step Over',
+    stepOut: 'Step Out',
+    pauseRun: 'Pause',
+    continueRun: 'Continue',
+    pausedAt: 'Paused at line {1} of {0}, in {2}',
+    variables: 'Variables',
+    callStack: 'Call stack',
     files: 'Project',
     runWindow: 'Run window',
     output: 'Output',
@@ -1098,6 +1135,17 @@ class IdeStrings {
     player: PlayerStrings.ko,
     run: '실행',
     stop: '중지',
+    debugMenu: '디버그',
+    toggleBreakpoint: '중단점 설정/해제',
+    clearBreakpoints: '중단점 모두 지우기',
+    stepInto: '한 단계씩 코드 실행',
+    stepOver: '프로시저 단위 실행',
+    stepOut: '프로시저 나가기',
+    pauseRun: '일시 중지',
+    continueRun: '계속',
+    pausedAt: '{2} 프로시저가 {0} 파일의 {1} 줄에서 멈춤',
+    variables: '변수',
+    callStack: '호출 스택',
     files: '프로젝트',
     runWindow: '실행 화면',
     output: '출력',

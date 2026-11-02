@@ -35,6 +35,7 @@ export 'src/forms/pictures.dart';
 export 'src/forms/project_file.dart';
 export 'src/forms/project_writer.dart';
 export 'src/interpreter/checked_math.dart';
+export 'src/interpreter/debugger.dart';
 export 'src/interpreter/host.dart';
 export 'src/text/json.dart';
 export 'src/text/text_codec.dart';

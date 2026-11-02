@@ -19,6 +19,7 @@ class RunSession extends ChangeNotifier {
     GbSettingsStore? settings,
     GbPictureSource? pictures,
     Future<List<int>?> Function()? pdfFont,
+    Debugger? debugger,
   }) : host =
            host ??
            RunHost(
@@ -33,8 +34,18 @@ class RunSession extends ChangeNotifier {
            ) {
     final project = startup.project;
     interpreter = project == null
-        ? Interpreter(startup.program, this.host, messages: strings.messages)
-        : Interpreter.project(project, this.host, messages: strings.messages);
+        ? Interpreter(
+            startup.program,
+            this.host,
+            messages: strings.messages,
+            debugger: debugger,
+          )
+        : Interpreter.project(
+            project,
+            this.host,
+            messages: strings.messages,
+            debugger: debugger,
+          );
     this.host
       ..interpreter = interpreter
       ..onDebugPrint = (line) {

@@ -29,6 +29,7 @@ import '../text/json.dart';
 import '../text/text_codec.dart';
 import '../lexer/keyword.dart';
 import 'checked_math.dart';
+import 'debugger.dart';
 import 'host.dart';
 import 'rng.dart';
 import 'run_result.dart';
@@ -93,6 +94,7 @@ class Interpreter {
     Host host, {
     Map<DiagnosticCode, String> messages = englishMessages,
     int callDepthLimit = maxCallDepth,
+    Debugger? debugger,
   }) : this._(
           program,
           switch (program.analysis.form) {
@@ -104,6 +106,7 @@ class Interpreter {
           host,
           messages,
           callDepthLimit,
+          debugger,
         );
 
   /// Runs a project's forms, starting with its startup form (D88).
@@ -112,10 +115,12 @@ class Interpreter {
     Host host, {
     Map<DiagnosticCode, String> messages = englishMessages,
     int callDepthLimit = maxCallDepth,
-  }) : this._(project.startup.program, project, host, messages, callDepthLimit);
+    Debugger? debugger,
+  }) : this._(project.startup.program, project, host, messages, callDepthLimit,
+            debugger);
 
-  Interpreter._(
-      this.program, this.project, this.host, this.messages, this.callDepthLimit)
+  Interpreter._(this.program, this.project, this.host, this.messages,
+      this.callDepthLimit, this._debugger)
       : _a = _merged(program, project) {
     final project = this.project;
     if (project == null) {
@@ -222,6 +227,10 @@ class Interpreter {
 
   final AnalysisResult _a;
 
+  /// The IDE's debugger (D127), asked before every statement; null where
+  /// there is none, and then nothing is asked.
+  final Debugger? _debugger;
+
   final _fields = <Symbol, Object?>{};
   final _statics = <Symbol, Object?>{};
   final _random = GbRandom();
@@ -289,6 +298,8 @@ class Interpreter {
   void stop() {
     _stopRequested = true;
     if (_formRun != null) _finish(const RunStopped());
+    // A program paused in the debugger goes on, and stops there.
+    _debugger?.runEnded();
   }
 
   /// The user closed the window: the program ends (RunCompleted), after
@@ -657,6 +668,7 @@ class Interpreter {
       }
     } finally {
       _running.remove(handler);
+      _debugger?.handlerEnded();
     }
   }
 
@@ -685,6 +697,7 @@ class Interpreter {
     final done = _formRun;
     if (done == null || _ended != null) return;
     _ended = result;
+    _debugger?.runEnded();
     _formHost.endProgram();
     // Handlers waiting for a dialog form go on, and stop (_Abandoned).
     for (final f in _forms.values) {
@@ -779,7 +792,7 @@ class Interpreter {
 
   /// Runs [block] synchronously when nothing in it waits.
   FutureOr<_Flow> _body(Block block) =>
-      _awaits(block) ? _block(block) : _blockSync(block);
+      _debugger != null || _awaits(block) ? _block(block) : _blockSync(block);
 
   // -------------------------------------------------------------------------
   // Variables
@@ -866,7 +879,9 @@ class Interpreter {
     }
     if (_tick()) await _yield();
     final saved = _frame;
-    final frame = _Frame(p, _formOf[p] ?? _top);
+    final frame = _Frame(p, _formOf[p] ?? _top)
+      ..caller = saved
+      ..callSite = at;
     final symbol = _a.symbols[p.name];
     for (var i = 0; i < p.parameters.length; i++) {
       final param = p.parameters[i];
@@ -909,6 +924,11 @@ class Interpreter {
   /// Whether running [node] may need to wait: it calls a user procedure or
   /// MsgBox / InputBox / DoEvents, or contains a loop (which yields).
   bool _awaits(Node node) => _awaitsCache[node] ??= _computeAwaits(node);
+
+  /// Whether [s] goes the asynchronous way: when something in it waits,
+  /// or with a debugger, so that the program can pause before any
+  /// statement (D127); expressions keep their own ways.
+  bool _statementAwaits(Stmt s) => _debugger != null || _awaits(s);
   final _awaitsCache = Map<Node, bool>.identity();
 
   bool _computeAwaits(Node node) {
@@ -990,7 +1010,8 @@ class Interpreter {
 
   Future<_Flow> _block(Block block) async {
     for (final s in block.statements) {
-      final flow = _awaits(s) ? await _statementAsync(s) : _statementSync(s);
+      final flow =
+          _statementAwaits(s) ? await _statementAsync(s) : _statementSync(s);
       if (flow != _Flow.normal) return flow;
     }
     return _Flow.normal;
@@ -1053,6 +1074,7 @@ class Interpreter {
   }
 
   Future<_Flow> _statementAsync(Stmt s) async {
+    if (_debugger != null) await _debugStatement(s);
     switch (s) {
       case LocalDeclStmt():
         await _declare(s);
@@ -1104,6 +1126,71 @@ class Interpreter {
         return _statementSync(s);
     }
     return _Flow.normal;
+  }
+
+  // -------------------------------------------------------------------------
+  // The debugger (D127)
+
+  /// Asks the debugger whether to pause before [s], and waits while the
+  /// program is paused. A program that ended or was stopped meanwhile goes
+  /// no further.
+  Future<void> _debugStatement(Stmt s) async {
+    final d = _debugger!;
+    final form = _frame.form;
+    final file = form.codeFile ?? '';
+    final (line, _) = form.lines.locate(s.start);
+    if (!d.shouldPause(file, line, _depth)) return;
+    await d.pausedAt(
+        DebugPause(
+          file: file,
+          line: line,
+          procedure: _procedureName(_frame.procedure),
+          stack: _debugStack(line),
+          variables: _debugVariables(),
+        ),
+        _depth);
+    if (_ended != null) throw const _Abandoned();
+    if (_stopRequested) throw const _Stop();
+  }
+
+  String _procedureName(ProcedureDecl? p) =>
+      p == null ? '' : _a.symbols[p.name]?.name ?? '';
+
+  /// The procedures running, the current one first, each with the line it
+  /// is at: the current line, or the line of its call.
+  List<DebugFrame> _debugStack(int line) {
+    final stack = <DebugFrame>[];
+    var at = line;
+    for (_Frame? f = _frame; f != null && f.procedure != null; f = f.caller) {
+      stack.add(
+          DebugFrame(_procedureName(f.procedure), f.form.codeFile ?? '', at));
+      final site = f.callSite;
+      final caller = f.caller;
+      if (site == null || caller == null) break;
+      at = caller.form.lines.locate(site.start).$1;
+    }
+    return stack;
+  }
+
+  /// The procedure's locals and parameters, in the order declared, then
+  /// the variables of the form or module whose code runs.
+  List<DebugVariable> _debugVariables() {
+    final out = <DebugVariable>[];
+    for (final MapEntry(key: symbol, value: value) in _frame.vars.entries) {
+      out.add(DebugVariable(
+          symbol.name, symbol.type.displayName, debugValueText(value),
+          local: true));
+    }
+    final code = _frame.form.code ?? program;
+    for (final member in code.parseResult.unit.members) {
+      if (member is! FieldDecl) continue;
+      final symbol = _a.symbols[member.declarator.name];
+      if (symbol == null || !_fields.containsKey(symbol)) continue;
+      out.add(DebugVariable(
+          symbol.name, symbol.type.displayName, debugValueText(_fields[symbol]),
+          local: false));
+    }
+    return out;
   }
 
   _Flow _exitFlow(ExitStmt s) => switch (s.kind) {
@@ -3176,6 +3263,11 @@ class _Frame {
   _Frame(this.procedure, this.form);
 
   final ProcedureDecl? procedure;
+
+  /// The frame this one was called from, and where, for the debugger's
+  /// call stack (D127).
+  _Frame? caller;
+  Node? callSite;
 
   /// The form whose code runs: its controls are the names' and `Me` (D88).
   final _FormRun form;

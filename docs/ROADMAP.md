@@ -81,7 +81,8 @@ Three releases, then the rest (D94–D96). The order follows who GuBASIC is for 
 
 ### v0.5 — A real development tool
 
-- [ ] Debugger: breakpoints, then stepping, then watching variables, then an Immediate window
+- [x] Debugger: breakpoints, stepping (Step Into, Step Over, Step Out), the variables and the call stack while paused (D127)
+- [ ] The debugger's Immediate window
 - [x] `Http` + JSON, the first component through the component channel ([COMPONENT_CHANNEL.md](COMPONENT_CHANNEL.md), D125): `Get`, `Post`, `GetJson`, `PostJson`, `Send`, `Header`, `Timeout`; the `Json` type. Example: [Weather](../examples/weather)
 - [x] `Database` (SQLite), through the component channel (D126): `Execute`, `Query` as a `Table`, `Scalar` with `LastWasNull`, `LastId`, `Open`, `Close`, `Path`; the browser check with Playwright (`tool/web_check`). Example: [Notes](../examples/notes)
 - [x] A reference of the language, the controls and the functions in one place, and one for AI assistants (`llms.txt`) (D121 d, D124): [docs/reference](reference/README.md), [llms.txt](../llms.txt)
