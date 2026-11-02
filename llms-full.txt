@@ -187,6 +187,7 @@ The analyzer checks names and types (§2.1, §3.2, §5.2). It runs even when the
 | A057 | Text that is not a shortcut given to a `Shortcut` (warning, §11.1) |
 | A058 | A method of the form called without `Me.`: `Hide`, `PopupMenu(mnuEdit)` for `Me.Hide`, `Me.PopupMenu(mnuEdit)` (§11.1) |
 | A059 | Visual Basic 6's `MouseDown(Button, Shift, X, Y)`: GuBASIC's is `MouseDown(e As MouseEventArgs)` (§11.1) |
+| A060 | SQL given to `Database` joined with `&`: write `?` and pass the value after the SQL (warning, §11.10) |
 
 **Form and project files**
 
@@ -260,10 +261,13 @@ Errors found while a program runs. Each stops the program and points at its line
 | R035 | A PDF letter size out of 4 to 72 points (§11.8) |
 | R036 | An HTTP request that got no answer (§11.9) |
 | R037 | An HTTP answer with a status from 400, in all but `Send` (§11.9) |
-| R038 | A built-in object where the program runs without it, `Http` in the playground (§11.9) |
+| R038 | A built-in object where the program runs without it, `Http` and `Database` in the playground (§11.9, §11.10) |
 | R039 | Text that is not JSON (§11.9) |
 | R040 | A `Json` value asked for as another kind: `AsInteger` of text (§11.9) |
 | R041 | A member no JSON object has (§11.9) |
+| R042 | SQL the database refused, with SQLite's words (§11.10) |
+| R043 | A database name that is not a file name alone (§11.10) |
+| R044 | A database file that could not be opened (§11.10) |
 
 ## 2. Types
 
@@ -635,7 +639,7 @@ String functions follow classic BASIC and **count from 1**. String *methods* (`.
 | Date | `Now`, `Today`, `Year`, `Month`, `Day`, `Hour`, `Minute`, `Second`, `DateAdd`, `DateDiff`; `DateInterval` |
 | Formatting | `Format` |
 | Dialogs | `MsgBox`, `InputBox` |
-| Output for developers | `Debug.Print(value)`: writes a line to the playground's output window (VB6's Immediate window) |
+| Output for developers | `Debug.Print(value)`: writes a line to the playground's output window (VB6's Immediate window); an exported web app writes it to the browser's console (F12) |
 | Program | `DoEvents`, `End` |
 | Settings | `SaveSetting(key, value)`, `GetSetting(key, default)` |
 
@@ -968,6 +972,36 @@ Http.PostJson("https://example.com/scores", mine)
 **`Json`** is a JSON value ([RFC 8259](https://www.rfc-editor.org/rfc/rfc8259)): an object, an array, text, a number, `True` or `False`, or null. `Json.Parse(text)` reads one; `Dim j As New Json` makes an empty object and `Json.Array()` an empty array. `j("name")` is a member of an object and `j(0)` an item of an array, each a `Json` again, so `j("address")("city")` goes down a level. A value is taken out as the type it is, so that nothing is a `Variant` (§2): `AsString`, `AsInteger` (a whole number), `AsDouble` and `AsBoolean`, or `CStr`, `CInt`, `CDbl` and `CBool` of the `Json`. `Kind` says which it is: `"Object"`, `"Array"`, `"String"`, `"Number"`, `"Boolean"` or `"Null"`; `Count` is the number of members or items; `Has(name)` whether an object has a member; `Keys` an object's member names as a `String` array; `For Each item In arr` goes through an array's items. Writing: `j("name") = "Kim"` and `j("age") = 12` add or change a member (an `Integer`, `Double`, `Boolean`, `String`, `Json` or `Nothing`), `j(0) = …` changes an item, `arr.Add(value)` adds one, `Remove(name)` and `Remove(index)` take one away, and `Text` is the value as compact JSON text. Two `Json` values that share an object or an array see each other's changes, as two `List` variables do. A number read from JSON is whole when it is written whole (`12.0` is 12); one too large to be exact, `12345678901234567890`, is a `Double`. `Debug.Print(j)` and `CStr(j)` show a string's own text, a number as GuBASIC writes it (§2.2), `True` or `False`, "" for null, and an object or an array as JSON text. The wrong kind (`AsString` of a number, `j(0)` of an object, `For Each` over an object) is R040; a member that is not there R041; an item that is not there R003. A `Json` is not compared or joined with `=` or `&` (A013): take the value out first.
 
 **Where it runs.** In the IDE and in exported apps; the playground has no `Http` (R038). Exported macOS apps may reach the network. `Http` is the first component through the component channel ([COMPONENT_CHANNEL.md](COMPONENT_CHANNEL.md)): `components/Http/component.yaml` describes it as a control's file does, and what it does is written once for the IDE and the apps. The examples have one: **Weather** shows the weather now from Open-Meteo.
+
+### 11.10 Database
+
+(DESIGN.md D124, D126.) **`Database`** keeps a program's data in an SQLite database ([SQLite](https://sqlite.org/)), the way Visual Basic 6 kept it in a Jet database through Data Access Objects ([Microsoft](https://learn.microsoft.com/en-us/previous-versions/visualstudio/visual-basic-6/aa227845(v=vs.60))). It is a built-in object used by its name, as `File` and `Http` are. Every app has a database of its own, `data.db` in the app's own data folder, opened when first used:
+
+| Member | What it does |
+|---|---|
+| `Execute(sql, values…)` | runs a statement and gives how many rows it changed |
+| `Query(sql, values…)` | gives the rows as a `Table` (§11.7): the column names as its headers, every value as text |
+| `Scalar(sql, values…)` | the first value of the first row as text; `""` when it is NULL or there is no row, and then `LastWasNull` is `True` |
+| `LastWasNull` | whether the last `Scalar` found NULL, or no row |
+| `LastId` | the row ID the last `INSERT` gave (SQLite's `last_insert_rowid`) |
+| `Open(name)` | opens the file of that name in the app's data folder instead, making it when it is not there |
+| `Close()` | closes the file; the next use opens it again |
+| `Path` | where the open file is: its full path on the desktop, its name in the browser's storage on the web |
+
+```vb
+Database.Execute("CREATE TABLE IF NOT EXISTS scores (name TEXT, points INTEGER)")
+Database.Execute("INSERT INTO scores VALUES (?, ?)", txtName.Text, points)
+Dim best As Table = Database.Query("SELECT name, points FROM scores ORDER BY points DESC")
+lblCount.Caption = Database.Scalar("SELECT COUNT(*) FROM scores") & " scores"
+```
+
+**Values.** A `?` in the SQL takes the next value written after the SQL, in order (SQLite's parameters: [SQLite](https://sqlite.org/lang_expr.html#varparam)): an `Integer` or a `Double` as a number, a `String` as text, a `Boolean` as 1 or 0, a `Date` as the text `yyyy-MM-dd HH:mm:ss`, which SQLite's date functions read ([SQLite](https://sqlite.org/lang_datefunc.html)), and `Nothing` as NULL. Values come back as text, as a `Table` holds them: a whole number below 2⁵³ as its digits, another number as GuBASIC writes a `Double` (§2.2), NULL and a BLOB as `""`. SQL joined with `&` is a warning (A060): a quote in the value can break the statement, a `?` cannot. `Execute` without values may run several statements at once, `BEGIN; …; COMMIT;`.
+
+**Where the file is.** On the desktop, `GuBASIC/<app ID>/` in the user's application support folder (`%APPDATA%` on Windows, `~/Library/Application Support` on macOS): in the IDE under the project's name, in an exported app under its app ID, so that the data an app keeps stays when the app is updated and two apps keep theirs apart. On the web, in the browser's storage (IndexedDB) under the same name, as the settings are (§10, D48); it stays as long as the browser keeps the site's data. A name given to `Open` is a file name alone, `scores.db`, not a path (R043).
+
+**Errors.** SQL the database refuses, a mistake in it, a table that is not there or a value a column does not take, is R042 with SQLite's own words; a file that cannot be opened is R044. Both can be caught with `Try` (§9). A call waits where it is, as `Http` does (§11.9); on the web the first use loads SQLite, about 0.7 MB, and the pointer shows waiting meanwhile.
+
+**Where it runs.** In the IDE and in exported apps, on every platform GuBASIC runs on; the playground has no `Database` (R038). The example **Notes** keeps notes in it. It is the second component through the component channel ([COMPONENT_CHANNEL.md](COMPONENT_CHANNEL.md)): `components/Database/component.yaml` describes it, and SQLite comes with package:sqlite3, the same build on every platform, so that a program's results and messages are the same everywhere. Parity programs that use it run on the VM and in the run window, and in a browser through Playwright on the built web player (`tool/web_check`).
 
 ## 12. Open questions
 
@@ -1715,6 +1749,19 @@ Default event (made by a double-click): `Tick`
 
 - `Json.Parse(text As String) As Json`
 - `Json.Array() As Json`
+
+### Database
+
+Keeps a program's data in an SQLite database file (docs/DESIGN.md D124, D126), the way Visual Basic 6 kept it in a Jet database through Data Access Objects (https://learn.microsoft.com/en-us/previous-versions/visualstudio/visual-basic-6/aa227845(v=vs.60)). A built-in object used by its name, not put on a form. Every app has a database of its own, data.db in the app's own data folder, opened when first used; Database.Open(name) opens another file there instead. Execute(sql, values…) runs a statement and gives how many rows it changed; Query(sql, values…) gives the rows as a Table; Scalar(sql, values…) gives the first value of the first row as text, "" for NULL or no row, and LastWasNull says which. A value goes into the SQL as a ?, and after it in the call: Database.Execute("INSERT INTO scores(name, points) VALUES (?, ?)", txtName.Text, points); a quote in the value then cannot break the statement. Integer, Double and String go in as they are, Boolean as 1 or 0, Date as "yyyy-MM-dd HH:mm:ss", Nothing as NULL. LastId is the row ID the last INSERT gave; Path is where the file is; Close() closes it (the next use opens it again). SQL the database cannot run is R042; a name that is not a file name is R043; a database that cannot be opened is R044. SQL joined with & is a warning (A060).
+
+- `Database.Path As String`
+- `Database.LastWasNull As Boolean`
+- `Database.LastId As Integer`
+- `Database.Open(name As String)`
+- `Database.Execute(sql As String, ParamArray values As number, Boolean, String, Date or Nothing) As Integer`
+- `Database.Query(sql As String, ParamArray values As number, Boolean, String, Date or Nothing) As Table`
+- `Database.Scalar(sql As String, ParamArray values As number, Boolean, String, Date or Nothing) As String`
+- `Database.Close()`
 
 ### Http
 

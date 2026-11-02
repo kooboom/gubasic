@@ -1574,6 +1574,7 @@ class _Analyzer {
   String _expectedCount(Callable c) {
     final all = c.parameters.length;
     final required = c.requiredCount;
+    if (c.isVariadic) return '$required+';
     return required == all ? '$all' : '$required–$all';
   }
 
@@ -1594,13 +1595,23 @@ class _Analyzer {
     }
     final types = [for (final a in args) _value(a)];
     if (args.length < callable.requiredCount ||
-        args.length > callable.parameters.length) {
+        !callable.isVariadic && args.length > callable.parameters.length) {
       _reportAt(e, DiagnosticCode.wrongArgumentCount,
           [callable.name, _expectedCount(callable), '${args.length}']);
       return callable.returnType;
     }
+    final last = callable.parameters.length - 1;
     for (var i = 0; i < args.length; i++) {
-      _argument(args[i], types[i], callable.parameters[i]);
+      _argument(args[i], types[i], callable.parameters[i < last ? i : last]);
+    }
+    if (target is MemberExpr && args.isNotEmpty && _joinsValue(args.first)) {
+      final object = _result.symbols[target.target];
+      if (object?.kind == SymbolKind.builtinObject &&
+          object!.name == 'Database') {
+        // SQL put together with & (D126): a ? and the value after the SQL
+        // cannot be broken by a quote in the value.
+        _reportAt(args.first, DiagnosticCode.sqlJoined, [callable.name]);
+      }
     }
     return switch (callable.returnKind) {
       ReturnKind.fixed => callable.returnType,
@@ -1613,6 +1624,14 @@ class _Analyzer {
               : GbType.unknown,
     };
   }
+
+  /// Whether [e] joins something that is not written out with `&`:
+  /// `"… WHERE name = '" & name & "'"`.
+  bool _joinsValue(Expr e) =>
+      e is BinaryExpr &&
+      e.operator == BinaryOp.concat &&
+      [e.left, e.right].any((side) =>
+          side is! StringLiteral && (side is! BinaryExpr || _joinsValue(side)));
 
   void _argument(Expr arg, GbType type, ParamSpec param) {
     if (type == GbType.unknown || type == GbType.object) return;
@@ -1638,6 +1657,12 @@ class _Analyzer {
             type == GbType.string ||
             type == GbType.boolean ||
             type == GbType.json ||
+            type == GbType.nothing;
+      case ArgKind.sqlValue:
+        ok = type.isNumeric ||
+            type == GbType.string ||
+            type == GbType.boolean ||
+            type == GbType.date ||
             type == GbType.nothing;
       case ArgKind.array:
         ok = type is ArrayType;

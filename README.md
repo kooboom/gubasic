@@ -24,11 +24,11 @@ Draw a form → double-click a control → write a few lines of BASIC → press 
 |---|---|
 | <img src="docs/images/calculator.png" width="273" alt="The calculator example running"> | <img src="docs/images/scores.png" width="505" alt="The Scores example running"> |
 
-Both are in the IDE's examples, next to hello, quiz, typing, askname and weather (the weather now, through `Http` and JSON).
+Both are in the IDE's examples, next to hello, quiz, typing, askname, weather (the weather now, through `Http` and JSON) and notes (notes kept in the app's own `Database`).
 
 > **Status: stage 3, v0.4 "For work" complete** ([v0.4.0](https://github.com/kooboom/gubasic/releases/tag/v0.4.0), a development build).
 >
-> - **What you can do now:** draw forms with buttons, labels, text boxes, lists, grids, menus and more; write event handlers in an editor that colours, completes and explains; run with F5; keep projects in the browser or as folders; export web, Windows and macOS apps. For work: open and save dialogs, text and CSV files, dates and `Format`, the `Grid` control and PDF files; `Http` and JSON for web services.
+> - **What you can do now:** draw forms with buttons, labels, text boxes, lists, grids, menus and more; write event handlers in an editor that colours, completes and explains; run with F5; keep projects in the browser or as folders; export web, Windows and macOS apps. For work: open and save dialogs, text and CSV files, dates and `Format`, the `Grid` control and PDF files; `Http` and JSON for web services; `Database` (SQLite) for an app's own data.
 > - **Also:** the IDE as an app for macOS and Windows ([apps/ide](apps/ide)), and the [playground](https://kooboom.github.io/gubasic), the language on its own.
 > - **Known limits:** the macOS and Windows apps are unsigned development builds; phone apps (stage 3) and the debugger (v0.5) come later. The full list: [docs/KNOWN_ISSUES.md](docs/KNOWN_ISSUES.md). What comes next: [ROADMAP](docs/ROADMAP.md).
 >

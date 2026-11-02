@@ -8,6 +8,7 @@ import 'package:gubasic_lang/testing.dart';
 import 'package:test/test.dart';
 
 import 'interpreter/fake_host.dart';
+import 'support/sqlite_database.dart';
 
 /// Parity tests (CLAUDE.md rule 3, docs/DESIGN.md §9): every program in
 /// test/parity/ is run and its output compared with NAME.out.
@@ -28,6 +29,10 @@ import 'interpreter/fake_host.dart';
 ///                   only the names matter, D51)
 ///
 /// and its output echoes each step as "> step" (see runEventScript).
+///
+/// A program that uses Database (D126) has NAME.database, and runs on a
+/// real SQLite in a folder of its own; the Chrome parity test leaves it
+/// out, and the web player's check is Playwright's (tool/web_check).
 ///
 /// A program with several forms (docs/DESIGN.md D88) has, for each form
 /// besides Form1, NAME.FORM.form.yaml and NAME.FORM.gbas (FORM: `Form2`);
@@ -77,6 +82,14 @@ void main() {
       final http = httpFile.existsSync()
           ? parseHttpScript(httpFile.readAsStringSync())
           : const <HttpStub>[];
+      // Its Database (D126): NAME.database.
+      final database =
+          File('$base.database').existsSync() ? TestDatabase.temporary() : null;
+      addTearDown(() async {
+        if (database == null) return;
+        await database.call('Close', []);
+        database.delete();
+      });
       // The files the program reads (D113): NAME.files/, by name.
       final filesDir = Directory('$base.files');
       final disk = <String, List<int>>{
@@ -138,7 +151,8 @@ void main() {
             modules: modules,
             startsWithMain: startsWithMain,
             disk: disk,
-            http: http);
+            http: http,
+            database: database);
       } else if (formFile.existsSync()) {
         final form = readFormFile(formFile.readAsStringSync(),
             name: 'Form1', pictures: pictures);
@@ -151,7 +165,8 @@ void main() {
             settings: settings,
             pictures: pictures,
             disk: disk,
-            http: http);
+            http: http,
+            database: database);
       } else {
         final input = File(program.path.replaceFirst('.gbas', '.in'));
         final answers =

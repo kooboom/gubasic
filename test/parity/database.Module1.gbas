@@ -1,0 +1,63 @@
+' Database (D124, D126): the app's own data.db, Execute with values for
+' the ?s, Query as a Table, Scalar with LastWasNull, LastId, several
+' statements at once, Open and Close, and the errors: SQL the database
+' refuses (R042) and a name that is not a file name (R043).
+Sub Main()
+    Debug.Print(Right(Database.Path, 7))
+    Database.Execute("DROP TABLE IF EXISTS scores")
+    Database.Execute("CREATE TABLE scores (id INTEGER PRIMARY KEY, name TEXT, points REAL, passed INTEGER, taken TEXT, note TEXT)")
+    Dim n As Integer = Database.Execute("INSERT INTO scores (name, points, passed, taken, note) VALUES (?, ?, ?, ?, ?)", "김하나", 91.5, True, #2026-03-01 09:05#, Nothing)
+    Debug.Print(n & " " & Database.LastId)
+    Database.Execute("INSERT INTO scores (name, points, passed, taken, note) VALUES (?, ?, ?, ?, ?)", "O'Brien", 78, False, Nothing, "it's ""fine""")
+    Debug.Print(Database.LastId)
+
+    Dim t As Table = Database.Query("SELECT name, points, passed, taken, note FROM scores ORDER BY id")
+    Debug.Print(t.RowCount & " x " & t.ColumnCount & ": " & t.Header(0) & ", " & t.Header(4))
+    For r = 0 To t.RowCount - 1
+        Debug.Print(t.Cell(r, "name") & " | " & t.Cell(r, "points") & " | " & t.Cell(r, "passed") & " | " & t.Cell(r, "taken") & " | " & t.Cell(r, 4))
+    Next
+    Debug.Print(Database.Scalar("SELECT COUNT(*) FROM scores") & " " & Database.LastWasNull)
+    Debug.Print("[" & Database.Scalar("SELECT taken FROM scores WHERE id = ?", 2) & "] " & Database.LastWasNull)
+    Debug.Print("[" & Database.Scalar("SELECT name FROM scores WHERE id = ?", 9) & "] " & Database.LastWasNull)
+    Debug.Print(Database.Scalar("SELECT name FROM scores WHERE points > ?", 80))
+    Debug.Print(Database.Scalar("SELECT points FROM scores WHERE name = ?", "O'Brien"))
+    Debug.Print(Database.Scalar("SELECT typeof(points) || ' ' || typeof(passed) || ' ' || typeof(taken) || ' ' || typeof(note) FROM scores WHERE id = 1"))
+    Debug.Print(Database.Execute("UPDATE scores SET points = points + 1"))
+    Debug.Print(Database.Execute("DELETE FROM scores WHERE passed = ?", False))
+    Debug.Print(Database.Scalar("SELECT 9007199254740993") & " " & Database.Scalar("SELECT ?", 9007199254740993))
+    Debug.Print("[" & Database.Scalar("SELECT X'0102'") & "] " & Database.Scalar("SELECT 2.50") & " " & Database.Scalar("SELECT 1e20") & " " & Database.Scalar("SELECT -0.5"))
+
+    Database.Execute("BEGIN; INSERT INTO scores (name) VALUES ('a'); INSERT INTO scores (name) VALUES ('b'); COMMIT;")
+    Debug.Print(Database.Scalar("SELECT COUNT(*) FROM scores"))
+
+    Database.Open("other.db")
+    Debug.Print(Right(Database.Path, 8))
+    Debug.Print(Database.Scalar("SELECT COUNT(*) FROM sqlite_master"))
+    Database.Close()
+    Debug.Print(Database.Scalar("SELECT 1 + 1"))
+    Database.Open("data.db")
+    Debug.Print(Database.Scalar("SELECT COUNT(*) FROM scores"))
+
+    Try
+        Database.Execute("SELEC 1")
+    Catch ex As Exception
+        Debug.Print(ex.Message)
+    End Try
+    Try
+        Database.Query("SELECT * FROM missing")
+    Catch ex As Exception
+        Debug.Print(ex.Message)
+    End Try
+    Try
+        Database.Execute("INSERT INTO scores (name, points) VALUES (?, ?)", "x")
+    Catch ex As Exception
+        Debug.Print(ex.Message)
+    End Try
+    Try
+        Database.Open("../x.db")
+    Catch ex As Exception
+        Debug.Print(ex.Message)
+    End Try
+    Database.Execute("DROP TABLE scores")
+    Database.Scalar("SELECT name FROM scores")
+End Sub

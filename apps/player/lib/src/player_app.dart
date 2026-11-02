@@ -129,13 +129,26 @@ class _PlayerScreenState extends State<PlayerScreen> {
   /// The form drawn as the app's window when it was last fitted.
   String? _fitted;
 
+  /// How many `Debug.Print` lines went to the browser's console.
+  var _printed = 0;
+
   /// The program ended: as with F5 (D81), an error is shown first; then
   /// the app closes, or on the web says the program has ended. While it
   /// runs, an exported desktop app's window takes the size of the form in
-  /// front (D88).
+  /// front (D88). On the web, `Debug.Print` lines and how the run ended go
+  /// to the browser's console (F12), as `Debug.Print: …` and `Run: …`, in
+  /// the words of the parity transcripts (D126, tool/web_check).
   Future<void> _changed() async {
     final session = _session!;
     final host = session.host;
+    if (widget.asApp && kIsWeb) {
+      for (; _printed < session.output.length; _printed++) {
+        debugPrint('Debug.Print: ${session.output[_printed]}');
+      }
+      if (session.result case final result? when !_ended) {
+        debugPrint('Run: ${_describe(result)}');
+      }
+    }
     if (widget.asApp &&
         !kIsWeb &&
         host.shown.isNotEmpty &&
@@ -181,6 +194,15 @@ class _PlayerScreenState extends State<PlayerScreen> {
       await closeAppWindow();
     }
   }
+
+  static String _describe(RunResult result) => switch (result) {
+    RunCompleted() => 'Closed',
+    RunEnded() => 'Ended',
+    RunStopped() => 'Stopped',
+    RunFailed(:final error, :final file) =>
+      'Error ${error.code.code} @ ${file == null ? '' : '$file:'}${error.line}',
+    RunNotStarted(:final reason) => 'Not started: ${reason.name}',
+  };
 
   @override
   Widget build(BuildContext context) {

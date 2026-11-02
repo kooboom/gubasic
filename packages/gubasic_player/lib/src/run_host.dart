@@ -5,6 +5,7 @@ import 'package:gubasic_lang/gubasic_lang.dart';
 import 'package:gubasic_runtime/gubasic_runtime.dart';
 
 import 'bench/probe.dart';
+import 'database_component.dart';
 import 'form_window.dart';
 import 'http_component.dart';
 
@@ -24,9 +25,11 @@ class RunHost implements FormHost, FileHost, ComponentHost {
     this._pictures,
     GbFiles? files,
     GbHttp? http,
+    GbSqlite? sqlite,
     this.pdfFont,
   }) : _fileSystem = files,
        _httpSender = http,
+       _sql = sqlite,
        settingsKey = settingsKey ?? project,
        dialogs = GbDialogs(strings: strings),
        _startup = form.name {
@@ -397,17 +400,31 @@ class RunHost implements FormHost, FileHost, ComponentHost {
   /// pointer as waiting while there is one (D124 A).
   final busyRequests = ValueNotifier<int>(0);
 
-  /// The built-in objects of the component channel (D125): `Http`.
+  /// The program's SQLite (D126): the runtime's, made when first used.
+  GbSqlite? _sql;
+
+  /// The built-in objects of the component channel (D125, D126): `Http`
+  /// and `Database`, whose files are kept under [settingsKey].
   @override
   ComponentInstance? createComponent(String component) => switch (component) {
     'Http' => PlayerHttp(_httpSender ??= GbHttp(), busyRequests),
+    'Database' => _database = PlayerDatabase(
+      _sql ??= GbSqlite(),
+      settingsKey,
+      busyRequests,
+    ),
     _ => null,
   };
+
+  /// The program's Database, closed with the program.
+  PlayerDatabase? _database;
 
   @override
   void endProgram() {
     _ticking = false;
     _stopClocks();
     dialogs.closeAll();
+    unawaited(_database?.call('Close', const []));
+    _database = null;
   }
 }

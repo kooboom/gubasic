@@ -108,12 +108,16 @@ void main() {
           for (final f in filesDir.listSync().whereType<File>())
             f.uri.pathSegments.last: f.readAsBytesSync(),
       });
+      // Its Database (D126): on SQLite, in a folder of this test's own.
+      final dbRoot = Directory.systemTemp.createTempSync('gubasic_parity');
+      addTearDown(() => dbRoot.deleteSync(recursive: true));
       final host = _RecordingHost(
         startup.file,
         [for (final f in sources.skip(1)) f.file],
         settings.existsSync() ? settings.readAsStringSync().trim() : null,
         files,
         http,
+        GbSqlite(root: dbRoot.path),
       );
       http.transcript = host.transcript;
       final session = RunSession(
@@ -230,12 +234,14 @@ class _RecordingHost extends RunHost {
     String? settings,
     this.files,
     _FakeHttp http,
+    GbSqlite sqlite,
   ) : _several = others.isNotEmpty,
       super(
         others: others,
         settings: GbMemorySettings()..values.addAll({'': ?settings}),
         files: files,
         http: http,
+        sqlite: sqlite,
         pdfFont: () async =>
             File('../../apps/ide/fonts/nanumgothic/NanumGothic-Regular.ttf')
                 .readAsBytesSync(),

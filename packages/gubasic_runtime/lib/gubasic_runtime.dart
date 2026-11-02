@@ -7,6 +7,7 @@ export 'src/anchor.dart';
 export 'src/check_box.dart';
 export 'src/combo_box.dart';
 export 'src/composing.dart';
+export 'src/database.dart';
 export 'src/dialogs.dart';
 export 'src/files.dart';
 export 'src/form_model.dart';

@@ -18,11 +18,11 @@ Problems we know about and have **deliberately** left unfixed for now. Each entr
 - **Why deferred:** the playground is pure Dart without Flutter; imitating controls in HTML would create a second runtime (D24). The IDE's web build (E1e) runs forms in the browser instead.
 - **Revisit:** when the IDE's web build is published; then decide whether the playground still needs its Run tab.
 
-## The playground has no `Http`
+## The playground has no `Http` or `Database`
 
-- **What:** `Http` (D125) works in the IDE's run window and in exported apps; in the playground, which runs programs without a form, using it stops the program with R038.
-- **Why deferred:** the playground is pure Dart without the runtime (D24), and the sending lives in the runtime's `GbHttp` beside the files; a second sender would be a second copy of the same code.
-- **Revisit:** with the playground's future (see above): if it stays, give it a sender of its own on the browser's requests.
+- **What:** `Http` (D125) and `Database` (D126) work in the IDE's run window and in exported apps; in the playground, which runs programs without a form, using either stops the program with R038. The parity programs that use `Database` are left out of the playground's Chrome test for the same reason; the built web player runs them through Playwright instead (`tool/web_check`).
+- **Why deferred:** the playground is pure Dart without the runtime (D24), and the sending and SQLite live in the runtime (`GbHttp`, `GbSqlite`) beside the files; a second copy of either would be a second copy of the same code.
+- **Revisit:** with the playground's future (see above): if it stays, give it a sender of its own on the browser's requests and SQLite's WebAssembly.
 
 ## Projects kept in the web IDE's browser can be lost
 

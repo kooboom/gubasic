@@ -181,6 +181,7 @@ TypeOf CType AddHandler AddressOf
 | A057 | `Shortcut`에 단축키가 아닌 글자를 넣음(경고, 11.1절) |
 | A058 | `Me.` 없이 부른 폼 메서드: `Me.Hide`, `Me.PopupMenu(mnuEdit)` 대신 `Hide`, `PopupMenu(mnuEdit)`(11.1절) |
 | A059 | Visual Basic 6의 `MouseDown(Button, Shift, X, Y)`: GuBASIC에서는 `MouseDown(e As MouseEventArgs)`(11.1절) |
+| A060 | `Database`에 주는 SQL을 `&`로 이어 붙임. `?`를 쓰고 값은 SQL 뒤에 넘김(경고, 11.10절) |
 
 **폼·프로젝트 파일**
 
@@ -254,10 +255,13 @@ TypeOf CType AddHandler AddressOf
 | R035 | 4포인트에서 72포인트를 벗어난 PDF 글자 크기(11.8절) |
 | R036 | 답이 오지 않은 HTTP 요청(11.9절) |
 | R037 | 상태가 400 이상인 HTTP 답. `Send`만 빼고(11.9절) |
-| R038 | 내장 객체가 없는 곳에서 그것을 씀. 놀이터의 `Http`(11.9절) |
+| R038 | 내장 객체가 없는 곳에서 그것을 씀. 놀이터의 `Http`와 `Database`(11.9절, 11.10절) |
 | R039 | JSON이 아닌 글(11.9절) |
 | R040 | `Json` 값을 다른 종류로 꺼냄. 글의 `AsInteger`(11.9절) |
 | R041 | JSON 객체에 없는 멤버(11.9절) |
+| R042 | 데이터베이스가 받지 않은 SQL. SQLite가 말한 그대로와 함께(11.10절) |
+| R043 | 파일 이름만이 아닌 데이터베이스 이름(11.10절) |
+| R044 | 열 수 없는 데이터베이스 파일(11.10절) |
 
 ## 2. 타입
 
@@ -629,7 +633,7 @@ End Try
 | 날짜 | `Now`, `Today`, `Year`, `Month`, `Day`, `Hour`, `Minute`, `Second`, `DateAdd`, `DateDiff`, `DateInterval` |
 | 서식 | `Format` |
 | 대화상자 | `MsgBox`, `InputBox` |
-| 개발자용 출력 | `Debug.Print(값)`: 놀이터의 직접 실행 창(VB6의 직접 실행 창)에 한 줄 씀 |
+| 개발자용 출력 | `Debug.Print(값)`: 놀이터의 직접 실행 창(VB6의 직접 실행 창)에 한 줄 씀. 내보낸 웹 앱에서는 브라우저의 콘솔(F12)에 씀 |
 | 프로그램 | `DoEvents`, `End` |
 | 설정 | `SaveSetting(key, value)`, `GetSetting(key, default)` |
 
@@ -962,6 +966,36 @@ Http.PostJson("https://example.com/scores", mine)
 **`Json`**은 JSON 값입니다([RFC 8259](https://www.rfc-editor.org/rfc/rfc8259)). 객체, 배열, 글, 숫자, `True`나 `False`, 또는 null입니다. `Json.Parse(text)`가 글을 읽고, `Dim j As New Json`은 빈 객체를, `Json.Array()`는 빈 배열을 만듭니다. `j("name")`은 객체의 멤버, `j(0)`은 배열의 항목이며 각각 다시 `Json`이라 `j("address")("city")`처럼 한 단계씩 내려갑니다. 값은 그 형식 그대로 꺼냅니다. 그래서 `Variant`가 없습니다(2절): `AsString`, `AsInteger`(정수인 수), `AsDouble`, `AsBoolean`, 또는 `Json`에 `CStr`, `CInt`, `CDbl`, `CBool`. `Kind`는 어느 것인지 말해 줍니다: `"Object"`, `"Array"`, `"String"`, `"Number"`, `"Boolean"`, `"Null"`. `Count`는 멤버나 항목의 수, `Has(name)`은 객체에 그 멤버가 있는지, `Keys`는 객체의 멤버 이름들을 `String` 배열로, `For Each item In arr`는 배열의 항목을 차례로 돕니다. 쓰기: `j("name") = "Kim"`, `j("age") = 12`는 멤버를 넣거나 바꾸고(`Integer`, `Double`, `Boolean`, `String`, `Json`, `Nothing`), `j(0) = …`은 항목을 바꾸고, `arr.Add(value)`는 항목을 더하며, `Remove(name)`과 `Remove(index)`는 뺍니다. `Text`는 값을 띄어쓰기 없는 JSON 글로 줍니다. 같은 객체나 배열을 가리키는 두 `Json` 값은 `List` 변수 둘처럼 서로의 변화를 봅니다. JSON에서 읽은 수는 정수로 적혀 있으면 정수이고(`12.0`은 12), 정확히 담기에 너무 큰 `12345678901234567890`은 `Double`입니다. `Debug.Print(j)`와 `CStr(j)`는 글은 그 글 그대로, 수는 GuBASIC이 적는 대로(2.2절), `True`나 `False`, null은 "", 객체와 배열은 JSON 글로 보여 줍니다. 종류가 틀리면(수의 `AsString`, 객체의 `j(0)`, 객체의 `For Each`) R040, 없는 멤버는 R041, 없는 항목은 R003입니다. `Json`은 `=`나 `&`로 비교하거나 잇지 않습니다(A013). 먼저 값을 꺼내 주세요.
 
 **도는 곳.** IDE와 내보낸 앱에서 됩니다. 놀이터에는 `Http`가 없습니다(R038). 내보낸 macOS 앱은 네트워크에 닿을 수 있습니다. `Http`는 컴포넌트 통로를 거치는 첫 컴포넌트입니다([COMPONENT_CHANNEL.ko.md](COMPONENT_CHANNEL.ko.md)): `components/Http/component.yaml`이 컨트롤의 파일처럼 그것을 설명하고, 하는 일은 IDE와 앱을 위해 한 번만 씁니다. 예제에도 있습니다. **Weather**는 Open-Meteo에서 지금 날씨를 보여 줍니다.
+
+### 11.10 Database
+
+(DESIGN.ko.md D124, D126.) **`Database`**는 프로그램의 데이터를 SQLite 데이터베이스([SQLite](https://sqlite.org/))에 보관합니다. Visual Basic 6이 Data Access Objects로 Jet 데이터베이스에 보관하던 일입니다([Microsoft](https://learn.microsoft.com/en-us/previous-versions/visualstudio/visual-basic-6/aa227845(v=vs.60))). `File`이나 `Http`처럼 이름으로 쓰는 내장 객체입니다. 앱마다 자기 데이터베이스가 하나 있습니다. 앱의 데이터 폴더에 있는 `data.db`이고, 처음 쓸 때 열립니다.
+
+| 멤버 | 하는 일 |
+|---|---|
+| `Execute(sql, values…)` | 문장 하나를 실행하고 바뀐 행 수를 줌 |
+| `Query(sql, values…)` | 행들을 `Table`(11.7절)로 줌. 열 이름이 머리글이고 모든 값은 글 |
+| `Scalar(sql, values…)` | 첫 행의 첫 값을 글로 줌. NULL이거나 행이 없으면 `""`이고, 그때 `LastWasNull`이 `True` |
+| `LastWasNull` | 마지막 `Scalar`가 NULL을 만났는지, 또는 행이 없었는지 |
+| `LastId` | 마지막 `INSERT`가 준 행 ID(SQLite의 `last_insert_rowid`) |
+| `Open(name)` | 앱의 데이터 폴더에서 그 이름의 파일을 대신 엶. 없으면 만듦 |
+| `Close()` | 파일을 닫음. 다음에 쓰면 다시 열림 |
+| `Path` | 열린 파일이 있는 곳. 데스크톱에서는 전체 경로, 웹에서는 브라우저 저장소 안의 이름 |
+
+```vb
+Database.Execute("CREATE TABLE IF NOT EXISTS scores (name TEXT, points INTEGER)")
+Database.Execute("INSERT INTO scores VALUES (?, ?)", txtName.Text, points)
+Dim best As Table = Database.Query("SELECT name, points FROM scores ORDER BY points DESC")
+lblCount.Caption = Database.Scalar("SELECT COUNT(*) FROM scores") & "개"
+```
+
+**값.** SQL 안의 `?`는 SQL 뒤에 적은 값을 차례로 받습니다(SQLite의 매개변수: [SQLite](https://sqlite.org/lang_expr.html#varparam)). `Integer`와 `Double`은 수로, `String`은 글로, `Boolean`은 1이나 0으로, `Date`는 SQLite의 날짜 함수가 읽는 글 `yyyy-MM-dd HH:mm:ss`로([SQLite](https://sqlite.org/lang_datefunc.html)), `Nothing`은 NULL로 들어갑니다. 값은 `Table`의 칸처럼 글로 나옵니다. 2⁵³보다 작은 정수는 그 숫자 그대로, 다른 수는 GuBASIC이 `Double`을 쓰는 모양(2.2절)으로, NULL과 BLOB은 `""`로 나옵니다. SQL을 `&`로 이어 붙이면 경고(A060)입니다. 값에 든 따옴표가 문장을 깨뜨릴 수 있지만 `?`는 그렇지 않습니다. 값 없는 `Execute`는 `BEGIN; …; COMMIT;`처럼 문장 여러 개를 한 번에 실행할 수 있습니다.
+
+**파일이 있는 곳.** 데스크톱에서는 사용자의 애플리케이션 지원 폴더(Windows는 `%APPDATA%`, macOS는 `~/Library/Application Support`) 안의 `GuBASIC/<앱 ID>/`입니다. IDE에서는 프로젝트 이름 아래, 내보낸 앱에서는 앱 ID 아래라서, 앱을 새로 받아도 데이터가 남고 두 앱의 데이터가 섞이지 않습니다. 웹에서는 설정(10절, D48)처럼 브라우저의 저장소(IndexedDB)에 같은 이름으로 두며, 브라우저가 그 사이트의 데이터를 지우지 않는 한 남습니다. `Open`에 주는 이름은 `scores.db`처럼 파일 이름만이고 경로가 아닙니다(R043).
+
+**오류.** 데이터베이스가 받지 않는 SQL, 곧 문장의 실수, 없는 테이블, 열이 받지 않는 값은 SQLite가 말한 그대로와 함께 R042입니다. 열 수 없는 파일은 R044입니다. 둘 다 `Try`로 잡을 수 있습니다(9절). 호출은 `Http`처럼 부른 자리에서 기다립니다(11.9절). 웹에서는 처음 쓸 때 약 0.7 MB의 SQLite를 불러오며, 그동안 포인터가 기다림 모양이 됩니다.
+
+**도는 곳.** IDE와 내보낸 앱에서, GuBASIC이 도는 모든 플랫폼에서 됩니다. 놀이터에는 `Database`가 없습니다(R038). 예제 **Notes**가 메모를 여기에 보관합니다. 컴포넌트 통로를 거치는 두 번째 컴포넌트입니다([COMPONENT_CHANNEL.ko.md](COMPONENT_CHANNEL.ko.md)). `components/Database/component.yaml`이 설명하고, SQLite는 package:sqlite3이 어느 플랫폼에나 같은 빌드로 가져오므로 프로그램의 결과와 메시지가 어디서나 같습니다. 이것을 쓰는 동일성 프로그램은 VM과 실행 창에서 돌고, 브라우저에서는 빌드한 웹 플레이어를 Playwright로 돌려 확인합니다(`tool/web_check`).
 
 ## 12. 열린 질문
 

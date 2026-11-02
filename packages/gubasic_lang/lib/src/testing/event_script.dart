@@ -4,6 +4,7 @@ import 'dart:convert';
 
 import '../analyzer/compile.dart';
 import '../analyzer/forms.dart';
+import '../components/database_component.dart';
 import '../components/http_component.dart';
 import '../forms/anchor.dart';
 import '../forms/form_file.dart';
@@ -441,16 +442,20 @@ class ScriptedHost implements FormHost, FileHost, ComponentHost {
   ScriptedHost(FormFile form,
       {String? settings,
       Map<String, List<int>> disk = const {},
-      List<HttpStub> http = const []})
-      : this.forms([form], settings: settings, disk: disk, http: http);
+      List<HttpStub> http = const [],
+      DatabaseComponent? database})
+      : this.forms([form],
+            settings: settings, disk: disk, http: http, database: database);
 
   /// A host for a program with [forms] (D88). [disk] holds the files it
   /// can read (D113), by name: a test's NAME.files folder; [http] what
-  /// servers answer it (D125): a test's NAME.http.
+  /// servers answer it (D125): a test's NAME.http; [database] its
+  /// `Database` (D126), on a real SQLite where the test runs, or none.
   ScriptedHost.forms(List<FormFile> forms,
       {this.settings,
       Map<String, List<int>> disk = const {},
-      this.http = const []})
+      this.http = const [],
+      this.database})
       : _files = {for (final f in forms) f.name.toLowerCase(): f},
         disk = Map.of(disk),
         _several = forms.length > 1 {
@@ -465,9 +470,15 @@ class ScriptedHost implements FormHost, FileHost, ComponentHost {
   /// What servers answer the program's requests (D125).
   final List<HttpStub> http;
 
+  /// The program's `Database` (D126), or null where the test has none.
+  final DatabaseComponent? database;
+
   @override
-  ComponentInstance? createComponent(String component) =>
-      component == 'Http' ? _ScriptedHttp(http, transcript) : null;
+  ComponentInstance? createComponent(String component) => switch (component) {
+        'Http' => _ScriptedHttp(http, transcript),
+        'Database' => database,
+        _ => null,
+      };
 
   /// The files the program reads and writes, by path (D113).
   final Map<String, List<int>> disk;
@@ -898,7 +909,8 @@ Future<List<String>> runProjectScript(List<FormSource> forms, String script,
     List<ModuleSource> modules = const [],
     bool startsWithMain = false,
     Map<String, List<int>> disk = const {},
-    List<HttpStub> http = const []}) async {
+    List<HttpStub> http = const [],
+    DatabaseComponent? database}) async {
   final steps = parseEventScript(script);
   final project = compileProject(forms,
       startup: startup,
@@ -917,7 +929,7 @@ Future<List<String>> runProjectScript(List<FormSource> forms, String script,
     ];
   }
   final host = ScriptedHost.forms([for (final f in forms) f.file],
-      settings: settings, disk: disk, http: http);
+      settings: settings, disk: disk, http: http, database: database);
   return driveEventScript(
       steps, _HostDriver(Interpreter.project(project, host), host),
       namesFile: forms.length > 1 || modules.isNotEmpty);
@@ -931,7 +943,8 @@ Future<List<String>> runEventScript(String source, FormFile form, String script,
     {String? settings,
     List<String> pictures = const [],
     Map<String, List<int>> disk = const {},
-    List<HttpStub> http = const []}) async {
+    List<HttpStub> http = const [],
+    DatabaseComponent? database}) async {
   final steps = parseEventScript(script);
   final program = compile(source, form: form, pictures: pictures);
   if (program.hasErrors) {
@@ -940,7 +953,8 @@ Future<List<String>> runEventScript(String source, FormFile form, String script,
         if (d.isError) 'Not started: ${d.code.code} @ ${d.line}'
     ];
   }
-  final host = ScriptedHost(form, settings: settings, disk: disk, http: http);
+  final host = ScriptedHost(form,
+      settings: settings, disk: disk, http: http, database: database);
   return driveEventScript(steps, _HostDriver(Interpreter(program, host), host));
 }
 

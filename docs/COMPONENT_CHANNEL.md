@@ -1,6 +1,6 @@
 # The component channel
 
-> The three questions at the end were answered as recommended (DESIGN D123). The first component, `Http`, came through it in v0.5 (D125); the rest is design.
+> The three questions at the end were answered as recommended (DESIGN D123). The first components, `Http` (D125) and `Database` (D126), came through it in v0.5; the rest is design.
 
 [한국어](COMPONENT_CHANNEL.ko.md)
 
@@ -15,6 +15,7 @@ Visual Basic let a program call any function of a Windows library with `Declare`
 - Every control is a component described by `components/NAME/component.yaml` (hard rule 7): its properties, methods and events. The analyzer, the IDE's toolbox and the Properties window read it.
 - What a control does is written in Dart in two places: the interpreter (`gubasic_lang`) and the widgets (`gubasic_runtime`). Non-visual objects such as `File`, `Csv` and `PdfDocument` are built into the language.
 - **The channel's first component, `Http` (v0.5, D125):** `components/Http/component.yaml` says `object: true`, a built-in object used by its name, and names its `platforms`. The interpreter asks its host (`ComponentHost.createComponent`) for an instance and talks to it through `ComponentInstance`: `getProperty`, `setProperty`, `call`, `assign`, GuBASIC's values on both sides, and a `ComponentProblem` with an R code for what goes wrong. The component's own code (`HttpComponent`) is pure Dart in `gubasic_lang`; the sending is a subclass where the program runs: the player's on package:http, the tests' from a script. The interface is not public yet (question 3).
+- **The second, `Database` (v0.5, D126):** the same channel over package:sqlite3, and the first component that wraps a package: `component.yaml` says `ParamArray values As Value` for the values after the SQL, the runtime's `GbSqlite` holds the package (the desktop's library from its build hooks, the web's WebAssembly loaded only when used), and the platform-neutral part, `DatabaseComponent`, is pure Dart in `gubasic_lang`.
 - Exported apps are a prebuilt player with the project put into it (D80). The player carries only the Dart code compiled into it.
 
 ## The design
@@ -39,7 +40,7 @@ An interpreter cannot load a Dart package at run time, and neither can the prebu
 
 ## The steps it suggests
 
-1. **v0.5:** write `Http` (done, D125) and `Database` as components through the adapter interface, not as more built-in objects. The interface is then proved by GuBASIC's own components.
+1. **v0.5:** write `Http` (done, D125) and `Database` (done, D126) as components through the adapter interface, not as more built-in objects. The interface is then proved by GuBASIC's own components.
 2. **v0.6:** `WebSocket` and `Room` the same way.
 3. **With the transpiler:** the "built for the project" route, and a guide "How to wrap a package as a GuBASIC component".
 4. **UserControl** (IDEAS) is the other half: a component made of GuBASIC controls and code, where this one is made of Dart. Both end in the same toolbox.

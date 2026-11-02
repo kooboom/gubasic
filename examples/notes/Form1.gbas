@@ -1,0 +1,36 @@
+' Notes kept in the app's own database (docs/DESIGN.md D126): every app
+' has an SQLite file of its own, data.db, that Database opens when first
+' used. Each note goes in with Database.Execute, the list is filled from
+' Database.Query, and a value always goes in for a ?, never joined into
+' the SQL, so that a quote in a note cannot break the statement. The notes
+' are still there the next time the program runs.
+Dim notes As Table
+
+Sub Form_Load()
+    Database.Execute("CREATE TABLE IF NOT EXISTS notes (id INTEGER PRIMARY KEY, text TEXT NOT NULL, written TEXT NOT NULL)")
+    ShowNotes()
+End Sub
+
+Sub btnAdd_Click()
+    Dim text As String = txtNote.Text.Trim()
+    If text = "" Then Exit Sub
+    Database.Execute("INSERT INTO notes (text, written) VALUES (?, ?)", text, Now)
+    txtNote.Text = ""
+    ShowNotes()
+End Sub
+
+Sub btnDelete_Click()
+    If lstNotes.ListIndex < 0 Then Exit Sub
+    Database.Execute("DELETE FROM notes WHERE id = ?", notes.Cell(lstNotes.ListIndex, "id"))
+    ShowNotes()
+End Sub
+
+' The notes, newest first, and how many there are.
+Sub ShowNotes()
+    notes = Database.Query("SELECT id, text, written FROM notes ORDER BY id DESC")
+    lstNotes.Clear()
+    For r = 0 To notes.RowCount - 1
+        lstNotes.AddItem(Left(notes.Cell(r, "written"), 16) & "  " & notes.Cell(r, "text"))
+    Next
+    lblCount.Caption = Database.Scalar("SELECT COUNT(*) FROM notes") & "개의 메모"
+End Sub

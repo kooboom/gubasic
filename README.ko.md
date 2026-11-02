@@ -24,7 +24,7 @@
 |---|---|
 | <img src="docs/images/calculator.png" width="273" alt="실행 중인 계산기 예제"> | <img src="docs/images/scores.png" width="505" alt="실행 중인 Scores 예제"> |
 
-둘 다 IDE의 예제에 있고, hello, quiz, typing, askname, weather(`Http`와 JSON으로 보는 지금 날씨)도 함께 있습니다.
+둘 다 IDE의 예제에 있고, hello, quiz, typing, askname, weather(`Http`와 JSON으로 보는 지금 날씨), notes(앱 자신의 `Database`에 보관하는 메모)도 함께 있습니다.
 
 > **상태: 3단계 v0.4 "업무에 쓰기" 완료**([v0.4.0](https://github.com/kooboom/gubasic/releases/tag/v0.4.0), 개발판).
 >

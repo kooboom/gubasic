@@ -188,6 +188,14 @@ const Map<DiagnosticCode, String> koreanMessages = {
       '이 JSON 값은 {1} 종류여서 {0} 자리에는 맞지 않습니다. 먼저 Kind를 확인하고, 맞는 As… 로 꺼내 주세요.',
   DiagnosticCode.jsonKey:
       '이 JSON 객체에는 "{0}" 멤버가 없습니다. 있는 멤버: {1}. Has(name)으로 있는지 알 수 있습니다.',
+  DiagnosticCode.databaseError:
+      '데이터베이스가 이 SQL을 실행하지 못했습니다: {0}. 문장과 테이블·열 이름, 값을 확인해 주세요.',
+  DiagnosticCode.databaseName:
+      '"{0}" 값은 데이터베이스 이름이 될 수 없습니다. "scores.db"처럼 파일 이름만 적어 주세요. 파일은 앱의 데이터 폴더에 둡니다.',
+  DiagnosticCode.databaseOpenFailed:
+      '데이터베이스 {0} 파일을 열지 못했습니다({1}). 앱이 데이터 폴더에 쓸 수 있는지 확인해 주세요.',
+  DiagnosticCode.sqlJoined:
+      '이 SQL은 &로 이어 붙였습니다. 값이 들어갈 자리에 ?를 쓰고 값은 SQL 뒤에 넘겨 주세요. Database.{0}("… WHERE name = ?", name)처럼 쓰면 값에 든 따옴표가 문장을 깨뜨리지 못합니다.',
   DiagnosticCode.popupWithoutItems:
       '{0} 메뉴에는 항목이 없어서 PopupMenu로 보일 것이 없습니다. 메뉴 편집기에서 항목을 넣거나, 이 항목이 든 메뉴를 보여 주세요.',
   DiagnosticCode.popupOfOtherForm:

@@ -93,7 +93,7 @@ void main() {
     expect(http.defaultEvent, '');
     expect(http.events, isEmpty);
     expect(controlComponents.containsKey('http'), isFalse);
-    expect(objectComponents.keys, ['http']);
+    expect(objectComponents.keys, ['database', 'http']);
     expect(lookupNamedType('http'), isNull);
     expect([for (final m in http.methods.values) m.name],
         ['Get', 'Post', 'GetJson', 'PostJson', 'Send', 'Header']);
@@ -115,6 +115,37 @@ void main() {
     expect(
         () => readComponentFile('name: X\nversion: 1\nobject: true\n'
             'platforms: [linux]\nproperties: []\nevents: []\n'),
+        throwsFormatException);
+  });
+
+  test('Database takes the SQL and then any values (ParamArray, D126)', () {
+    final db = builtinComponents['database']!;
+    expect(db.object, isTrue);
+    expect(db.platforms, ['web', 'macos', 'windows']);
+    expect([for (final m in db.methods.values) m.name],
+        ['Open', 'Execute', 'Query', 'Scalar', 'Close']);
+    final execute = db.methods['execute']!;
+    expect(execute.parameters.map((p) => p.name), ['sql', 'values']);
+    expect(execute.parameters.last.variadic, isTrue);
+    expect(execute.parameters.last.kind, ArgKind.sqlValue);
+    expect(execute.returnType, GbType.integer);
+    expect(db.methods['query']!.returnType, GbType.table);
+    expect(db.methods['scalar']!.returnType, GbType.string);
+    expect(db.methods['close']!.parameters, isEmpty);
+    expect(db.properties['path']!.readOnly, isTrue);
+    expect(db.properties['lastwasnull']!.type, GbType.boolean);
+    expect(db.properties['lastid']!.type, GbType.integer);
+    expect(db.otherNames['openrecordset'], ['Query']);
+    // ParamArray takes Value only, and comes last.
+    expect(
+        () => readComponentFile('name: X\nversion: 1\nobject: true\n'
+            'properties: []\nevents: []\n'
+            'methods: [A(ParamArray v As Value, b As String)]\n'),
+        throwsFormatException);
+    expect(
+        () => readComponentFile('name: X\nversion: 1\nobject: true\n'
+            'properties: []\nevents: []\n'
+            'methods: [A(ParamArray v As String)]\n'),
         throwsFormatException);
   });
 

@@ -17,6 +17,11 @@ void main(List<String> args) {
       .where((f) => !f.uri.pathSegments.last
           .substring(0, f.uri.pathSegments.last.length - 5)
           .contains('.'))
+      // A program that uses Database (D126) runs on SQLite, which this
+      // test has not: the web player's check is Playwright's
+      // (tool/web_check).
+      .where((f) => !File('${f.path.substring(0, f.path.length - 5)}.database')
+          .existsSync())
       .toList()
     ..sort((a, b) => a.path.compareTo(b.path));
 

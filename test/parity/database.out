@@ -1,0 +1,26 @@
+Debug.Print: data.db
+Debug.Print: 1 1
+Debug.Print: 2
+Debug.Print: 2 x 5: name, note
+Debug.Print: 김하나 | 91.5 | 1 | 2026-03-01 09:05:00 | 
+Debug.Print: O'Brien | 78 | 0 |  | it's "fine"
+Debug.Print: 2 False
+Debug.Print: [] True
+Debug.Print: [] True
+Debug.Print: 김하나
+Debug.Print: 78
+Debug.Print: real integer text null
+Debug.Print: 2
+Debug.Print: 1
+Debug.Print: 9007199254740993 9007199254740993
+Debug.Print: [] 2.5 1E+20 -0.5
+Debug.Print: 3
+Debug.Print: other.db
+Debug.Print: 0
+Debug.Print: 2
+Debug.Print: 3
+Debug.Print: The database could not run this SQL: near "SELEC": syntax error. Check the statement, the table and column names, and the values.
+Debug.Print: The database could not run this SQL: no such table: missing. Check the statement, the table and column names, and the values.
+Debug.Print: The database could not run this SQL: Expected 2 parameters, got 1. Check the statement, the table and column names, and the values.
+Debug.Print: "../x.db" cannot be a database name. Write a file name alone, such as "scores.db": the file is kept in the app's own data folder.
+Error R042 @ Module1.gbas:62

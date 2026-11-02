@@ -154,7 +154,9 @@ String _param(ParamSpec p) {
     ArgKind.menu => 'Menu',
     ArgKind.tableOrGrid => 'Table or Grid',
     ArgKind.jsonValue => 'number, Boolean, String, Json or Nothing',
+    ArgKind.sqlValue => 'number, Boolean, String, Date or Nothing',
   };
+  if (p.variadic) return 'ParamArray ${p.name} As $type';
   return '${p.optional ? '[' : ''}${p.name} As $type${p.optional ? ']' : ''}';
 }
 
@@ -416,7 +418,7 @@ Write GuBASIC code as the documents below describe; it is close to Visual Basic 
     '- [Functions]($_site/docs/reference/functions.md): text, conversion, '
     'math, dates, dialogs, settings\n'
     '- [Objects and types]($_site/docs/reference/objects.md): File, Csv, '
-    'Http, Json, Keys, Table, PdfDocument and the others\n\n'
+    'Http, Database, Json, Keys, Table, PdfDocument and the others\n\n'
     '## Optional\n\n'
     '- [Design](https://github.com/kooboom/gubasic/blob/main/docs/DESIGN.md): '
     'how GuBASIC is built, and its decisions\n'

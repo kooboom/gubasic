@@ -519,28 +519,41 @@ const _parameterTypes = {
   'json': GbType.json,
 };
 
-/// The types a method can give back: a parameter's, and the whole answer
-/// to an HTTP request (D125).
+/// The types a method can give back: a parameter's, the whole answer to
+/// an HTTP request (D125) and a table of rows (D126).
 const _returnTypes = {
   ..._parameterTypes,
   'httpresponse': GbType.httpResponse,
+  'table': GbType.table,
 };
 
 /// `a As Integer, b As String`: the parameters of an event or a method.
+/// `ParamArray values As Value`, last, takes the rest of the arguments,
+/// each a value that can go into SQL (D126).
 List<ParamSpec> _parameters(String text) {
-  final paramPattern = RegExp(r'^([A-Za-z][A-Za-z0-9_]*) As ([A-Za-z]+)$');
-  return [
+  final paramPattern =
+      RegExp(r'^(ParamArray )?([A-Za-z][A-Za-z0-9_]*) As ([A-Za-z]+)$');
+  final params = [
     for (final part in text.split(',').where((s) => s.trim().isNotEmpty))
       switch (paramPattern.firstMatch(part.trim())) {
+        final pm? when pm[1] != null && pm[3]!.toLowerCase() == 'value' =>
+          ParamSpec.of(pm[2]!, ArgKind.sqlValue, variadic: true),
+        final pm? when pm[1] != null =>
+          throw FormatException('ParamArray takes Value only: $part'),
         // A form's menu (D106): Menu is a component, read after this one.
-        final pm? when pm[2]!.toLowerCase() == 'menu' =>
-          ParamSpec.of(pm[1]!, ArgKind.menu),
+        final pm? when pm[3]!.toLowerCase() == 'menu' =>
+          ParamSpec.of(pm[2]!, ArgKind.menu),
         // A table's column, by its number or its name (D116).
-        final pm? when pm[2]!.toLowerCase() == 'column' =>
-          ParamSpec.of(pm[1]!, ArgKind.numericOrString),
-        final pm? when _parameterTypes[pm[2]!.toLowerCase()] != null =>
-          ParamSpec(pm[1]!, _parameterTypes[pm[2]!.toLowerCase()]!),
+        final pm? when pm[3]!.toLowerCase() == 'column' =>
+          ParamSpec.of(pm[2]!, ArgKind.numericOrString),
+        final pm? when _parameterTypes[pm[3]!.toLowerCase()] != null =>
+          ParamSpec(pm[2]!, _parameterTypes[pm[3]!.toLowerCase()]!),
         _ => throw FormatException('bad parameter: $part'),
       },
   ];
+  if (params.any((p) => p.variadic) && !params.last.variadic ||
+      params.where((p) => p.variadic).length > 1) {
+    throw FormatException('ParamArray must be the last parameter: $text');
+  }
+  return params;
 }

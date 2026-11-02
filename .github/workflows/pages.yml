@@ -86,6 +86,12 @@ jobs:
       - name: Build the playground
         run: tool/build.sh
         working-directory: apps/playground
+      # SQLite as WebAssembly next to each page (D126).
+      - name: Fetch sqlite3.wasm
+        run: |
+          flutter pub get
+          dart run tool/fetch_sqlite_wasm.dart ../../apps/ide/web ../../apps/player/web
+        working-directory: packages/gubasic_runtime
       - name: Build the IDE
         # The engine and fonts come from this site, not from a CDN (D30).
         run: |

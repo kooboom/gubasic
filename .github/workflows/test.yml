@@ -142,12 +142,33 @@ jobs:
         run: flutter analyze --fatal-infos
       - name: Test
         run: flutter test
+      # SQLite as WebAssembly next to the page (D126), from the sqlite3
+      # package's release; not checked in.
+      - name: Fetch sqlite3.wasm
+        run: dart run tool/fetch_sqlite_wasm.dart ../../apps/player/web
+        working-directory: packages/gubasic_runtime
       - name: Build for the web
         run: flutter build web --release --no-web-resources-cdn
-      - name: The player's size on the web (STAGE2_PLAN step 2-2)
+      - name: The player's size on the web (STAGE2_PLAN step 2-2, D126)
         run: |
           du -sh build/web build/web/canvaskit
-          ls -l build/web/main.dart.js
+          ls -l build/web/main.dart.js build/web/*.part.js build/web/sqlite3.wasm
+      # The parity programs that use Database, run by this build in
+      # Chromium (D126, tool/web_check): the console compared with NAME.out.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: tool/web_check/package-lock.json
+      - name: Install Playwright
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+        working-directory: tool/web_check
+      - name: The Database parity programs in the web player
+        run: |
+          dart run tool/parity_bundle.dart
+          node ../../tool/web_check/parity.mjs
       - name: The web template (D84)
         run: |
           dart run tool/web_template.dart
@@ -177,6 +198,9 @@ jobs:
         run: flutter test
       - name: Test in Chrome (projects kept in the browser, D33)
         run: flutter test --platform chrome test/web
+      - name: Fetch sqlite3.wasm (D126)
+        run: dart run tool/fetch_sqlite_wasm.dart ../../apps/ide/web
+        working-directory: packages/gubasic_runtime
       - name: Build for the web (engine and fonts served with the app, D30)
         run: flutter build web --release --no-web-resources-cdn
       - name: List the sizes for the loading percentage (D43)
@@ -230,6 +254,11 @@ jobs:
       - name: Files in the player's own window
         working-directory: apps/player
         run: dart run gubasic_test_support:integration integration_test/files_test.dart -d windows
+      # A database made, written and read in the app, with the SQLite it
+      # carries (D126).
+      - name: A database in the player's own window
+        working-directory: apps/player
+        run: dart run gubasic_test_support:integration integration_test/database_test.dart -d windows
       # The IDE's toolbox in its own window (D107): two columns of drawn
       # controls, the name in the tooltip; pictures of it in the Artifacts.
       - name: The toolbox in the IDE's own window
@@ -359,6 +388,11 @@ jobs:
       - name: Files in the player's own window
         working-directory: apps/player
         run: dart run gubasic_test_support:integration integration_test/files_test.dart -d macos
+      # A database made, written and read in the app, with the SQLite it
+      # carries, inside the sandbox (D126).
+      - name: A database in the player's own window
+        working-directory: apps/player
+        run: dart run gubasic_test_support:integration integration_test/database_test.dart -d macos
       # The IDE's toolbox in its own window (D107): two columns of drawn
       # controls, the name in the tooltip; pictures of it in the Artifacts.
       - name: The toolbox in the IDE's own window

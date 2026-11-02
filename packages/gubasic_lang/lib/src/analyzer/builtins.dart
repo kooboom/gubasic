@@ -29,12 +29,18 @@ enum ArgKind {
   /// What goes into a JSON value (D125): Integer, Double, Boolean,
   /// String, Json or Nothing.
   jsonValue,
+
+  /// What goes into SQL for a `?` (D126): Integer, Double, Boolean,
+  /// String, Date or Nothing.
+  sqlValue,
 }
 
 class ParamSpec {
   const ParamSpec(this.name, this.type, {this.optional = false})
-      : kind = ArgKind.typed;
-  const ParamSpec.of(this.name, this.kind, {this.optional = false})
+      : kind = ArgKind.typed,
+        variadic = false;
+  const ParamSpec.of(this.name, this.kind,
+      {this.optional = false, this.variadic = false})
       : type = null;
 
   final String name;
@@ -43,6 +49,10 @@ class ParamSpec {
   /// For [ArgKind.typed].
   final GbType? type;
   final bool optional;
+
+  /// Takes the rest of the arguments, however many, none included
+  /// (`ParamArray`, D126). Only the last parameter.
+  final bool variadic;
 }
 
 /// How a function's result type is decided.
@@ -75,7 +85,11 @@ class Callable {
   final ReturnKind returnKind;
 
   bool get isSub => returnType == GbType.void_;
-  int get requiredCount => parameters.where((p) => !p.optional).length;
+  int get requiredCount =>
+      parameters.where((p) => !p.optional && !p.variadic).length;
+
+  /// Whether the last parameter takes the rest of the arguments.
+  bool get isVariadic => parameters.isNotEmpty && parameters.last.variadic;
 }
 
 const _s = GbType.string;

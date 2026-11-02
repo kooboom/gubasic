@@ -393,6 +393,11 @@ enum DiagnosticCode {
   /// GuBASIC's (D104).
   typeHasOtherName('A056'),
 
+  /// SQL given to Database put together with `&` (D126): a quote in the
+  /// value can break it; a `?` and the value after the SQL cannot. Args:
+  /// the method.
+  sqlJoined('A060', DiagnosticSeverity.warning),
+
   // Form and project files (.form.yaml, .gbproj)
 
   /// The file is not in the expected layout (YAML syntax).
@@ -616,7 +621,18 @@ enum DiagnosticCode {
   jsonKind('R040'),
 
   /// A member no JSON object has (D125). Args: the name, the names it has.
-  jsonKey('R041');
+  jsonKey('R041'),
+
+  /// SQL the database refused (D126): a mistake in it, a table that is
+  /// not there, a value a column does not take. Args: what SQLite said.
+  databaseError('R042'),
+
+  /// A database name that is not a file name (D126). Args: the name.
+  databaseName('R043'),
+
+  /// A database file that could not be opened (D126). Args: the name,
+  /// the detail.
+  databaseOpenFailed('R044');
 
   const DiagnosticCode(this.code, [this.severity = DiagnosticSeverity.error]);
 

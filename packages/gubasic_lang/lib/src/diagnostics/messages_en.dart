@@ -227,6 +227,17 @@ const Map<DiagnosticCode, String> englishMessages = {
       'matches it.',
   DiagnosticCode.jsonKey: 'This JSON object has no member "{0}". Its '
       'members are: {1}. Has(name) says whether one is there.',
+  DiagnosticCode.databaseError: 'The database could not run this SQL: {0}. '
+      'Check the statement, the table and column names, and the values.',
+  DiagnosticCode.databaseName: '"{0}" cannot be a database name. Write a '
+      'file name alone, such as "scores.db": the file is kept in the '
+      'app\'s own data folder.',
+  DiagnosticCode.databaseOpenFailed: 'The database {0} could not be '
+      'opened ({1}). Check that the app may write to its data folder.',
+  DiagnosticCode.sqlJoined: 'This SQL is put together with &. Write ? '
+      'where a value goes and pass the value after the SQL, as in '
+      'Database.{0}("… WHERE name = ?", name): then a quote in the value '
+      'cannot break the statement.',
   DiagnosticCode.popupWithoutItems: '{0} has no items, so PopupMenu has '
       'nothing to show. Give it items in the menu editor, or show the menu '
       'it is in.',

@@ -347,6 +347,7 @@ String _signature(Callable c) {
         ParamSpec(kind: ArgKind.menu) => '${p.name} As Menu',
         ParamSpec(kind: ArgKind.tableOrGrid) => '${p.name} As Table',
         ParamSpec(kind: ArgKind.jsonValue) => '${p.name} As Json',
+        ParamSpec(kind: ArgKind.sqlValue) => 'ParamArray ${p.name}',
         ParamSpec(:final type?) when type != GbType.unknown => p.optional
             ? '[${p.name} As ${type.displayName}]'
             : '${p.name} As '

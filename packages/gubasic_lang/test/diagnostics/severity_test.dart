@@ -19,6 +19,8 @@ void main() {
       DiagnosticCode.badShortcutInCode,
       // The procedure still handles what its Handles lists (D98).
       DiagnosticCode.handlerNameMismatch,
+      // The SQL may still be right; a ? is the safer way (D126).
+      DiagnosticCode.sqlJoined,
     };
     for (final code in DiagnosticCode.values) {
       expect(

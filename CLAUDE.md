@@ -31,6 +31,8 @@ examples/                Sample projects, built into the IDE
 test/parity/             Parity programs (.gbas, .form.yaml, .events, .in, .out), run by
                          the interpreter on the VM, in Chrome and through the run window's widgets;
                          the player joins in stage 2, the transpiled Dart later
+tool/web_check/          Playwright (Node): the parity programs that use Database, run by the
+                         built web player in Chromium and compared with their .out (D126)
 ```
 
 `apps/player/` becomes the phone Player in stage 3. `test/bench/` holds the benchmark projects of
@@ -44,13 +46,15 @@ Generated files that are checked in, each with a `--check` mode that CI runs:
 `docs/reference/`, `llms.txt` and `llms-full.txt` (`tool/gen_reference.dart` in `packages/gubasic_lang`).
 After changing `components/`, `examples/`, `test/parity/` or `test/bench/`, run the generator in
 that package; after changing `docs/LANGUAGE.md`, a built-in function or a component, run
-`tool/gen_reference.dart`.
+`tool/gen_reference.dart`. Not checked in: `apps/ide/web/sqlite3.wasm` and
+`apps/player/web/sqlite3.wasm`, which `packages/gubasic_runtime/tool/fetch_sqlite_wasm.dart` fetches
+before a web build (D126).
 
 ## Hard rules
 
 1. **`gubasic_lang` must not depend on Flutter.** It must run with plain `dart test`.
 2. **Interpreter and transpiler share one AST.** Never add a language feature to only one of them. The transpiler comes later (D79); nothing may close the way to it.
-3. **Every language feature gets a parity test** in `test/parity/`: same program, same output, both modes. Do not merge if parity fails.
+3. **Every language feature gets a parity test** in `test/parity/`: same program, same output, both modes. Do not merge if parity fails. A program that uses `Database` (`NAME.database`) runs on SQLite on the VM and through the run window; its browser check is Playwright's, on the built web player (`tool/web_check`), against the same `.out`, on every CI run.
 4. **The interpreter is async.** Every user procedure is async; every call to one is awaited. Do not introduce synchronous fast paths that change behavior.
 5. **A running event handler must not re-enter.**
 6. **Generated code and the interpreter use `gubasic_runtime` only** — never Flutter widgets directly.
@@ -108,5 +112,6 @@ The Mac is the author's own computer, in use while you work.
 - `dart test -p vm,chrome` in `apps/playground` passes (parity in Chrome)
 - `flutter test` in `packages/gubasic_player` passes (parity through the run window's widgets)
 - `flutter test` in `apps/ide` and in `apps/player` passes
+- When `Database`, the runtime's SQLite or the web player changed: `dart run tool/fetch_sqlite_wasm.dart ../../apps/player/web` in `packages/gubasic_runtime`, `flutter build web --release --no-web-resources-cdn` and `dart run tool/parity_bundle.dart` in `apps/player`, then `node tool/web_check/parity.mjs` (after `npm ci` and `npx playwright install chromium` in `tool/web_check`) passes
 - The generators' `--check` passes (with `tool/gen_reference.dart --check` in `packages/gubasic_lang`)
 - Docs updated if behavior or a decision changed

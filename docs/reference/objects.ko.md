@@ -134,6 +134,17 @@
 - `Json.Parse(text As String) As Json`
 - `Json.Array() As Json`
 
+### Database
+
+- `Database.Path As String`
+- `Database.LastWasNull As Boolean`
+- `Database.LastId As Integer`
+- `Database.Open(name As String)`
+- `Database.Execute(sql As String, ParamArray values As number, Boolean, String, Date or Nothing) As Integer`
+- `Database.Query(sql As String, ParamArray values As number, Boolean, String, Date or Nothing) As Table`
+- `Database.Scalar(sql As String, ParamArray values As number, Boolean, String, Date or Nothing) As String`
+- `Database.Close()`
+
 ### Http
 
 - `Http.Timeout As Integer (can be set)`
