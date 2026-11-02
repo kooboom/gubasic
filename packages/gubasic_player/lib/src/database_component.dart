@@ -9,7 +9,9 @@ import 'package:gubasic_runtime/gubasic_runtime.dart';
 /// counts the calls under way, so that the run window shows the pointer
 /// as waiting while the web loads SQLite (D124 A).
 class PlayerDatabase extends DatabaseComponent {
-  PlayerDatabase(this._sqlite, this.appId, this.busy);
+  PlayerDatabase(this._sqlite, this.appId, this.busy, {GbFiles? files}) {
+    if (files != null) this.files = _Files(files);
+  }
 
   final GbSqlite _sqlite;
   final String appId;
@@ -17,6 +19,25 @@ class PlayerDatabase extends DatabaseComponent {
 
   @override
   String pathOf(String name) => _sqlite.pathOf(appId, name);
+
+  @override
+  Future<List<int>> readDatabaseBytes(String name) =>
+      _bytes(() => _sqlite.readBytes(appId, name));
+
+  @override
+  Future<void> writeDatabaseBytes(String name, List<int> bytes) =>
+      _bytes(() => _sqlite.writeBytes(appId, name, bytes));
+
+  Future<T> _bytes<T>(Future<T> Function() body) async {
+    busy.value++;
+    try {
+      return await body();
+    } on GbSqlError catch (e) {
+      throw SqlFailure(e.detail);
+    } finally {
+      busy.value--;
+    }
+  }
 
   @override
   Future<SqlConnection> open(String name) async {
@@ -31,6 +52,40 @@ class PlayerDatabase extends DatabaseComponent {
       throw SqlFailure('$e');
     } finally {
       busy.value--;
+    }
+  }
+}
+
+/// The program's files for Export and Import (D130), as `File` has them
+/// (D113): on the web an export downloads under its name, and an import
+/// reads a file the user chose or the program saved in this run.
+class _Files implements DatabaseFiles {
+  _Files(this._files);
+
+  final GbFiles _files;
+
+  static Never _problem(GbFileError e) => throw FileProblem(switch (e.kind) {
+    GbFileErrorKind.notFound => FileProblemKind.notFound,
+    GbFileErrorKind.notChosen => FileProblemKind.notChosen,
+    GbFileErrorKind.other => FileProblemKind.other,
+  }, e.detail);
+
+  @override
+  Future<List<int>> read(String path) async {
+    try {
+      return await _files.read(path);
+    } on GbFileError catch (e) {
+      _problem(e);
+    }
+  }
+
+  @override
+  Future<void> write(String path, List<int> bytes) async {
+    try {
+      _files.allowSave(path);
+      await _files.write(path, bytes);
+    } on GbFileError catch (e) {
+      _problem(e);
     }
   }
 }

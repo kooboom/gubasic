@@ -262,6 +262,7 @@ TypeOf CType AddHandler AddressOf
 | R042 | 데이터베이스가 받지 않은 SQL. SQLite가 말한 그대로와 함께(11.10절) |
 | R043 | 파일 이름만이 아닌 데이터베이스 이름(11.10절) |
 | R044 | 열 수 없는 데이터베이스 파일(11.10절) |
+| R045 | `Database.Import`에 준 SQLite 데이터베이스가 아닌 파일(11.10절) |
 
 ## 2. 타입
 
@@ -981,6 +982,8 @@ Http.PostJson("https://example.com/scores", mine)
 | `Open(name)` | 앱의 데이터 폴더에서 그 이름의 파일을 대신 엶. 없으면 만듦 |
 | `Close()` | 파일을 닫음. 다음에 쓰면 다시 열림 |
 | `Path` | 열린 파일이 있는 곳. 데스크톱에서는 전체 경로, 웹에서는 브라우저 저장소 안의 이름 |
+| `Export(path)` | 데이터베이스를 파일 하나로 씀(백업). `File`이 파일을 쓰는 곳에(11.6절): 데스크톱은 `path`에, 웹은 그 이름으로 내려받기 |
+| `Import(path)` | 그런 파일로 데이터베이스를 바꿔 넣음. 데스크톱은 `path`의 파일, 웹은 `OpenFileDialog`로 고른 파일이나 이번 실행에서 내보낸 파일 |
 
 ```vb
 Database.Execute("CREATE TABLE IF NOT EXISTS scores (name TEXT, points INTEGER)")
@@ -992,6 +995,8 @@ lblCount.Caption = Database.Scalar("SELECT COUNT(*) FROM scores") & "개"
 **값.** SQL 안의 `?`는 SQL 뒤에 적은 값을 차례로 받습니다(SQLite의 매개변수: [SQLite](https://sqlite.org/lang_expr.html#varparam)). `Integer`와 `Double`은 수로, `String`은 글로, `Boolean`은 1이나 0으로, `Date`는 SQLite의 날짜 함수가 읽는 글 `yyyy-MM-dd HH:mm:ss`로([SQLite](https://sqlite.org/lang_datefunc.html)), `Nothing`은 NULL로 들어갑니다. 값은 `Table`의 칸처럼 글로 나옵니다. 2⁵³보다 작은 정수는 그 숫자 그대로, 다른 수는 GuBASIC이 `Double`을 쓰는 모양(2.2절)으로, NULL과 BLOB은 `""`로 나옵니다. SQL을 `&`로 이어 붙이면 경고(A060)입니다. 값에 든 따옴표가 문장을 깨뜨릴 수 있지만 `?`는 그렇지 않습니다. 값 없는 `Execute`는 `BEGIN; …; COMMIT;`처럼 문장 여러 개를 한 번에 실행할 수 있습니다.
 
 **파일이 있는 곳.** 데스크톱에서는 사용자의 애플리케이션 지원 폴더(Windows는 `%APPDATA%`, macOS는 `~/Library/Application Support`) 안의 `GuBASIC/<앱 ID>/`입니다. IDE에서는 프로젝트 이름 아래, 내보낸 앱에서는 앱 ID 아래라서, 앱을 새로 받아도 데이터가 남고 두 앱의 데이터가 섞이지 않습니다. 웹에서는 설정(10절, D48)처럼 브라우저의 저장소(IndexedDB)에 같은 이름으로 두며, 브라우저가 그 사이트의 데이터를 지우지 않는 한 남습니다. `Open`에 주는 이름은 `scores.db`처럼 파일 이름만이고 경로가 아닙니다(R043).
+
+**백업.** `SaveFileDialog` 뒤에 `Database.Export(dlgSave.FileName)`을 부르면 데이터베이스 전체가 파일 하나로 써지고, `OpenFileDialog` 뒤에 `Database.Import(dlgOpen.FileName)`을 부르면 그 파일을 다시 들여옵니다. 데스크톱과 웹이 같습니다. 웹은 브라우저가 사이트의 데이터를 지우지 않는 동안만 프로그램의 데이터베이스를 지키므로, 내보낸 파일이 백업입니다. SQLite 데이터베이스가 아닌 파일은 R045입니다.
 
 **오류.** 데이터베이스가 받지 않는 SQL, 곧 문장의 실수, 없는 테이블, 열이 받지 않는 값은 SQLite가 말한 그대로와 함께 R042입니다. 열 수 없는 파일은 R044입니다. 둘 다 `Try`로 잡을 수 있습니다(9절). 호출은 `Http`처럼 부른 자리에서 기다립니다(11.9절). 웹에서는 처음 쓸 때 약 0.7 MB의 SQLite를 불러오며, 그동안 포인터가 기다림 모양이 됩니다.
 

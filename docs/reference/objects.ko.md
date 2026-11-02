@@ -144,6 +144,8 @@
 - `Database.Query(sql As String, ParamArray values As number, Boolean, String, Date or Nothing) As Table`
 - `Database.Scalar(sql As String, ParamArray values As number, Boolean, String, Date or Nothing) As String`
 - `Database.Close()`
+- `Database.Export(path As String)`
+- `Database.Import(path As String)`
 
 ### Http
 

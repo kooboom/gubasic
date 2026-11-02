@@ -96,7 +96,9 @@ End Sub
       'execute',
       'query',
       'scalar',
-      'close'
+      'close',
+      'export',
+      'import'
     ]);
   });
 }

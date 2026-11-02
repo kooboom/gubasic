@@ -234,6 +234,8 @@ const Map<DiagnosticCode, String> englishMessages = {
       'app\'s own data folder.',
   DiagnosticCode.databaseOpenFailed: 'The database {0} could not be '
       'opened ({1}). Check that the app may write to its data folder.',
+  DiagnosticCode.databaseNotFile: '{0} is not an SQLite database file. '
+      'Give Database.Import a file that Database.Export wrote.',
   DiagnosticCode.sqlJoined: 'This SQL is put together with &. Write ? '
       'where a value goes and pass the value after the SQL, as in '
       'Database.{0}("… WHERE name = ?", name): then a quote in the value '

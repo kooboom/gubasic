@@ -5,7 +5,10 @@
 // sqlite3.wasm next to the page, Chromium opens it, and the console's
 // `Debug.Print: …` lines and the `Run: …` line are compared with the
 // program's NAME.out, the same expected output the VM and the run window
-// are compared with.
+// are compared with: its `Debug.Print:` lines and its last line, how the
+// run ended. The other lines of a transcript (`Wrote …`, `Set …`) are
+// what the VM's and the run window's hosts record about themselves; the
+// browser has no such record, so they are left out of the comparison.
 //
 //   node tool/web_check/parity.mjs [--web apps/player/build/web]
 //                                  [--bundles apps/player/build/parity]
@@ -91,7 +94,8 @@ let failed = 0;
 for (const file of programs) {
   const name = file.slice(0, -'.gbz'.length);
   bundle = join(bundles, file);
-  const expected = readFileSync(join(parity, `${name}.out`), 'utf8').trimEnd().split('\n');
+  const all = readFileSync(join(parity, `${name}.out`), 'utf8').trimEnd().split('\n');
+  const expected = all.filter((l, i) => l.startsWith('Debug.Print: ') || i === all.length - 1);
   // A fresh browser profile each time: the app's IndexedDB starts empty,
   // as the VM's and the run window's folders do. English, as the
   // transcripts are: the player speaks the browser's language.

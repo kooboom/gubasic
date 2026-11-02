@@ -1,0 +1,3 @@
+This program uses Database (D126, D130): the VM and the run window run it
+on SQLite, and the browser's check is Playwright's, on the built web player
+(tool/web_check), not the playground's Chrome test, which has no Database.

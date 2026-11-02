@@ -412,6 +412,7 @@ class RunHost implements FormHost, FileHost, ComponentHost {
       _sql ??= GbSqlite(),
       settingsKey,
       busyRequests,
+      files: _disk,
     ),
     _ => null,
   };

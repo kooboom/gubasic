@@ -14,9 +14,13 @@
 # then cannot break the statement. Integer, Double and String go in as
 # they are, Boolean as 1 or 0, Date as "yyyy-MM-dd HH:mm:ss", Nothing as
 # NULL. LastId is the row ID the last INSERT gave; Path is where the file
-# is; Close() closes it (the next use opens it again). SQL the database
-# cannot run is R042; a name that is not a file name is R043; a database
-# that cannot be opened is R044. SQL joined with & is a warning (A060).
+# is; Close() closes it (the next use opens it again). Export(path) writes
+# the database as a file, a backup, where File writes files (on the web,
+# a download); Import(path) replaces the database with such a file, one
+# chosen with OpenFileDialog or exported in this run on the web. SQL the
+# database cannot run is R042; a name that is not a file name is R043; a
+# database that cannot be opened is R044; a file that is not an SQLite
+# database is R045. SQL joined with & is a warning (A060).
 name: Database
 version: 1
 object: true
@@ -36,6 +40,8 @@ methods:
   - Query(sql As String, ParamArray values As Value) As Table
   - Scalar(sql As String, ParamArray values As Value) As String
   - Close()
+  - Export(path As String)
+  - Import(path As String)
 # Names other versions of BASIC use, pointed to GuBASIC's (A036,
 # docs/DESIGN.md D50): Data Access Objects' and ADO's.
 otherNames:

@@ -3,6 +3,21 @@ import 'package:test/test.dart';
 
 import '../support/sqlite_database.dart';
 
+/// The program's files in a map, as a test's ScriptedHost has them.
+class _Files implements DatabaseFiles {
+  _Files(this.disk);
+
+  final Map<String, List<int>> disk;
+
+  @override
+  Future<List<int>> read(String path) async =>
+      disk[path] ?? (throw const FileProblem(FileProblemKind.notFound));
+
+  @override
+  Future<void> write(String path, List<int> bytes) async =>
+      disk[path] = List.of(bytes);
+}
+
 /// The Database object on a real SQLite (docs/DESIGN.md D126): the
 /// values that go in and come out, Scalar and LastWasNull, LastId, Open,
 /// Close, and what becomes R042, R043 and R044.
@@ -145,6 +160,50 @@ void main() {
     } on ComponentProblem catch (p) {
       expect(p.code, DiagnosticCode.databaseOpenFailed);
       expect(p.args.first, 'data.db');
+    }
+  });
+
+  test(
+      'Export writes the file where the program\'s files go; Import '
+      'brings it back; a file that is not a database is R045', () async {
+    final disk = <String, List<int>>{};
+    db.files = _Files(disk);
+    await db.call('Execute', ['CREATE TABLE t (a)']);
+    await db.call('Execute', ['INSERT INTO t VALUES (?)', 'kept']);
+    await db.call('Export', ['backup.db']);
+    expect(DatabaseComponent.isSqliteFile(disk['backup.db']!), isTrue);
+    await db.call('Execute', ['DELETE FROM t']);
+    expect(await db.call('Scalar', ['SELECT COUNT(*) FROM t']), '0');
+    await db.call('Import', ['backup.db']);
+    expect(await db.call('Scalar', ['SELECT a FROM t']), 'kept');
+    // Not a database.
+    disk['text.txt'] = 'hello'.codeUnits;
+    try {
+      await db.call('Import', ['text.txt']);
+      fail('no problem');
+    } on ComponentProblem catch (p) {
+      expect(p.code, DiagnosticCode.databaseNotFile);
+      expect(p.args, ['text.txt']);
+    }
+    // Not there: the file's own code.
+    try {
+      await db.call('Import', ['missing.db']);
+      fail('no problem');
+    } on ComponentProblem catch (p) {
+      expect(p.code, DiagnosticCode.fileNotFound);
+    }
+    // An export before anything was written is still a database.
+    final fresh = TestDatabase.temporary()..files = _Files(disk);
+    addTearDown(fresh.delete);
+    await fresh.call('Export', ['empty.db']);
+    expect(DatabaseComponent.isSqliteFile(disk['empty.db']!), isTrue);
+    // Without files (the playground), R038.
+    fresh.files = null;
+    try {
+      await fresh.call('Export', ['x.db']);
+      fail('no problem');
+    } on ComponentProblem catch (p) {
+      expect(p.code, DiagnosticCode.componentUnavailable);
     }
   });
 

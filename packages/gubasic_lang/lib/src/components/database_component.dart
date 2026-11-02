@@ -21,6 +21,15 @@ class SqlFailure implements Exception {
   final String detail;
 }
 
+/// Where `Database.Export` writes and `Database.Import` reads a database
+/// file (D130): the program's files, as `File` has them (D113), so that
+/// on the web an export downloads and an import reads a file the user
+/// chose or the program saved. Throws a [FileProblem].
+abstract interface class DatabaseFiles {
+  Future<List<int>> read(String path);
+  Future<void> write(String path, List<int> bytes);
+}
+
 /// One open database file, where the program runs (docs/DESIGN.md D126):
 /// the player's on package:sqlite3, the tests' the same on the VM. Values
 /// go in as [DatabaseComponent.sqlValue] makes them: `int` or `BigInt`,
@@ -66,6 +75,15 @@ abstract class DatabaseComponent implements ComponentInstance {
 
   /// Where [name] is or would be, for `Path` before the file is opened.
   String pathOf(String name);
+
+  /// The bytes of the closed database file [name] (D130), and the file
+  /// written anew from [bytes]; both throw an [SqlFailure].
+  Future<List<int>> readDatabaseBytes(String name);
+  Future<void> writeDatabaseBytes(String name, List<int> bytes);
+
+  /// The program's files, for `Export` and `Import` (D130); null where
+  /// the program has none, and then both are R038.
+  DatabaseFiles? files;
 
   SqlConnection? _connection;
   var _name = defaultName;
@@ -135,8 +153,65 @@ abstract class DatabaseComponent implements ComponentInstance {
       case 'Close':
         await _close();
         return null;
+      case 'Export':
+        // The file as it is on disk, closed first so that it is whole.
+        final path = args[0] as String;
+        await _close();
+        final bytes = await _databaseBytes(() => readDatabaseBytes(_name));
+        await _file(path, () => _files.write(path, bytes));
+        return null;
+      case 'Import':
+        final path = args[0] as String;
+        final bytes = await _file(path, () => _files.read(path));
+        if (!isSqliteFile(bytes)) {
+          throw ComponentProblem(DiagnosticCode.databaseNotFile, [path]);
+        }
+        await _close();
+        await _databaseBytes(() => writeDatabaseBytes(_name, bytes));
+        return null;
     }
     throw StateError('no code for Database.$name');
+  }
+
+  DatabaseFiles get _files =>
+      files ??
+      (throw const ComponentProblem(
+          DiagnosticCode.componentUnavailable, ['Database.Export']));
+
+  /// [body] on the program's files; what goes wrong is the file's R code.
+  Future<T> _file<T>(String path, Future<T> Function() body) async {
+    try {
+      return await body();
+    } on FileProblem catch (p) {
+      throw ComponentProblem(
+          switch (p.kind) {
+            FileProblemKind.notFound => DiagnosticCode.fileNotFound,
+            FileProblemKind.notChosen => DiagnosticCode.fileNotChosen,
+            _ => DiagnosticCode.fileError,
+          },
+          [path, p.detail]);
+    }
+  }
+
+  /// [body] on the database file; what goes wrong is R044.
+  Future<T> _databaseBytes<T>(Future<T> Function() body) async {
+    try {
+      return await body();
+    } on SqlFailure catch (f) {
+      throw ComponentProblem(
+          DiagnosticCode.databaseOpenFailed, [_name, f.detail]);
+    }
+  }
+
+  /// Whether [bytes] start as an SQLite database file does
+  /// ([SQLite](https://sqlite.org/fileformat.html): "SQLite format 3").
+  static bool isSqliteFile(List<int> bytes) {
+    const header = 'SQLite format 3\u0000';
+    if (bytes.length < header.length) return false;
+    for (var i = 0; i < header.length; i++) {
+      if (bytes[i] != header.codeUnitAt(i)) return false;
+    }
+    return true;
   }
 
   /// [body] on the open file with the SQL and the values of [args]; what

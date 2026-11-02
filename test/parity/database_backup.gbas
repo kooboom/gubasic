@@ -1,0 +1,5 @@
+' Never shown: the program starts with Sub Main of Module1 and ends with
+' it (D102). Database.Export and Import (D130) are used there.
+Sub Form_Load()
+    Debug.Print("not reached")
+End Sub

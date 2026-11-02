@@ -50,7 +50,20 @@ abstract class GbSqlite {
   /// Opens [name] of [appId], making the folder and the file when they
   /// are not there; throws a [GbSqlError].
   Future<GbSqlDatabase> open(String appId, String name);
+
+  /// The bytes of the closed file [name] of [appId] (D130): a new empty
+  /// database's when there is none yet; throws a [GbSqlError].
+  Future<List<int>> readBytes(String appId, String name);
+
+  /// Writes [name] of [appId] anew from [bytes], the file closed; throws a
+  /// [GbSqlError].
+  Future<void> writeBytes(String appId, String name, List<int> bytes);
 }
+
+/// Run in a new database before its bytes are read (D130), so that the
+/// file has SQLite's header: an untouched database is zero bytes.
+const emptyDatabaseSql =
+    'CREATE TABLE IF NOT EXISTS gubasic_empty (x); DROP TABLE gubasic_empty;';
 
 /// [appId] as a folder or database name: the characters a file system
 /// refuses become `_`.

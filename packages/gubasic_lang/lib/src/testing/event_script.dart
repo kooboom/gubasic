@@ -437,7 +437,7 @@ class _ScriptedHttp extends HttpComponent {
 ///
 /// The program's settings start as [settings] (a test's NAME.settings),
 /// as if an earlier run had saved them.
-class ScriptedHost implements FormHost, FileHost, ComponentHost {
+class ScriptedHost implements FormHost, FileHost, ComponentHost, DatabaseFiles {
   /// A host for a program with one form.
   ScriptedHost(FormFile form,
       {String? settings,
@@ -462,7 +462,16 @@ class ScriptedHost implements FormHost, FileHost, ComponentHost {
     for (final f in forms) {
       _start(f);
     }
+    // Database.Export and Import use the same files (D130).
+    database?.files = this;
   }
+
+  @override
+  Future<List<int>> read(String path) => readFile(path);
+
+  @override
+  Future<void> write(String path, List<int> bytes) async =>
+      disk[path] = List.of(bytes);
 
   final Map<String, FormFile> _files;
   final bool _several;

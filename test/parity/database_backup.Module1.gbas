@@ -1,0 +1,19 @@
+' A database backed up and brought back (D130): Export writes the file
+' where File writes files, and Import replaces the database with such a
+' file. (A file that is not a database, R045, is checked in the unit
+' tests: on the web a program cannot write one without a dialog.)
+Sub Main()
+    Database.Execute("DROP TABLE IF EXISTS notes")
+    Database.Execute("CREATE TABLE notes (text TEXT)")
+    Database.Execute("INSERT INTO notes VALUES (?)", "first")
+    Database.Execute("INSERT INTO notes VALUES (?)", "second")
+    Database.Export("notes-backup.db")
+    Debug.Print(File.Exists("notes-backup.db"))
+    Database.Execute("DELETE FROM notes")
+    Debug.Print(Database.Scalar("SELECT COUNT(*) FROM notes"))
+    Database.Import("notes-backup.db")
+    Debug.Print(Database.Scalar("SELECT COUNT(*) FROM notes") & " " & Database.Scalar("SELECT text FROM notes ORDER BY text LIMIT 1"))
+    Database.Execute("INSERT INTO notes VALUES (?)", "third")
+    Debug.Print(Database.Scalar("SELECT COUNT(*) FROM notes"))
+    Database.Execute("DROP TABLE notes")
+End Sub

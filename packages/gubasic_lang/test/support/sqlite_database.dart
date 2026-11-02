@@ -23,6 +23,25 @@ class TestDatabase extends DatabaseComponent {
   String pathOf(String name) => '$folder${Platform.pathSeparator}$name';
 
   @override
+  Future<List<int>> readDatabaseBytes(String name) async {
+    final file = File(pathOf(name));
+    return file.existsSync() ? file.readAsBytesSync() : _emptyDatabase();
+  }
+
+  @override
+  Future<void> writeDatabaseBytes(String name, List<int> bytes) async =>
+      File(pathOf(name)).writeAsBytesSync(bytes);
+
+  /// An export before anything was written: a new empty database's bytes.
+  List<int> _emptyDatabase() {
+    final db = sqlite3.open(pathOf('.empty.db'));
+    db.execute('CREATE TABLE IF NOT EXISTS gubasic_empty (x); '
+        'DROP TABLE gubasic_empty;');
+    db.close();
+    return File(pathOf('.empty.db')).readAsBytesSync();
+  }
+
+  @override
   Future<SqlConnection> open(String name) async {
     try {
       return _Connection(pathOf(name), sqlite3.open(pathOf(name)));

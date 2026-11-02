@@ -194,6 +194,8 @@ const Map<DiagnosticCode, String> koreanMessages = {
       '"{0}" 값은 데이터베이스 이름이 될 수 없습니다. "scores.db"처럼 파일 이름만 적어 주세요. 파일은 앱의 데이터 폴더에 둡니다.',
   DiagnosticCode.databaseOpenFailed:
       '데이터베이스 {0} 파일을 열지 못했습니다({1}). 앱이 데이터 폴더에 쓸 수 있는지 확인해 주세요.',
+  DiagnosticCode.databaseNotFile:
+      '{0} 파일은 SQLite 데이터베이스 파일이 아닙니다. Database.Import에는 Database.Export가 쓴 파일을 주세요.',
   DiagnosticCode.sqlJoined:
       '이 SQL은 &로 이어 붙였습니다. 값이 들어갈 자리에 ?를 쓰고 값은 SQL 뒤에 넘겨 주세요. Database.{0}("… WHERE name = ?", name)처럼 쓰면 값에 든 따옴표가 문장을 깨뜨리지 못합니다.',
   DiagnosticCode.popupWithoutItems:

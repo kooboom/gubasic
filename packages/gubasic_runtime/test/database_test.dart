@@ -75,6 +75,23 @@ void main() {
     },
   );
 
+  test('the file\'s bytes are read and written whole (D130)', () async {
+    // Before anything was written: a new empty database.
+    final empty = await sqlite.readBytes('app', 'data.db');
+    expect(String.fromCharCodes(empty.take(15)), 'SQLite format 3');
+    final db = await sqlite.open('app', 'data.db');
+    await db.execute('CREATE TABLE t (a); INSERT INTO t VALUES (1);', []);
+    await db.close();
+    final bytes = await sqlite.readBytes('app', 'data.db');
+    expect(bytes.length, greaterThan(empty.length - 1));
+    await sqlite.writeBytes('other', 'copy.db', bytes);
+    final copy = await sqlite.open('other', 'copy.db');
+    expect((await copy.select('SELECT a FROM t', [])).rows, [
+      [1],
+    ]);
+    await copy.close();
+  });
+
   test('what SQLite refuses is a GbSqlError with its words', () async {
     final db = await sqlite.open('app', 'data.db');
     await expectLater(

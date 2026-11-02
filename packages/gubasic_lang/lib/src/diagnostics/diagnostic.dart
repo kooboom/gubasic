@@ -632,7 +632,11 @@ enum DiagnosticCode {
 
   /// A database file that could not be opened (D126). Args: the name,
   /// the detail.
-  databaseOpenFailed('R044');
+  databaseOpenFailed('R044'),
+
+  /// A file given to Database.Import that is not an SQLite database
+  /// (D130). Args: the path.
+  databaseNotFile('R045');
 
   const DiagnosticCode(this.code, [this.severity = DiagnosticSeverity.error]);
 

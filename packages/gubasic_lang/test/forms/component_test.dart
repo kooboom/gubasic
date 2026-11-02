@@ -123,7 +123,7 @@ void main() {
     expect(db.object, isTrue);
     expect(db.platforms, ['web', 'macos', 'windows']);
     expect([for (final m in db.methods.values) m.name],
-        ['Open', 'Execute', 'Query', 'Scalar', 'Close']);
+        ['Open', 'Execute', 'Query', 'Scalar', 'Close', 'Export', 'Import']);
     final execute = db.methods['execute']!;
     expect(execute.parameters.map((p) => p.name), ['sql', 'values']);
     expect(execute.parameters.last.variadic, isTrue);

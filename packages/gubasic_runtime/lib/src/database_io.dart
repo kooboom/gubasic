@@ -34,6 +34,36 @@ class _IoSqlite implements GbSqlite {
       '${_folder(appId)}${Platform.pathSeparator}$name';
 
   @override
+  Future<List<int>> readBytes(String appId, String name) async {
+    final file = File(pathOf(appId, name));
+    try {
+      if (!file.existsSync() || file.lengthSync() == 0) {
+        // Nothing written yet: a new empty database, made and closed. A
+        // table made and dropped gives the file its header; SQLite leaves
+        // an untouched database as zero bytes.
+        final db = await open(appId, name);
+        await db.execute(emptyDatabaseSql, []);
+        await db.close();
+      }
+      // Synchronous, as the rest of the desktop's files are: the bytes
+      // are there at once, also where a test's clock is not real.
+      return file.readAsBytesSync();
+    } on FileSystemException catch (e) {
+      throw GbSqlError(e.osError?.message ?? e.message);
+    }
+  }
+
+  @override
+  Future<void> writeBytes(String appId, String name, List<int> bytes) async {
+    try {
+      Directory(_folder(appId)).createSync(recursive: true);
+      File(pathOf(appId, name)).writeAsBytesSync(bytes, flush: true);
+    } on FileSystemException catch (e) {
+      throw GbSqlError(e.osError?.message ?? e.message);
+    }
+  }
+
+  @override
   Future<GbSqlDatabase> open(String appId, String name) async {
     final path = pathOf(appId, name);
     try {

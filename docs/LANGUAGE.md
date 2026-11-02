@@ -262,6 +262,7 @@ Errors found while a program runs. Each stops the program and points at its line
 | R042 | SQL the database refused, with SQLite's words (§11.10) |
 | R043 | A database name that is not a file name alone (§11.10) |
 | R044 | A database file that could not be opened (§11.10) |
+| R045 | A file given to `Database.Import` that is not an SQLite database (§11.10) |
 
 ## 2. Types
 
@@ -981,6 +982,8 @@ Http.PostJson("https://example.com/scores", mine)
 | `Open(name)` | opens the file of that name in the app's data folder instead, making it when it is not there |
 | `Close()` | closes the file; the next use opens it again |
 | `Path` | where the open file is: its full path on the desktop, its name in the browser's storage on the web |
+| `Export(path)` | writes the database as a file, a backup, where `File` writes files (§11.6): on the desktop at `path`, on the web as a download under that name |
+| `Import(path)` | replaces the database with such a file: on the desktop the file at `path`, on the web one the user chose with `OpenFileDialog` or the program exported in this run |
 
 ```vb
 Database.Execute("CREATE TABLE IF NOT EXISTS scores (name TEXT, points INTEGER)")
@@ -992,6 +995,8 @@ lblCount.Caption = Database.Scalar("SELECT COUNT(*) FROM scores") & " scores"
 **Values.** A `?` in the SQL takes the next value written after the SQL, in order (SQLite's parameters: [SQLite](https://sqlite.org/lang_expr.html#varparam)): an `Integer` or a `Double` as a number, a `String` as text, a `Boolean` as 1 or 0, a `Date` as the text `yyyy-MM-dd HH:mm:ss`, which SQLite's date functions read ([SQLite](https://sqlite.org/lang_datefunc.html)), and `Nothing` as NULL. Values come back as text, as a `Table` holds them: a whole number below 2⁵³ as its digits, another number as GuBASIC writes a `Double` (§2.2), NULL and a BLOB as `""`. SQL joined with `&` is a warning (A060): a quote in the value can break the statement, a `?` cannot. `Execute` without values may run several statements at once, `BEGIN; …; COMMIT;`.
 
 **Where the file is.** On the desktop, `GuBASIC/<app ID>/` in the user's application support folder (`%APPDATA%` on Windows, `~/Library/Application Support` on macOS): in the IDE under the project's name, in an exported app under its app ID, so that the data an app keeps stays when the app is updated and two apps keep theirs apart. On the web, in the browser's storage (IndexedDB) under the same name, as the settings are (§10, D48); it stays as long as the browser keeps the site's data. A name given to `Open` is a file name alone, `scores.db`, not a path (R043).
+
+**Backing up.** `Database.Export(dlgSave.FileName)` after a `SaveFileDialog` writes the whole database as one file, and `Database.Import(dlgOpen.FileName)` after an `OpenFileDialog` brings one back, on the desktop and on the web alike; the web keeps a program's database only as long as the browser keeps the site's data, so an export is its backup. A file that is not an SQLite database is R045.
 
 **Errors.** SQL the database refuses, a mistake in it, a table that is not there or a value a column does not take, is R042 with SQLite's own words; a file that cannot be opened is R044. Both can be caught with `Try` (§9). A call waits where it is, as `Http` does (§11.9); on the web the first use loads SQLite, about 0.7 MB, and the pointer shows waiting meanwhile.
 

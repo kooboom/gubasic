@@ -136,7 +136,7 @@
 
 ### Database
 
-Keeps a program's data in an SQLite database file (docs/DESIGN.md D124, D126), the way Visual Basic 6 kept it in a Jet database through Data Access Objects (https://learn.microsoft.com/en-us/previous-versions/visualstudio/visual-basic-6/aa227845(v=vs.60)). A built-in object used by its name, not put on a form. Every app has a database of its own, data.db in the app's own data folder, opened when first used; Database.Open(name) opens another file there instead. Execute(sql, values…) runs a statement and gives how many rows it changed; Query(sql, values…) gives the rows as a Table; Scalar(sql, values…) gives the first value of the first row as text, "" for NULL or no row, and LastWasNull says which. A value goes into the SQL as a ?, and after it in the call: Database.Execute("INSERT INTO scores(name, points) VALUES (?, ?)", txtName.Text, points); a quote in the value then cannot break the statement. Integer, Double and String go in as they are, Boolean as 1 or 0, Date as "yyyy-MM-dd HH:mm:ss", Nothing as NULL. LastId is the row ID the last INSERT gave; Path is where the file is; Close() closes it (the next use opens it again). SQL the database cannot run is R042; a name that is not a file name is R043; a database that cannot be opened is R044. SQL joined with & is a warning (A060).
+Keeps a program's data in an SQLite database file (docs/DESIGN.md D124, D126), the way Visual Basic 6 kept it in a Jet database through Data Access Objects (https://learn.microsoft.com/en-us/previous-versions/visualstudio/visual-basic-6/aa227845(v=vs.60)). A built-in object used by its name, not put on a form. Every app has a database of its own, data.db in the app's own data folder, opened when first used; Database.Open(name) opens another file there instead. Execute(sql, values…) runs a statement and gives how many rows it changed; Query(sql, values…) gives the rows as a Table; Scalar(sql, values…) gives the first value of the first row as text, "" for NULL or no row, and LastWasNull says which. A value goes into the SQL as a ?, and after it in the call: Database.Execute("INSERT INTO scores(name, points) VALUES (?, ?)", txtName.Text, points); a quote in the value then cannot break the statement. Integer, Double and String go in as they are, Boolean as 1 or 0, Date as "yyyy-MM-dd HH:mm:ss", Nothing as NULL. LastId is the row ID the last INSERT gave; Path is where the file is; Close() closes it (the next use opens it again). Export(path) writes the database as a file, a backup, where File writes files (on the web, a download); Import(path) replaces the database with such a file, one chosen with OpenFileDialog or exported in this run on the web. SQL the database cannot run is R042; a name that is not a file name is R043; a database that cannot be opened is R044; a file that is not an SQLite database is R045. SQL joined with & is a warning (A060).
 
 - `Database.Path As String`
 - `Database.LastWasNull As Boolean`
@@ -146,6 +146,8 @@ Keeps a program's data in an SQLite database file (docs/DESIGN.md D124, D126), t
 - `Database.Query(sql As String, ParamArray values As number, Boolean, String, Date or Nothing) As Table`
 - `Database.Scalar(sql As String, ParamArray values As number, Boolean, String, Date or Nothing) As String`
 - `Database.Close()`
+- `Database.Export(path As String)`
+- `Database.Import(path As String)`
 
 ### Http
 
