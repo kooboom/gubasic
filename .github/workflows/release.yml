@@ -37,6 +37,13 @@ jobs:
           flutter-version-file: packages/gubasic_runtime/pubspec.yaml
           cache: true
       - run: flutter pub get
+      # SQLite as WebAssembly next to the page (D126), so that exported web
+      # apps can use Database.
+      - name: Fetch sqlite3.wasm
+        run: |
+          flutter pub get
+          dart run tool/fetch_sqlite_wasm.dart ../../apps/player/web
+        working-directory: packages/gubasic_runtime
       - run: flutter build web --release --no-web-resources-cdn
       - run: dart run tool/web_template.dart
       - uses: actions/upload-artifact@v4
