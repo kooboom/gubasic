@@ -23,7 +23,11 @@ void main() {
     final path = GbSqlite().pathOf('DatabaseCheck', 'data.db');
     addTearDown(() async {
       final file = File(path);
-      if (await file.exists()) await file.parent.delete(recursive: true);
+      try {
+        if (await file.exists()) await file.parent.delete(recursive: true);
+      } on FileSystemException {
+        // Still open: the folder stays, as any app's data would.
+      }
     });
     final files = {
       'DatabaseCheck.gbproj':
@@ -44,6 +48,8 @@ void main() {
           '    Database.Execute("INSERT INTO scores VALUES (?, ?)", "O\'Brien", 78)\n'
           '    Dim t As Table = Database.Query("SELECT name, points FROM scores ORDER BY points")\n'
           '    lblOut.Caption = t.Cell(0, "name") & " " & t.Cell(1, "points") & " " & Database.Scalar("SELECT COUNT(*) FROM scores") & " " & Database.LastId\n'
+          // Closed, so that the file can be deleted while the app runs.
+          '    Database.Close()\n'
           'End Sub\n',
     };
     await tester.pumpWidget(
