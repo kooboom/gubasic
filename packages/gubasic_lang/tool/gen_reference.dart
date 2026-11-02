@@ -491,7 +491,7 @@ void main(List<String> args) {
   final extra = Directory('$_root/docs/reference')
       .listSync(recursive: true)
       .whereType<File>()
-      .map((f) => f.path.substring('$_root/'.length))
+      .map((f) => f.path.substring('$_root/'.length).replaceAll(r'\', '/'))
       .where((p) => !known.contains(p))
       .toList();
   if (check) {
