@@ -82,6 +82,21 @@ void main() {
     expect(find.byKey(const ValueKey('toolbar.stepInto')), findsOneWidget);
     expect(find.text('Continue (F5)'), findsOneWidget);
 
+    // The Immediate window (D128): an expression in the paused frame.
+    await tester.enterText(
+      find.byKey(const ValueKey('debug.immediate')),
+      '? n + 1',
+    );
+    await tester.testTextInput.receiveAction(TextInputAction.done);
+    await settleRun(tester);
+    expect(find.text('? n + 1'), findsOneWidget);
+    expect(find.text('3'), findsOneWidget);
+    expect(
+      find.text('Paused at line 4 of Form1.gbas, in btnGo_Click'),
+      findsOneWidget,
+      reason: 'still paused there',
+    );
+
     // F8 into Add.
     await tester.sendKeyEvent(LogicalKeyboardKey.f8);
     await settleRun(tester);

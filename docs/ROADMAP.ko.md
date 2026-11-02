@@ -82,7 +82,7 @@ IDE 안에서 완결되는 비주얼 베이직의 핵심 경험입니다.
 ### v0.5 — 실제 개발 도구
 
 - [x] 디버거: 중단점, 한 단계씩 실행(한 단계씩, 프로시저 단위, 프로시저 나가기), 멈춘 동안의 변수와 호출 스택(D127)
-- [ ] 디버거의 직접 실행 창
+- [x] 디버거의 직접 실행 창, 읽기 전용: 멈춘 동안 `? 식`(D128). 문장 실행은 나중 후보
 - [x] `Http` + JSON. 컴포넌트 통로를 거치는 첫 컴포넌트([COMPONENT_CHANNEL.ko.md](COMPONENT_CHANNEL.ko.md), D125): `Get`, `Post`, `GetJson`, `PostJson`, `Send`, `Header`, `Timeout`과 `Json` 형식. 예제: [Weather](../examples/weather)
 - [x] `Database` (SQLite). 컴포넌트 통로를 거쳐(D126): `Execute`, `Table`로 주는 `Query`, `LastWasNull`이 있는 `Scalar`, `LastId`, `Open`, `Close`, `Path`. 브라우저 확인은 Playwright(`tool/web_check`). 예제: [Notes](../examples/notes)
 - [x] 언어·컨트롤·함수를 한곳에 모은 참조 문서, 그리고 AI용 참조(`llms.txt`)(D121 d, D124): [docs/reference](reference/README.ko.md), [llms.txt](../llms.txt)

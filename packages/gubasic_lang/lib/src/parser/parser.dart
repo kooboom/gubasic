@@ -24,6 +24,33 @@ ParseResult parse(String source) {
       blockLines: parser.blockLines);
 }
 
+/// Lexes and parses [source] as one expression, for the debugger's
+/// Immediate window (docs/DESIGN.md D128): the expression, or null when
+/// there is none, with the lexer's and parser's diagnostics in the
+/// [ParseResult]. Anything after the expression is P005.
+({ParseResult parsed, Expr? expression}) parseExpression(String source) {
+  final lexResult = lex(source);
+  final parser = _Parser(source, lexResult.tokens);
+  parser._skipNewlines();
+  Expr? expression;
+  if (parser._atEof) {
+    parser._error(DiagnosticCode.expectedExpression, 0, source.length);
+  } else {
+    expression = parser._expression();
+    parser._skipNewlines();
+    if (!parser._atEof) {
+      final t = parser._tok;
+      parser._errorAt(t, DiagnosticCode.unexpectedToken,
+          [source.substring(t.offset, t.end)]);
+    }
+  }
+  return (
+    parsed: ParseResult(source, lexResult,
+        CompilationUnit(const [], 0, source.length), parser.diagnostics),
+    expression: expression,
+  );
+}
+
 /// A block that is still open while its body is parsed.
 enum _BlockKind {
   sub('Sub', 'End Sub'),

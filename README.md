@@ -28,7 +28,7 @@ Both are in the IDE's examples, next to hello, quiz, typing, askname, weather (t
 
 > **Status: stage 3, v0.4 "For work" complete** ([v0.4.0](https://github.com/kooboom/gubasic/releases/tag/v0.4.0), a development build).
 >
-> - **What you can do now:** draw forms with buttons, labels, text boxes, lists, grids, menus and more; write event handlers in an editor that colours, completes and explains; run with F5; keep projects in the browser or as folders; export web, Windows and macOS apps. For work: open and save dialogs, text and CSV files, dates and `Format`, the `Grid` control and PDF files; `Http` and JSON for web services; `Database` (SQLite) for an app's own data; a debugger with breakpoints and stepping.
+> - **What you can do now:** draw forms with buttons, labels, text boxes, lists, grids, menus and more; write event handlers in an editor that colours, completes and explains; run with F5; keep projects in the browser or as folders; export web, Windows and macOS apps. For work: open and save dialogs, text and CSV files, dates and `Format`, the `Grid` control and PDF files; `Http` and JSON for web services; `Database` (SQLite) for an app's own data; a debugger with breakpoints, stepping and an Immediate window.
 > - **Also:** the IDE as an app for macOS and Windows ([apps/ide](apps/ide)), and the [playground](https://kooboom.github.io/gubasic), the language on its own.
 > - **Known limits:** the macOS and Windows apps are unsigned development builds; phone apps (stage 3) come later. The full list: [docs/KNOWN_ISSUES.md](docs/KNOWN_ISSUES.md). What comes next: [ROADMAP](docs/ROADMAP.md).
 >

@@ -87,6 +87,21 @@ class Debugger {
   /// Called when the program pauses or goes on.
   void Function()? onChanged;
 
+  /// Set by the interpreter: evaluates an expression in the paused frame
+  /// (D128).
+  Future<String> Function(String text)? evaluator;
+
+  /// The Immediate window: [text] as an expression in the paused
+  /// procedure, its value as text, or what is wrong with it. Only while
+  /// paused.
+  Future<String> evaluate(String text) {
+    final evaluate = evaluator;
+    if (_paused == null || evaluate == null) {
+      throw StateError('the program is not paused');
+    }
+    return evaluate(text);
+  }
+
   /// Where the program is paused, or null while it runs.
   DebugPause? get paused => _paused;
 

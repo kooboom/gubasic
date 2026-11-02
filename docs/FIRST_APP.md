@@ -71,6 +71,6 @@ Click **OK**, then stop it with **Stop** (Shift+F5) or the window's ✕. That is
 
 - **Examples:** open calculator, scores, quiz and the others from the list at the top, and run them with F5. Change their code freely: the originals stay as they are.
 - **Export an app:** **File → Export as Web App…** makes an app you can put on the web, **Export as Windows App…** a Windows app.
-- **Find out what the code does:** click in the gutter left of a line to set a breakpoint (a red dot), press F5 and click the button: the program pauses on that line, the variables show below the code, F8 runs one statement at a time and F5 goes on.
+- **Find out what the code does:** click in the gutter left of a line to set a breakpoint (a red dot), press F5 and click the button: the program pauses on that line, the variables show below the code, F8 runs one statement at a time and F5 goes on. In the Immediate field below the variables, `? clickCount + 1` shows the value of an expression.
 - **The language:** [docs/LANGUAGE.md](LANGUAGE.md)
 - If you get stuck, tell us in an [issue](https://github.com/kooboom/gubasic/issues/new/choose). GuBASIC is a personal hobby project, so answers may be slow.

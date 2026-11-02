@@ -110,6 +110,11 @@ class _IdeShellState extends State<IdeShell> {
   /// Whether the last debugger change left the program paused.
   var _wasPaused = false;
 
+  /// The Immediate window (D128): what was asked and answered in this
+  /// run, shown in the output, and its field.
+  final _immediateLines = <String>[];
+  final _immediateController = TextEditingController();
+
   @override
   void initState() {
     super.initState();
@@ -197,6 +202,7 @@ class _IdeShellState extends State<IdeShell> {
     }
     setState(() {
       _problems = [];
+      _immediateLines.clear();
       _runFiles = Map.of(project.files);
       _session = RunSession(
         startup,
@@ -244,6 +250,23 @@ class _IdeShellState extends State<IdeShell> {
 
   void _stepOut() {
     if (_paused) _debugger.stepOut();
+  }
+
+  /// The Immediate window's Enter: `? expression`, or the expression
+  /// alone, is evaluated in the paused procedure and answered in the
+  /// output (D128).
+  Future<void> _evaluate(String text) async {
+    var expression = text.trim();
+    if (expression.startsWith('?')) expression = expression.substring(1).trim();
+    if (expression.isEmpty || !_paused) return;
+    _immediateController.clear();
+    final answer = await _debugger.evaluate(expression);
+    if (!mounted) return;
+    setState(
+      () => _immediateLines
+        ..add('? $expression')
+        ..add(answer),
+    );
   }
 
   /// The program paused or went on: paused, its code file opens at the
@@ -397,43 +420,81 @@ class _IdeShellState extends State<IdeShell> {
     final s = widget.strings;
     final theme = Theme.of(context);
     final dim = codeStyle.copyWith(color: theme.colorScheme.outline);
-    return ListView(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Expanded(child: _variableList(context, paused, s, theme, dim)),
+        // The Immediate window (D128): one line in, its value out.
+        Padding(
+          padding: const EdgeInsets.fromLTRB(12, 0, 12, 6),
+          child: TextField(
+            key: const ValueKey('debug.immediate'),
+            controller: _immediateController,
+            style: codeStyle,
+            decoration: InputDecoration(
+              isDense: true,
+              labelText: s.immediate,
+              hintText: s.immediateHint,
+              border: const OutlineInputBorder(),
+            ),
+            onSubmitted: _evaluate,
+            // Enter answers and keeps the focus here, for the next
+            // question; F8 and F5 still reach the shell's keys above.
+            onEditingComplete: () {},
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _variableList(
+    BuildContext context,
+    DebugPause paused,
+    IdeStrings s,
+    ThemeData theme,
+    TextStyle dim,
+  ) {
+    // Built whole, not lazily: the call stack is always there to click.
+    return SingleChildScrollView(
       key: const ValueKey('debug.variables'),
       padding: const EdgeInsets.fromLTRB(12, 6, 12, 4),
-      children: [
-        Text(
-          s.pausedAt
-              .replaceAll('{0}', paused.file)
-              .replaceAll('{1}', '${paused.line}')
-              .replaceAll('{2}', paused.procedure),
-          style: theme.textTheme.labelMedium,
-        ),
-        const SizedBox(height: 4),
-        Text(s.variables, style: theme.textTheme.labelMedium),
-        for (final v in paused.variables)
-          Text.rich(
-            TextSpan(
-              children: [
-                TextSpan(text: '${v.name} = ${v.value}'),
-                TextSpan(text: '  ${v.type}', style: dim),
-              ],
-            ),
-            style: codeStyle,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            s.pausedAt
+                .replaceAll('{0}', paused.file)
+                .replaceAll('{1}', '${paused.line}')
+                .replaceAll('{2}', paused.procedure),
+            style: theme.textTheme.labelMedium,
           ),
-        const SizedBox(height: 4),
-        Text(s.callStack, style: theme.textTheme.labelMedium),
-        for (final f in paused.stack)
-          MouseRegion(
-            cursor: SystemMouseCursors.click,
-            child: GestureDetector(
-              onTap: () => _goToLine(f.file, f.line),
-              child: Text(
-                '${f.procedure}  ${f.file}:${f.line}',
-                style: codeStyle,
+          const SizedBox(height: 4),
+          Text(s.variables, style: theme.textTheme.labelMedium),
+          for (final v in paused.variables)
+            Text.rich(
+              TextSpan(
+                children: [
+                  TextSpan(text: '${v.name} = ${v.value}'),
+                  TextSpan(text: '  ${v.type}', style: dim),
+                ],
+              ),
+              style: codeStyle,
+            ),
+          const SizedBox(height: 4),
+          Text(s.callStack, style: theme.textTheme.labelMedium),
+          for (final f in paused.stack)
+            MouseRegion(
+              cursor: SystemMouseCursors.click,
+              child: GestureDetector(
+                onTap: () => _goToLine(f.file, f.line),
+                child: Text(
+                  '${f.procedure}  ${f.file}:${f.line}',
+                  style: codeStyle,
+                ),
               ),
             ),
-          ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -445,6 +506,7 @@ class _IdeShellState extends State<IdeShell> {
     _session?.dispose();
     _debugger.onChanged = null;
     _caretLine.dispose();
+    _immediateController.dispose();
     super.dispose();
   }
 
@@ -1304,6 +1366,7 @@ class _IdeShellState extends State<IdeShell> {
       ..._problems,
       for (final l in session?.output ?? const <String>[])
         (text: l, file: null, line: null),
+      for (final l in _immediateLines) (text: l, file: null, line: null),
       if (session?.result case final result?)
         (
           // The file of the form whose code stopped (D88).

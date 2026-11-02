@@ -19,6 +19,8 @@ class IdeStrings {
     required this.pausedAt,
     required this.variables,
     required this.callStack,
+    required this.immediate,
+    required this.immediateHint,
     required this.files,
     required this.runWindow,
     required this.output,
@@ -273,6 +275,10 @@ class IdeStrings {
   final String pausedAt;
   final String variables;
   final String callStack;
+
+  /// The Immediate window (D128): its title and its field's hint.
+  final String immediate;
+  final String immediateHint;
 
   /// The heading of the file list: the files of the project.
   final String files;
@@ -774,6 +780,8 @@ class IdeStrings {
     pausedAt: 'Paused at line {1} of {0}, in {2}',
     variables: 'Variables',
     callStack: 'Call stack',
+    immediate: 'Immediate',
+    immediateHint: '? expression, then Enter',
     files: 'Project',
     runWindow: 'Run window',
     output: 'Output',
@@ -1146,6 +1154,8 @@ class IdeStrings {
     pausedAt: '{2} 프로시저가 {0} 파일의 {1} 줄에서 멈춤',
     variables: '변수',
     callStack: '호출 스택',
+    immediate: '직접 실행',
+    immediateHint: '? 식을 쓰고 Enter',
     files: '프로젝트',
     runWindow: '실행 화면',
     output: '출력',

@@ -18,11 +18,11 @@ Problems we know about and have **deliberately** left unfixed for now. Each entr
 - **Why deferred:** the playground is pure Dart without Flutter; imitating controls in HTML would create a second runtime (D24). The IDE's web build (E1e) runs forms in the browser instead.
 - **Revisit:** when the IDE's web build is published; then decide whether the playground still needs its Run tab.
 
-## The debugger has no Immediate window
+## The Immediate window takes expressions only
 
-- **What:** the debugger (D127) pauses at breakpoints, steps and shows the variables and the call stack, but there is no window to type an expression or a statement into while the program is paused, as Visual Basic 6's Immediate window let one ([Microsoft](https://learn.microsoft.com/en-us/previous-versions/visualstudio/visual-studio-2008/ms172685(v=vs.90))).
-- **Why deferred:** an expression typed in must be compiled against the paused procedure's scope and run in its frame; that is a second way into the analyzer and the interpreter, worth its own design.
-- **Revisit:** when the debugger has been used for a while and the variables pane is not enough: then evaluate expressions in the paused frame, read-only first.
+- **What:** while the program is paused, the Immediate window (D128) answers `? expression`, but does not run a statement (`x = 5`, `lblA.Caption = "..."`), as Visual Basic 6's did ([Microsoft](https://learn.microsoft.com/en-us/previous-versions/visualstudio/visual-studio-2008/ms172685(v=vs.90))). A call in an expression does run its procedure.
+- **Why deferred:** a statement changes the paused frame under a handler that is still running; the author chose expressions first (D128).
+- **Revisit:** when a statement is wanted while paused: an assignment first, through the same analyzer entry.
 
 ## The playground has no `Http` or `Database`
 

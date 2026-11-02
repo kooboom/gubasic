@@ -136,10 +136,19 @@ typedef FormSource = ({FormFile file, String source});
 /// lower-case module name: each compiled on its own first, as forms are.
 Map<String, ModuleInterface> moduleInterfaces(List<ModuleSource> modules) => {
       for (final m in modules)
-        m.name.toLowerCase(): _interfaceOf(m.name, compile(m.source)),
+        m.name.toLowerCase(): moduleInterfaceOf(m.name, compile(m.source)),
     };
 
-ModuleInterface _interfaceOf(String name, CompileResult alone) {
+/// The interface of a form whose code is compiled already, as
+/// [formInterfaces] gives it (the debugger's Immediate window, D128).
+FormInterface formInterfaceOf(
+    String name, FormFile file, CompileResult program) {
+  final m = moduleInterfaceOf(name, program);
+  return FormInterface(file.name, file, m.variables, m.procedures);
+}
+
+/// The interface of a module whose code is compiled: its Public names.
+ModuleInterface moduleInterfaceOf(String name, CompileResult alone) {
   final symbols = alone.analysis.symbols;
   final variables = <String, Symbol>{};
   final procedures = <String, Symbol>{};

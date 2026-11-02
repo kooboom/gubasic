@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'dart:math' as math;
 
 import '../analyzer/analysis_result.dart';
+import '../analyzer/analyzer.dart';
 import '../analyzer/builtins.dart';
 import '../analyzer/compile.dart';
 import '../analyzer/conversions.dart';
@@ -28,6 +29,7 @@ import '../text/format.dart';
 import '../text/json.dart';
 import '../text/text_codec.dart';
 import '../lexer/keyword.dart';
+import '../parser/parser.dart';
 import 'checked_math.dart';
 import 'debugger.dart';
 import 'host.dart';
@@ -122,6 +124,7 @@ class Interpreter {
   Interpreter._(this.program, this.project, this.host, this.messages,
       this.callDepthLimit, this._debugger)
       : _a = _merged(program, project) {
+    _debugger?.evaluator = evaluate;
     final project = this.project;
     if (project == null) {
       _top = _FormRun(null, LineMap(program.parseResult.source));
@@ -230,6 +233,10 @@ class Interpreter {
   /// The IDE's debugger (D127), asked before every statement; null where
   /// there is none, and then nothing is asked.
   final Debugger? _debugger;
+
+  /// Whether the Immediate window's expression is being evaluated (D128):
+  /// no pause inside it.
+  var _evaluating = false;
 
   final _fields = <Symbol, Object?>{};
   final _statics = <Symbol, Object?>{};
@@ -1139,7 +1146,7 @@ class Interpreter {
     final form = _frame.form;
     final file = form.codeFile ?? '';
     final (line, _) = form.lines.locate(s.start);
-    if (!d.shouldPause(file, line, _depth)) return;
+    if (_evaluating || !d.shouldPause(file, line, _depth)) return;
     await d.pausedAt(
         DebugPause(
           file: file,
@@ -1191,6 +1198,66 @@ class Interpreter {
           local: false));
     }
     return out;
+  }
+
+  /// The Immediate window (D128): [text] as an expression in the paused
+  /// procedure's frame, its value as the debugger shows values, or what
+  /// is wrong with it, in the program's language. A call in it runs the
+  /// procedure called, without pausing.
+  Future<String> evaluate(String text) async {
+    final (:parsed, :expression) = parseExpression(text);
+    final problems = [
+      ...parsed.lexResult.diagnostics,
+      ...parsed.parserDiagnostics,
+    ].where((d) => d.isError);
+    if (problems.isNotEmpty || expression == null) {
+      return problems.first.formatMessage(messages);
+    }
+    final code = _frame.form.code ?? program;
+    final scope = Scope(ScopeKind.block, code.analysis.fileScope);
+    for (final symbol in _frame.vars.keys) {
+      scope.declare(symbol);
+    }
+    final p = project;
+    final extra = analyzeExpression(
+      parsed,
+      expression,
+      scope: scope,
+      form: code.analysis.form,
+      pictures: code.analysis.pictures?.values.toList(),
+      forms: p == null
+          ? null
+          : {
+              for (final f in p.forms)
+                f.name.toLowerCase(): formInterfaceOf(f.name, f.file, f.program)
+            },
+      modules: p == null
+          ? null
+          : {
+              for (final m in p.modules)
+                m.name.toLowerCase(): moduleInterfaceOf(m.name, m.program)
+            },
+    );
+    final wrong = extra.diagnostics.where((d) => d.isError).firstOrNull;
+    if (wrong != null) return wrong.formatMessage(messages);
+    _a.symbols.addAll(extra.symbols);
+    _a.types.addAll(extra.types);
+    _a.conversions.addAll(extra.conversions);
+    _a.invokeKinds.addAll(extra.invokeKinds);
+    _a.implicitCalls.addAll(extra.implicitCalls);
+    _a.settableCalls.addAll(extra.settableCalls);
+    _a.members.addAll(extra.members);
+    _evaluating = true;
+    try {
+      return debugValueText(await _value(expression));
+    } on _Failure catch (f) {
+      return _diagnostic(f.code, f.node, f.args, f.form)
+          .formatMessage(messages);
+    } on _Thrown catch (t) {
+      return t.exception.message;
+    } finally {
+      _evaluating = false;
+    }
   }
 
   _Flow _exitFlow(ExitStmt s) => switch (s.kind) {

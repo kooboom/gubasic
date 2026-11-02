@@ -46,6 +46,26 @@ AnalysisResult analyze(
 }) =>
     _Analyzer(parsed, form, pictures, forms, modules).run();
 
+/// Analyzes [expression] (parsed from [parsed]'s source) in [scope], for
+/// the debugger's Immediate window (docs/DESIGN.md D128): the scope is a
+/// paused procedure's, the symbols of its frame over its file's scope, so
+/// that names mean what they mean there. The result's diagnostics say
+/// what is wrong; its maps annotate the expression for the interpreter.
+AnalysisResult analyzeExpression(
+  ParseResult parsed,
+  Expr expression, {
+  required Scope scope,
+  FormFile? form,
+  List<String>? pictures,
+  Map<String, FormInterface>? forms,
+  Map<String, ModuleInterface>? modules,
+}) {
+  final analyzer = _Analyzer(parsed, form, pictures, forms, modules)
+    .._scope = scope;
+  analyzer._value(expression);
+  return analyzer._result;
+}
+
 /// A procedure being analyzed.
 class _ProcedureContext {
   _ProcedureContext(this.decl, this.symbol, this.laterLocals);
