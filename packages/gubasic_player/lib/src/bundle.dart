@@ -31,7 +31,7 @@ bool usesPdfDocument(Map<String, String> files) => files.entries.any(
 );
 
 /// This GuBASIC's version, written into the bundles it makes.
-const gubasicVersion = '0.5.0';
+const gubasicVersion = '0.5.1';
 
 /// A project as an exported app carries it (D83): a `.gbz` file, a zip
 /// with `bundle.yaml` (the layout's version, the GuBASIC that made it, the
