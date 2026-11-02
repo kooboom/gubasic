@@ -24,6 +24,16 @@ void main() {
     stderr.writeln('build/web is missing: run flutter build web first');
     exit(1);
   }
+  // Without it no exported web app can use Database (D126); v0.5.0's
+  // draft was made so.
+  if (!File('build/web/sqlite3.wasm').existsSync()) {
+    stderr.writeln(
+      'build/web/sqlite3.wasm is missing: run dart run '
+      'tool/fetch_sqlite_wasm.dart ../../apps/player/web in '
+      'packages/gubasic_runtime before flutter build web',
+    );
+    exit(1);
+  }
   final archive = Archive();
   var count = 0;
   for (final entity in web.listSync(recursive: true)) {
