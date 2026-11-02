@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart' show kDoubleTapTimeout;
@@ -110,6 +111,11 @@ class _IdeShellState extends State<IdeShell> {
   /// Whether the last debugger change left the program paused.
   var _wasPaused = false;
 
+  /// The project whose breakpoints the debugger holds (D129), as
+  /// [_projectKey] names it, and whether they are being loaded.
+  String? _breakpointsOf;
+  var _loadingBreakpoints = false;
+
   /// The Immediate window (D128): what was asked and answered in this
   /// run, shown in the output, and its field.
   final _immediateLines = <String>[];
@@ -119,6 +125,8 @@ class _IdeShellState extends State<IdeShell> {
   void initState() {
     super.initState();
     _debugger.onChanged = _debugChanged;
+    widget.controller.addListener(_loadBreakpoints);
+    _loadBreakpoints();
     // The project open last (D62), then text brought back from a page
     // that closed too soon (D54); each only once.
     WidgetsBinding.instance.addPostFrameCallback((_) async {
@@ -269,10 +277,65 @@ class _IdeShellState extends State<IdeShell> {
     );
   }
 
+  /// The open project, as its breakpoints are kept under (D129): the
+  /// example's or the browser project's name, or the folder's path.
+  String get _projectKey => switch (widget.controller.current.location) {
+    ExampleLocation(:final name) => 'example:$name',
+    BrowserLocation(:final name) => 'browser:$name',
+    FolderLocation(:final path) => 'folder:$path',
+  };
+
+  /// The breakpoints of the open project, from the IDE's settings (D129),
+  /// when another project is opened and when the IDE starts.
+  Future<void> _loadBreakpoints() async {
+    final key = _projectKey;
+    if (key == _breakpointsOf) return;
+    _breakpointsOf = key;
+    _loadingBreakpoints = true;
+    try {
+      _debugger.clearBreakpoints();
+      final json = await widget.controller.lastProject?.readValue(
+        '$breakpointsKeyPrefix$key',
+      );
+      if (!mounted || key != _breakpointsOf || json == null) return;
+      final decoded = jsonDecode(json);
+      if (decoded is! Map) return;
+      for (final MapEntry(:key, :value) in decoded.entries) {
+        if (value is List) {
+          _debugger.setBreakpoints('$key', {
+            for (final line in value)
+              if (line is int) line,
+          });
+        }
+      }
+    } on FormatException {
+      // Not what the IDE wrote: no breakpoints.
+    } finally {
+      _loadingBreakpoints = false;
+    }
+  }
+
+  /// Keeps the breakpoints of the open project in the IDE's settings.
+  void _saveBreakpoints() {
+    final key = _breakpointsOf;
+    final store = widget.controller.lastProject;
+    if (key == null || store == null || _loadingBreakpoints) return;
+    unawaited(
+      store.writeValue(
+        '$breakpointsKeyPrefix$key',
+        jsonEncode({
+          for (final file in _debugger.filesWithBreakpoints)
+            file: _debugger.breakpointsOf(file).toList()..sort(),
+        }),
+      ),
+    );
+  }
+
   /// The program paused or went on: paused, its code file opens at the
   /// line, with the variables below; going on, the run window comes back.
   void _debugChanged() {
     if (!mounted) return;
+    _saveBreakpoints();
     final paused = _debugger.paused;
     setState(() {
       if (paused != null && !_wasPaused) {
@@ -505,6 +568,7 @@ class _IdeShellState extends State<IdeShell> {
     _focus.dispose();
     _session?.dispose();
     _debugger.onChanged = null;
+    widget.controller.removeListener(_loadBreakpoints);
     _caretLine.dispose();
     _immediateController.dispose();
     super.dispose();
@@ -1431,6 +1495,10 @@ bool get _isApple => switch (defaultTargetPlatform) {
   TargetPlatform.macOS || TargetPlatform.iOS => true,
   _ => false,
 };
+
+/// The IDE's setting with a project's breakpoints (D129), followed by the
+/// project's key: a JSON object of code file to lines.
+const breakpointsKeyPrefix = 'gubasic.ide.breakpoints.';
 
 /// A listenable that never changes, for when nothing runs.
 class _Never implements Listenable {
