@@ -233,7 +233,9 @@ const Map<DiagnosticCode, String> englishMessages = {
       'file name alone, such as "scores.db": the file is kept in the '
       'app\'s own data folder.',
   DiagnosticCode.databaseOpenFailed: 'The database {0} could not be '
-      'opened ({1}). Check that the app may write to its data folder.',
+      'opened ({1}). Check that the app may write to its data folder; on '
+      'the web, that the browser lets this site keep data (site data not '
+      'blocked) and has room for it.',
   DiagnosticCode.databaseNotFile: '{0} is not an SQLite database file. '
       'Give Database.Import a file that Database.Export wrote.',
   DiagnosticCode.sqlJoined: 'This SQL is put together with &. Write ? '
