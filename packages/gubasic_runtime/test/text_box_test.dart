@@ -115,20 +115,36 @@ void main() {
 
   for (final file in Directory('test/ime_logs').listSync().whereType<File>()) {
     final source = file.uri.pathSegments.last;
-    // Recorded in a desktop app, not a browser: run as that platform.
-    final app = source.endsWith('-app.json');
-    final TestVariant<Object?> variant = app
-        ? TargetPlatformVariant.only(TargetPlatform.macOS)
+    final log = jsonDecode(file.readAsStringSync()) as Map<String, Object?>;
+    final scenarios = (log['scenarios']! as Map<String, Object?>).map(
+      (k, v) => MapEntry(k, (v! as List).cast<Map<String, Object?>>()),
+    );
+    // Recorded in a desktop app, not a browser: run as that platform. The
+    // macOS app sends no composing ranges, so the runtime guesses them
+    // (D37); the Windows app sends them as the browsers do, and commits
+    // when the field loses the focus as they do, so its recording is
+    // replayed as a browser's is.
+    final desktop = source.endsWith('-app.json');
+    final app =
+        desktop &&
+        scenarios.values.every(
+          (entries) => entries.every(
+            (e) =>
+                e['kind'] != 'value' || (e['composing']! as List).first == -1,
+          ),
+        );
+    final TestVariant<Object?> variant = desktop
+        ? TargetPlatformVariant.only(
+            source.startsWith('windows')
+                ? TargetPlatform.windows
+                : TargetPlatform.macOS,
+          )
         : const DefaultTestVariant();
     void testReplay(
       String description,
       WidgetTesterCallback body, {
       bool skip = false,
     }) => testWidgets(description, body, skip: skip, variant: variant);
-    final log = jsonDecode(file.readAsStringSync()) as Map<String, Object?>;
-    final scenarios = (log['scenarios']! as Map<String, Object?>).map(
-      (k, v) => MapEntry(k, (v! as List).cast<Map<String, Object?>>()),
-    );
 
     /// The scenario's entries from its last reset (or the start) on: the
     /// probe's 다시 starts a scenario over, and only the last try counts.
@@ -331,6 +347,7 @@ const recorded = <String, Map<String, List<String>>>{
   // (D37) it makes the same events as Chrome on the same Mac.
   'macos-app.json': _macos,
   'windows-chrome.json': _windowsChrome,
+  'windows-app.json': _windowsApp,
 };
 
 const _macos = <String, List<String>>{
@@ -358,6 +375,48 @@ const _macos = <String, List<String>>{
     'txtName.Changed [닭]',
     'txtName.Changed []',
     'txtName.Changed [닭 ]',
+    'txtName.Changed [닭 값 ]',
+  ],
+  // 긂 and its jamo are only ever being composed; 한 goes in one step.
+  'erase_jamo': ['txtName.Changed [한]', 'txtName.Changed []'],
+};
+
+// The Windows app (the Microsoft Korean input method on Windows 11; the
+// keys sent by a script with SendInput, 220 ms apart, 2026-11-03) sends
+// composing ranges as the browsers do, but commits a syllable before the
+// space is typed: after 닭, Changed sees 닭 and then 닭 .
+const _windowsApp = <String, List<String>>{
+  'dokkaebi': ['txtName.Changed [갈]', 'txtName.Changed [갈가]'],
+  'double_final': [
+    'txtName.Changed [닭]',
+    'txtName.Changed [닭 ]',
+    'txtName.Changed [닭 값]',
+    'txtName.Changed [닭 값 ]',
+  ],
+  'backspace': ['txtName.Changed [하]'],
+  'click_composing': [
+    'txtName.Changed [한]',
+    'txtName.Changed [한글]',
+    'btnOk.Click [한글]',
+  ],
+  'click_committed': [
+    'txtName.Changed [한]',
+    'txtName.Changed [한글]',
+    'btnOk.Click [한글]',
+    'txtName.Changed []',
+    'txtName.Changed [한]',
+    'txtName.Changed [한글]',
+    'btnOk.Click [한글]',
+  ],
+  // Backspace takes 값 apart inside the input method (no Changed), then
+  // deletes the committed 닭 in one step; 닭 and 값 are each committed
+  // before their space.
+  'erase_retype': [
+    'txtName.Changed [닭]',
+    'txtName.Changed []',
+    'txtName.Changed [닭]',
+    'txtName.Changed [닭 ]',
+    'txtName.Changed [닭 값]',
     'txtName.Changed [닭 값 ]',
   ],
   // 긂 and its jamo are only ever being composed; 한 goes in one step.

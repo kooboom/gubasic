@@ -59,13 +59,13 @@ Problems we know about and have **deliberately** left unfixed for now. Each entr
 - **Why deferred:** one window works the same on the desktop and on the web; separate windows need platform code for each desktop system.
 - **Revisit:** with the form designer, when the IDE's windows are laid out.
 
-## Korean typing is tested in Chrome only so far
+## The Windows app's Korean typing was recorded by a script, not a person
 
-- **What:** the TextBox tests replay what the Windows and the macOS (2-set) Korean input methods sent in Chrome (`packages/gubasic_runtime/test/ime_logs/`). Desktop apps have not been tried with a real input method yet: on macOS this comes with the IDE run window; on Windows, the app is built by CI and can be downloaded and run without installing anything (D47), so it can be recorded on any Windows PC.
-- **What the two recordings showed:** both keep the promises of LANGUAGE §11.1. They made the same events in all five scenarios: a space is committed together with the syllable before it, so after 닭 `Changed` sees `닭 ` but never `닭` alone. Only the signals on the way differ (macOS first puts the space into the composition). Both commit what is being composed when the field loses the focus, about 150 to 180 ms before a click on the web.
-- **Known Flutter problems to check then:** on Windows desktop, syllables can be lost when typing fast ([flutter/flutter#189491](https://github.com/flutter/flutter/issues/189491), open). On the web, a composition dropped by the browser can leave a stale composing range ([flutter/flutter#193847](https://github.com/flutter/flutter/issues/193847)); it is fixed on Flutter's master branch but not in 3.47.7. Neither Chrome recording showed it: leaving the field committed the text cleanly.
-- **Why deferred:** the recordings need a person typing on each system.
-- **Revisit:** on a Windows PC, with the Windows IDE and IME probe from CI (D47; the steps are in issue #14).
+- **What:** the TextBox tests replay what real Korean input methods sent (`packages/gubasic_runtime/test/ime_logs/`): Windows and macOS (2-set) in Chrome, the macOS app, and, since 2026-11-03, the Windows app (`windows-app.json`). The Windows app's recording was made by sending the keys to the running IME probe with Windows' `SendInput`, one key every 220 ms, not by a person typing; the input method saw real key events, but at a script's pace. Every recording keeps the promises of LANGUAGE §11.1.
+- **What the recordings showed:** in Chrome a space is committed together with the syllable before it, so after 닭 `Changed` sees `닭 ` but never `닭` alone; the Windows app commits `닭` first and then `닭 `. The macOS app sends no composing ranges (the runtime guesses them, D37); the Windows app sends them as the browsers do. All commit what is being composed when the field loses the focus.
+- **Known Flutter problems to check:** on Windows desktop, syllables can be lost when typing fast ([flutter/flutter#189491](https://github.com/flutter/flutter/issues/189491), open); the script typed at 220 ms a key, so this was not exercised. On the web, a composition dropped by the browser can leave a stale composing range ([flutter/flutter#193847](https://github.com/flutter/flutter/issues/193847)); it is fixed on Flutter's master branch but not in 3.47.7. No recording showed it.
+- **Why deferred:** a recording typed by hand needs a person at a Windows PC; the scripted one already checks what the input method sends.
+- **Revisit:** when a person records on a Windows PC (`tool/ime_probe/README.md`; the file replaces `windows-app.json`), typing some of it fast for flutter/flutter#189491.
 
 ## Apps built later may cut off text drawn in the IDE
 

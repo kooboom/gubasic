@@ -59,13 +59,13 @@
 - **왜 미뤘나:** 창 하나로 하면 데스크톱과 웹에서 똑같이 동작합니다. 창을 따로 띄우려면 데스크톱 운영 체제마다 플랫폼 코드가 필요합니다.
 - **다시 볼 때:** 폼 디자이너와 함께 IDE의 창 배치를 정할 때.
 
-## 한글 입력은 아직 Chrome에서만 시험함
+## Windows 앱의 한글 입력 기록은 사람이 아니라 스크립트가 친 것
 
-- **무엇:** TextBox 테스트는 Chrome에서 Windows 한글 입력기와 macOS 한글 입력기(두벌식)가 보낸 신호를 재생합니다(`packages/gubasic_runtime/test/ime_logs/`). 데스크톱 앱은 아직 실제 입력기로 시험하지 않았습니다. macOS는 IDE 실행 창과 함께 시험합니다. Windows 앱은 CI가 빌드하므로 아무것도 설치하지 않고 내려받아 실행할 수 있습니다(D47). 그래서 어느 Windows PC에서나 기록할 수 있습니다.
-- **두 기록에서 본 것:** 둘 다 LANGUAGE 11.1절의 약속을 지킵니다. 다섯 시나리오 모두에서 같은 이벤트를 만들었습니다. 스페이스는 앞 음절과 함께 확정되므로, 닭 다음에 `Changed`는 `닭 `은 보지만 `닭`만 따로는 보지 않습니다. 도중의 신호만 다릅니다(macOS는 스페이스를 먼저 조합 안에 넣습니다). 둘 다 입력 칸이 포커스를 잃을 때 조합 중인 글자를 확정하며, 웹에서는 클릭보다 150~180 ms쯤 먼저입니다.
-- **그때 확인할 Flutter 문제:** Windows 데스크톱에서 빠르게 치면 음절이 빠지는 문제([flutter/flutter#189491](https://github.com/flutter/flutter/issues/189491), 열림). 웹에서 브라우저가 조합을 버리면 조합 범위가 남는 문제([flutter/flutter#193847](https://github.com/flutter/flutter/issues/193847))는 Flutter master에서 고쳤지만 3.47.7에는 없습니다. 두 Chrome 기록 모두에서 생기지 않았습니다. 입력 칸을 떠날 때 글자가 깨끗하게 확정되었습니다.
-- **왜 미뤘나:** 기록하려면 사람이 시스템마다 직접 쳐야 합니다.
-- **다시 볼 때:** Windows PC에서, CI가 만든 Windows IDE와 입력기 기록 도구로(D47, 단계는 이슈 #14).
+- **무엇:** TextBox 테스트는 실제 한글 입력기가 보낸 신호를 재생합니다(`packages/gubasic_runtime/test/ime_logs/`). Chrome의 Windows와 macOS(두벌식), macOS 앱, 그리고 2026-11-03부터 Windows 앱(`windows-app.json`)입니다. Windows 앱의 기록은 사람이 친 것이 아니라, 실행 중인 입력기 기록 도구에 Windows의 `SendInput`으로 키를 220 ms마다 하나씩 보내서 만들었습니다. 입력기는 실제 키 이벤트를 받았지만 간격은 스크립트의 것입니다. 모든 기록이 LANGUAGE 11.1절의 약속을 지킵니다.
+- **기록에서 본 것:** Chrome에서는 스페이스가 앞 음절과 함께 확정되어 닭 다음에 `Changed`는 `닭 `은 보지만 `닭`만 따로는 보지 않습니다. Windows 앱은 `닭`을 먼저, 그다음 `닭 `을 확정합니다. macOS 앱은 조합 범위를 보내지 않고(런타임이 알아냄, D37), Windows 앱은 브라우저처럼 보냅니다. 모두 입력 칸이 포커스를 잃을 때 조합 중인 글자를 확정합니다.
+- **확인할 Flutter 문제:** Windows 데스크톱에서 빠르게 치면 음절이 빠지는 문제([flutter/flutter#189491](https://github.com/flutter/flutter/issues/189491), 열림)는 스크립트가 220 ms 간격으로 쳐서 건드리지 않았습니다. 웹에서 브라우저가 조합을 버리면 조합 범위가 남는 문제([flutter/flutter#193847](https://github.com/flutter/flutter/issues/193847))는 Flutter master에서 고쳤지만 3.47.7에는 없습니다. 어느 기록에서도 생기지 않았습니다.
+- **왜 미뤘나:** 손으로 친 기록은 사람이 Windows PC 앞에 있어야 합니다. 스크립트 기록이 입력기가 보내는 신호는 이미 확인합니다.
+- **다시 볼 때:** 사람이 Windows PC에서 기록할 때(`tool/ime_probe/README.ko.md`. 파일은 `windows-app.json`을 대신함). flutter/flutter#189491을 위해 일부는 빠르게 칩니다.
 
 ## 나중에 만든 앱에서 IDE에서 그린 글자가 잘릴 수 있음
 

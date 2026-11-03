@@ -1,0 +1,2010 @@
+{
+  "probe": 1,
+  "recordedAt": "2026-11-03T04:56:06.459140Z",
+  "userAgent": "Flutter desktop app",
+  "platform": "windows",
+  "osVersion": "\"Windows 10 Home\" 10.0 (Build 26300)",
+  "semanticsEnabled": false,
+  "scenarios": {
+    "dokkaebi": [
+      {
+        "ms": 109704,
+        "kind": "value",
+        "text": "",
+        "codes": [],
+        "composing": [
+          -1,
+          -1
+        ],
+        "selection": [
+          0,
+          0
+        ]
+      },
+      {
+        "ms": 109704,
+        "kind": "focus",
+        "hasFocus": true
+      },
+      {
+        "ms": 110380,
+        "kind": "keyDown",
+        "key": "R",
+        "physical": null,
+        "character": "r"
+      },
+      {
+        "ms": 110380,
+        "kind": "value",
+        "text": "r",
+        "codes": [
+          "U+0072"
+        ],
+        "composing": [
+          -1,
+          -1
+        ],
+        "selection": [
+          1,
+          1
+        ]
+      },
+      {
+        "ms": 110426,
+        "kind": "keyUp",
+        "key": "R",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 128657,
+        "kind": "value",
+        "text": "r",
+        "codes": [
+          "U+0072"
+        ],
+        "composing": [
+          1,
+          1
+        ],
+        "selection": [
+          1,
+          1
+        ]
+      },
+      {
+        "ms": 128658,
+        "kind": "value",
+        "text": "rㄱ",
+        "codes": [
+          "U+0072",
+          "U+3131"
+        ],
+        "composing": [
+          1,
+          2
+        ],
+        "selection": [
+          2,
+          2
+        ]
+      },
+      {
+        "ms": 170386,
+        "kind": "value",
+        "text": "rㄱ",
+        "codes": [
+          "U+0072",
+          "U+3131"
+        ],
+        "composing": [
+          -1,
+          -1
+        ],
+        "selection": [
+          2,
+          2
+        ]
+      },
+      {
+        "ms": 170386,
+        "kind": "focus",
+        "hasFocus": false
+      },
+      {
+        "ms": 170459,
+        "kind": "reset"
+      },
+      {
+        "ms": 170459,
+        "kind": "value",
+        "text": "",
+        "codes": [],
+        "composing": [
+          -1,
+          -1
+        ],
+        "selection": [
+          0,
+          0
+        ]
+      },
+      {
+        "ms": 170459,
+        "kind": "focus",
+        "hasFocus": true
+      },
+      {
+        "ms": 171415,
+        "kind": "focus",
+        "hasFocus": false
+      },
+      {
+        "ms": 171490,
+        "kind": "reset"
+      },
+      {
+        "ms": 171490,
+        "kind": "focus",
+        "hasFocus": true
+      },
+      {
+        "ms": 173231,
+        "kind": "value",
+        "text": "",
+        "codes": [],
+        "composing": [
+          0,
+          0
+        ],
+        "selection": [
+          0,
+          0
+        ]
+      },
+      {
+        "ms": 173231,
+        "kind": "value",
+        "text": "ㄱ",
+        "codes": [
+          "U+3131"
+        ],
+        "composing": [
+          0,
+          1
+        ],
+        "selection": [
+          1,
+          1
+        ]
+      },
+      {
+        "ms": 173519,
+        "kind": "value",
+        "text": "가",
+        "codes": [
+          "U+AC00"
+        ],
+        "composing": [
+          0,
+          1
+        ],
+        "selection": [
+          1,
+          1
+        ]
+      },
+      {
+        "ms": 173809,
+        "kind": "value",
+        "text": "갈",
+        "codes": [
+          "U+AC08"
+        ],
+        "composing": [
+          0,
+          1
+        ],
+        "selection": [
+          1,
+          1
+        ]
+      },
+      {
+        "ms": 174114,
+        "kind": "value",
+        "text": "갉",
+        "codes": [
+          "U+AC09"
+        ],
+        "composing": [
+          0,
+          1
+        ],
+        "selection": [
+          1,
+          1
+        ]
+      },
+      {
+        "ms": 174391,
+        "kind": "value",
+        "text": "갈",
+        "codes": [
+          "U+AC08"
+        ],
+        "composing": [
+          0,
+          1
+        ],
+        "selection": [
+          1,
+          1
+        ]
+      },
+      {
+        "ms": 174391,
+        "kind": "value",
+        "text": "갈",
+        "codes": [
+          "U+AC08"
+        ],
+        "composing": [
+          -1,
+          -1
+        ],
+        "selection": [
+          1,
+          1
+        ]
+      },
+      {
+        "ms": 174392,
+        "kind": "value",
+        "text": "갈",
+        "codes": [
+          "U+AC08"
+        ],
+        "composing": [
+          1,
+          1
+        ],
+        "selection": [
+          1,
+          1
+        ]
+      },
+      {
+        "ms": 174392,
+        "kind": "value",
+        "text": "갈가",
+        "codes": [
+          "U+AC08",
+          "U+AC00"
+        ],
+        "composing": [
+          1,
+          2
+        ],
+        "selection": [
+          2,
+          2
+        ]
+      },
+      {
+        "ms": 175963,
+        "kind": "value",
+        "text": "갈가",
+        "codes": [
+          "U+AC08",
+          "U+AC00"
+        ],
+        "composing": [
+          -1,
+          -1
+        ],
+        "selection": [
+          2,
+          2
+        ]
+      },
+      {
+        "ms": 175964,
+        "kind": "focus",
+        "hasFocus": false
+      }
+    ],
+    "double_final": [
+      {
+        "ms": 176025,
+        "kind": "reset"
+      },
+      {
+        "ms": 176025,
+        "kind": "value",
+        "text": "",
+        "codes": [],
+        "composing": [
+          -1,
+          -1
+        ],
+        "selection": [
+          0,
+          0
+        ]
+      },
+      {
+        "ms": 176025,
+        "kind": "focus",
+        "hasFocus": true
+      },
+      {
+        "ms": 177786,
+        "kind": "value",
+        "text": "",
+        "codes": [],
+        "composing": [
+          0,
+          0
+        ],
+        "selection": [
+          0,
+          0
+        ]
+      },
+      {
+        "ms": 177787,
+        "kind": "value",
+        "text": "ㄷ",
+        "codes": [
+          "U+3137"
+        ],
+        "composing": [
+          0,
+          1
+        ],
+        "selection": [
+          1,
+          1
+        ]
+      },
+      {
+        "ms": 178060,
+        "kind": "value",
+        "text": "다",
+        "codes": [
+          "U+B2E4"
+        ],
+        "composing": [
+          0,
+          1
+        ],
+        "selection": [
+          1,
+          1
+        ]
+      },
+      {
+        "ms": 178354,
+        "kind": "value",
+        "text": "달",
+        "codes": [
+          "U+B2EC"
+        ],
+        "composing": [
+          0,
+          1
+        ],
+        "selection": [
+          1,
+          1
+        ]
+      },
+      {
+        "ms": 178624,
+        "kind": "value",
+        "text": "닭",
+        "codes": [
+          "U+B2ED"
+        ],
+        "composing": [
+          0,
+          1
+        ],
+        "selection": [
+          1,
+          1
+        ]
+      },
+      {
+        "ms": 178907,
+        "kind": "value",
+        "text": "닭",
+        "codes": [
+          "U+B2ED"
+        ],
+        "composing": [
+          -1,
+          -1
+        ],
+        "selection": [
+          1,
+          1
+        ]
+      },
+      {
+        "ms": 178907,
+        "kind": "keyDown",
+        "key": " ",
+        "physical": null,
+        "character": " "
+      },
+      {
+        "ms": 178907,
+        "kind": "value",
+        "text": "닭 ",
+        "codes": [
+          "U+B2ED",
+          "U+0020"
+        ],
+        "composing": [
+          -1,
+          -1
+        ],
+        "selection": [
+          2,
+          2
+        ]
+      },
+      {
+        "ms": 178949,
+        "kind": "keyUp",
+        "key": " ",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 179184,
+        "kind": "value",
+        "text": "닭 ",
+        "codes": [
+          "U+B2ED",
+          "U+0020"
+        ],
+        "composing": [
+          2,
+          2
+        ],
+        "selection": [
+          2,
+          2
+        ]
+      },
+      {
+        "ms": 179185,
+        "kind": "value",
+        "text": "닭 ㄱ",
+        "codes": [
+          "U+B2ED",
+          "U+0020",
+          "U+3131"
+        ],
+        "composing": [
+          2,
+          3
+        ],
+        "selection": [
+          3,
+          3
+        ]
+      },
+      {
+        "ms": 179477,
+        "kind": "value",
+        "text": "닭 가",
+        "codes": [
+          "U+B2ED",
+          "U+0020",
+          "U+AC00"
+        ],
+        "composing": [
+          2,
+          3
+        ],
+        "selection": [
+          3,
+          3
+        ]
+      },
+      {
+        "ms": 179748,
+        "kind": "value",
+        "text": "닭 갑",
+        "codes": [
+          "U+B2ED",
+          "U+0020",
+          "U+AC11"
+        ],
+        "composing": [
+          2,
+          3
+        ],
+        "selection": [
+          3,
+          3
+        ]
+      },
+      {
+        "ms": 180029,
+        "kind": "value",
+        "text": "닭 값",
+        "codes": [
+          "U+B2ED",
+          "U+0020",
+          "U+AC12"
+        ],
+        "composing": [
+          2,
+          3
+        ],
+        "selection": [
+          3,
+          3
+        ]
+      },
+      {
+        "ms": 180320,
+        "kind": "value",
+        "text": "닭 값",
+        "codes": [
+          "U+B2ED",
+          "U+0020",
+          "U+AC12"
+        ],
+        "composing": [
+          -1,
+          -1
+        ],
+        "selection": [
+          3,
+          3
+        ]
+      },
+      {
+        "ms": 180321,
+        "kind": "keyDown",
+        "key": " ",
+        "physical": null,
+        "character": " "
+      },
+      {
+        "ms": 180321,
+        "kind": "value",
+        "text": "닭 값 ",
+        "codes": [
+          "U+B2ED",
+          "U+0020",
+          "U+AC12",
+          "U+0020"
+        ],
+        "composing": [
+          -1,
+          -1
+        ],
+        "selection": [
+          4,
+          4
+        ]
+      },
+      {
+        "ms": 180363,
+        "kind": "keyUp",
+        "key": " ",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 181899,
+        "kind": "focus",
+        "hasFocus": false
+      }
+    ],
+    "backspace": [
+      {
+        "ms": 181975,
+        "kind": "reset"
+      },
+      {
+        "ms": 181975,
+        "kind": "value",
+        "text": "",
+        "codes": [],
+        "composing": [
+          -1,
+          -1
+        ],
+        "selection": [
+          0,
+          0
+        ]
+      },
+      {
+        "ms": 181975,
+        "kind": "focus",
+        "hasFocus": true
+      },
+      {
+        "ms": 183711,
+        "kind": "value",
+        "text": "",
+        "codes": [],
+        "composing": [
+          0,
+          0
+        ],
+        "selection": [
+          0,
+          0
+        ]
+      },
+      {
+        "ms": 183712,
+        "kind": "value",
+        "text": "ㅎ",
+        "codes": [
+          "U+314E"
+        ],
+        "composing": [
+          0,
+          1
+        ],
+        "selection": [
+          1,
+          1
+        ]
+      },
+      {
+        "ms": 183989,
+        "kind": "value",
+        "text": "하",
+        "codes": [
+          "U+D558"
+        ],
+        "composing": [
+          0,
+          1
+        ],
+        "selection": [
+          1,
+          1
+        ]
+      },
+      {
+        "ms": 184264,
+        "kind": "value",
+        "text": "한",
+        "codes": [
+          "U+D55C"
+        ],
+        "composing": [
+          0,
+          1
+        ],
+        "selection": [
+          1,
+          1
+        ]
+      },
+      {
+        "ms": 184554,
+        "kind": "value",
+        "text": "하",
+        "codes": [
+          "U+D558"
+        ],
+        "composing": [
+          0,
+          1
+        ],
+        "selection": [
+          1,
+          1
+        ]
+      },
+      {
+        "ms": 227536,
+        "kind": "value",
+        "text": "하",
+        "codes": [
+          "U+D558"
+        ],
+        "composing": [
+          -1,
+          -1
+        ],
+        "selection": [
+          1,
+          1
+        ]
+      },
+      {
+        "ms": 227537,
+        "kind": "focus",
+        "hasFocus": false
+      }
+    ],
+    "click": [
+      {
+        "ms": 227597,
+        "kind": "reset"
+      },
+      {
+        "ms": 227597,
+        "kind": "value",
+        "text": "",
+        "codes": [],
+        "composing": [
+          -1,
+          -1
+        ],
+        "selection": [
+          0,
+          0
+        ]
+      },
+      {
+        "ms": 227597,
+        "kind": "focus",
+        "hasFocus": true
+      },
+      {
+        "ms": 229354,
+        "kind": "value",
+        "text": "",
+        "codes": [],
+        "composing": [
+          0,
+          0
+        ],
+        "selection": [
+          0,
+          0
+        ]
+      },
+      {
+        "ms": 229354,
+        "kind": "value",
+        "text": "ㅎ",
+        "codes": [
+          "U+314E"
+        ],
+        "composing": [
+          0,
+          1
+        ],
+        "selection": [
+          1,
+          1
+        ]
+      },
+      {
+        "ms": 229638,
+        "kind": "value",
+        "text": "하",
+        "codes": [
+          "U+D558"
+        ],
+        "composing": [
+          0,
+          1
+        ],
+        "selection": [
+          1,
+          1
+        ]
+      },
+      {
+        "ms": 229928,
+        "kind": "value",
+        "text": "한",
+        "codes": [
+          "U+D55C"
+        ],
+        "composing": [
+          0,
+          1
+        ],
+        "selection": [
+          1,
+          1
+        ]
+      },
+      {
+        "ms": 230203,
+        "kind": "value",
+        "text": "한",
+        "codes": [
+          "U+D55C"
+        ],
+        "composing": [
+          -1,
+          -1
+        ],
+        "selection": [
+          1,
+          1
+        ]
+      },
+      {
+        "ms": 230204,
+        "kind": "value",
+        "text": "한",
+        "codes": [
+          "U+D55C"
+        ],
+        "composing": [
+          1,
+          1
+        ],
+        "selection": [
+          1,
+          1
+        ]
+      },
+      {
+        "ms": 230204,
+        "kind": "value",
+        "text": "한ㄱ",
+        "codes": [
+          "U+D55C",
+          "U+3131"
+        ],
+        "composing": [
+          1,
+          2
+        ],
+        "selection": [
+          2,
+          2
+        ]
+      },
+      {
+        "ms": 230481,
+        "kind": "value",
+        "text": "한그",
+        "codes": [
+          "U+D55C",
+          "U+ADF8"
+        ],
+        "composing": [
+          1,
+          2
+        ],
+        "selection": [
+          2,
+          2
+        ]
+      },
+      {
+        "ms": 230787,
+        "kind": "value",
+        "text": "한글",
+        "codes": [
+          "U+D55C",
+          "U+AE00"
+        ],
+        "composing": [
+          1,
+          2
+        ],
+        "selection": [
+          2,
+          2
+        ]
+      },
+      {
+        "ms": 231488,
+        "kind": "value",
+        "text": "한글",
+        "codes": [
+          "U+D55C",
+          "U+AE00"
+        ],
+        "composing": [
+          -1,
+          -1
+        ],
+        "selection": [
+          2,
+          2
+        ]
+      },
+      {
+        "ms": 231489,
+        "kind": "focus",
+        "hasFocus": false
+      },
+      {
+        "ms": 231562,
+        "kind": "click",
+        "button": "A",
+        "text": "한글",
+        "codes": [
+          "U+D55C",
+          "U+AE00"
+        ],
+        "composing": [
+          -1,
+          -1
+        ],
+        "selection": [
+          2,
+          2
+        ]
+      },
+      {
+        "ms": 233165,
+        "kind": "reset"
+      },
+      {
+        "ms": 233165,
+        "kind": "value",
+        "text": "",
+        "codes": [],
+        "composing": [
+          -1,
+          -1
+        ],
+        "selection": [
+          0,
+          0
+        ]
+      },
+      {
+        "ms": 233165,
+        "kind": "focus",
+        "hasFocus": true
+      },
+      {
+        "ms": 234942,
+        "kind": "value",
+        "text": "",
+        "codes": [],
+        "composing": [
+          0,
+          0
+        ],
+        "selection": [
+          0,
+          0
+        ]
+      },
+      {
+        "ms": 234942,
+        "kind": "value",
+        "text": "ㅎ",
+        "codes": [
+          "U+314E"
+        ],
+        "composing": [
+          0,
+          1
+        ],
+        "selection": [
+          1,
+          1
+        ]
+      },
+      {
+        "ms": 235218,
+        "kind": "value",
+        "text": "하",
+        "codes": [
+          "U+D558"
+        ],
+        "composing": [
+          0,
+          1
+        ],
+        "selection": [
+          1,
+          1
+        ]
+      },
+      {
+        "ms": 235506,
+        "kind": "value",
+        "text": "한",
+        "codes": [
+          "U+D55C"
+        ],
+        "composing": [
+          0,
+          1
+        ],
+        "selection": [
+          1,
+          1
+        ]
+      },
+      {
+        "ms": 235782,
+        "kind": "value",
+        "text": "한",
+        "codes": [
+          "U+D55C"
+        ],
+        "composing": [
+          -1,
+          -1
+        ],
+        "selection": [
+          1,
+          1
+        ]
+      },
+      {
+        "ms": 235783,
+        "kind": "value",
+        "text": "한",
+        "codes": [
+          "U+D55C"
+        ],
+        "composing": [
+          1,
+          1
+        ],
+        "selection": [
+          1,
+          1
+        ]
+      },
+      {
+        "ms": 235784,
+        "kind": "value",
+        "text": "한ㄱ",
+        "codes": [
+          "U+D55C",
+          "U+3131"
+        ],
+        "composing": [
+          1,
+          2
+        ],
+        "selection": [
+          2,
+          2
+        ]
+      },
+      {
+        "ms": 236072,
+        "kind": "value",
+        "text": "한그",
+        "codes": [
+          "U+D55C",
+          "U+ADF8"
+        ],
+        "composing": [
+          1,
+          2
+        ],
+        "selection": [
+          2,
+          2
+        ]
+      },
+      {
+        "ms": 236363,
+        "kind": "value",
+        "text": "한글",
+        "codes": [
+          "U+D55C",
+          "U+AE00"
+        ],
+        "composing": [
+          1,
+          2
+        ],
+        "selection": [
+          2,
+          2
+        ]
+      },
+      {
+        "ms": 237049,
+        "kind": "value",
+        "text": "한글",
+        "codes": [
+          "U+D55C",
+          "U+AE00"
+        ],
+        "composing": [
+          -1,
+          -1
+        ],
+        "selection": [
+          2,
+          2
+        ]
+      },
+      {
+        "ms": 237050,
+        "kind": "focus",
+        "hasFocus": false
+      },
+      {
+        "ms": 237119,
+        "kind": "click",
+        "button": "B",
+        "text": "한글",
+        "codes": [
+          "U+D55C",
+          "U+AE00"
+        ],
+        "composing": [
+          -1,
+          -1
+        ],
+        "selection": [
+          2,
+          2
+        ]
+      }
+    ],
+    "erase_retype": [
+      {
+        "ms": 238723,
+        "kind": "reset"
+      },
+      {
+        "ms": 238723,
+        "kind": "value",
+        "text": "",
+        "codes": [],
+        "composing": [
+          -1,
+          -1
+        ],
+        "selection": [
+          0,
+          0
+        ]
+      },
+      {
+        "ms": 238723,
+        "kind": "focus",
+        "hasFocus": true
+      },
+      {
+        "ms": 240466,
+        "kind": "value",
+        "text": "",
+        "codes": [],
+        "composing": [
+          0,
+          0
+        ],
+        "selection": [
+          0,
+          0
+        ]
+      },
+      {
+        "ms": 240467,
+        "kind": "value",
+        "text": "ㄷ",
+        "codes": [
+          "U+3137"
+        ],
+        "composing": [
+          0,
+          1
+        ],
+        "selection": [
+          1,
+          1
+        ]
+      },
+      {
+        "ms": 240757,
+        "kind": "value",
+        "text": "다",
+        "codes": [
+          "U+B2E4"
+        ],
+        "composing": [
+          0,
+          1
+        ],
+        "selection": [
+          1,
+          1
+        ]
+      },
+      {
+        "ms": 241034,
+        "kind": "value",
+        "text": "달",
+        "codes": [
+          "U+B2EC"
+        ],
+        "composing": [
+          0,
+          1
+        ],
+        "selection": [
+          1,
+          1
+        ]
+      },
+      {
+        "ms": 241310,
+        "kind": "value",
+        "text": "닭",
+        "codes": [
+          "U+B2ED"
+        ],
+        "composing": [
+          0,
+          1
+        ],
+        "selection": [
+          1,
+          1
+        ]
+      },
+      {
+        "ms": 241603,
+        "kind": "value",
+        "text": "닭",
+        "codes": [
+          "U+B2ED"
+        ],
+        "composing": [
+          -1,
+          -1
+        ],
+        "selection": [
+          1,
+          1
+        ]
+      },
+      {
+        "ms": 241603,
+        "kind": "value",
+        "text": "닭",
+        "codes": [
+          "U+B2ED"
+        ],
+        "composing": [
+          1,
+          1
+        ],
+        "selection": [
+          1,
+          1
+        ]
+      },
+      {
+        "ms": 241603,
+        "kind": "value",
+        "text": "닭ㄱ",
+        "codes": [
+          "U+B2ED",
+          "U+3131"
+        ],
+        "composing": [
+          1,
+          2
+        ],
+        "selection": [
+          2,
+          2
+        ]
+      },
+      {
+        "ms": 241873,
+        "kind": "value",
+        "text": "닭가",
+        "codes": [
+          "U+B2ED",
+          "U+AC00"
+        ],
+        "composing": [
+          1,
+          2
+        ],
+        "selection": [
+          2,
+          2
+        ]
+      },
+      {
+        "ms": 242154,
+        "kind": "value",
+        "text": "닭갑",
+        "codes": [
+          "U+B2ED",
+          "U+AC11"
+        ],
+        "composing": [
+          1,
+          2
+        ],
+        "selection": [
+          2,
+          2
+        ]
+      },
+      {
+        "ms": 242459,
+        "kind": "value",
+        "text": "닭값",
+        "codes": [
+          "U+B2ED",
+          "U+AC12"
+        ],
+        "composing": [
+          1,
+          2
+        ],
+        "selection": [
+          2,
+          2
+        ]
+      },
+      {
+        "ms": 243546,
+        "kind": "value",
+        "text": "닭갑",
+        "codes": [
+          "U+B2ED",
+          "U+AC11"
+        ],
+        "composing": [
+          1,
+          2
+        ],
+        "selection": [
+          2,
+          2
+        ]
+      },
+      {
+        "ms": 243836,
+        "kind": "value",
+        "text": "닭가",
+        "codes": [
+          "U+B2ED",
+          "U+AC00"
+        ],
+        "composing": [
+          1,
+          2
+        ],
+        "selection": [
+          2,
+          2
+        ]
+      },
+      {
+        "ms": 244114,
+        "kind": "value",
+        "text": "닭ㄱ",
+        "codes": [
+          "U+B2ED",
+          "U+3131"
+        ],
+        "composing": [
+          1,
+          2
+        ],
+        "selection": [
+          2,
+          2
+        ]
+      },
+      {
+        "ms": 244388,
+        "kind": "value",
+        "text": "닭",
+        "codes": [
+          "U+B2ED"
+        ],
+        "composing": [
+          -1,
+          -1
+        ],
+        "selection": [
+          1,
+          1
+        ]
+      },
+      {
+        "ms": 244678,
+        "kind": "keyDown",
+        "key": "Backspace",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 244678,
+        "kind": "value",
+        "text": "",
+        "codes": [],
+        "composing": [
+          -1,
+          -1
+        ],
+        "selection": [
+          0,
+          0
+        ]
+      },
+      {
+        "ms": 244720,
+        "kind": "keyUp",
+        "key": "Backspace",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 245769,
+        "kind": "value",
+        "text": "",
+        "codes": [],
+        "composing": [
+          0,
+          0
+        ],
+        "selection": [
+          0,
+          0
+        ]
+      },
+      {
+        "ms": 245769,
+        "kind": "value",
+        "text": "ㄷ",
+        "codes": [
+          "U+3137"
+        ],
+        "composing": [
+          0,
+          1
+        ],
+        "selection": [
+          1,
+          1
+        ]
+      },
+      {
+        "ms": 246045,
+        "kind": "value",
+        "text": "다",
+        "codes": [
+          "U+B2E4"
+        ],
+        "composing": [
+          0,
+          1
+        ],
+        "selection": [
+          1,
+          1
+        ]
+      },
+      {
+        "ms": 246338,
+        "kind": "value",
+        "text": "달",
+        "codes": [
+          "U+B2EC"
+        ],
+        "composing": [
+          0,
+          1
+        ],
+        "selection": [
+          1,
+          1
+        ]
+      },
+      {
+        "ms": 246614,
+        "kind": "value",
+        "text": "닭",
+        "codes": [
+          "U+B2ED"
+        ],
+        "composing": [
+          0,
+          1
+        ],
+        "selection": [
+          1,
+          1
+        ]
+      },
+      {
+        "ms": 246891,
+        "kind": "value",
+        "text": "닭",
+        "codes": [
+          "U+B2ED"
+        ],
+        "composing": [
+          -1,
+          -1
+        ],
+        "selection": [
+          1,
+          1
+        ]
+      },
+      {
+        "ms": 246891,
+        "kind": "keyDown",
+        "key": " ",
+        "physical": null,
+        "character": " "
+      },
+      {
+        "ms": 246891,
+        "kind": "value",
+        "text": "닭 ",
+        "codes": [
+          "U+B2ED",
+          "U+0020"
+        ],
+        "composing": [
+          -1,
+          -1
+        ],
+        "selection": [
+          2,
+          2
+        ]
+      },
+      {
+        "ms": 246933,
+        "kind": "keyUp",
+        "key": " ",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 247167,
+        "kind": "value",
+        "text": "닭 ",
+        "codes": [
+          "U+B2ED",
+          "U+0020"
+        ],
+        "composing": [
+          2,
+          2
+        ],
+        "selection": [
+          2,
+          2
+        ]
+      },
+      {
+        "ms": 247168,
+        "kind": "value",
+        "text": "닭 ㄱ",
+        "codes": [
+          "U+B2ED",
+          "U+0020",
+          "U+3131"
+        ],
+        "composing": [
+          2,
+          3
+        ],
+        "selection": [
+          3,
+          3
+        ]
+      },
+      {
+        "ms": 247458,
+        "kind": "value",
+        "text": "닭 가",
+        "codes": [
+          "U+B2ED",
+          "U+0020",
+          "U+AC00"
+        ],
+        "composing": [
+          2,
+          3
+        ],
+        "selection": [
+          3,
+          3
+        ]
+      },
+      {
+        "ms": 247733,
+        "kind": "value",
+        "text": "닭 갑",
+        "codes": [
+          "U+B2ED",
+          "U+0020",
+          "U+AC11"
+        ],
+        "composing": [
+          2,
+          3
+        ],
+        "selection": [
+          3,
+          3
+        ]
+      },
+      {
+        "ms": 248009,
+        "kind": "value",
+        "text": "닭 값",
+        "codes": [
+          "U+B2ED",
+          "U+0020",
+          "U+AC12"
+        ],
+        "composing": [
+          2,
+          3
+        ],
+        "selection": [
+          3,
+          3
+        ]
+      },
+      {
+        "ms": 248304,
+        "kind": "value",
+        "text": "닭 값",
+        "codes": [
+          "U+B2ED",
+          "U+0020",
+          "U+AC12"
+        ],
+        "composing": [
+          -1,
+          -1
+        ],
+        "selection": [
+          3,
+          3
+        ]
+      },
+      {
+        "ms": 248305,
+        "kind": "keyDown",
+        "key": " ",
+        "physical": null,
+        "character": " "
+      },
+      {
+        "ms": 248305,
+        "kind": "value",
+        "text": "닭 값 ",
+        "codes": [
+          "U+B2ED",
+          "U+0020",
+          "U+AC12",
+          "U+0020"
+        ],
+        "composing": [
+          -1,
+          -1
+        ],
+        "selection": [
+          4,
+          4
+        ]
+      },
+      {
+        "ms": 248352,
+        "kind": "keyUp",
+        "key": " ",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 249887,
+        "kind": "focus",
+        "hasFocus": false
+      }
+    ],
+    "erase_jamo": [
+      {
+        "ms": 249959,
+        "kind": "reset"
+      },
+      {
+        "ms": 249959,
+        "kind": "value",
+        "text": "",
+        "codes": [],
+        "composing": [
+          -1,
+          -1
+        ],
+        "selection": [
+          0,
+          0
+        ]
+      },
+      {
+        "ms": 249959,
+        "kind": "focus",
+        "hasFocus": true
+      },
+      {
+        "ms": 251703,
+        "kind": "value",
+        "text": "",
+        "codes": [],
+        "composing": [
+          0,
+          0
+        ],
+        "selection": [
+          0,
+          0
+        ]
+      },
+      {
+        "ms": 251703,
+        "kind": "value",
+        "text": "ㅎ",
+        "codes": [
+          "U+314E"
+        ],
+        "composing": [
+          0,
+          1
+        ],
+        "selection": [
+          1,
+          1
+        ]
+      },
+      {
+        "ms": 251990,
+        "kind": "value",
+        "text": "하",
+        "codes": [
+          "U+D558"
+        ],
+        "composing": [
+          0,
+          1
+        ],
+        "selection": [
+          1,
+          1
+        ]
+      },
+      {
+        "ms": 252276,
+        "kind": "value",
+        "text": "한",
+        "codes": [
+          "U+D55C"
+        ],
+        "composing": [
+          0,
+          1
+        ],
+        "selection": [
+          1,
+          1
+        ]
+      },
+      {
+        "ms": 252548,
+        "kind": "value",
+        "text": "한",
+        "codes": [
+          "U+D55C"
+        ],
+        "composing": [
+          -1,
+          -1
+        ],
+        "selection": [
+          1,
+          1
+        ]
+      },
+      {
+        "ms": 252548,
+        "kind": "value",
+        "text": "한",
+        "codes": [
+          "U+D55C"
+        ],
+        "composing": [
+          1,
+          1
+        ],
+        "selection": [
+          1,
+          1
+        ]
+      },
+      {
+        "ms": 252548,
+        "kind": "value",
+        "text": "한ㄱ",
+        "codes": [
+          "U+D55C",
+          "U+3131"
+        ],
+        "composing": [
+          1,
+          2
+        ],
+        "selection": [
+          2,
+          2
+        ]
+      },
+      {
+        "ms": 252827,
+        "kind": "value",
+        "text": "한그",
+        "codes": [
+          "U+D55C",
+          "U+ADF8"
+        ],
+        "composing": [
+          1,
+          2
+        ],
+        "selection": [
+          2,
+          2
+        ]
+      },
+      {
+        "ms": 253105,
+        "kind": "value",
+        "text": "한글",
+        "codes": [
+          "U+D55C",
+          "U+AE00"
+        ],
+        "composing": [
+          1,
+          2
+        ],
+        "selection": [
+          2,
+          2
+        ]
+      },
+      {
+        "ms": 253396,
+        "kind": "value",
+        "text": "한긂",
+        "codes": [
+          "U+D55C",
+          "U+AE02"
+        ],
+        "composing": [
+          1,
+          2
+        ],
+        "selection": [
+          2,
+          2
+        ]
+      },
+      {
+        "ms": 254481,
+        "kind": "value",
+        "text": "한글",
+        "codes": [
+          "U+D55C",
+          "U+AE00"
+        ],
+        "composing": [
+          1,
+          2
+        ],
+        "selection": [
+          2,
+          2
+        ]
+      },
+      {
+        "ms": 254775,
+        "kind": "value",
+        "text": "한그",
+        "codes": [
+          "U+D55C",
+          "U+ADF8"
+        ],
+        "composing": [
+          1,
+          2
+        ],
+        "selection": [
+          2,
+          2
+        ]
+      },
+      {
+        "ms": 255064,
+        "kind": "value",
+        "text": "한ㄱ",
+        "codes": [
+          "U+D55C",
+          "U+3131"
+        ],
+        "composing": [
+          1,
+          2
+        ],
+        "selection": [
+          2,
+          2
+        ]
+      },
+      {
+        "ms": 255339,
+        "kind": "value",
+        "text": "한",
+        "codes": [
+          "U+D55C"
+        ],
+        "composing": [
+          -1,
+          -1
+        ],
+        "selection": [
+          1,
+          1
+        ]
+      },
+      {
+        "ms": 255631,
+        "kind": "keyDown",
+        "key": "Backspace",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 255631,
+        "kind": "value",
+        "text": "",
+        "codes": [],
+        "composing": [
+          -1,
+          -1
+        ],
+        "selection": [
+          0,
+          0
+        ]
+      },
+      {
+        "ms": 255676,
+        "kind": "keyUp",
+        "key": "Backspace",
+        "physical": null,
+        "character": null
+      },
+      {
+        "ms": 275403,
+        "kind": "focus",
+        "hasFocus": false
+      }
+    ]
+  }
+}

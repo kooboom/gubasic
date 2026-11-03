@@ -4,7 +4,9 @@
 
 Records what a real input method sends to a Flutter text field, in the browser or in a desktop app: every value (text, the part still being composed, selection), keys, focus changes and clicks. The recordings are test input: `packages/gubasic_runtime/test/text_box_test.dart` replays every file in `test/ime_logs/` (DESIGN §9.1).
 
-Recorded so far: `windows-chrome.json` (Windows Korean input method, Chrome), `macos-chrome.json` (macOS Korean input method, 2-set, Chrome) and `macos-app.json` (the same on macOS 27, in the macOS app). A desktop app's recording replays as that platform.
+Recorded so far: `windows-chrome.json` (Windows Korean input method, Chrome), `macos-chrome.json` (macOS Korean input method, 2-set, Chrome), `macos-app.json` (the same on macOS 27, in the macOS app) and `windows-app.json` (the Microsoft Korean input method on Windows 11, in the Windows app). A desktop app's recording replays as that platform.
+
+`windows-app.json` was not typed by a person: the keys were sent to the running app with Windows' `SendInput`, one key every 220 ms (a script that checked before every key that the app was the foreground window), on 2026-11-03. The input method saw real key events, so what it sent is what it sends for a person, but the timing is a script's; a recording typed by hand can replace it (the same file name).
 
 ## Recording
 
@@ -49,4 +51,5 @@ Behaviour seen in the recordings so far, with the scenario that shows it. Both r
 - **What was only being composed never reaches `Changed`.** 긂 in 5-2 and 값 while it is being erased in 5-1 are never committed, so `Changed` never shows them: in 5-2 it runs only for 한 and for the empty text. Windows and macOS.
 - **A space is committed together with the syllable before it.** After 닭, `Changed` sees `닭 ` but never `닭` alone (scenario 2). The signals differ: macOS first puts the space into the composition (`닭 ` being composed), Windows replaces the composed 닭 with the committed `닭 ` at once. Windows and macOS.
 - **The macOS app gets no composing range.** In `macos-app.json` every value has composing `[-1, -1]`: each jamo arrives committed and the syllable before the caret is replaced in place (ㄱ, 가, 갈, 갉, 갈, 갈가), and nothing is sent when the field loses the focus. The text is the same as in Chrome. The runtime guesses the composition there (DESIGN D37), and the events come out the same as Chrome's.
-- **Leaving the field commits.** Both input methods commit what is being composed when the field loses the focus; on the web this happens about 150 to 180 ms before a click arrives (scenario 4).
+- **Leaving the field commits.** Both input methods commit what is being composed when the field loses the focus; on the web this happens about 150 to 180 ms before a click arrives (scenario 4). The Windows app does the same: the committed value arrives, then the focus change (`windows-app.json`).
+- **The Windows app sends composing ranges, and commits a syllable before the space.** Unlike the macOS app, the Windows app's values carry the composing range, as the browsers' do, so its recording is replayed as a browser's is. Unlike every Chrome recording, the space does not go in with the syllable before it: after 닭, `Changed` sees `닭` and then `닭 ` (scenarios 2 and 5-1). LANGUAGE §11.1 holds either way: nothing being composed comes out, and `Changed` runs once per commit.
