@@ -140,6 +140,7 @@ class ComponentSpec {
     this.container = false,
     this.menu = false,
     this.object = false,
+    this.channel = false,
     this.platforms = const [],
   })  : properties = {for (final p in properties) p.name.toLowerCase(): p},
         events = {for (final e in events) e.name.toLowerCase(): e},
@@ -196,8 +197,14 @@ class ComponentSpec {
   /// Its properties are set only by the program.
   final bool object;
 
-  /// Where an [object] component runs (`web`, `macos`, `windows`), as its
-  /// component.yaml says; empty for everywhere.
+  /// Whether this is a control in the designer's tray whose code comes
+  /// through the component channel (`WebSocket`, D136): each control has
+  /// an instance of its own, its read-only properties and its methods are
+  /// the instance's, and the instance reports its events. Not [visual].
+  final bool channel;
+
+  /// Where an [object] or [channel] component runs (`web`, `macos`,
+  /// `windows`), as its component.yaml says; empty for everywhere.
   final List<String> platforms;
 
   /// The properties the form file and the Properties window can set.
@@ -430,6 +437,11 @@ ComponentSpec readComponentFile(String text) {
   // A built-in object (D125): used by its name, never on a form.
   final object = doc['object'] ?? false;
   if (object is! bool) throw const FormatException('object is true or false');
+  // A tray control through the component channel (D136).
+  final channel = doc['channel'] ?? false;
+  if (channel is! bool) {
+    throw const FormatException('channel is true or false');
+  }
   final visual = doc['visual'] ?? !object;
   if (visual is! bool) throw const FormatException('visual is true or false');
   final container = doc['container'] ?? false;
@@ -450,8 +462,13 @@ ComponentSpec readComponentFile(String text) {
     throw const FormatException(
         'an object is not visual, a container, a menu or aliased');
   }
-  if (!object && (platforms.isNotEmpty || doc['object'] != null)) {
-    throw const FormatException('only an object names its platforms');
+  if (channel && (object || visual || container || menu)) {
+    throw const FormatException(
+        'a channel control is not visual, an object, a container or a menu');
+  }
+  if (!object && !channel && (platforms.isNotEmpty || doc['object'] != null)) {
+    throw const FormatException(
+        'only an object or a channel control names its platforms');
   }
 
   final spec = ComponentSpec(
@@ -471,6 +488,7 @@ ComponentSpec readComponentFile(String text) {
     container: container,
     menu: menu,
     object: object,
+    channel: channel,
     platforms: List.unmodifiable(platforms.cast<String>()),
   );
   for (final MapEntry(:key, :value) in spec.otherEvents.entries) {
@@ -516,6 +534,9 @@ const _parameterTypes = {
   ..._valueTypes,
   'keyeventargs': GbType.keyEventArgs,
   'mouseeventargs': GbType.mouseEventArgs,
+  'messageeventargs': GbType.messageEventArgs,
+  'closeeventargs': GbType.closeEventArgs,
+  'erroreventargs': GbType.errorEventArgs,
   'json': GbType.json,
 };
 

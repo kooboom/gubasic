@@ -155,6 +155,17 @@ Map<String, MemberSpec>? membersOf(GbType type) {
         MemberSpec.method('Remove',
             [const ParamSpec.of('member', ArgKind.numericOrString)], _v),
       ];
+    case GbType.messageEventArgs:
+      // A message that came over a WebSocket (D136): its text, and the
+      // text read as JSON (R039 when it is not).
+      list = const [
+        MemberSpec.property('Text', _s),
+        MemberSpec.property('Json', GbType.json),
+      ];
+    case GbType.closeEventArgs:
+      list = const [MemberSpec.property('Reason', _s)];
+    case GbType.errorEventArgs:
+      list = const [MemberSpec.property('Message', _s)];
     case GbType.httpResponse:
       // The whole answer to an HTTP request (D125).
       list = [

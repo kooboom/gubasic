@@ -237,6 +237,15 @@ class _ControlIconPainter extends CustomPainter {
             ..lineTo(12.2, open ? 11.6 : 11.9),
           mark,
         );
+      case 'websocket':
+        // A square, with a message going out (blue) and one coming in.
+        body(_square);
+        line(6, 8, 14, 8, mark);
+        line(11.6, 5.8, 14, 8, mark);
+        line(11.6, 10.2, 14, 8, mark);
+        line(14, 12.4, 6, 12.4, text);
+        line(8.4, 10.2, 6, 12.4, text);
+        line(8.4, 14.6, 6, 12.4, text);
       default:
         body(_square);
     }

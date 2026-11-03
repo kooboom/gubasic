@@ -209,6 +209,19 @@ Talks to web servers over HTTP (docs/DESIGN.md D124, D125), the way Visual Basic
 - `X As Integer`
 - `Y As Integer`
 
+### MessageEventArgs
+
+- `Text As String`
+- `Json As Json`
+
+### CloseEventArgs
+
+- `Reason As String`
+
+### ErrorEventArgs
+
+- `Message As String`
+
 ### Table
 
 - `RowCount As Integer`

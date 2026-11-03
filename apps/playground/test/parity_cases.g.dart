@@ -10,7 +10,8 @@
 /// (name, null, code) NAME.MODULE.gbas (D102); the last is
 /// whether NAME.startup says it starts with Sub Main; then the
 /// files of NAME.files/ the program reads (D113), name to
-/// base64; last, what servers answer it, NAME.http (D125).
+/// base64; then what servers answer it, NAME.http (D125);
+/// last, what its WebSocket servers do, NAME.ws (D136).
 const parityCases = <(
   String,
   String,
@@ -23,6 +24,7 @@ const parityCases = <(
   List<(String, String?, String)>,
   bool,
   Map<String, String>,
+  String?,
   String?
 )>[
   (
@@ -37,6 +39,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
     null,
   ),
   (
@@ -58,6 +61,7 @@ const parityCases = <(
     false,
     {},
     null,
+    null,
   ),
   (
     "big_integers",
@@ -71,6 +75,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
     null,
   ),
   (
@@ -86,6 +91,7 @@ const parityCases = <(
     false,
     {},
     null,
+    null,
   ),
   (
     "conditions",
@@ -99,6 +105,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
     null,
   ),
   (
@@ -114,6 +121,7 @@ const parityCases = <(
     false,
     {},
     null,
+    null,
   ),
   (
     "controls_loop",
@@ -127,6 +135,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
     null,
   ),
   (
@@ -142,6 +151,7 @@ const parityCases = <(
     false,
     {},
     null,
+    null,
   ),
   (
     "controls_new_with",
@@ -155,6 +165,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
     null,
   ),
   (
@@ -173,6 +184,7 @@ const parityCases = <(
           "wMy4pyy53SzBobz2DQqx6MfPs6osMbndLDkwDQoiudosILXRIiwyud0sODUNCsDMvMIsLDcwDQo=",
     },
     null,
+    null,
   ),
   (
     "dates_format",
@@ -186,6 +198,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
     null,
   ),
   (
@@ -201,6 +214,7 @@ const parityCases = <(
     false,
     {},
     null,
+    null,
   ),
   (
     "divide_by_zero",
@@ -214,6 +228,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
     null,
   ),
   (
@@ -229,6 +244,7 @@ const parityCases = <(
     false,
     {},
     null,
+    null,
   ),
   (
     "events_anchor",
@@ -242,6 +258,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
     null,
   ),
   (
@@ -257,6 +274,7 @@ const parityCases = <(
     false,
     {},
     null,
+    null,
   ),
   (
     "events_checkbox",
@@ -270,6 +288,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
     null,
   ),
   (
@@ -285,6 +304,7 @@ const parityCases = <(
     false,
     {},
     null,
+    null,
   ),
   (
     "events_end",
@@ -298,6 +318,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
     null,
   ),
   (
@@ -313,6 +334,7 @@ const parityCases = <(
     false,
     {},
     null,
+    null,
   ),
   (
     "events_frame",
@@ -326,6 +348,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
     null,
   ),
   (
@@ -341,6 +364,7 @@ const parityCases = <(
     false,
     {},
     null,
+    null,
   ),
   (
     "events_listbox",
@@ -354,6 +378,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
     null,
   ),
   (
@@ -369,6 +394,7 @@ const parityCases = <(
     false,
     {},
     null,
+    null,
   ),
   (
     "events_menu",
@@ -382,6 +408,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
     null,
   ),
   (
@@ -397,6 +424,7 @@ const parityCases = <(
     false,
     {},
     null,
+    null,
   ),
   (
     "events_mouse",
@@ -410,6 +438,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
     null,
   ),
   (
@@ -425,6 +454,7 @@ const parityCases = <(
     false,
     {},
     null,
+    null,
   ),
   (
     "events_option",
@@ -438,6 +468,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
     null,
   ),
   (
@@ -453,6 +484,7 @@ const parityCases = <(
     false,
     {},
     null,
+    null,
   ),
   (
     "events_reentry",
@@ -466,6 +498,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
     null,
   ),
   (
@@ -481,6 +514,7 @@ const parityCases = <(
     false,
     {},
     null,
+    null,
   ),
   (
     "events_shared",
@@ -495,6 +529,7 @@ const parityCases = <(
     false,
     {},
     null,
+    null,
   ),
   (
     "events_static",
@@ -508,6 +543,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
     null,
   ),
   (
@@ -525,6 +561,7 @@ const parityCases = <(
       "memo.txt": "77u/7JWI64WV7ZWY7IS47JqUCuuRmOynuCDspIQK",
       "old.csv": "wMy4pyzBobz2DQqx6MfPs6osOTANCg==",
     },
+    null,
     null,
   ),
   (
@@ -546,6 +583,7 @@ const parityCases = <(
     false,
     {},
     null,
+    null,
   ),
   (
     "forms_dialogresult",
@@ -565,6 +603,7 @@ const parityCases = <(
     ],
     false,
     {},
+    null,
     null,
   ),
   (
@@ -586,6 +625,7 @@ const parityCases = <(
     false,
     {},
     null,
+    null,
   ),
   (
     "forms_last",
@@ -606,6 +646,7 @@ const parityCases = <(
     false,
     {},
     null,
+    null,
   ),
   (
     "forms_show",
@@ -625,6 +666,7 @@ const parityCases = <(
     ],
     false,
     {},
+    null,
     null,
   ),
   (
@@ -651,6 +693,7 @@ const parityCases = <(
     false,
     {},
     null,
+    null,
   ),
   (
     "grid_scores",
@@ -668,6 +711,7 @@ const parityCases = <(
           "wMy4pyy53SzBobz2DQqx6MfPs6osMbndLDkwDQq52rXRLDK53Sw4NQ0KwMy8wiwxud0sNzANCg==",
     },
     null,
+    null,
   ),
   (
     "handles_shared",
@@ -681,6 +725,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
     null,
   ),
   (
@@ -696,6 +741,7 @@ const parityCases = <(
     false,
     {},
     "GET https://api.example.com/hello\n200 text/plain; charset=utf-8\n안녕하세요\n\nGET https://api.example.com/scores\n200 application/json\nX-Count: 2\n[{\"name\":\"김하나\",\"points\":10,\"ok\":true},\n {\"name\":\"Lee\",\"points\":7.0,\"ok\":false}]\n\nPOST https://api.example.com/echo\n201 text/plain\nechoed\n\nPOST https://api.example.com/scores\n200 application/json\n{\"ok\": true, \"id\": 3}\n\nGET https://api.example.com/missing\n404 text/html\n<html>Not here</html>\n\nGET https://api.example.com/down\nfails connection refused\n",
+    null,
   ),
   (
     "integer_overflow",
@@ -709,6 +755,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
     null,
   ),
   (
@@ -724,6 +771,7 @@ const parityCases = <(
     false,
     {},
     null,
+    null,
   ),
   (
     "keys_move",
@@ -737,6 +785,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
     null,
   ),
   (
@@ -752,6 +801,7 @@ const parityCases = <(
     false,
     {},
     null,
+    null,
   ),
   (
     "lists_arrays",
@@ -766,6 +816,7 @@ const parityCases = <(
     false,
     {},
     null,
+    null,
   ),
   (
     "loops",
@@ -779,6 +830,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
     null,
   ),
   (
@@ -800,6 +852,7 @@ const parityCases = <(
     false,
     {},
     null,
+    null,
   ),
   (
     "modules_main",
@@ -820,6 +873,7 @@ const parityCases = <(
     true,
     {},
     null,
+    null,
   ),
   (
     "modules_main_ends",
@@ -839,6 +893,7 @@ const parityCases = <(
     ],
     true,
     {},
+    null,
     null,
   ),
   (
@@ -865,6 +920,7 @@ const parityCases = <(
     false,
     {},
     null,
+    null,
   ),
   (
     "overflow_caught",
@@ -878,6 +934,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
     null,
   ),
   (
@@ -893,6 +950,7 @@ const parityCases = <(
     false,
     {},
     null,
+    null,
   ),
   (
     "quiz_best",
@@ -906,6 +964,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
     null,
   ),
   (
@@ -921,6 +980,7 @@ const parityCases = <(
     false,
     {},
     null,
+    null,
   ),
   (
     "random_seeded",
@@ -934,6 +994,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
     null,
   ),
   (
@@ -949,6 +1010,7 @@ const parityCases = <(
     false,
     {},
     null,
+    null,
   ),
   (
     "rounding",
@@ -962,6 +1024,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
     null,
   ),
   (
@@ -982,6 +1045,7 @@ const parityCases = <(
           "wMy4pyy53SzBobz2DQqx6MfPs6osMbndLDkwDQq52rXRLDK53Sw4NQ0KwMy8wiwxud0sNzANCg==",
     },
     null,
+    null,
   ),
   (
     "settings",
@@ -995,6 +1059,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
     null,
   ),
   (
@@ -1010,6 +1075,7 @@ const parityCases = <(
     false,
     {},
     null,
+    null,
   ),
   (
     "static_and_scope",
@@ -1023,6 +1089,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
     null,
   ),
   (
@@ -1038,6 +1105,7 @@ const parityCases = <(
     false,
     {},
     null,
+    null,
   ),
   (
     "structure_basics",
@@ -1051,6 +1119,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
     null,
   ),
   (
@@ -1066,6 +1135,7 @@ const parityCases = <(
     false,
     {},
     null,
+    null,
   ),
   (
     "structure_copy",
@@ -1079,6 +1149,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
     null,
   ),
   (
@@ -1105,6 +1176,7 @@ const parityCases = <(
     false,
     {},
     null,
+    null,
   ),
   (
     "structure_with",
@@ -1118,6 +1190,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
     null,
   ),
   (
@@ -1133,6 +1206,7 @@ const parityCases = <(
     false,
     {},
     null,
+    null,
   ),
   (
     "timer_clock",
@@ -1146,6 +1220,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
     null,
   ),
   (
@@ -1161,6 +1236,7 @@ const parityCases = <(
     false,
     {},
     null,
+    null,
   ),
   (
     "timer_turns",
@@ -1174,6 +1250,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
     null,
   ),
   (
@@ -1189,6 +1266,7 @@ const parityCases = <(
     false,
     {},
     null,
+    null,
   ),
   (
     "weather_example",
@@ -1203,6 +1281,22 @@ const parityCases = <(
     false,
     {},
     "GET https://api.open-meteo.com/v1/forecast?latitude=37.57&longitude=126.98&current=temperature_2m,wind_speed_10m,weather_code&timezone=Asia%2FSeoul\n200 application/json; charset=utf-8\n{\"latitude\":37.5625,\"longitude\":127.0,\"current_units\":{\"time\":\"iso8601\",\"interval\":\"seconds\",\"temperature_2m\":\"°C\",\"wind_speed_10m\":\"km/h\",\"weather_code\":\"wmo code\"},\"current\":{\"time\":\"2026-11-02T10:15\",\"interval\":900,\"temperature_2m\":12.3,\"wind_speed_10m\":5.4,\"weather_code\":3}}\n\nGET https://api.open-meteo.com/v1/forecast?latitude=35.18&longitude=129.08&current=temperature_2m,wind_speed_10m,weather_code&timezone=Asia%2FSeoul\n200 application/json; charset=utf-8\n{\"current_units\":{\"temperature_2m\":\"°C\",\"wind_speed_10m\":\"km/h\"},\"current\":{\"time\":\"2026-11-02T10:15\",\"temperature_2m\":15,\"wind_speed_10m\":12.0,\"weather_code\":61}}\n\nGET https://api.open-meteo.com/v1/forecast?latitude=33.50&longitude=126.53&current=temperature_2m,wind_speed_10m,weather_code&timezone=Asia%2FSeoul\nfails connection refused\n",
+    null,
+  ),
+  (
+    "websocket_basics",
+    "' WebSocket (D136): Connect waits until the connection is open, Send,\n' Close, and the events Message (e.Text, e.Json), Closed (e.Reason) and\n' Error (e.Message), each run in turn: the two messages that answer\n' \"hello\" come together, and the second waits for the first's handler. The errors: a connection that cannot be opened\n' (R047, caught by Try), Send while not connected (R049).\nSub btnConnect_Click()\n    Debug.Print(wsChat.State & \" \" & wsChat.Tag)\n    wsChat.Connect(\"ws://localhost:8080/chat\")\n    Debug.Print(wsChat.State & \" \" & wsChat.Url)\nEnd Sub\n\nSub btnSend_Click()\n    wsChat.Send(\"hello\")\n    Debug.Print(\"sent\")\nEnd Sub\n\nSub wsChat_Message(e As MessageEventArgs)\n    If e.Text.StartsWith(\"{\") Then\n        Dim j As Json = e.Json\n        Debug.Print(\"news: \" & j(\"text\").AsString)\n    Else\n        Debug.Print(\"message: \" & e.Text)\n    End If\nEnd Sub\n\nSub wsChat_Closed(e As CloseEventArgs)\n    Debug.Print(\"closed: \" & e.Reason & \" \" & wsChat.State)\nEnd Sub\n\nSub wsChat_Error(e As ErrorEventArgs)\n    Debug.Print(\"error: \" & e.Message)\nEnd Sub\n\nSub btnClose_Click()\n    wsChat.Close()\n    Debug.Print(wsChat.State)\nEnd Sub\n\nSub btnErrors_Click()\n    Try\n        wsChat.Connect(\"ws://localhost:8080/down\")\n    Catch ex As Exception\n        Debug.Print(ex.Message)\n    End Try\n    Debug.Print(wsChat.State)\n    wsChat.Send(\"nobody\")\nEnd Sub\n",
+    [],
+    "> btnConnect.Click\nDebug.Print: Closed chat\nWebSocket: connect ws://localhost:8080/chat\nDebug.Print: Open ws://localhost:8080/chat\nDebug.Print: message: welcome\n> btnSend.Click\nWebSocket: send hello\nDebug.Print: sent\nDebug.Print: message: hi, Kim\nDebug.Print: news: rain\n> Server Send late news\nDebug.Print: message: late news\n> Server Error slow network\nDebug.Print: error: slow network\n> Server Close bye\nDebug.Print: closed: bye Closed\n> btnConnect.Click\nDebug.Print: Closed chat\nWebSocket: connect ws://localhost:8080/chat\nDebug.Print: Open ws://localhost:8080/chat\nDebug.Print: message: welcome\n> btnClose.Click\nWebSocket: close\nDebug.Print: Closed\n> btnErrors.Click\nWebSocket: connect ws://localhost:8080/down\nDebug.Print: No connection to ws://localhost:8080/down (connection refused). Check the address and the network; a page served over https needs wss://.\nDebug.Print: Closed\nError R049 @ 46\n",
+    "formatVersion: 1\nproperties: { Caption: WebSocket, Width: 440, Height: 120 }\ncontrols:\n  - { name: btnConnect, type: Button, properties: { Caption: Connect, Left: 16, Top: 16 } }\n  - { name: btnSend, type: Button, properties: { Caption: Send, Left: 120, Top: 16 } }\n  - { name: btnClose, type: Button, properties: { Caption: Close, Left: 224, Top: 16 } }\n  - { name: btnErrors, type: Button, properties: { Caption: Errors, Left: 328, Top: 16 } }\n  - { name: wsChat, type: WebSocket, properties: { Tag: chat } }\n",
+    "btnConnect.Click\nbtnSend.Click\nServer Send late news\nServer Error slow network\nServer Close bye\nbtnConnect.Click\nbtnClose.Click\nbtnErrors.Click\n",
+    null,
+    [],
+    [],
+    false,
+    {},
+    null,
+    "CONNECT ws://localhost:8080/chat\n< welcome\nON hello\n< hi, Kim\n< {\"kind\":\"news\",\"text\":\"rain\"}\n\nCONNECT ws://localhost:8080/down\nFAILS connection refused\n",
   ),
   (
     "with_block",
@@ -1216,6 +1310,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
     null,
   ),
 ];

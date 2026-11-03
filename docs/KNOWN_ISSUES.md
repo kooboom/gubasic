@@ -18,6 +18,12 @@ Problems we know about and have **deliberately** left unfixed for now. Each entr
 - **Why deferred:** it is not a correctness problem, and programs of the size beginners write do not notice it.
 - **Revisit:** when someone finds the playground or the IDE noticeably slow in practice; step 2-2 measures it in the player and sets the criteria for the transpiler (STAGE2_PLAN §7, D79).
 
+## `WebSocket` sends text only, with no headers of its own
+
+- **What:** `WebSocket` (D136) sends and receives text messages; a binary message from a server is not passed on, and the connection carries no headers the program chooses.
+- **Why deferred:** a picture or a file can go as Base64 text; browsers do not let a page set headers on a WebSocket connection, so a token goes in the address's query or in the first message, which is what the standard allows. TCP and UDP sockets do not exist on the web and wait for the transpiler (D79).
+- **Revisit:** when a program needs binary messages in practice, or with the component channel for packages a project chooses.
+
 ## The playground does not run forms
 
 - **What:** forms run in the IDE's run window (`apps/ide`) and in the parity tests, but the playground runs only programs without a form: there, controls and `Me` are still reported (A003).

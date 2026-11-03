@@ -8,6 +8,7 @@ import 'bench/probe.dart';
 import 'database_component.dart';
 import 'form_window.dart';
 import 'http_component.dart';
+import 'web_socket_component.dart';
 
 /// Connects the interpreter to gubasic_runtime (docs/DESIGN.md §2.3): each
 /// form's properties live in a model ([modelOf]), which the run window
@@ -25,10 +26,12 @@ class RunHost implements FormHost, FileHost, ComponentHost {
     this._pictures,
     GbFiles? files,
     GbHttp? http,
+    GbWebSocket? webSocket,
     GbSqlite? sqlite,
     this.pdfFont,
   }) : _fileSystem = files,
        _httpSender = http,
+       _webSockets = webSocket,
        _sql = sqlite,
        settingsKey = settingsKey ?? project,
        dialogs = GbDialogs(strings: strings),
@@ -40,8 +43,10 @@ class RunHost implements FormHost, FileHost, ComponentHost {
     }
   }
 
-  /// Each form's Timers (D100), by lower-case form and Timer name: the
-  /// Timer's name and its properties. They have no widget.
+  /// Each form's Timers (D100) and other controls in its tray (a
+  /// WebSocket, D136), by lower-case form and control name: the control's
+  /// name and its properties. They have no widget; only a Timer has a
+  /// clock (it alone has Enabled).
   final _timers = <String, Map<String, (String, Map<String, Object>)>>{};
 
   /// The clock of each Timer that is Enabled while the program runs, by
@@ -400,22 +405,33 @@ class RunHost implements FormHost, FileHost, ComponentHost {
   /// pointer as waiting while there is one (D124 A).
   final busyRequests = ValueNotifier<int>(0);
 
+  /// How the program's WebSockets connect (D136): the runtime's, made when
+  /// first used, unless a test gave one.
+  GbWebSocket? _webSockets;
+
   /// The program's SQLite (D126): the runtime's, made when first used.
   GbSqlite? _sql;
 
-  /// The built-in objects of the component channel (D125, D126): `Http`
-  /// and `Database`, whose files are kept under [settingsKey].
+  /// The components of the component channel (D125, D126, D136): the
+  /// built-in objects `Http` and `Database`, whose files are kept under
+  /// [settingsKey], and each `WebSocket` control in a form's tray.
   @override
-  ComponentInstance? createComponent(String component) => switch (component) {
-    'Http' => PlayerHttp(_httpSender ??= GbHttp(), busyRequests),
-    'Database' => _database = PlayerDatabase(
-      _sql ??= GbSqlite(),
-      settingsKey,
-      busyRequests,
-      files: _disk,
-    ),
-    _ => null,
-  };
+  ComponentInstance? createComponent(String component, {String name = ''}) =>
+      switch (component) {
+        'Http' => PlayerHttp(_httpSender ??= GbHttp(), busyRequests),
+        'WebSocket' => PlayerWebSocket(
+          name,
+          _webSockets ??= GbWebSocket(),
+          busyRequests,
+        ),
+        'Database' => _database = PlayerDatabase(
+          _sql ??= GbSqlite(),
+          settingsKey,
+          busyRequests,
+          files: _disk,
+        ),
+        _ => null,
+      };
 
   /// The program's Database, closed with the program.
   PlayerDatabase? _database;

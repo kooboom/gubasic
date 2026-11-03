@@ -44,11 +44,12 @@ void main(List<String> args) {
     ..writeln('/// (name, null, code) NAME.MODULE.gbas (D102); the last is')
     ..writeln('/// whether NAME.startup says it starts with Sub Main; then the')
     ..writeln('/// files of NAME.files/ the program reads (D113), name to')
-    ..writeln('/// base64; last, what servers answer it, NAME.http (D125).')
+    ..writeln('/// base64; then what servers answer it, NAME.http (D125);')
+    ..writeln('/// last, what its WebSocket servers do, NAME.ws (D136).')
     ..writeln('const parityCases = <(String, String, List<String>, String, '
         'String?, String?, String?, List<String>, '
         'List<(String, String?, String)>, bool, Map<String, String>, '
-        'String?)>[');
+        'String?, String?)>[');
   for (final p in programs) {
     final name = p.uri.pathSegments.last.replaceFirst('.gbas', '');
     final input = read(p.path.replaceFirst('.gbas', '.in'));
@@ -113,6 +114,7 @@ void main(List<String> args) {
     out
       ..writeln('    },')
       ..writeln('    ${jsonEncode(read('$base.http'))},')
+      ..writeln('    ${jsonEncode(read('$base.ws'))},')
       ..writeln('  ),');
   }
   out.writeln('];');

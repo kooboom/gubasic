@@ -24,6 +24,8 @@ void main() {
       // The loop may mean to change the copy only (D131).
       DiagnosticCode.forEachCopy,
       DiagnosticCode.secretHeader,
+      // ws:// may be right on one's own network (D136).
+      DiagnosticCode.plainWebSocket,
     };
     for (final code in DiagnosticCode.values) {
       expect(

@@ -102,8 +102,8 @@ IDE 안에서 완결되는 비주얼 베이직의 핵심 경험입니다.
 
 계획서: [plans/PLAN_V06.ko.md](plans/PLAN_V06.ko.md) (2026-11-03. 답은 D136. 공개 시험 서버는 두지 않음, 계획서 1절)
 
-- [ ] 컴포넌트 통로의 이벤트: 컴포넌트가 이벤트를 알리면 인터프리터가 그 핸들러를 차례로 실행(D136)
-- [ ] `WebSocket`: `Connect`(열릴 때까지 기다림), `Send`, `Close`, 그리고 `Message`, `Closed`, `Error`. 어떤 표준 WebSocket 서버에도 연결(D136)
+- [x] 컴포넌트 통로의 이벤트: 컴포넌트가 이벤트를 알리면 인터프리터가 그 핸들러를 차례로 실행(D136)
+- [x] `WebSocket`: `Connect`(열릴 때까지 기다림), `Send`, `Close`, 그리고 `Message`, `Closed`, `Error`. 어떤 표준 WebSocket 서버에도 연결(D136)
 - [ ] `Room`: `Create`와 `Join`(들어갈 때까지 기다림), `Send`, `SendTo`, `Leave`, `Lock`, 그리고 `Joined`, `Left`, `Message`, `Closed`, `Error`. 메시지 형식을 공개한 중계 서버 위에서(`docs/ROOM_PROTOCOL.ko.md`)
 - [ ] 저장소에 둔 중계 서버(`packages/gubasic_relay`). 사용자의 자기 서버를 위한 안내, 설치 스크립트, Apache 설정 예(D123). 공개 시험 서버는 두지 않음(D136)
 - [ ] IDE의 로컬 중계 서버: `Room.Server`가 비면 저절로 켜짐, 기본이 꺼진 "같은 네트워크의 기기 허용"과 경고, QR 코드가 있는 "웹으로 미리 보기"(D136)

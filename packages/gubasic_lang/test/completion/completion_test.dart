@@ -199,10 +199,12 @@ void main() {
         'Boolean',
         'Button',
         'CheckBox',
+        'CloseEventArgs',
         'ComboBox',
         'Control',
         'Date',
         'Double',
+        'ErrorEventArgs',
         'Exception',
         'Form',
         'Frame',
@@ -216,6 +218,7 @@ void main() {
         'List',
         'ListBox',
         'Menu',
+        'MessageEventArgs',
         'MouseEventArgs',
         'Object',
         'OpenFileDialog',
@@ -226,6 +229,7 @@ void main() {
         'Table',
         'TextBox',
         'Timer',
+        'WebSocket',
       ]);
       expect(_names('Sub W()\n    Dim n As New Li|\nEnd Sub\n'),
           ['List', 'ListBox']);

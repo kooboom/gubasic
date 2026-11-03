@@ -492,6 +492,11 @@ enum DiagnosticCode {
   /// header's name.
   secretHeader('A076', DiagnosticSeverity.warning),
 
+  /// `ws://` to an address that is not this computer's nor a private
+  /// network's (D136): not encrypted, and a page served over https cannot
+  /// open it. Args: the address.
+  plainWebSocket('A077', DiagnosticSeverity.warning),
+
   // Form and project files (.form.yaml, .gbproj)
 
   /// The file is not in the expected layout (YAML syntax).
@@ -734,7 +739,19 @@ enum DiagnosticCode {
 
   /// A header given to Http.Send that is not written `Name: value`
   /// (D135). Args: the text.
-  httpHeaderForm('R046');
+  httpHeaderForm('R046'),
+
+  /// A WebSocket that could not be opened (D136). Args: the address, the
+  /// detail.
+  webSocketFailed('R047'),
+
+  /// A room that could not be entered (D136): no such room, a full or
+  /// locked one, no relay server. Args: why.
+  roomNotEntered('R048'),
+
+  /// Send while a WebSocket or a Room is not connected (D136). Args: the
+  /// control's name.
+  notConnected('R049');
 
   const DiagnosticCode(this.code, [this.severity = DiagnosticSeverity.error]);
 

@@ -191,8 +191,9 @@ abstract interface class FileHost {
 /// the program with R038.
 abstract interface class ComponentHost {
   /// A new instance of the component named [component] (`Http`), or null
-  /// where this host does not have it.
-  ComponentInstance? createComponent(String component);
+  /// where this host does not have it. [name] is the control's, for a
+  /// control in the tray (`wsChat`, D136); "" for a built-in object.
+  ComponentInstance? createComponent(String component, {String name = ''});
 }
 
 /// One instance of a component written in Dart (docs/COMPONENT_CHANNEL.md):
@@ -214,6 +215,24 @@ abstract interface class ComponentInstance {
 
   /// Assigns to the settable method [name]: `Http.Header("Accept") = …`.
   void assign(String name, List<Object?> args, Object? value);
+}
+
+/// How a component reports an event (D136): [name] as its
+/// component.yaml names it (`Message`), [args] GuBASIC's values.
+typedef ComponentEventSink = void Function(String name, List<Object?> args);
+
+/// An instance that has events, or holds something open such as a
+/// connection (D136): a control in the tray through the component channel
+/// (`WebSocket`). The interpreter runs each event's handler in turn, one at
+/// a time and never re-entering (hard rules 4 and 5), and lets the instance
+/// go when its form closes or the program ends.
+abstract interface class ComponentWithEvents implements ComponentInstance {
+  /// Where the instance reports its events; null: nowhere.
+  abstract ComponentEventSink? onEvent;
+
+  /// The program ended or the control's form closed: close what is open
+  /// and report nothing more.
+  void dispose();
 }
 
 /// Why a component could not do what it was asked (D125): the program

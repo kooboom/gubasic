@@ -58,6 +58,7 @@ void main() {
         startsWithMain,
         files,
         httpScript,
+        wsScript,
       ) in parityCases) {
     final disk = {
       for (final MapEntry(:key, :value) in files.entries)
@@ -65,6 +66,9 @@ void main() {
     };
     final http =
         httpScript == null ? const <HttpStub>[] : parseHttpScript(httpScript);
+    final webSockets = wsScript == null
+        ? const <WebSocketStub>[]
+        : parseWebSocketScript(wsScript);
     if (others.isNotEmpty) {
       // A project with several forms (D88), or modules (D102).
       test(name, () async {
@@ -92,7 +96,8 @@ void main() {
             ],
             startsWithMain: startsWithMain,
             disk: disk,
-            http: http);
+            http: http,
+            webSockets: webSockets);
         expect('${lines.join('\n')}\n', expected);
       });
       continue;
@@ -101,7 +106,11 @@ void main() {
       test(name, () async {
         final lines = await runEventScript(source,
             readFormFile(form, name: 'Form1', pictures: pictures).form, events!,
-            settings: settings, pictures: pictures, disk: disk, http: http);
+            settings: settings,
+            pictures: pictures,
+            disk: disk,
+            http: http,
+            webSockets: webSockets);
         expect('${lines.join('\n')}\n', expected);
       });
       continue;

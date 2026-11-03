@@ -20,6 +20,12 @@ sealed class GbType {
   /// and Alt (docs/DESIGN.md D101).
   static const keyEventArgs = PrimitiveType._('KeyEventArgs');
   static const mouseEventArgs = PrimitiveType._('MouseEventArgs');
+
+  /// What a WebSocket's Message, Closed and Error are told (D136): the
+  /// message's text, why it closed, what went wrong.
+  static const messageEventArgs = PrimitiveType._('MessageEventArgs');
+  static const closeEventArgs = PrimitiveType._('CloseEventArgs');
+  static const errorEventArgs = PrimitiveType._('ErrorEventArgs');
   static const table = PrimitiveType._('Table');
 
   /// A PDF file being put together (docs/DESIGN.md D117).
@@ -219,6 +225,9 @@ const Map<String, GbType> namedTypes = {
   'exception': GbType.exception,
   'keyeventargs': GbType.keyEventArgs,
   'mouseeventargs': GbType.mouseEventArgs,
+  'messageeventargs': GbType.messageEventArgs,
+  'closeeventargs': GbType.closeEventArgs,
+  'erroreventargs': GbType.errorEventArgs,
   'table': GbType.table,
   'pdfdocument': GbType.pdfDocument,
   'json': GbType.json,

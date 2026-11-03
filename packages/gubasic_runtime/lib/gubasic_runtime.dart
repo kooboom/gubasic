@@ -22,3 +22,4 @@ export 'src/mouse.dart';
 export 'src/option_button.dart';
 export 'src/settings.dart';
 export 'src/text_box.dart';
+export 'src/web_socket.dart';

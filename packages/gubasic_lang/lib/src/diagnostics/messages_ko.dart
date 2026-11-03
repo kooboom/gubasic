@@ -196,6 +196,12 @@ const Map<DiagnosticCode, String> koreanMessages = {
       '{0} 파일은 SQLite 데이터베이스 파일이 아닙니다. Database.Import에는 Database.Export가 쓴 파일을 주세요.',
   DiagnosticCode.httpHeaderForm:
       'Http.Send의 헤더는 "이름: 값" 모양의 글로 씁니다. 받은 글: {0}. 이름, 쌍점(:), 값을 한 글에 적어 주세요.',
+  DiagnosticCode.webSocketFailed:
+      '{0} 주소에 연결하지 못했습니다({1}). 주소와 네트워크를 확인해 주세요. https로 열린 페이지는 wss://가 필요합니다.',
+  DiagnosticCode.roomNotEntered:
+      '방에 들어가지 못했습니다: {0}. 코드와, Room.Server가 중계 서버를 가리키는지 확인해 주세요.',
+  DiagnosticCode.notConnected:
+      '{0} 컨트롤이 연결되어 있지 않아 Send를 보낼 곳이 없습니다. 먼저 Connect나 Join을 하거나 Closed를 처리해 주세요.',
   DiagnosticCode.vb6Type:
       '`Type … End Type` 블록은 Visual Basic 6의 표기입니다. `Structure {0} … End Structure` 형태로 씁니다. 필드는 그대로 씁니다.',
   DiagnosticCode.structureFieldValue:
@@ -245,6 +251,8 @@ const Map<DiagnosticCode, String> koreanMessages = {
       '점으로만 시작하는 멤버는 With 블록 안에서만 씁니다. 점 앞에 이름을 쓰거나, 그 줄을 With … End With 안에 둡니다.',
   DiagnosticCode.withNotValue:
       'With에는 컨트롤, 변수, 칸처럼 값을 줍니다. {0} 항목은 값이 아닙니다. 멤버를 이름과 함께 씁니다.',
+  DiagnosticCode.plainWebSocket:
+      '{0} 주소로의 ws://는 암호화되지 않고, https로 열린 페이지에서는 열리지 않습니다. localhost나 같은 네트워크가 아니면 wss://를 써 주세요.',
   DiagnosticCode.secretHeader:
       'Http.Header에 넣은 {0} 헤더는 그때부터 모든 요청에 붙어, 프로그램이 부르는 모든 서버로 갑니다. 비밀은 Http.Send(method, url, body, "{0}: …")처럼 그 요청에만 붙여 주세요.',
   DiagnosticCode.sqlJoined:

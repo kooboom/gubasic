@@ -42,6 +42,7 @@ export 'src/text/json.dart';
 export 'src/text/text_codec.dart';
 export 'src/components/database_component.dart';
 export 'src/components/http_component.dart';
+export 'src/components/web_socket_component.dart';
 export 'src/interpreter/interpreter.dart';
 export 'src/interpreter/rng.dart';
 export 'src/interpreter/run_result.dart';

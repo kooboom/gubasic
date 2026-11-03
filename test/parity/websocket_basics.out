@@ -1,0 +1,29 @@
+> btnConnect.Click
+Debug.Print: Closed chat
+WebSocket: connect ws://localhost:8080/chat
+Debug.Print: Open ws://localhost:8080/chat
+Debug.Print: message: welcome
+> btnSend.Click
+WebSocket: send hello
+Debug.Print: sent
+Debug.Print: message: hi, Kim
+Debug.Print: news: rain
+> Server Send late news
+Debug.Print: message: late news
+> Server Error slow network
+Debug.Print: error: slow network
+> Server Close bye
+Debug.Print: closed: bye Closed
+> btnConnect.Click
+Debug.Print: Closed chat
+WebSocket: connect ws://localhost:8080/chat
+Debug.Print: Open ws://localhost:8080/chat
+Debug.Print: message: welcome
+> btnClose.Click
+WebSocket: close
+Debug.Print: Closed
+> btnErrors.Click
+WebSocket: connect ws://localhost:8080/down
+Debug.Print: No connection to ws://localhost:8080/down (connection refused). Check the address and the network; a page served over https needs wss://.
+Debug.Print: Closed
+Error R049 @ 46

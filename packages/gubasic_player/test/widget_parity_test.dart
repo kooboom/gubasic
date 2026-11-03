@@ -101,6 +101,16 @@ void main() {
             ? parseHttpScript(httpFile.readAsStringSync())
             : const [],
       );
+      // The WebSocket servers it talks to (D136): NAME.ws.
+      final wsFile = File('$base.ws');
+      final webSockets = _FakeWebSockets(
+        ScriptedWebSockets(
+          wsFile.existsSync()
+              ? parseWebSocketScript(wsFile.readAsStringSync())
+              : const [],
+          [],
+        ),
+      );
       // The files the program reads (D113): NAME.files/.
       final filesDir = Directory('$base.files');
       final files = _FakeFiles({
@@ -117,9 +127,11 @@ void main() {
         settings.existsSync() ? settings.readAsStringSync().trim() : null,
         files,
         http,
+        webSockets,
         GbSqlite(root: dbRoot.path),
       );
       http.transcript = host.transcript;
+      webSockets.sockets.transcript = host.transcript;
       final session = RunSession(
         StartupForm(
           startup.file,
@@ -226,6 +238,47 @@ class _FakeHttp implements GbHttp {
   }
 }
 
+/// WebSocket servers that do what a test's NAME.ws says (D136), behind
+/// the run host's own WebSocket control: the same [ScriptedWebSockets] as
+/// [ScriptedHost]'s, so that the transcripts match.
+class _FakeWebSockets implements GbWebSocket {
+  _FakeWebSockets(this.sockets);
+
+  final ScriptedWebSockets sockets;
+
+  @override
+  Future<GbSocket> connect(
+    String url, {
+    required void Function(String text) onMessage,
+    required void Function(String reason) onClosed,
+    required void Function(String message) onError,
+    Duration timeout = const Duration(seconds: 30),
+  }) async {
+    try {
+      return _FakeSocket(
+        await sockets.open(
+          url,
+          WebSocketListener(onMessage, onClosed, onError),
+        ),
+      );
+    } on WebSocketFailure catch (f) {
+      throw GbWebSocketError(f.detail);
+    }
+  }
+}
+
+class _FakeSocket implements GbSocket {
+  _FakeSocket(this.link);
+
+  final WebSocketLink link;
+
+  @override
+  void send(String text) => link.send(text);
+
+  @override
+  void close() => link.close();
+}
+
 /// Records what the program shows, as [ScriptedHost] does.
 class _RecordingHost extends RunHost {
   _RecordingHost(
@@ -234,6 +287,7 @@ class _RecordingHost extends RunHost {
     String? settings,
     this.files,
     _FakeHttp http,
+    this.webSockets,
     GbSqlite sqlite,
   ) : _several = others.isNotEmpty,
       super(
@@ -241,6 +295,7 @@ class _RecordingHost extends RunHost {
         settings: GbMemorySettings()..values.addAll({'': ?settings}),
         files: files,
         http: http,
+        webSocket: webSockets,
         sqlite: sqlite,
         pdfFont: () async =>
             File('../../apps/ide/fonts/nanumgothic/NanumGothic-Regular.ttf')
@@ -249,6 +304,9 @@ class _RecordingHost extends RunHost {
 
   /// The files, and the open and save dialogs, the test answers (D113).
   final _FakeFiles files;
+
+  /// The WebSocket servers (D136).
+  final _FakeWebSockets webSockets;
 
   @override
   Future<String?> chooseOpenFile(
@@ -803,6 +861,13 @@ class _WidgetDriver implements ScriptDriver {
     await tester.drag(corner, Offset(dx.toDouble(), dy.toDouble()));
     await tester.pump();
     return host.lastOutcome ?? EventOutcome.noHandler;
+  }
+
+  @override
+  Future<bool> server(ServerAction action) async {
+    final done = host.webSockets.sockets.serverDoes(action);
+    await tester.pump();
+    return done;
   }
 
   @override

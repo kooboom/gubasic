@@ -1099,6 +1099,43 @@ lblCount.Caption = Database.Scalar("SELECT COUNT(*) FROM scores") & " scores"
 
 **Where it runs.** In the IDE and in exported apps, on every platform GuBASIC runs on; the playground has no `Database` (R038). The example **Notes** keeps notes in it. It is the second component through the component channel ([COMPONENT_CHANNEL.md](COMPONENT_CHANNEL.md)): `components/Database/component.yaml` describes it, and SQLite comes with package:sqlite3, the same build on every platform, so that a program's results and messages are the same everywhere. Parity programs that use it run on the VM and in the run window, and in a browser through Playwright on the built web player (`tool/web_check`).
 
+### 11.11 WebSocket
+
+(DESIGN.md D122, D136.) **`WebSocket`** talks to any standard WebSocket server ([RFC 6455](https://www.rfc-editor.org/rfc/rfc6455)) in text messages, today's version of what Visual Basic 6 programs did with the Winsock control ([Microsoft](https://learn.microsoft.com/en-us/previous-versions/visualstudio/visual-basic-6/aa228119(v=vs.60))). Like a `Timer` it is not seen on the form: the designer keeps it in the tray under the form, and it is not made with `New` (A052).
+
+| Member | What it does |
+|---|---|
+| `Connect(url)` | connects to `wss://…` or `ws://…` and waits until the connection is open |
+| `Send(text)` | sends one text message |
+| `Close()` | closes the connection; `Closed` does not run, the program knows it did |
+| `State` | `"Closed"` or `"Open"` (read-only) |
+| `Url` | the address last connected to (read-only); `Tag` as on every control |
+| event `Message(e As MessageEventArgs)` | a message came: `e.Text`, and `e.Json`, the text read as JSON (R039 when it is not) |
+| event `Closed(e As CloseEventArgs)` | the server closed the connection, or it was lost: `e.Reason` |
+| event `Error(e As ErrorEventArgs)` | a problem after the connection was open: `e.Message` |
+
+```vb
+Sub Form_Load()
+    wsChat.Connect("wss://relay.example.com/chat")
+End Sub
+
+Sub btnSend_Click()
+    wsChat.Send(txtMessage.Text)
+End Sub
+
+Sub wsChat_Message(e As MessageEventArgs)
+    lstChat.AddItem(e.Text)
+End Sub
+```
+
+**Waiting.** `Connect` waits where it is, as `Http` does (§11.9): the screen keeps drawing, Stop works and the pointer shows waiting; so the line after it can `Send`. There is no `Connected` event.
+
+**Events in turn.** Each message runs `Message` once, in the order the messages came, like a click: when the handler is running (or waits in `DoEvents`), the next message waits for it instead of being ignored, so that none is lost and the handler never runs inside itself (§8.1, D5). The events reach the form also while another form is in front, as a `Timer`'s do, and while a `MsgBox` is open they wait for it. When the form closes or the program ends, the connection is closed.
+
+**Errors.** A connection that cannot be opened is R047, with what the system said; `Send` while the connection is not open is R049. Both can be caught with `Try` (§9). `ws://` is not encrypted, and a page served over `https` cannot open it; the analyzer warns (A077) about a `ws://` address written in `Connect` unless it is `localhost` or a private network's ([RFC 1918](https://www.rfc-editor.org/rfc/rfc1918)). Only text: a picture can go as Base64 text, and binary messages are left for later ([KNOWN_ISSUES.md](KNOWN_ISSUES.md)). Winsock's names are pointed to GuBASIC's: `SendData` is `Send` (A036), `DataArrival` is `Message` (A051).
+
+**Where it runs.** In the IDE and in exported apps, on every platform GuBASIC runs on; the playground has no `WebSocket` (R038). It comes through the component channel ([COMPONENT_CHANNEL.md](COMPONENT_CHANNEL.md)) and is the first component with events. Parity programs talk to a scripted server, `NAME.ws`.
+
 ## 12. Open questions
 
 - File extension (`.gbas` is provisional).
@@ -1644,6 +1681,42 @@ Default event (made by a double-click): `Tick`
 
 - `timer` → `Tick`
 
+# WebSocket
+
+Talks to any standard WebSocket server (RFC 6455) in text messages (docs/DESIGN.md D122, D136), today's version of what Visual Basic 6 programs did with the Winsock control (https://learn.microsoft.com/en-us/previous-versions/visualstudio/visual-basic-6/aa228119(v=vs.60)). Like a Timer it is not seen on the form: the designer keeps it in the tray. Connect(url) waits where it is called until the connection is open, as Http does (D124 A): the screen keeps drawing and the pointer shows waiting; a connection that cannot be opened is R047. Send(text) sends one message; while the connection is not open it is R049. Close() closes it. Message runs for each message that comes, in order, one at a time (e.Text, and e.Json read from it); Closed when the server closes the connection or it is lost (e.Reason); Error for a problem after it was open (e.Message). Through the component channel (docs/COMPONENT_CHANNEL.md): the first component with events.
+
+Explained in [LANGUAGE.md §11](../../LANGUAGE.md).
+
+Not seen on the form: kept in the designer's tray.
+
+Default event (made by a double-click): `Message`
+
+## Properties
+
+| | Type | At first | Notes |
+|---|---|---|---|
+| `State` | String |  | read only |
+| `Url` | String |  | read only |
+| `Tag` | String | `""` |  |
+
+## Methods
+
+- `Connect(url As String)`
+- `Send(text As String)`
+- `Close()`
+
+## Events
+
+- `Message(e As MessageEventArgs)`
+- `Closed(e As CloseEventArgs)`
+- `Error(e As ErrorEventArgs)`
+
+## Names other versions of BASIC use
+
+- `senddata` → `Send`
+- `remotehost` → `Connect`
+- `dataarrival` → `Message`
+
 # Functions
 
 ## Text
@@ -1920,6 +1993,19 @@ Talks to web servers over HTTP (docs/DESIGN.md D124, D125), the way Visual Basic
 - `Button As Integer`
 - `X As Integer`
 - `Y As Integer`
+
+### MessageEventArgs
+
+- `Text As String`
+- `Json As Json`
+
+### CloseEventArgs
+
+- `Reason As String`
+
+### ErrorEventArgs
+
+- `Message As String`
 
 ### Table
 

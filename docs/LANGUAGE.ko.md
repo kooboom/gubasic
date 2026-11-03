@@ -1093,6 +1093,43 @@ lblCount.Caption = Database.Scalar("SELECT COUNT(*) FROM scores") & "개"
 
 **도는 곳.** IDE와 내보낸 앱에서, GuBASIC이 도는 모든 플랫폼에서 됩니다. 놀이터에는 `Database`가 없습니다(R038). 예제 **Notes**가 메모를 여기에 보관합니다. 컴포넌트 통로를 거치는 두 번째 컴포넌트입니다([COMPONENT_CHANNEL.ko.md](COMPONENT_CHANNEL.ko.md)). `components/Database/component.yaml`이 설명하고, SQLite는 package:sqlite3이 어느 플랫폼에나 같은 빌드로 가져오므로 프로그램의 결과와 메시지가 어디서나 같습니다. 이것을 쓰는 동일성 프로그램은 VM과 실행 창에서 돌고, 브라우저에서는 빌드한 웹 플레이어를 Playwright로 돌려 확인합니다(`tool/web_check`).
 
+### 11.11 WebSocket
+
+(DESIGN.md D122, D136.) **`WebSocket`** 은 어떤 표준 WebSocket 서버([RFC 6455](https://www.rfc-editor.org/rfc/rfc6455))와도 글 메시지를 주고받습니다. Visual Basic 6 프로그램이 Winsock 컨트롤([Microsoft](https://learn.microsoft.com/en-us/previous-versions/visualstudio/visual-basic-6/aa228119(v=vs.60)))로 하던 일의 오늘 판입니다. `Timer`처럼 폼에 보이지 않습니다. 디자이너는 폼 아래 트레이에 두고, `New`로 만들지 않습니다(A052).
+
+| 멤버 | 하는 일 |
+|---|---|
+| `Connect(url)` | `wss://…`나 `ws://…`에 연결하고, 연결이 열릴 때까지 기다림 |
+| `Send(text)` | 글 메시지 하나를 보냄 |
+| `Close()` | 연결을 닫음. 프로그램이 스스로 닫았으므로 `Closed`는 실행되지 않음 |
+| `State` | `"Closed"` 또는 `"Open"`(읽기만) |
+| `Url` | 마지막으로 연결한 주소(읽기만). `Tag`는 다른 컨트롤과 같음 |
+| 이벤트 `Message(e As MessageEventArgs)` | 메시지가 옴: `e.Text`, 그리고 그 글을 JSON으로 읽은 `e.Json`(JSON이 아니면 R039) |
+| 이벤트 `Closed(e As CloseEventArgs)` | 서버가 연결을 닫았거나 연결이 끊김: `e.Reason` |
+| 이벤트 `Error(e As ErrorEventArgs)` | 연결이 열린 뒤의 문제: `e.Message` |
+
+```vb
+Sub Form_Load()
+    wsChat.Connect("wss://relay.example.com/chat")
+End Sub
+
+Sub btnSend_Click()
+    wsChat.Send(txtMessage.Text)
+End Sub
+
+Sub wsChat_Message(e As MessageEventArgs)
+    lstChat.AddItem(e.Text)
+End Sub
+```
+
+**기다림.** `Connect`는 `Http`처럼(11.9절) 부른 자리에서 기다립니다. 화면은 그려지고, 중지가 되며, 포인터는 기다림을 보입니다. 그래서 다음 줄에서 바로 `Send`할 수 있습니다. `Connected` 이벤트는 없습니다.
+
+**이벤트는 차례로.** 메시지 하나마다 `Message`가 한 번, 온 순서대로 실행됩니다. 클릭과 같지만, 핸들러가 실행 중일 때(또는 `DoEvents`에서 기다릴 때) 온 다음 메시지는 무시되지 않고 그 핸들러가 끝나기를 기다립니다. 그래서 메시지를 잃지 않고, 핸들러가 자기 안에서 다시 실행되지도 않습니다(8.1절, D5). 이벤트는 `Timer`의 것처럼 다른 폼이 앞에 있어도 이 폼에 오고, `MsgBox`가 열려 있으면 닫힐 때까지 기다립니다. 폼이 닫히거나 프로그램이 끝나면 연결을 닫습니다.
+
+**오류.** 열지 못한 연결은 R047이고 시스템이 말한 이유가 붙습니다. 연결이 열려 있지 않을 때의 `Send`는 R049입니다. 둘 다 `Try`로 잡을 수 있습니다(9절). `ws://`는 암호화되지 않고 `https`로 열린 페이지에서는 열리지 않습니다. 분석기는 `Connect`에 적은 `ws://` 주소가 `localhost`나 사설 네트워크([RFC 1918](https://www.rfc-editor.org/rfc/rfc1918))의 것이 아니면 경고합니다(A077). 글만 보냅니다. 그림은 Base64 글로 보낼 수 있고, 이진 메시지는 나중으로 미룹니다([KNOWN_ISSUES.ko.md](KNOWN_ISSUES.ko.md)). Winsock의 이름은 GuBASIC의 이름으로 안내합니다: `SendData`는 `Send`(A036), `DataArrival`은 `Message`(A051).
+
+**어디서 도나.** IDE와 내보낸 앱에서, GuBASIC이 도는 모든 플랫폼에서 돕니다. 놀이터에는 `WebSocket`이 없습니다(R038). 컴포넌트 통로([COMPONENT_CHANNEL.ko.md](COMPONENT_CHANNEL.ko.md))로 들어오며, 이벤트가 있는 첫 컴포넌트입니다. 동일성 프로그램은 대본대로 답하는 서버 `NAME.ws`와 이야기합니다.
+
 ## 12. 열린 질문
 
 - 파일 확장자 (`.gbas`는 임시).

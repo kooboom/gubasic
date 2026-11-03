@@ -21,6 +21,7 @@
 - [SaveFileDialog](controls/SaveFileDialog.ko.md)
 - [TextBox](controls/TextBox.ko.md)
 - [Timer](controls/Timer.ko.md)
+- [WebSocket](controls/WebSocket.ko.md)
 
 ## 함수
 

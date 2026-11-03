@@ -1,6 +1,7 @@
 import '../ast/ast.dart';
 import '../ast/line_map.dart';
 import '../components/http_component.dart' show looksLikeSecretHeader;
+import '../components/web_socket_component.dart' show isPlainRemoteWebSocket;
 import '../diagnostics/diagnostic.dart';
 import '../forms/anchor.dart';
 import '../forms/component.dart';
@@ -2008,6 +2009,19 @@ class _Analyzer {
         const {'Contains', 'IndexOf', 'Remove'}.contains(callable.name)) {
       // Each compares Structures (D131).
       _reportAt(e, DiagnosticCode.structureCompared, [callable.name]);
+    }
+    if (target is MemberExpr &&
+        callable.name == 'Connect' &&
+        args.length == 1 &&
+        args.single is StringLiteral &&
+        _result.types[target.target] is ControlType &&
+        (_result.types[target.target] as ControlType).component.name ==
+            'WebSocket') {
+      // `ws://` beyond this computer and its network (D136).
+      final url = (args.single as StringLiteral).value;
+      if (isPlainRemoteWebSocket(url)) {
+        _reportAt(args.single, DiagnosticCode.plainWebSocket, [url]);
+      }
     }
     if (target is MemberExpr && args.isNotEmpty && _joinsValue(args.first)) {
       final object = _result.symbols[target.target];

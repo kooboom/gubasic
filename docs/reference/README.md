@@ -21,6 +21,7 @@ Every control, function, object and type, generated from what the analyzer knows
 - [SaveFileDialog](controls/SaveFileDialog.md)
 - [TextBox](controls/TextBox.md)
 - [Timer](controls/Timer.md)
+- [WebSocket](controls/WebSocket.md)
 
 ## Functions
 

@@ -6,6 +6,7 @@ import '../analyzer/compile.dart';
 import '../analyzer/forms.dart';
 import '../components/database_component.dart';
 import '../components/http_component.dart';
+import '../components/web_socket_component.dart';
 import '../forms/anchor.dart';
 import '../forms/form_file.dart';
 import '../forms/keys.dart';
@@ -15,6 +16,7 @@ import '../interpreter/run_result.dart';
 import '../interpreter/values.dart';
 import '../pdf/pdf_document.dart';
 import '../text/text_codec.dart';
+import 'web_socket_script.dart';
 
 /// One step of an event script (`NAME.events`, docs/DESIGN.md §9.1).
 sealed class ScriptStep {
@@ -153,6 +155,16 @@ class ResizeStep extends ScriptStep {
   final int height;
 }
 
+/// `Server Send {"kind":"news"}`, `Server Close bye`, `Server Error
+/// lost`: the test's WebSocket server sends a message on the connection
+/// opened last, closes it, or reports a problem (D136).
+class ServerStep extends ScriptStep {
+  const ServerStep(super.text, this.action);
+
+  final ServerAction action;
+}
+
+final _server = RegExp(r'^Server\s+(Send|Close|Error)(?:\s(.*))?$');
 final _event = RegExp(r'^([A-Za-z][A-Za-z0-9_]*)\.([A-Za-z][A-Za-z0-9_]*)$');
 final _formEvent = RegExp(
     r'^([A-Za-z][A-Za-z0-9_]*)\.([A-Za-z][A-Za-z0-9_]*)\.([A-Za-z][A-Za-z0-9_]*)$');
@@ -178,7 +190,16 @@ List<ScriptStep> parseEventScript(String text) {
     final line = _withoutComment(lines[i]).trim();
     if (line.isEmpty) continue;
     RegExpMatch? m;
-    if (line == 'OK') {
+    if ((m = _server.firstMatch(line)) != null) {
+      final text = m![2] ?? '';
+      steps.add(ServerStep(
+          line,
+          switch (m[1]) {
+            'Send' => ServerAction.send(text),
+            'Close' => ServerAction.close(text),
+            _ => ServerAction.error(text),
+          }));
+    } else if (line == 'OK') {
       steps.add(OkStep(line));
     } else if (line == 'Cancel') {
       steps.add(AnswerStep(line, null));
@@ -421,6 +442,17 @@ class _ScriptedHttp extends HttpComponent {
   }
 }
 
+/// The `WebSocket` control of a test (D136), on [sockets].
+class ScriptedWebSocket extends WebSocketComponent {
+  ScriptedWebSocket(super.name, this.sockets);
+
+  final ScriptedWebSockets sockets;
+
+  @override
+  Future<WebSocketLink> open(String url, WebSocketListener listener) =>
+      sockets.open(url, listener);
+}
+
 /// A [FormHost] for tests: properties start as in the form files, dialogs
 /// stay open until the script closes them, and everything the program
 /// shows is recorded ([TranscriptLine]):
@@ -443,9 +475,14 @@ class ScriptedHost implements FormHost, FileHost, ComponentHost, DatabaseFiles {
       {String? settings,
       Map<String, List<int>> disk = const {},
       List<HttpStub> http = const [],
+      List<WebSocketStub> webSockets = const [],
       DatabaseComponent? database})
       : this.forms([form],
-            settings: settings, disk: disk, http: http, database: database);
+            settings: settings,
+            disk: disk,
+            http: http,
+            webSockets: webSockets,
+            database: database);
 
   /// A host for a program with [forms] (D88). [disk] holds the files it
   /// can read (D113), by name: a test's NAME.files folder; [http] what
@@ -455,8 +492,10 @@ class ScriptedHost implements FormHost, FileHost, ComponentHost, DatabaseFiles {
       {this.settings,
       Map<String, List<int>> disk = const {},
       this.http = const [],
+      List<WebSocketStub> webSockets = const [],
       this.database})
-      : _files = {for (final f in forms) f.name.toLowerCase(): f},
+      : _webSocketStubs = webSockets,
+        _files = {for (final f in forms) f.name.toLowerCase(): f},
         disk = Map.of(disk),
         _several = forms.length > 1 {
     for (final f in forms) {
@@ -482,10 +521,17 @@ class ScriptedHost implements FormHost, FileHost, ComponentHost, DatabaseFiles {
   /// The program's `Database` (D126), or null where the test has none.
   final DatabaseComponent? database;
 
+  final List<WebSocketStub> _webSocketStubs;
+
+  /// The WebSocket servers the program talks to (D136): a test's NAME.ws.
+  late final webSockets = ScriptedWebSockets(_webSocketStubs, transcript);
+
   @override
-  ComponentInstance? createComponent(String component) => switch (component) {
+  ComponentInstance? createComponent(String component, {String name = ''}) =>
+      switch (component) {
         'Http' => _ScriptedHttp(http, transcript),
         'Database' => database,
+        'WebSocket' => ScriptedWebSocket(name, webSockets),
         _ => null,
       };
 
@@ -903,6 +949,10 @@ abstract interface class ScriptDriver {
   /// it already was that size, so that nothing happens.
   Future<EventOutcome?> resize(int width, int height);
 
+  /// The test's WebSocket server does [action] (D136); false when no
+  /// connection is open.
+  Future<bool> server(ServerAction action);
+
   /// Closes the form if it is still open, and waits for the run to end.
   Future<RunResult> finish();
 }
@@ -919,6 +969,7 @@ Future<List<String>> runProjectScript(List<FormSource> forms, String script,
     bool startsWithMain = false,
     Map<String, List<int>> disk = const {},
     List<HttpStub> http = const [],
+    List<WebSocketStub> webSockets = const [],
     DatabaseComponent? database}) async {
   final steps = parseEventScript(script);
   final project = compileProject(forms,
@@ -938,7 +989,11 @@ Future<List<String>> runProjectScript(List<FormSource> forms, String script,
     ];
   }
   final host = ScriptedHost.forms([for (final f in forms) f.file],
-      settings: settings, disk: disk, http: http, database: database);
+      settings: settings,
+      disk: disk,
+      http: http,
+      webSockets: webSockets,
+      database: database);
   return driveEventScript(
       steps, _HostDriver(Interpreter.project(project, host), host),
       namesFile: forms.length > 1 || modules.isNotEmpty);
@@ -953,6 +1008,7 @@ Future<List<String>> runEventScript(String source, FormFile form, String script,
     List<String> pictures = const [],
     Map<String, List<int>> disk = const {},
     List<HttpStub> http = const [],
+    List<WebSocketStub> webSockets = const [],
     DatabaseComponent? database}) async {
   final steps = parseEventScript(script);
   final program = compile(source, form: form, pictures: pictures);
@@ -963,7 +1019,11 @@ Future<List<String>> runEventScript(String source, FormFile form, String script,
     ];
   }
   final host = ScriptedHost(form,
-      settings: settings, disk: disk, http: http, database: database);
+      settings: settings,
+      disk: disk,
+      http: http,
+      webSockets: webSockets,
+      database: database);
   return driveEventScript(steps, _HostDriver(Interpreter(program, host), host));
 }
 
@@ -1038,6 +1098,10 @@ Future<List<String>> driveEventScript(
       case GridStep():
         final outcome = await driver.grid(step);
         if (outcome != null) _record(out, step.text, outcome);
+      case ServerStep(:final action):
+        if (!await driver.server(action)) {
+          throw StateError('"${step.text}" but no WebSocket is open');
+        }
     }
   }
   await settle();
@@ -1243,6 +1307,10 @@ class _HostDriver implements ScriptDriver {
     if (!host.resize(width, height)) return null;
     return interpreter.raiseEvent(null, 'Resize');
   }
+
+  @override
+  Future<bool> server(ServerAction action) async =>
+      host.webSockets.serverDoes(action);
 
   @override
   Future<RunResult> finish() {

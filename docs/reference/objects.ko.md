@@ -205,6 +205,19 @@
 - `X As Integer`
 - `Y As Integer`
 
+### MessageEventArgs
+
+- `Text As String`
+- `Json As Json`
+
+### CloseEventArgs
+
+- `Reason As String`
+
+### ErrorEventArgs
+
+- `Message As String`
+
 ### Table
 
 - `RowCount As Integer`

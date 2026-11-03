@@ -1,0 +1,47 @@
+' WebSocket (D136): Connect waits until the connection is open, Send,
+' Close, and the events Message (e.Text, e.Json), Closed (e.Reason) and
+' Error (e.Message), each run in turn: the two messages that answer
+' "hello" come together, and the second waits for the first's handler. The errors: a connection that cannot be opened
+' (R047, caught by Try), Send while not connected (R049).
+Sub btnConnect_Click()
+    Debug.Print(wsChat.State & " " & wsChat.Tag)
+    wsChat.Connect("ws://localhost:8080/chat")
+    Debug.Print(wsChat.State & " " & wsChat.Url)
+End Sub
+
+Sub btnSend_Click()
+    wsChat.Send("hello")
+    Debug.Print("sent")
+End Sub
+
+Sub wsChat_Message(e As MessageEventArgs)
+    If e.Text.StartsWith("{") Then
+        Dim j As Json = e.Json
+        Debug.Print("news: " & j("text").AsString)
+    Else
+        Debug.Print("message: " & e.Text)
+    End If
+End Sub
+
+Sub wsChat_Closed(e As CloseEventArgs)
+    Debug.Print("closed: " & e.Reason & " " & wsChat.State)
+End Sub
+
+Sub wsChat_Error(e As ErrorEventArgs)
+    Debug.Print("error: " & e.Message)
+End Sub
+
+Sub btnClose_Click()
+    wsChat.Close()
+    Debug.Print(wsChat.State)
+End Sub
+
+Sub btnErrors_Click()
+    Try
+        wsChat.Connect("ws://localhost:8080/down")
+    Catch ex As Exception
+        Debug.Print(ex.Message)
+    End Try
+    Debug.Print(wsChat.State)
+    wsChat.Send("nobody")
+End Sub

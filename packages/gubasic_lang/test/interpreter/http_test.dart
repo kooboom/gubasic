@@ -37,7 +37,8 @@ class _Host extends ScriptedHost {
   final HttpComponent? component;
 
   @override
-  ComponentInstance? createComponent(String name) => component;
+  ComponentInstance? createComponent(String type, {String name = ''}) =>
+      component;
 }
 
 Future<void> _idle(Interpreter i) async {

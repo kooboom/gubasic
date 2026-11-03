@@ -1,0 +1,43 @@
+# Talks to any standard WebSocket server (RFC 6455) in text messages
+# (docs/DESIGN.md D122, D136), today's version of what Visual Basic 6
+# programs did with the Winsock control
+# (https://learn.microsoft.com/en-us/previous-versions/visualstudio/visual-basic-6/aa228119(v=vs.60)).
+# Like a Timer it is not seen on the form: the designer keeps it in the
+# tray. Connect(url) waits where it is called until the connection is
+# open, as Http does (D124 A): the screen keeps drawing and the pointer
+# shows waiting; a connection that cannot be opened is R047. Send(text)
+# sends one message; while the connection is not open it is R049. Close()
+# closes it. Message runs for each message that comes, in order, one at a
+# time (e.Text, and e.Json read from it); Closed when the server closes the
+# connection or it is lost (e.Reason); Error for a problem after it was
+# open (e.Message). Through the component channel
+# (docs/COMPONENT_CHANNEL.md): the first component with events.
+name: WebSocket
+version: 1
+visual: false
+channel: true
+platforms: [web, macos, windows]
+defaultEvent: Message
+properties:
+  # "Closed" or "Open".
+  - { name: State, type: String, default: "Closed", readOnly: true }
+  # The address last connected to.
+  - { name: Url, type: String, default: "", readOnly: true }
+  # Any text the program keeps with it, as in Visual Basic; GuBASIC does
+  # nothing with it (D98).
+  - { name: Tag, type: String, default: "" }
+events:
+  - Message(e As MessageEventArgs)
+  - Closed(e As CloseEventArgs)
+  - Error(e As ErrorEventArgs)
+methods:
+  - Connect(url As String)
+  - Send(text As String)
+  - Close()
+# Names other versions of BASIC use, pointed to GuBASIC's (A036, A051,
+# docs/DESIGN.md D50): the Winsock control's.
+otherNames:
+  SendData: Send
+  RemoteHost: Connect
+otherEvents:
+  DataArrival: Message

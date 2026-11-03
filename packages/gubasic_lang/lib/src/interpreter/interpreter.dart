@@ -569,6 +569,7 @@ class Interpreter {
     final loading = !form.loaded;
     if (loading) {
       if (form.started) {
+        _disposeChannels(form.name);
         _formHost.resetForm(form.name);
         _setUpControls(form);
         await _initFields(form);
@@ -640,6 +641,7 @@ class Interpreter {
   Future<void> _close(_FormRun form) async {
     if (!form.loaded) return;
     form.loaded = false;
+    _disposeChannels(form.name);
     _takeAway(form);
     final closed = _handler(form, null, 'Closed');
     if (closed != null) await _runNow(closed, form.controls[null]);
@@ -679,6 +681,15 @@ class Interpreter {
     } finally {
       _running.remove(handler);
       _debugger?.handlerEnded();
+      // The next event of a component that came meanwhile (D136).
+      if (_backlog[handler] case final waiting? when waiting.isNotEmpty) {
+        final (sender, next) = waiting.removeFirst();
+        if (_ended == null) {
+          unawaited(_runHandler(handler, sender, args: next));
+        } else {
+          waiting.clear();
+        }
+      }
     }
   }
 
@@ -708,6 +719,7 @@ class Interpreter {
     if (done == null || _ended != null) return;
     _ended = result;
     _debugger?.runEnded();
+    _disposeChannels();
     _formHost.endProgram();
     // Handlers waiting for a dialog form go on, and stop (_Abandoned).
     for (final f in _forms.values) {
@@ -1632,6 +1644,10 @@ class Interpreter {
 
   Object? _getProperty(GbControl c, MemberExpr e) {
     final spec = _property(c, e);
+    if (c.component.channel && spec.readOnly) {
+      // The instance's own (D136): `wsChat.State`.
+      return _channelDo(c, e, (i) => i.getProperty(spec.name));
+    }
     final value =
         spec.readOnly ? _computedProperty(c, spec) : _raw(c, spec.name);
     if (spec.type == GbType.integer) return GbInt.of(value as int);
@@ -1946,6 +1962,12 @@ class Interpreter {
   /// ListIndex, whose Changed then runs as part of the call (D46).
   Object? _controlMethod(
       GbControl c, MethodSpec method, List<Object?> args, Node at) {
+    if (c.component.channel) {
+      // A control through the component channel (D136): its methods wait
+      // for the instance's answer.
+      _pendingCall = () => _channelCall(c, method.name, args, at);
+      return null;
+    }
     // A ComboBox's items are a ListBox's (D104).
     switch ((_isList(c) ? 'ListBox' : c.component.name, method.name)) {
       // The forms shown one over another (D88).
@@ -2245,6 +2267,88 @@ class Interpreter {
     if (_ended != null) throw const _Abandoned();
     if (_stopRequested) throw const _Stop();
     return result;
+  }
+
+  /// The instances of the controls in the tray that come through the
+  /// channel (`WebSocket`, D136), made when first used.
+  final _channels = Map<GbControl, ComponentInstance>.identity();
+
+  /// The events of a component waiting for their handler, which is still
+  /// running (D136): they run in turn, never re-entering it (D5).
+  final _backlog =
+      Map<ProcedureDecl, Queue<(GbControl, List<Object?>)>>.identity();
+
+  /// The instance of [c]; R038 where the host has none.
+  ComponentInstance _channel(GbControl c, Node at) {
+    if (_channels[c] case final made?) return made;
+    final made = (host is ComponentHost
+            ? (host as ComponentHost)
+                .createComponent(c.component.name, name: c.name ?? '')
+            : null) ??
+        _fail(DiagnosticCode.componentUnavailable, at, [c.component.name]);
+    if (made is ComponentWithEvents) {
+      made.onEvent = (event, args) => _channelEvent(c, event, args);
+    }
+    return _channels[c] = made;
+  }
+
+  /// [body] on [c]'s instance; a problem it reports stops the program.
+  T _channelDo<T>(GbControl c, Node at, T Function(ComponentInstance i) body) {
+    try {
+      return body(_channel(c, at));
+    } on ComponentProblem catch (p) {
+      _fail(p.code, at, p.args);
+    }
+  }
+
+  /// Calls [method] of [c]'s instance, after telling it the properties
+  /// the form keeps (Room.Server), and waits for its answer.
+  Future<Object?> _channelCall(
+      GbControl c, String method, List<Object?> args, Node at) async {
+    final instance = _channel(c, at);
+    final Object? result;
+    try {
+      for (final p in c.component.properties.values) {
+        if (p.isStored && !p.internal) {
+          instance.setProperty(p.name, _gbValue(p.type, _raw(c, p.name)));
+        }
+      }
+      result = await instance.call(method, args);
+    } on ComponentProblem catch (p) {
+      if (_ended != null) throw const _Abandoned();
+      _fail(p.code, at, p.args);
+    }
+    if (_ended != null) throw const _Abandoned();
+    if (_stopRequested) throw const _Stop();
+    return result;
+  }
+
+  /// [event] of [c], as its instance reports it (D136): its handler runs
+  /// when it gets the turn, like a Timer's tick, also on a form behind the
+  /// one in front. Unlike a click, an event that comes while its handler
+  /// runs is not ignored but waits, so that no message is lost; while a
+  /// MsgBox is open it waits for the turn.
+  void _channelEvent(GbControl c, String event, List<Object?> args) {
+    if (_formRun == null || _ended != null) return;
+    final handler = c.handlers[event.toLowerCase()] as ProcedureDecl?;
+    if (handler == null) return;
+    final waiting = _backlog[handler];
+    if (_running.contains(handler) || (waiting?.isNotEmpty ?? false)) {
+      (_backlog[handler] ??= Queue()).add((c, args));
+      return;
+    }
+    unawaited(_runHandler(handler, c, args: args));
+  }
+
+  /// Lets go the instances of [form]'s controls, or of every form's.
+  void _disposeChannels([String? form]) {
+    _channels.removeWhere((c, instance) {
+      if (form != null && c.form.toLowerCase() != form.toLowerCase()) {
+        return false;
+      }
+      if (instance is ComponentWithEvents) instance.dispose();
+      return true;
+    });
   }
 
   /// A property's value, as a host stores it, as a GuBASIC value.
@@ -3027,6 +3131,13 @@ class Interpreter {
         return GbInt.of(mouseButtons.entries
             .firstWhere((e) => e.key.toLowerCase() == name)
             .value);
+      case GbSocketEvent s:
+        return switch (name) {
+          'text' => s.text,
+          'json' => GbJson(_parseJson(s.text, node)),
+          'reason' => s.reason,
+          _ => s.message,
+        };
       case GbMouseEvent m:
         return GbInt.of(switch (name) {
           'button' => m.button,

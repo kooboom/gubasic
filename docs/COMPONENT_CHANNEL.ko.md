@@ -15,6 +15,8 @@ Visual Basic은 `Declare`로 Windows 라이브러리의 어떤 함수든 부를 
 - 모든 컨트롤은 `components/NAME/component.yaml`로 설명되는 컴포넌트입니다(하드 규칙 7). 속성, 메서드, 이벤트가 적혀 있고, 분석기와 IDE의 도구 상자, 속성 창이 이것을 읽습니다.
 - 컨트롤이 하는 일은 Dart로 두 곳에 씁니다. 인터프리터(`gubasic_lang`)와 위젯(`gubasic_runtime`)입니다. `File`, `Csv`, `PdfDocument` 같은 화면 없는 객체는 언어에 들어 있습니다.
 - **통로의 첫 컴포넌트 `Http`(v0.5, D125):** `components/Http/component.yaml`은 `object: true`, 곧 이름으로 쓰는 내장 객체라고 말하고 `platforms`를 적습니다. 인터프리터는 호스트에 인스턴스를 달라고 하고(`ComponentHost.createComponent`) `ComponentInstance`로 이야기합니다: `getProperty`, `setProperty`, `call`, `assign`, 양쪽 다 GuBASIC의 값, 그리고 잘못된 것은 R 코드가 든 `ComponentProblem`. 컴포넌트 자체의 코드(`HttpComponent`)는 `gubasic_lang`의 순수 Dart이고, 보내는 일은 프로그램이 도는 곳의 하위 클래스가 합니다: 플레이어는 package:http로, 테스트는 미리 적은 답으로. 인터페이스는 아직 공개하지 않았습니다(질문 3).
+- **두 번째 `Database`(v0.5, D126):** 같은 통로로 package:sqlite3 위에서, 패키지를 감싼 첫 컴포넌트. `component.yaml`은 SQL 뒤의 값을 `ParamArray values As Value`로 적고, 런타임의 `GbSqlite`가 패키지를 품으며(데스크톱은 빌드 훅이 만든 라이브러리, 웹은 쓸 때만 불러오는 WebAssembly), 플랫폼과 무관한 부분 `DatabaseComponent`는 `gubasic_lang`의 순수 Dart.
+- **이벤트가 있는 첫 컴포넌트 `WebSocket`(v0.6, D136):** 객체가 아니라 디자이너 트레이의 컨트롤(component.yaml의 `channel: true`). 컨트롤마다 인스턴스가 하나씩 있고(`ComponentHost.createComponent(name, name: control)`), 프로그램은 그 읽기 전용 속성과 메서드를 쓰며, 인스턴스는 `ComponentWithEvents.onEvent`로 이벤트를 알림. 인터프리터는 이벤트를 차례로 실행하고 폼과 함께 인스턴스를 닫음. 런타임의 `GbWebSocket`이 package:web_socket_channel을 품음.
 - 내보낸 앱은 미리 만든 플레이어에 프로젝트를 넣은 것입니다(D80). 플레이어에는 컴파일해 넣은 Dart 코드만 들어 있습니다.
 
 ## 설계

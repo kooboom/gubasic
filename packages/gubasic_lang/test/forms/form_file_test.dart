@@ -151,7 +151,7 @@ controls:
     expect(r.diagnostics.first.args, [
       'Buton',
       'Button, CheckBox, ComboBox, Frame, Grid, Image, Label, ListBox, OpenFileDialog, OptionButton, '
-          'SaveFileDialog, TextBox, Timer',
+          'SaveFileDialog, TextBox, Timer, WebSocket',
     ]);
     expect(r.form.controls, isEmpty);
   });

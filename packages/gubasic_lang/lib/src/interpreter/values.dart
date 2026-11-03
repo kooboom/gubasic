@@ -163,6 +163,30 @@ class GbMouseEvent {
   final int y;
 }
 
+/// What a WebSocket's Message, Closed and Error are told (D136): one of
+/// [text], [reason] and [message], as the event says.
+class GbSocketEvent {
+  const GbSocketEvent.message(this.text)
+      : kind = 'MessageEventArgs',
+        reason = '',
+        message = '';
+  const GbSocketEvent.closed(this.reason)
+      : kind = 'CloseEventArgs',
+        text = '',
+        message = '';
+  const GbSocketEvent.error(this.message)
+      : kind = 'ErrorEventArgs',
+        text = '',
+        reason = '';
+
+  /// The type's name: `MessageEventArgs`, `CloseEventArgs`,
+  /// `ErrorEventArgs`.
+  final String kind;
+  final String text;
+  final String reason;
+  final String message;
+}
+
 class GbException {
   GbException(this.message);
 
@@ -196,6 +220,7 @@ String formatValue(Object? value) {
     GbControls() => 'Controls',
     GbKeyEvent() => 'KeyEventArgs',
     GbMouseEvent() => 'MouseEventArgs',
+    GbSocketEvent e => e.kind,
     GbTable() => 'Table',
     GbPdfDocument() => 'PdfDocument',
     GbJson j => j.text,
@@ -222,6 +247,7 @@ String typeNameOf(Object? value) {
     GbControls() => 'Controls',
     GbKeyEvent() => 'KeyEventArgs',
     GbMouseEvent() => 'MouseEventArgs',
+    GbSocketEvent e => e.kind,
     GbTable() => 'Table',
     GbPdfDocument() => 'PdfDocument',
     GbJson() => 'Json',

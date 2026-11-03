@@ -82,6 +82,11 @@ void main() {
       final http = httpFile.existsSync()
           ? parseHttpScript(httpFile.readAsStringSync())
           : const <HttpStub>[];
+      // The WebSocket servers it talks to (D136): NAME.ws.
+      final wsFile = File('$base.ws');
+      final webSockets = wsFile.existsSync()
+          ? parseWebSocketScript(wsFile.readAsStringSync())
+          : const <WebSocketStub>[];
       // Its Database (D126): NAME.database.
       final database =
           File('$base.database').existsSync() ? TestDatabase.temporary() : null;
@@ -152,6 +157,7 @@ void main() {
             startsWithMain: startsWithMain,
             disk: disk,
             http: http,
+            webSockets: webSockets,
             database: database);
       } else if (formFile.existsSync()) {
         final form = readFormFile(formFile.readAsStringSync(),
@@ -166,6 +172,7 @@ void main() {
             pictures: pictures,
             disk: disk,
             http: http,
+            webSockets: webSockets,
             database: database);
       } else {
         final input = File(program.path.replaceFirst('.gbas', '.in'));

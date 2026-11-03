@@ -238,6 +238,12 @@ const Map<DiagnosticCode, String> englishMessages = {
   DiagnosticCode.httpHeaderForm: 'A header for Http.Send is written as '
       '"Name: value"; this one is not: {0}. Write the name, a colon and the '
       'value in one string.',
+  DiagnosticCode.webSocketFailed: 'No connection to {0} ({1}). Check the '
+      'address and the network; a page served over https needs wss://.',
+  DiagnosticCode.roomNotEntered: 'Could not enter the room: {0}. Check the '
+      'code, and that Room.Server points to a relay server.',
+  DiagnosticCode.notConnected: '{0} is not connected, so Send has nowhere '
+      'to go. Connect or Join first, or wait for Closed to be handled.',
   DiagnosticCode.vb6Type:
       '`Type … End Type` is Visual Basic 6\'s. Write `Structure {0} … End '
           'Structure`; the fields are written the same way.',
@@ -315,6 +321,9 @@ const Map<DiagnosticCode, String> englishMessages = {
   DiagnosticCode.withNotValue:
       'With needs a value, such as a control, a variable or an item: {0} '
           'is not one. Write its members in full.',
+  DiagnosticCode.plainWebSocket: 'ws:// to {0} is not encrypted and a page '
+      'served over https cannot open it. Use wss:// for anything but '
+      'localhost or your own network.',
   DiagnosticCode.secretHeader: 'Http.Header sends {0} with every request '
       'from now on, to every server the program calls, so this secret '
       'would reach them all. Give it to the one request instead: '

@@ -151,7 +151,7 @@ class BenchProbe {
             );
             interpreter.raiseEvent(control, 'Changed');
           }
-        case ResizeStep() || PickStep():
+        case ResizeStep() || PickStep() || ServerStep():
           break;
       }
       await _settle();

@@ -1,0 +1,8 @@
+formatVersion: 1
+properties: { Caption: WebSocket, Width: 440, Height: 120 }
+controls:
+  - { name: btnConnect, type: Button, properties: { Caption: Connect, Left: 16, Top: 16 } }
+  - { name: btnSend, type: Button, properties: { Caption: Send, Left: 120, Top: 16 } }
+  - { name: btnClose, type: Button, properties: { Caption: Close, Left: 224, Top: 16 } }
+  - { name: btnErrors, type: Button, properties: { Caption: Errors, Left: 328, Top: 16 } }
+  - { name: wsChat, type: WebSocket, properties: { Tag: chat } }
