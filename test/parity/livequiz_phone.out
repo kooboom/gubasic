@@ -2,10 +2,10 @@ Forms: Form1
 > Peer TV Create
 Peer TV: created K7QPXM as m1
 > btnPhone.Click
-Set FormPhone.btnChoice0.Caption: 
-Set FormPhone.btnChoice1.Caption: 
-Set FormPhone.btnChoice2.Caption: 
-Set FormPhone.btnChoice3.Caption: 
+Set FormPhone.btnChoice0.Caption: 1
+Set FormPhone.btnChoice1.Caption: 2
+Set FormPhone.btnChoice2.Caption: 3
+Set FormPhone.btnChoice3.Caption: 4
 Forms: Form1 > FormPhone
 Forms: FormPhone
 > txtCode.Type "k7q"
@@ -28,31 +28,31 @@ Set FormPhone.lblResult.Caption: 15초 안에 고르세요!
 > btnChoice1.Click
 Room: sendTo m1 {"kind":"answer","no":1,"choice":1}
 Peer TV got: {"kind":"answer","no":1,"choice":1}
-Set FormPhone.btnChoice0.Caption: 
-Set FormPhone.btnChoice1.Caption: 
-Set FormPhone.btnChoice2.Caption: 
-Set FormPhone.btnChoice3.Caption: 
+Set FormPhone.btnChoice0.Caption: 1
+Set FormPhone.btnChoice1.Caption: 2
+Set FormPhone.btnChoice2.Caption: 3
+Set FormPhone.btnChoice3.Caption: 4
 Set FormPhone.lblResult.Caption: 답을 보냈습니다: 2) 56
 > btnChoice2.Click
 > Peer TV SendTo m2 {"kind":"result","no":1,"correct":true,"score":10}
 Set FormPhone.lblResult.Caption: 정답! 지금 10점
 > Peer TV Send {"kind":"score","board":[{"member":"m2","nickname":"민지","score":10}]}
 Set FormPhone.lblRank.Caption: 내 순위: 1 / 1
-Set FormPhone.btnChoice0.Caption: 
-Set FormPhone.btnChoice1.Caption: 
-Set FormPhone.btnChoice2.Caption: 
-Set FormPhone.btnChoice3.Caption: 
+Set FormPhone.btnChoice0.Caption: 1
+Set FormPhone.btnChoice1.Caption: 2
+Set FormPhone.btnChoice2.Caption: 3
+Set FormPhone.btnChoice3.Caption: 4
 > Peer TV Send {"kind":"end"}
 Set FormPhone.lblStep.Caption: 끝났습니다. 고맙습니다!
-Set FormPhone.btnChoice0.Caption: 
-Set FormPhone.btnChoice1.Caption: 
-Set FormPhone.btnChoice2.Caption: 
-Set FormPhone.btnChoice3.Caption: 
+Set FormPhone.btnChoice0.Caption: 1
+Set FormPhone.btnChoice1.Caption: 2
+Set FormPhone.btnChoice2.Caption: 3
+Set FormPhone.btnChoice3.Caption: 4
 > Peer TV Leave
-Set FormPhone.btnChoice0.Caption: 
-Set FormPhone.btnChoice1.Caption: 
-Set FormPhone.btnChoice2.Caption: 
-Set FormPhone.btnChoice3.Caption: 
+Set FormPhone.btnChoice0.Caption: 1
+Set FormPhone.btnChoice1.Caption: 2
+Set FormPhone.btnChoice2.Caption: 3
+Set FormPhone.btnChoice3.Caption: 4
 Set FormPhone.lblStep.Caption: 방이 끝났습니다(host left).
 Still open
 Closed

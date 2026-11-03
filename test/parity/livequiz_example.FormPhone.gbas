@@ -85,12 +85,13 @@ Sub rmQuiz_Closed(e As RoomEventArgs)
     lblStep.Caption = "방이 끝났습니다(" & e.Reason & ")."
 End Sub
 
-' 고를 수 없을 때는 보기 버튼을 비워 둡니다.
+' 고를 수 없을 때는 보기 버튼에 번호만 남깁니다. 문제가 오면 번호와 보기를
+' 함께 보입니다: TV가 멀거나 작아도 폰에서 읽고 고를 수 있게.
 Sub ShowChoices(shown As Boolean)
     choosing = shown
     If shown Then Exit Sub
-    btnChoice0.Caption = ""
-    btnChoice1.Caption = ""
-    btnChoice2.Caption = ""
-    btnChoice3.Caption = ""
+    btnChoice0.Caption = "1"
+    btnChoice1.Caption = "2"
+    btnChoice2.Caption = "3"
+    btnChoice3.Caption = "4"
 End Sub
