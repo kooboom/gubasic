@@ -529,7 +529,8 @@ const _returnTypes = {
 
 /// `a As Integer, b As String`: the parameters of an event or a method.
 /// `ParamArray values As Value`, last, takes the rest of the arguments,
-/// each a value that can go into SQL (D126).
+/// each a value that can go into SQL (D126); `ParamArray headers As
+/// String` takes the rest as strings (D135).
 List<ParamSpec> _parameters(String text) {
   final paramPattern =
       RegExp(r'^(ParamArray )?([A-Za-z][A-Za-z0-9_]*) As ([A-Za-z]+)$');
@@ -538,8 +539,10 @@ List<ParamSpec> _parameters(String text) {
       switch (paramPattern.firstMatch(part.trim())) {
         final pm? when pm[1] != null && pm[3]!.toLowerCase() == 'value' =>
           ParamSpec.of(pm[2]!, ArgKind.sqlValue, variadic: true),
+        final pm? when pm[1] != null && pm[3]!.toLowerCase() == 'string' =>
+          ParamSpec(pm[2]!, GbType.string, variadic: true),
         final pm? when pm[1] != null =>
-          throw FormatException('ParamArray takes Value only: $part'),
+          throw FormatException('ParamArray takes Value or String only: $part'),
         // A form's menu (D106): Menu is a component, read after this one.
         final pm? when pm[3]!.toLowerCase() == 'menu' =>
           ParamSpec.of(pm[2]!, ArgKind.menu),

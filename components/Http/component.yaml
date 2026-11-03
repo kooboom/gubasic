@@ -8,11 +8,15 @@
 # whatever its status. A call waits where it is, as File.ReadAllText
 # does: the screen keeps drawing, the pointer shows waiting, and clicks
 # made meanwhile run after it, in turn. Header(name) is a header sent
-# with every request from then on ("" takes it away); Timeout is how many
-# seconds to wait for an answer. A request that gets no answer is R036; a
-# status from 400 is R037 in all but Send; text that is not JSON is R039.
-# The first component through the component channel
-# (docs/COMPONENT_CHANNEL.md).
+# with every request from then on, to every server the program calls (""
+# takes it away), so a key, a token or a password does not belong there
+# (A076): Send takes, after the body, headers for that one request, each
+# written "Name: value", and one named there replaces a Header of the
+# same name for that request (D135). Timeout is how many seconds to wait
+# for an answer. A request that gets no answer is R036; a status from 400
+# is R037 in all but Send; text that is not JSON is R039; a header for
+# Send that is not written "Name: value" is R046. The first component
+# through the component channel (docs/COMPONENT_CHANNEL.md).
 name: Http
 version: 1
 object: true
@@ -26,7 +30,7 @@ methods:
   - Post(url As String, body As String) As String
   - GetJson(url As String) As Json
   - PostJson(url As String, body As Json) As Json
-  - Send(method As String, url As String, body As String) As HttpResponse
+  - Send(method As String, url As String, body As String, ParamArray headers As String) As HttpResponse
   - Header(name As String) As String Settable
 # Names other versions of BASIC use, pointed to GuBASIC's (A036,
 # docs/DESIGN.md D50): the Internet Transfer Control's.

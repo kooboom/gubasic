@@ -194,6 +194,8 @@ const Map<DiagnosticCode, String> koreanMessages = {
       '데이터베이스 {0} 파일을 열지 못했습니다({1}). 앱이 데이터 폴더에 쓸 수 있는지, 웹에서는 브라우저가 이 사이트의 데이터 저장을 막지 않았는지와 저장 공간이 남았는지 확인해 주세요.',
   DiagnosticCode.databaseNotFile:
       '{0} 파일은 SQLite 데이터베이스 파일이 아닙니다. Database.Import에는 Database.Export가 쓴 파일을 주세요.',
+  DiagnosticCode.httpHeaderForm:
+      'Http.Send의 헤더는 "이름: 값" 모양의 글로 씁니다. 받은 글: {0}. 이름, 쌍점(:), 값을 한 글에 적어 주세요.',
   DiagnosticCode.vb6Type:
       '`Type … End Type` 블록은 Visual Basic 6의 표기입니다. `Structure {0} … End Structure` 형태로 씁니다. 필드는 그대로 씁니다.',
   DiagnosticCode.structureFieldValue:
@@ -243,6 +245,8 @@ const Map<DiagnosticCode, String> koreanMessages = {
       '점으로만 시작하는 멤버는 With 블록 안에서만 씁니다. 점 앞에 이름을 쓰거나, 그 줄을 With … End With 안에 둡니다.',
   DiagnosticCode.withNotValue:
       'With에는 컨트롤, 변수, 칸처럼 값을 줍니다. {0} 항목은 값이 아닙니다. 멤버를 이름과 함께 씁니다.',
+  DiagnosticCode.secretHeader:
+      'Http.Header에 넣은 {0} 헤더는 그때부터 모든 요청에 붙어, 프로그램이 부르는 모든 서버로 갑니다. 비밀은 Http.Send(method, url, body, "{0}: …")처럼 그 요청에만 붙여 주세요.',
   DiagnosticCode.sqlJoined:
       '이 SQL은 &로 이어 붙였습니다. 값이 들어갈 자리에 ?를 쓰고 값은 SQL 뒤에 넘겨 주세요. Database.{0}("… WHERE name = ?", name)처럼 쓰면 값에 든 따옴표가 문장을 깨뜨리지 못합니다.',
   DiagnosticCode.popupWithoutItems:

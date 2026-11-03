@@ -235,6 +235,9 @@ const Map<DiagnosticCode, String> englishMessages = {
       'blocked) and has room for it.',
   DiagnosticCode.databaseNotFile: '{0} is not an SQLite database file. '
       'Give Database.Import a file that Database.Export wrote.',
+  DiagnosticCode.httpHeaderForm: 'A header for Http.Send is written as '
+      '"Name: value"; this one is not: {0}. Write the name, a colon and the '
+      'value in one string.',
   DiagnosticCode.vb6Type:
       '`Type … End Type` is Visual Basic 6\'s. Write `Structure {0} … End '
           'Structure`; the fields are written the same way.',
@@ -312,6 +315,10 @@ const Map<DiagnosticCode, String> englishMessages = {
   DiagnosticCode.withNotValue:
       'With needs a value, such as a control, a variable or an item: {0} '
           'is not one. Write its members in full.',
+  DiagnosticCode.secretHeader: 'Http.Header sends {0} with every request '
+      'from now on, to every server the program calls, so this secret '
+      'would reach them all. Give it to the one request instead: '
+      'Http.Send(method, url, body, "{0}: …").',
   DiagnosticCode.sqlJoined: 'This SQL is put together with &. Write ? '
       'where a value goes and pass the value after the SQL, as in '
       'Database.{0}("… WHERE name = ?", name): then a quote in the value '

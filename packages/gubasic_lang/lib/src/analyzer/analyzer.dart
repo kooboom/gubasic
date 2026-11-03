@@ -1,5 +1,6 @@
 import '../ast/ast.dart';
 import '../ast/line_map.dart';
+import '../components/http_component.dart' show looksLikeSecretHeader;
 import '../diagnostics/diagnostic.dart';
 import '../forms/anchor.dart';
 import '../forms/component.dart';
@@ -1121,6 +1122,7 @@ class _Analyzer {
           // `t.Cell(0, 1) = "90"` (D114).
           _result.settableCalls.add(target);
           targetType = t;
+          _secretHeader(target, callee, s.value);
         } else if (_result.invokeKinds[target] == InvokeKind.call) {
           _reportAt(target, DiagnosticCode.notAssignable, [_text(target)]);
           targetType = GbType.unknown;
@@ -2039,6 +2041,28 @@ class _Analyzer {
       return _result.types[arg] = _arrayLiteral(arg, type);
     }
     return _value(arg);
+  }
+
+  /// `Http.Header("Authorization") = token` (D135): a header set there goes
+  /// with every request to every server the program calls, so a name that
+  /// looks like a secret's is A076. Only a name written out can be told;
+  /// `""`, which takes the header away, sends nothing.
+  void _secretHeader(InvokeExpr call, MemberExpr callee, Expr value) {
+    final object = _result.symbols[callee.target];
+    if (object?.kind != SymbolKind.builtinObject ||
+        object!.name != 'Http' ||
+        callee.name.name.toLowerCase() != 'header' ||
+        call.arguments.length != 1) {
+      return;
+    }
+    final name = call.arguments.single;
+    if (name is! StringLiteral ||
+        value is StringLiteral && value.value.isEmpty) {
+      return;
+    }
+    if (looksLikeSecretHeader(name.value)) {
+      _reportAt(name, DiagnosticCode.secretHeader, [name.value]);
+    }
   }
 
   /// Whether [e] joins something that is not written out with `&`:

@@ -63,6 +63,62 @@ void main() {
     expect(h.sent.last.body, isNull);
   });
 
+  test('Send takes headers for that request alone (D135)', () async {
+    final h = _Http()..reply = HttpReply(200, {}, utf8.encode('ok'));
+    h.assign('Header', ['Accept-Language'], 'ko');
+    await h.call('Send', [
+      'GET',
+      'http://x/',
+      '',
+      'Authorization: Bearer abc',
+      ' accept-language :en ',
+    ]);
+    expect(h.sent.last.headers,
+        {'Authorization': 'Bearer abc', 'accept-language': 'en'});
+    // The next request has only the kept header.
+    await h.call('Send', ['GET', 'http://x/', '']);
+    expect(h.sent.last.headers, {'Accept-Language': 'ko'});
+    expect(await h.call('Header', ['Authorization']), '');
+    // A header of the request's own sets the Content-Type that Send would
+    // add.
+    await h.call('Send', ['POST', 'http://x/', 'a=1', 'Content-Type: x/y']);
+    expect(
+        h.sent.last.headers, {'Accept-Language': 'ko', 'Content-Type': 'x/y'});
+    for (final bad in ['Authorization', ': v', 'Two words: v', '']) {
+      await expectLater(
+          h.call('Send', ['GET', 'http://x/', '', bad]),
+          throwsA(isA<ComponentProblem>()
+              .having((p) => p.code, 'code', DiagnosticCode.httpHeaderForm)
+              .having((p) => p.args, 'args', [bad])));
+    }
+  });
+
+  test('names that look like those of secrets (A076)', () {
+    for (final name in [
+      'Authorization',
+      'AUTHORIZATION',
+      'Proxy-Authorization',
+      'Cookie',
+      'X-API-Key',
+      'Api-Key',
+      'X-Auth-Token',
+      'X-Secret',
+      'Password',
+    ]) {
+      expect(looksLikeSecretHeader(name), isTrue, reason: name);
+    }
+    for (final name in [
+      'Accept',
+      'Accept-Language',
+      'Content-Type',
+      'User-Agent',
+      'X-Requested-With',
+      'If-None-Match',
+    ]) {
+      expect(looksLikeSecretHeader(name), isFalse, reason: name);
+    }
+  });
+
   test('a status from 400 is R037 in all but Send; no answer is R036',
       () async {
     final h = _Http()

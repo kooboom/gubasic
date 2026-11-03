@@ -486,6 +486,12 @@ enum DiagnosticCode {
   /// (`With Http`), a Sub (D134).
   withNotValue('A075'),
 
+  /// A secret given to `Http.Header`, which goes with every request to
+  /// every server the program calls (D135): `Authorization`, `Cookie`, a
+  /// name with key, token, secret, password or auth in it. Args: the
+  /// header's name.
+  secretHeader('A076', DiagnosticSeverity.warning),
+
   // Form and project files (.form.yaml, .gbproj)
 
   /// The file is not in the expected layout (YAML syntax).
@@ -724,7 +730,11 @@ enum DiagnosticCode {
 
   /// A file given to Database.Import that is not an SQLite database
   /// (D130). Args: the path.
-  databaseNotFile('R045');
+  databaseNotFile('R045'),
+
+  /// A header given to Http.Send that is not written `Name: value`
+  /// (D135). Args: the text.
+  httpHeaderForm('R046');
 
   const DiagnosticCode(this.code, [this.severity = DiagnosticSeverity.error]);
 

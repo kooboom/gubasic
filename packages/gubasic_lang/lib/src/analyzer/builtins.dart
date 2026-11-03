@@ -36,9 +36,9 @@ enum ArgKind {
 }
 
 class ParamSpec {
-  const ParamSpec(this.name, this.type, {this.optional = false})
-      : kind = ArgKind.typed,
-        variadic = false;
+  const ParamSpec(this.name, this.type,
+      {this.optional = false, this.variadic = false})
+      : kind = ArgKind.typed;
   const ParamSpec.of(this.name, this.kind,
       {this.optional = false, this.variadic = false})
       : type = null;

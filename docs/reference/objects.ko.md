@@ -154,7 +154,7 @@
 - `Http.Post(url As String, body As String) As String`
 - `Http.GetJson(url As String) As Json`
 - `Http.PostJson(url As String, body As Json) As Json`
-- `Http.Send(method As String, url As String, body As String) As HttpResponse`
+- `Http.Send(method As String, url As String, body As String, ParamArray headers As String) As HttpResponse`
 - `Http.Header(name As String) As String (can be assigned to)`
 
 ## 형식의 멤버

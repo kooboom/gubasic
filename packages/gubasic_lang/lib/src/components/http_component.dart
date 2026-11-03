@@ -51,8 +51,10 @@ class HttpFailure implements Exception {
 ///
 /// `Get`, `Post`, `GetJson` and `PostJson` give the answer's text or JSON
 /// and stop the program for a status from 400 (R037); `Send` gives the
-/// whole answer whatever its status. No answer is R036; an answer that is
-/// not JSON R039. The answer's text is read as its `Content-Type`
+/// whole answer whatever its status, and takes headers for that one
+/// request after the body, each `Name: value` (D135). No answer is R036;
+/// an answer that is not JSON R039; a header not written `Name: value`
+/// R046. The answer's text is read as its `Content-Type`
 /// charset says: UTF-8 when it names none, code page 949 for `euc-kr`
 /// and its other names, Latin-1 for `iso-8859-1`.
 abstract class HttpComponent implements ComponentInstance {
@@ -102,7 +104,8 @@ abstract class HttpComponent implements ComponentInstance {
         final (reply, text) = await _send(
             (args[0] as String).toUpperCase(), args[1] as String,
             body: body.isEmpty ? null : body,
-            type: body.isEmpty ? null : 'text/plain; charset=utf-8');
+            type: body.isEmpty ? null : 'text/plain; charset=utf-8',
+            once: [for (final h in args.skip(3)) _requestHeader(h as String)]);
         return GbHttpResponse(reply.status, reply.headers, text);
       case 'Header':
         final header = (args[0] as String).toLowerCase();
@@ -116,6 +119,17 @@ abstract class HttpComponent implements ComponentInstance {
   }
 
   static const _jsonType = 'application/json';
+
+  /// A header for one request, written `Name: value` (D135); anything
+  /// else is R046.
+  static MapEntry<String, String> _requestHeader(String text) {
+    final colon = text.indexOf(':');
+    final name = colon < 0 ? '' : text.substring(0, colon).trim();
+    if (name.isEmpty || name.contains(RegExp(r'\s'))) {
+      throw ComponentProblem(DiagnosticCode.httpHeaderForm, [text]);
+    }
+    return MapEntry(name, text.substring(colon + 1).trim());
+  }
 
   /// Sends and checks the status: from 400, R037 with the start of the
   /// answer.
@@ -135,12 +149,21 @@ abstract class HttpComponent implements ComponentInstance {
     return result;
   }
 
-  /// Sends [method] [url] with the program's headers, [type] as the
-  /// Content-Type and [accept] as Accept unless the program set them, and
-  /// gives the reply with its text; no answer is R036.
+  /// Sends [method] [url] with the program's headers, [once] the headers
+  /// for this request alone, each in place of a kept one of its name
+  /// (D135), [type] as the Content-Type and [accept] as Accept unless the
+  /// program set them, and gives the reply with its text; no answer is
+  /// R036.
   Future<(HttpReply, String)> _send(String method, String url,
-      {String? body, String? type, String? accept}) async {
+      {String? body,
+      String? type,
+      String? accept,
+      List<MapEntry<String, String>> once = const []}) async {
     final sent = <String, String>{...headers};
+    for (final MapEntry(:key, :value) in once) {
+      sent.removeWhere((k, _) => k.toLowerCase() == key.toLowerCase());
+      sent[key] = value;
+    }
     bool has(String name) =>
         sent.keys.any((k) => k.toLowerCase() == name.toLowerCase());
     if (type != null && !has('Content-Type')) sent['Content-Type'] = type;
@@ -165,6 +188,18 @@ abstract class HttpComponent implements ComponentInstance {
       throw ComponentProblem(DiagnosticCode.jsonInvalid, [e.message]);
     }
   }
+}
+
+/// Whether a header named [name] looks like one that carries a secret
+/// (D135, A076): `Authorization`, `Proxy-Authorization`, `Cookie`, or a
+/// name with key, token, secret, password or auth in it, whatever the
+/// case.
+bool looksLikeSecretHeader(String name) {
+  final lower = name.trim().toLowerCase();
+  return const {'authorization', 'proxy-authorization', 'cookie'}
+          .contains(lower) ||
+      const ['key', 'token', 'secret', 'password', 'passwd', 'auth']
+          .any(lower.contains);
 }
 
 /// An answer's [bytes] as text, by the charset its [contentType] names:

@@ -23,6 +23,7 @@ void main() {
       DiagnosticCode.sqlJoined,
       // The loop may mean to change the copy only (D131).
       DiagnosticCode.forEachCopy,
+      DiagnosticCode.secretHeader,
     };
     for (final code in DiagnosticCode.values) {
       expect(

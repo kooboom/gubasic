@@ -136,7 +136,7 @@ void main() {
     expect(db.properties['lastwasnull']!.type, GbType.boolean);
     expect(db.properties['lastid']!.type, GbType.integer);
     expect(db.otherNames['openrecordset'], ['Query']);
-    // ParamArray takes Value only, and comes last.
+    // ParamArray takes Value or String (D135), and comes last.
     expect(
         () => readComponentFile('name: X\nversion: 1\nobject: true\n'
             'properties: []\nevents: []\n'
@@ -145,8 +145,15 @@ void main() {
     expect(
         () => readComponentFile('name: X\nversion: 1\nobject: true\n'
             'properties: []\nevents: []\n'
-            'methods: [A(ParamArray v As String)]\n'),
+            'methods: [A(ParamArray v As Integer)]\n'),
         throwsFormatException);
+    final send = readComponentFile('name: X\nversion: 1\nobject: true\n'
+            'properties: []\nevents: []\n'
+            'methods:\n  - A(b As String, ParamArray h As String)\n')
+        .methods['a']!;
+    expect(send.parameters.last.variadic, isTrue);
+    expect(send.parameters.last.kind, ArgKind.typed);
+    expect(send.parameters.last.type, GbType.string);
   });
 
   test('ranges and change events', () {

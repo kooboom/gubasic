@@ -207,6 +207,7 @@ TypeOf CType AddHandler AddressOf
 | A073 | 형을 기대하는 곳이 아닌데 항목만으로 형을 알 수 없는 목록: 비었거나 형이 섞임(`Dim a = {1, "x"}`)(4절) |
 | A074 | `Dim a(2) As Integer = {…}`. 목록을 받는 배열은 목록에서 크기를 정함. `a()`로 씀(4절) |
 | A075 | 값이 아닌 것에 쓴 `With`: 내장 객체(`With Http`)(6절) |
+| A076 | `Http.Header`에 넣은 비밀. 모든 요청에 붙어 프로그램이 부르는 모든 서버로 감: `Authorization`, `Cookie`, `key`, `token`, `secret`, `password`, `auth`가 든 이름. `Http.Send`로 그 요청에만 붙임(경고, 11.9절) |
 
 **폼·프로젝트 파일**
 
@@ -288,6 +289,7 @@ TypeOf CType AddHandler AddressOf
 | R043 | 파일 이름만이 아닌 데이터베이스 이름(11.10절) |
 | R044 | 열 수 없는 데이터베이스 파일(11.10절) |
 | R045 | `Database.Import`에 준 SQLite 데이터베이스가 아닌 파일(11.10절) |
+| R046 | `Http.Send`에 준 `"이름: 값"` 모양이 아닌 헤더(11.9절) |
 
 ## 2. 타입
 
@@ -1032,8 +1034,8 @@ pdf.Save(dlgSave.FileName)
 | `GetJson(url)` | 답을 `Json`으로 |
 | `Post(url, body)` | 글을 보내고(`Header`로 다른 것을 정하지 않았으면 `Content-Type: text/plain; charset=utf-8`) 답의 글을 줌 |
 | `PostJson(url, json)` | `Json`을 `application/json`으로 보내고 답을 `Json`으로 줌 |
-| `Send(method, url, body)` | 어떤 메서드든(`"GET"`, `"PUT"`, `"DELETE"` 등. 본문이 없으면 `""`) 보내고 답 전체를 **`HttpResponse`**로 줌: `Status`, `Ok`(상태가 400 미만), `Text`, `Json`, `Header(name)` |
-| `Header(name)` | 그때부터 모든 요청에 함께 보내는 헤더: `Http.Header("Authorization") = "Bearer …"`. `""`를 넣으면 뺌 |
+| `Send(method, url, body, headers…)` | 어떤 메서드든(`"GET"`, `"PUT"`, `"DELETE"` 등. 본문이 없으면 `""`) 보내고 답 전체를 **`HttpResponse`**로 줌: `Status`, `Ok`(상태가 400 미만), `Text`, `Json`, `Header(name)`. 본문 뒤에는 이 요청에만 붙일 헤더를 몇 개든 `"이름: 값"` 글로 |
+| `Header(name)` | 그때부터 모든 요청에, 프로그램이 부르는 모든 서버로 함께 보내는 헤더: `Http.Header("Accept-Language") = "ko"`. `""`를 넣으면 뺌. 키, 토큰, 비밀번호는 여기에 넣지 않음(**비밀** 참고) |
 | `Timeout` | 답을 몇 초 기다릴지. 처음에는 30, 1에서 600까지 |
 
 ```vb
@@ -1049,7 +1051,9 @@ Http.PostJson("https://example.com/scores", mine)
 
 **기다리기.** 호출은 `File.ReadAllText`처럼(11.6절) 부른 자리에서 기다리고, 그것을 위해 따로 적을 것이 없습니다(Visual Basic .NET은 프로그램이 `Await`를 적게 합니다: [Microsoft](https://learn.microsoft.com/en-us/dotnet/visual-basic/programming-guide/concepts/async/)). 화면은 계속 그려지고 중지 버튼도 됩니다. 그동안 마우스 포인터는 기다림 모양이 되고, 그 사이의 클릭은 끝난 뒤에 차례로 실행되며(8.1절), 같은 처리기는 다시 시작되지 않습니다(D5). 완료 이벤트는 없습니다.
 
-**오류.** 주소가 틀리거나, 연결이 없거나, `Timeout` 안에 답이 없거나, 웹에서 서버가 그 페이지의 호출을 허용하지 않아(CORS) 답이 오지 않으면 시스템이 알려 준 내용과 함께 R036입니다. 상태 400 이상은 `Send`만 빼고 상태와 답의 첫 부분과 함께 R037이고, JSON이 아닌 답은 R039입니다. 모두 `Try`로 잡을 수 있습니다(9절). 답의 글은 `Content-Type`의 charset대로 읽습니다. 없으면 UTF-8, `euc-kr`과 그 다른 이름들은 코드 페이지 949, `iso-8859-1`은 Latin-1입니다. 보내는 본문은 UTF-8입니다.
+**비밀.** (DESIGN.ko.md D135.) 키, 토큰, 비밀번호는 서버 하나의 것입니다. `Http.Header`는 그때부터 모든 요청에, 프로그램이 부르는 모든 서버로 보내므로, 거기에 넣은 비밀은 다른 서버로도 갑니다. 날씨 서비스가 점수 서비스의 키를 받게 됩니다. 그 요청에만 붙여 주세요: `Http.Send("GET", url, "", "Authorization: Bearer " & token)`은 그 요청에만 보내고, 거기 적은 헤더는 같은 이름의 `Header`를 그 요청에서만 대신합니다. `Http.Header`에 `Authorization`, `Proxy-Authorization`, `Cookie`, 또는 `key`, `token`, `secret`, `password`, `auth`가 든 이름을 넣으면 분석기가 경고합니다(A076). 헤더를 빼는 `""`에는 경고하지 않습니다. `Send`에 준 헤더가 `이름: 값` 모양이 아니면 R046입니다.
+
+**오류.** 주소가 틀리거나, 연결이 없거나, `Timeout` 안에 답이 없거나, 웹에서 서버가 그 페이지의 호출을 허용하지 않아(CORS) 답이 오지 않으면 시스템이 알려 준 내용과 함께 R036입니다. 상태 400 이상은 `Send`만 빼고 상태와 답의 첫 부분과 함께 R037이고, JSON이 아닌 답은 R039, `Send`에 준 `이름: 값` 모양이 아닌 헤더는 R046입니다. 모두 `Try`로 잡을 수 있습니다(9절). 답의 글은 `Content-Type`의 charset대로 읽습니다. 없으면 UTF-8, `euc-kr`과 그 다른 이름들은 코드 페이지 949, `iso-8859-1`은 Latin-1입니다. 보내는 본문은 UTF-8입니다.
 
 **`Json`**은 JSON 값입니다([RFC 8259](https://www.rfc-editor.org/rfc/rfc8259)). 객체, 배열, 글, 숫자, `True`나 `False`, 또는 null입니다. `Json.Parse(text)`가 글을 읽고, `Dim j As New Json`은 빈 객체를, `Json.Array()`는 빈 배열을 만듭니다. `j("name")`은 객체의 멤버, `j(0)`은 배열의 항목이며 각각 다시 `Json`이라 `j("address")("city")`처럼 한 단계씩 내려갑니다. 값은 그 형식 그대로 꺼냅니다. 그래서 `Variant`가 없습니다(2절): `AsString`, `AsInteger`(정수인 수), `AsDouble`, `AsBoolean`, 또는 `Json`에 `CStr`, `CInt`, `CDbl`, `CBool`. `Kind`는 어느 것인지 말해 줍니다: `"Object"`, `"Array"`, `"String"`, `"Number"`, `"Boolean"`, `"Null"`. `Count`는 멤버나 항목의 수, `Has(name)`은 객체에 그 멤버가 있는지, `Keys`는 객체의 멤버 이름들을 `String` 배열로, `For Each item In arr`는 배열의 항목을 차례로 돕니다. 쓰기: `j("name") = "Kim"`, `j("age") = 12`는 멤버를 넣거나 바꾸고(`Integer`, `Double`, `Boolean`, `String`, `Json`, `Nothing`), `j(0) = …`은 항목을 바꾸고, `arr.Add(value)`는 항목을 더하며, `Remove(name)`과 `Remove(index)`는 뺍니다. `Text`는 값을 띄어쓰기 없는 JSON 글로 줍니다. 같은 객체나 배열을 가리키는 두 `Json` 값은 `List` 변수 둘처럼 서로의 변화를 봅니다. JSON에서 읽은 수는 정수로 적혀 있으면 정수이고(`12.0`은 12), 정확히 담기에 너무 큰 `12345678901234567890`은 `Double`입니다. `Debug.Print(j)`와 `CStr(j)`는 글은 그 글 그대로, 수는 GuBASIC이 적는 대로(2.2절), `True`나 `False`, null은 "", 객체와 배열은 JSON 글로 보여 줍니다. 종류가 틀리면(수의 `AsString`, 객체의 `j(0)`, 객체의 `For Each`) R040, 없는 멤버는 R041, 없는 항목은 R003입니다. `Json`은 `=`나 `&`로 비교하거나 잇지 않습니다(A013). 먼저 값을 꺼내 주세요.
 

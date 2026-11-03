@@ -207,6 +207,7 @@ The analyzer checks names and types (§2.1, §3.2, §5.2). It runs even when the
 | A073 | A list of items whose type cannot be told where no type is expected: empty, or of types that do not go together (`Dim a = {1, "x"}`) (§4) |
 | A074 | `Dim a(2) As Integer = {…}`: an array given a list takes its size from the list; write `a()` (§4) |
 | A075 | `With` on what is not a value: a built-in object (`With Http`) (§6) |
+| A076 | A secret given to `Http.Header`, which goes with every request to every server the program calls: `Authorization`, `Cookie`, a name with `key`, `token`, `secret`, `password` or `auth` in it. Give it to the one request with `Http.Send` (warning, §11.9) |
 
 **Form and project files**
 
@@ -288,6 +289,7 @@ Errors found while a program runs. Each stops the program and points at its line
 | R043 | A database name that is not a file name alone (§11.10) |
 | R044 | A database file that could not be opened (§11.10) |
 | R045 | A file given to `Database.Import` that is not an SQLite database (§11.10) |
+| R046 | A header given to `Http.Send` that is not written `"Name: value"` (§11.9) |
 
 ## 2. Types
 
@@ -1032,8 +1034,8 @@ The properties apply to the whole file, as they are when `Save` runs. Pages are 
 | `GetJson(url)` | the answer as a `Json` |
 | `Post(url, body)` | sends text (`Content-Type: text/plain; charset=utf-8` unless `Header` set another) and gives the answer's text |
 | `PostJson(url, json)` | sends a `Json` as `application/json` and gives the answer as a `Json` |
-| `Send(method, url, body)` | sends any method (`"GET"`, `"PUT"`, `"DELETE"`, …; `""` for no body) and gives the whole answer as an **`HttpResponse`**: `Status`, `Ok` (a status below 400), `Text`, `Json` and `Header(name)` |
-| `Header(name)` | a header sent with every request from then on: `Http.Header("Authorization") = "Bearer …"`; `""` takes it away |
+| `Send(method, url, body, headers…)` | sends any method (`"GET"`, `"PUT"`, `"DELETE"`, …; `""` for no body) and gives the whole answer as an **`HttpResponse`**: `Status`, `Ok` (a status below 400), `Text`, `Json` and `Header(name)`. After the body, any headers for this one request, each written `"Name: value"` |
+| `Header(name)` | a header sent with every request from then on, to every server the program calls: `Http.Header("Accept-Language") = "ko"`; `""` takes it away. Not for a key, a token or a password (see **Secrets**) |
 | `Timeout` | how many seconds to wait for an answer: 30 at first, from 1 to 600 |
 
 ```vb
@@ -1049,7 +1051,9 @@ Http.PostJson("https://example.com/scores", mine)
 
 **Waiting.** A call waits where it is, as `File.ReadAllText` does (§11.6), with nothing to write for it (Visual Basic .NET makes the program write `Await`: [Microsoft](https://learn.microsoft.com/en-us/dotnet/visual-basic/programming-guide/concepts/async/)): the screen keeps drawing and the Stop button works; the mouse pointer shows waiting meanwhile; clicks made meanwhile run after it, in turn (§8.1), and the same handler is not started again (D5). There is no completion event.
 
-**Errors.** No answer, because the address is wrong, there is no connection, none came within `Timeout`, or on the web the server does not allow the page to call it (CORS), is R036 with what the system said; a status from 400 is R037 in all but `Send`, with the status and the start of the answer; an answer that is not JSON is R039. All of them can be caught with `Try` (§9). The answer's text is read as its `Content-Type` charset says: UTF-8 when it names none, code page 949 for `euc-kr` and its other names, Latin-1 for `iso-8859-1`; bodies are sent as UTF-8.
+**Secrets.** (DESIGN.md D135.) A key, a token or a password belongs to one server. `Http.Header` is sent with every request from then on, to every server the program calls, so a secret set there goes to the others too: a weather service would receive the key of the scores service. Give it to the one request instead: `Http.Send("GET", url, "", "Authorization: Bearer " & token)` sends it with that request only, and a header named there replaces a `Header` of the same name for that request. The analyzer warns (A076) when `Http.Header` is given `Authorization`, `Proxy-Authorization`, `Cookie`, or a name with `key`, `token`, `secret`, `password` or `auth` in it; `""`, which takes a header away, is not warned about. A header for `Send` that is not written `Name: value` is R046.
+
+**Errors.** No answer, because the address is wrong, there is no connection, none came within `Timeout`, or on the web the server does not allow the page to call it (CORS), is R036 with what the system said; a status from 400 is R037 in all but `Send`, with the status and the start of the answer; an answer that is not JSON is R039; a header for `Send` not written `Name: value` is R046. All of them can be caught with `Try` (§9). The answer's text is read as its `Content-Type` charset says: UTF-8 when it names none, code page 949 for `euc-kr` and its other names, Latin-1 for `iso-8859-1`; bodies are sent as UTF-8.
 
 **`Json`** is a JSON value ([RFC 8259](https://www.rfc-editor.org/rfc/rfc8259)): an object, an array, text, a number, `True` or `False`, or null. `Json.Parse(text)` reads one; `Dim j As New Json` makes an empty object and `Json.Array()` an empty array. `j("name")` is a member of an object and `j(0)` an item of an array, each a `Json` again, so `j("address")("city")` goes down a level. A value is taken out as the type it is, so that nothing is a `Variant` (§2): `AsString`, `AsInteger` (a whole number), `AsDouble` and `AsBoolean`, or `CStr`, `CInt`, `CDbl` and `CBool` of the `Json`. `Kind` says which it is: `"Object"`, `"Array"`, `"String"`, `"Number"`, `"Boolean"` or `"Null"`; `Count` is the number of members or items; `Has(name)` whether an object has a member; `Keys` an object's member names as a `String` array; `For Each item In arr` goes through an array's items. Writing: `j("name") = "Kim"` and `j("age") = 12` add or change a member (an `Integer`, `Double`, `Boolean`, `String`, `Json` or `Nothing`), `j(0) = …` changes an item, `arr.Add(value)` adds one, `Remove(name)` and `Remove(index)` take one away, and `Text` is the value as compact JSON text. Two `Json` values that share an object or an array see each other's changes, as two `List` variables do. A number read from JSON is whole when it is written whole (`12.0` is 12); one too large to be exact, `12345678901234567890`, is a `Double`. `Debug.Print(j)` and `CStr(j)` show a string's own text, a number as GuBASIC writes it (§2.2), `True` or `False`, "" for null, and an object or an array as JSON text. The wrong kind (`AsString` of a number, `j(0)` of an object, `For Each` over an object) is R040; a member that is not there R041; an item that is not there R003. A `Json` is not compared or joined with `=` or `&` (A013): take the value out first.
 

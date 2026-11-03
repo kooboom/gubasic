@@ -1,15 +1,16 @@
-' Http and JSON (D124, D125): Get, GetJson, Post, PostJson and Send, a
-' header sent with every request, Timeout, and the errors: no answer
-' (R036), a status from 400 (R037), text that is not JSON (R039).
+' Http and JSON (D124, D125, D135): Get, GetJson, Post, PostJson and Send,
+' a header sent with every request, headers for one request, Timeout, and
+' the errors: no answer (R036), a status from 400 (R037), text that is not
+' JSON (R039), a header not written "Name: value" (R046).
 Sub btnGet_Click()
     Debug.Print(Http.Timeout)
     Debug.Print(Http.Get("https://api.example.com/hello"))
-    Http.Header("Authorization") = "Bearer abc"
+    Http.Header("Accept-Language") = "ko"
     Http.Timeout = 5
-    Debug.Print(Http.Header("authorization") & " / " & Http.Timeout)
+    Debug.Print(Http.Header("accept-language") & " / " & Http.Timeout)
     Debug.Print(Http.Get("https://api.example.com/hello"))
-    Http.Header("Authorization") = ""
-    Debug.Print("[" & Http.Header("Authorization") & "]")
+    Http.Header("Accept-Language") = ""
+    Debug.Print("[" & Http.Header("Accept-Language") & "]")
 End Sub
 
 Sub btnJson_Click()
@@ -41,6 +42,18 @@ Sub btnSend_Click()
     r = Http.Send("POST", "https://api.example.com/echo", "sent")
     Debug.Print(r.Status & " " & r.Ok & " [" & r.Header("X-None") & "] " & r.Text)
     Debug.Print(Http.Send("GET", "https://api.example.com/scores", "").Json(1)("name").AsString)
+    ' A secret goes with the one request (D135), over a kept header of its name.
+    Http.Header("Accept-Language") = "ko"
+    Dim token As String = "abc"
+    r = Http.Send("GET", "https://api.example.com/hello", "", "Authorization: Bearer " & token, "accept-language: en")
+    Debug.Print(r.Status & " " & r.Text)
+    Debug.Print(Http.Get("https://api.example.com/hello") & " [" & Http.Header("Authorization") & "]")
+    Http.Header("Accept-Language") = ""
+    Try
+        r = Http.Send("GET", "https://api.example.com/hello", "", "Authorization")
+    Catch ex As Exception
+        Debug.Print(ex.Message)
+    End Try
 End Sub
 
 Sub btnErrors_Click()

@@ -151,14 +151,14 @@ Keeps a program's data in an SQLite database file (docs/DESIGN.md D124, D126), t
 
 ### Http
 
-Talks to web servers over HTTP (docs/DESIGN.md D124, D125), the way Visual Basic 6's Internet Transfer Control did with OpenURL (https://learn.microsoft.com/en-us/previous-versions/visualstudio/visual-basic-6/aa733648(v=vs.60)). A built-in object used by its name, not put on a form: Http.Get(url) gives the answer's text, Http.GetJson(url) its JSON, Http.Post(url, body) and Http.PostJson(url, json) send a body and give the answer, and Http.Send(method, url, body) gives the whole answer as an HttpResponse, whatever its status. A call waits where it is, as File.ReadAllText does: the screen keeps drawing, the pointer shows waiting, and clicks made meanwhile run after it, in turn. Header(name) is a header sent with every request from then on ("" takes it away); Timeout is how many seconds to wait for an answer. A request that gets no answer is R036; a status from 400 is R037 in all but Send; text that is not JSON is R039. The first component through the component channel (docs/COMPONENT_CHANNEL.md).
+Talks to web servers over HTTP (docs/DESIGN.md D124, D125), the way Visual Basic 6's Internet Transfer Control did with OpenURL (https://learn.microsoft.com/en-us/previous-versions/visualstudio/visual-basic-6/aa733648(v=vs.60)). A built-in object used by its name, not put on a form: Http.Get(url) gives the answer's text, Http.GetJson(url) its JSON, Http.Post(url, body) and Http.PostJson(url, json) send a body and give the answer, and Http.Send(method, url, body) gives the whole answer as an HttpResponse, whatever its status. A call waits where it is, as File.ReadAllText does: the screen keeps drawing, the pointer shows waiting, and clicks made meanwhile run after it, in turn. Header(name) is a header sent with every request from then on, to every server the program calls ("" takes it away), so a key, a token or a password does not belong there (A076): Send takes, after the body, headers for that one request, each written "Name: value", and one named there replaces a Header of the same name for that request (D135). Timeout is how many seconds to wait for an answer. A request that gets no answer is R036; a status from 400 is R037 in all but Send; text that is not JSON is R039; a header for Send that is not written "Name: value" is R046. The first component through the component channel (docs/COMPONENT_CHANNEL.md).
 
 - `Http.Timeout As Integer (can be set)`
 - `Http.Get(url As String) As String`
 - `Http.Post(url As String, body As String) As String`
 - `Http.GetJson(url As String) As Json`
 - `Http.PostJson(url As String, body As Json) As Json`
-- `Http.Send(method As String, url As String, body As String) As HttpResponse`
+- `Http.Send(method As String, url As String, body As String, ParamArray headers As String) As HttpResponse`
 - `Http.Header(name As String) As String (can be assigned to)`
 
 ## Members of types
