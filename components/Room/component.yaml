@@ -1,0 +1,51 @@
+# Puts programs with the same room code together through a relay server
+# (docs/DESIGN.md D122, D136; the protocol: docs/ROOM_PROTOCOL.md): the
+# TV's program calls Create() and shows Code, the phones' call
+# Join(code, nickname), and each Send reaches the others as Message. Like a
+# Timer it is not seen on the form: the designer keeps it in the tray.
+# Create and Join wait where they are called until the program is in the
+# room, as Http waits (D124 A); a room that cannot be entered is R048, with
+# the server's reason. Server is the relay server's address
+# (wss://relay.example.com/room); empty, the desktop IDE's own relay server
+# while developing. Send while not in a room is R049. A lost connection
+# comes back by itself within 30 seconds, keeping the program's place;
+# Sends meanwhile wait. Events run in turn, as a WebSocket's do; every e
+# is a RoomEventArgs.
+name: Room
+version: 1
+visual: false
+channel: true
+platforms: [web, macos, windows]
+defaultEvent: Message
+properties:
+  # The relay server's address; empty: the IDE's own while developing.
+  - { name: Server, type: String, default: "" }
+  # This program's nickname in the room, which Create uses and Join
+  # replaces.
+  - { name: Nickname, type: String, default: "" }
+  # The room's code, after Create or Join; "" when not in a room.
+  - { name: Code, type: String, default: "", readOnly: true }
+  # This program's member ID in the room (m1, m2, …).
+  - { name: Me, type: String, default: "", readOnly: true }
+  # Whether this program made the room.
+  - { name: IsHost, type: Boolean, default: false, readOnly: true }
+  # The member IDs of everyone in the room, this program among them.
+  - { name: Members, type: String(), default: [], readOnly: true }
+  # Any text the program keeps with it, as in Visual Basic; GuBASIC does
+  # nothing with it (D98).
+  - { name: Tag, type: String, default: "" }
+events:
+  - Message(e As RoomEventArgs)
+  - Joined(e As RoomEventArgs)
+  - Left(e As RoomEventArgs)
+  - Closed(e As RoomEventArgs)
+  - Error(e As RoomEventArgs)
+methods:
+  - Create()
+  - Join(code As String, nickname As String)
+  - Send(text As String)
+  - SendTo(member As String, text As String)
+  - Leave()
+  - Lock()
+  # The nickname of a member of the room, by its ID.
+  - NicknameOf(member As String) As String

@@ -6,6 +6,7 @@ import '../analyzer/compile.dart';
 import '../analyzer/forms.dart';
 import '../components/database_component.dart';
 import '../components/http_component.dart';
+import '../components/room_component.dart';
 import '../components/web_socket_component.dart';
 import '../forms/anchor.dart';
 import '../forms/form_file.dart';
@@ -16,6 +17,7 @@ import '../interpreter/run_result.dart';
 import '../interpreter/values.dart';
 import '../pdf/pdf_document.dart';
 import '../text/text_codec.dart';
+import 'room_script.dart';
 import 'web_socket_script.dart';
 
 /// One step of an event script (`NAME.events`, docs/DESIGN.md §9.1).
@@ -164,6 +166,26 @@ class ServerStep extends ScriptStep {
   final ServerAction action;
 }
 
+/// `Peer 민지 Join`, `Peer 민지 Send {"choice":2}`: someone else in the
+/// test's relay server acts (D136, [PeerAction]).
+class PeerStep extends ScriptStep {
+  const PeerStep(super.text, this.action);
+
+  final PeerAction action;
+}
+
+/// `Room Close idle`: the test's relay server closes every room with that
+/// reason; `Room Drop`: the program's connection to it is lost (D136).
+class RoomStep extends ScriptStep {
+  const RoomStep(super.text, this.verb, this.argument);
+
+  final String verb;
+  final String argument;
+}
+
+final _peer =
+    RegExp(r'^Peer\s+(\S+)\s+(Create|Join|Send|SendTo|Leave|Lock)(?:\s(.*))?$');
+final _room = RegExp(r'^Room\s+(Close|Drop)(?:\s+(.*))?$');
 final _server = RegExp(r'^Server\s+(Send|Close|Error)(?:\s(.*))?$');
 final _event = RegExp(r'^([A-Za-z][A-Za-z0-9_]*)\.([A-Za-z][A-Za-z0-9_]*)$');
 final _formEvent = RegExp(
@@ -190,7 +212,11 @@ List<ScriptStep> parseEventScript(String text) {
     final line = _withoutComment(lines[i]).trim();
     if (line.isEmpty) continue;
     RegExpMatch? m;
-    if ((m = _server.firstMatch(line)) != null) {
+    if ((m = _peer.firstMatch(line)) != null) {
+      steps.add(PeerStep(line, PeerAction(m![1]!, m[2]!, m[3]?.trim() ?? '')));
+    } else if ((m = _room.firstMatch(line)) != null) {
+      steps.add(RoomStep(line, m![1]!, m[2]?.trim() ?? ''));
+    } else if ((m = _server.firstMatch(line)) != null) {
       final text = m![2] ?? '';
       steps.add(ServerStep(
           line,
@@ -453,6 +479,23 @@ class ScriptedWebSocket extends WebSocketComponent {
       sockets.open(url, listener);
 }
 
+/// The `Room` control of a test (D136), on [rooms]; the IDE's own relay
+/// server stands for an empty Server, and a lost connection is tried again
+/// at once.
+class ScriptedRoom extends RoomComponent {
+  ScriptedRoom(super.name, this.rooms)
+      : super(defaultServer: 'ws://127.0.0.1:7071/room');
+
+  final ScriptedRooms rooms;
+
+  @override
+  Future<WebSocketLink> open(String url, WebSocketListener listener) =>
+      rooms.open(url, listener);
+
+  @override
+  Future<void> pause(Duration d) async {}
+}
+
 /// A [FormHost] for tests: properties start as in the form files, dialogs
 /// stay open until the script closes them, and everything the program
 /// shows is recorded ([TranscriptLine]):
@@ -526,12 +569,16 @@ class ScriptedHost implements FormHost, FileHost, ComponentHost, DatabaseFiles {
   /// The WebSocket servers the program talks to (D136): a test's NAME.ws.
   late final webSockets = ScriptedWebSockets(_webSocketStubs, transcript);
 
+  /// The relay server the program's Rooms talk to (D136), in memory.
+  late final rooms = ScriptedRooms(transcript);
+
   @override
   ComponentInstance? createComponent(String component, {String name = ''}) =>
       switch (component) {
         'Http' => _ScriptedHttp(http, transcript),
         'Database' => database,
         'WebSocket' => ScriptedWebSocket(name, webSockets),
+        'Room' => ScriptedRoom(name, rooms),
         _ => null,
       };
 
@@ -953,6 +1000,14 @@ abstract interface class ScriptDriver {
   /// connection is open.
   Future<bool> server(ServerAction action);
 
+  /// Someone else on the test's relay server does [action] (D136); false
+  /// when it cannot.
+  Future<bool> peer(PeerAction action);
+
+  /// The test's relay server does [verb] (`Close`, `Drop`); false when
+  /// there is nothing to do it to.
+  Future<bool> relay(String verb, String argument);
+
   /// Closes the form if it is still open, and waits for the run to end.
   Future<RunResult> finish();
 }
@@ -1101,6 +1156,14 @@ Future<List<String>> driveEventScript(
       case ServerStep(:final action):
         if (!await driver.server(action)) {
           throw StateError('"${step.text}" but no WebSocket is open');
+        }
+      case PeerStep(:final action):
+        if (!await driver.peer(action)) {
+          throw StateError('"${step.text}" cannot be done now');
+        }
+      case RoomStep(:final verb, :final argument):
+        if (!await driver.relay(verb, argument)) {
+          throw StateError('"${step.text}" but there is no room');
         }
     }
   }
@@ -1311,6 +1374,13 @@ class _HostDriver implements ScriptDriver {
   @override
   Future<bool> server(ServerAction action) async =>
       host.webSockets.serverDoes(action);
+
+  @override
+  Future<bool> peer(PeerAction action) async => host.rooms.peerDoes(action);
+
+  @override
+  Future<bool> relay(String verb, String argument) async =>
+      host.rooms.serverDoes(verb, argument);
 
   @override
   Future<RunResult> finish() {

@@ -31,7 +31,7 @@ class PropertySpec {
   final String name;
 
   /// Integer, Double, Boolean or String; `List(Of String)` for an
-  /// [internal] property.
+  /// [internal] property, `String()` for a [readOnly] one (D136).
   final GbType type;
 
   /// An `int`, `double`, `bool`, `String` or `List<String>`, matching
@@ -316,16 +316,21 @@ ComponentSpec readComponentFile(String text) {
       throw FormatException('$name: internal, readOnly, designTime, '
           'picture, anchor and shortcut are true or false');
     }
-    final type = typeName == 'list(of string)' && internal
-        ? const ListType(GbType.string)
-        : _valueTypes[typeName];
+    final type = switch (typeName) {
+      'list(of string)' when internal => const ListType(GbType.string),
+      // A component's own list, read only (Room.Members, D136).
+      'string()' when readOnly => const ArrayType(GbType.string),
+      _ => _valueTypes[typeName],
+    };
     if (type == null) throw FormatException('$name: unsupported type');
     final value = p['default'];
     final ok = switch (type) {
       GbType.integer => value is int,
       GbType.double_ => value is num,
       GbType.boolean => value is bool,
-      ListType() => value is YamlList && value.every((v) => v is String),
+      ListType() ||
+      ArrayType() =>
+        value is YamlList && value.every((v) => v is String),
       _ => value is String,
     };
     if (!ok) throw FormatException('$name: default does not match its type');
@@ -351,7 +356,9 @@ ComponentSpec readComponentFile(String text) {
         type,
         switch (type) {
           GbType.double_ => (value as num).toDouble(),
-          ListType() => List<String>.unmodifiable(value as YamlList),
+          ListType() ||
+          ArrayType() =>
+            List<String>.unmodifiable(value as YamlList),
           _ => value as Object,
         },
         min: min,
@@ -537,6 +544,7 @@ const _parameterTypes = {
   'messageeventargs': GbType.messageEventArgs,
   'closeeventargs': GbType.closeEventArgs,
   'erroreventargs': GbType.errorEventArgs,
+  'roomeventargs': GbType.roomEventArgs,
   'json': GbType.json,
 };
 

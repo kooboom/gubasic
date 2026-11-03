@@ -104,7 +104,7 @@ Plan: [plans/PLAN_V06.md](plans/PLAN_V06.md) (2026-11-03; the answers are D136; 
 
 - [x] Events through the component channel: a component reports an event, the interpreter runs its handler in turn (D136)
 - [x] `WebSocket`: `Connect` (waits until open), `Send`, `Close`; `Message`, `Closed`, `Error`, for any standard WebSocket server (D136)
-- [ ] `Room`: `Create` and `Join` (wait until in), `Send`, `SendTo`, `Leave`, `Lock`; `Joined`, `Left`, `Message`, `Closed`, `Error`, over a relay server whose message format is published (`docs/ROOM_PROTOCOL.md`)
+- [x] `Room`: `Create` and `Join` (wait until in), `Send`, `SendTo`, `Leave`, `Lock`; `Joined`, `Left`, `Message`, `Closed`, `Error`, over a relay server whose message format is published (`docs/ROOM_PROTOCOL.md`)
 - [ ] The relay server (`packages/gubasic_relay`), kept in the repository, with a guide, an install script and an Apache configuration for users' own servers (D123); no public trial server (D136)
 - [ ] The IDE's local relay server: started by itself when `Room.Server` is empty; "Allow devices on the same network", off by default, with a warning; "Preview on the web" with a QR code (D136)
 - [ ] Example: a live quiz, phones answering and a TV showing the race ([IDEAS](IDEAS.md#real-time-together-websocket-and-room))

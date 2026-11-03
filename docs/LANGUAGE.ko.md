@@ -1130,6 +1130,65 @@ End Sub
 
 **어디서 도나.** IDE와 내보낸 앱에서, GuBASIC이 도는 모든 플랫폼에서 돕니다. 놀이터에는 `WebSocket`이 없습니다(R038). 컴포넌트 통로([COMPONENT_CHANNEL.ko.md](COMPONENT_CHANNEL.ko.md))로 들어오며, 이벤트가 있는 첫 컴포넌트입니다. 동일성 프로그램은 대본대로 답하는 서버 `NAME.ws`와 이야기합니다.
 
+### 11.12 Room
+
+(DESIGN.md D122, D136.) **`Room`** 은 같은 방 코드를 가진 프로그램들을 중계 서버로 이어 줍니다. TV 쪽 프로그램이 방을 만들어 코드를 보여 주고, 폰 쪽 프로그램들이 그 코드로 들어오면, 하나가 보낸 것이 다른 모두에게 갑니다. `WebSocket`처럼 트레이에 놓이고, 공개한 프로토콜([ROOM_PROTOCOL.ko.md](ROOM_PROTOCOL.ko.md))로 말하므로 GuBASIC으로 쓰지 않은 프로그램도 방에 들어올 수 있습니다.
+
+| 멤버 | 하는 일 |
+|---|---|
+| `Server` | 중계 서버 주소 `wss://relay.example.com/room`. 속성 창에서 정함. 비어 있으면 데스크톱 IDE에서 개발하는 동안 이 컴퓨터의 IDE 중계 서버를 씀 |
+| `Nickname` | 이 프로그램의 별명. `Create`가 씀 |
+| `Create()` | 방을 만들고, 만들어질 때까지 기다림. 그 뒤 `Code`가 방 코드이고 이 프로그램이 방장 |
+| `Join(code, nickname)` | 그 코드의 방에 들어가고(대소문자 무시), 들어갈 때까지 기다림 |
+| `Send(text)` | 방의 다른 모두에게 |
+| `SendTo(member, text)` | 멤버 한 사람에게 |
+| `Leave()` | 방에서 나감. 방장이 나가면 방이 끝남 |
+| `Lock()` | 방장만: 더는 아무도 못 들어옴 |
+| `Code`, `Me`, `IsHost`, `Members` | 방 코드, 이 프로그램의 멤버 ID(`m1`, `m2`, …), 방을 만들었는지, 모든 멤버 ID의 `String` 배열(읽기만) |
+| `NicknameOf(member)` | 멤버의 별명 |
+| 이벤트 `Joined(e)`, `Left(e)` | 누가 들어오거나 나감: `e.Member`, `e.Nickname` |
+| 이벤트 `Message(e)` | 메시지: `e.Member`, `e.Nickname`, `e.Text`, 그리고 그 글을 JSON으로 읽은 `e.Json` |
+| 이벤트 `Closed(e)` | 방이 끝남: `e.Reason`은 `"host left"`, `"idle"`(30분 동안 보낸 것이 없음), `"time"`, `"server"`, `"connection lost"` |
+| 이벤트 `Error(e)` | 들어간 뒤 서버가 무엇을 거부함(너무 큰 메시지, 너무 빠른 메시지): `e.Message` |
+
+`e`는 모두 **`RoomEventArgs`** 이고, 그 이벤트와 상관없는 멤버는 `""`입니다.
+
+```vb
+' TV
+Sub Form_Load()
+    rmQuiz.Create()
+    lblCode.Caption = "코드: " & rmQuiz.Code
+End Sub
+
+Sub rmQuiz_Joined(e As RoomEventArgs)
+    lstPlayers.AddItem(e.Nickname)
+End Sub
+
+Sub rmQuiz_Message(e As RoomEventArgs)
+    Dim answer As Json = e.Json
+    lblLast.Caption = e.Nickname & ": " & answer("choice").AsInteger
+End Sub
+
+' 폰
+Sub btnJoin_Click()
+    rmQuiz.Join(txtCode.Text, txtNickname.Text)
+End Sub
+
+Sub btnAnswer_Click()
+    rmQuiz.Send("{""choice"":2}")
+End Sub
+```
+
+**기다림과 차례.** `Create`와 `Join`은 `Connect`(11.11절)처럼 부른 자리에서 기다리므로 다음 줄에서 `Code`를 읽을 수 있습니다. 이벤트는 `WebSocket`의 것처럼 차례로 실행됩니다. `Message`가 도는 동안 온 메시지는 그것을 기다립니다. 한 멤버가 보낸 메시지는 보낸 순서대로 옵니다.
+
+**끊긴 연결**은 30초 안에 저절로 다시 이어지고 방의 자리를 지킵니다. 다른 사람들에게는 알리지 않고, 그동안의 `Send`는 기다렸다가 가며, 그동안 이 프로그램에 온 것은 다시 이어진 뒤에 옵니다. 다시 잇지 못하면 `Closed`가 `"connection lost"`로 실행됩니다.
+
+**오류.** 들어가지 못한 방은 R048이고 서버가 말한 이유(`room-not-found`, `room-full`, `room-locked`, `server-full`, 시도가 너무 많으면 `too-fast`)가 붙습니다. 중계 서버에 연결하지 못하면 R047, 방에 없을 때의 `Send`는 R049입니다. 모두 `Try`로 잡을 수 있습니다(9절). `Server`에 적은 `ws://` 주소가 `localhost`나 사설 네트워크의 것이 아니면 `Connect`처럼 경고합니다(A077).
+
+**중계 서버.** 중계 서버는 방을 메모리에만 두고, 주인이 바꿀 수 있는 제한이 있습니다: 방 50개, 방 하나에 50명, 메시지 16KB, 멤버당 초당 20개. `packages/gubasic_relay`이고, 자기 서버에 올리는 방법은 [RELAY_SERVER.ko.md](RELAY_SERVER.ko.md)에 있습니다. 공개 서버는 없습니다. 다른 사람이 쓰는 앱이라면 `Server`에 자기 서버를 적습니다.
+
+**어디서 도나.** IDE와 내보낸 앱에서, 모든 플랫폼에서 돕니다. 놀이터에는 `Room`이 없습니다(R038). 동일성 프로그램은 메모리 안의 중계 서버를 쓰고, 이벤트 스크립트가 방의 다른 사람 노릇을 합니다: `Peer 민지 Join`, `Peer 민지 Send …`, `Room Close idle`, `Room Drop`.
+
 ## 12. 열린 질문
 
 - 파일 확장자 (`.gbas`는 임시).

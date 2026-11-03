@@ -1,0 +1,6 @@
+formatVersion: 1
+properties: { Caption: Room reconnect, Width: 440, Height: 120 }
+controls:
+  - { name: btnCreate, type: Button, properties: { Caption: Create, Left: 16, Top: 16 } }
+  - { name: btnSend, type: Button, properties: { Caption: Send, Left: 120, Top: 16 } }
+  - { name: rmQuiz, type: Room, properties: { Nickname: TV } }

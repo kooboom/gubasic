@@ -3131,6 +3131,15 @@ class Interpreter {
         return GbInt.of(mouseButtons.entries
             .firstWhere((e) => e.key.toLowerCase() == name)
             .value);
+      case GbRoomEvent r:
+        return switch (name) {
+          'member' => r.member,
+          'nickname' => r.nickname,
+          'text' => r.text,
+          'json' => GbJson(_parseJson(r.text, node)),
+          'reason' => r.reason,
+          _ => r.message,
+        };
       case GbSocketEvent s:
         return switch (name) {
           'text' => s.text,

@@ -218,6 +218,15 @@
 
 - `Message As String`
 
+### RoomEventArgs
+
+- `Member As String`
+- `Nickname As String`
+- `Text As String`
+- `Json As Json`
+- `Reason As String`
+- `Message As String`
+
 ### Table
 
 - `RowCount As Integer`

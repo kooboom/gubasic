@@ -140,6 +140,7 @@ final _types = <GbType>[
   GbType.messageEventArgs,
   GbType.closeEventArgs,
   GbType.errorEventArgs,
+  GbType.roomEventArgs,
   GbType.table,
   GbType.pdfDocument,
   GbType.json,

@@ -224,6 +224,8 @@ void main() {
         'OpenFileDialog',
         'OptionButton',
         'PdfDocument',
+        'Room',
+        'RoomEventArgs',
         'SaveFileDialog',
         'String',
         'Table',

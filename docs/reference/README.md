@@ -18,6 +18,7 @@ Every control, function, object and type, generated from what the analyzer knows
 - [Menu](controls/Menu.md)
 - [OpenFileDialog](controls/OpenFileDialog.md)
 - [OptionButton](controls/OptionButton.md)
+- [Room](controls/Room.md)
 - [SaveFileDialog](controls/SaveFileDialog.md)
 - [TextBox](controls/TextBox.md)
 - [Timer](controls/Timer.md)

@@ -166,6 +166,18 @@ Map<String, MemberSpec>? membersOf(GbType type) {
       list = const [MemberSpec.property('Reason', _s)];
     case GbType.errorEventArgs:
       list = const [MemberSpec.property('Message', _s)];
+    case GbType.roomEventArgs:
+      // A Room's event (D136): the member and its nickname (Message,
+      // Joined, Left), the message (Message), why the room ended (Closed),
+      // what went wrong (Error).
+      list = const [
+        MemberSpec.property('Member', _s),
+        MemberSpec.property('Nickname', _s),
+        MemberSpec.property('Text', _s),
+        MemberSpec.property('Json', GbType.json),
+        MemberSpec.property('Reason', _s),
+        MemberSpec.property('Message', _s),
+      ];
     case GbType.httpResponse:
       // The whole answer to an HTTP request (D125).
       list = [

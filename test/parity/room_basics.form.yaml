@@ -1,0 +1,8 @@
+formatVersion: 1
+properties: { Caption: Room, Width: 440, Height: 120 }
+controls:
+  - { name: btnCreate, type: Button, properties: { Caption: Create, Left: 16, Top: 16 } }
+  - { name: btnAsk, type: Button, properties: { Caption: Ask, Left: 120, Top: 16 } }
+  - { name: btnLock, type: Button, properties: { Caption: Lock, Left: 224, Top: 16 } }
+  - { name: btnLeave, type: Button, properties: { Caption: Leave, Left: 328, Top: 16 } }
+  - { name: rmQuiz, type: Room, properties: { Nickname: TV } }

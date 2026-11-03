@@ -1130,6 +1130,65 @@ End Sub
 
 **Where it runs.** In the IDE and in exported apps, on every platform GuBASIC runs on; the playground has no `WebSocket` (R038). It comes through the component channel ([COMPONENT_CHANNEL.md](COMPONENT_CHANNEL.md)) and is the first component with events. Parity programs talk to a scripted server, `NAME.ws`.
 
+### 11.12 Room
+
+(DESIGN.md D122, D136.) **`Room`** puts programs with the same room code together through a relay server: the TV's program makes a room and shows its code, the phones' programs enter it with that code, and what one sends reaches the others. Like a `WebSocket` it sits in the tray, and it speaks a published protocol ([ROOM_PROTOCOL.md](ROOM_PROTOCOL.md)), so a program not written in GuBASIC can join a room too.
+
+| Member | What it does |
+|---|---|
+| `Server` | the relay server's address, `wss://relay.example.com/room`, set in the Properties window. Empty: while developing in the desktop IDE, the IDE's own relay server on this computer |
+| `Nickname` | this program's nickname, which `Create` uses |
+| `Create()` | makes a room and waits until it is made; then `Code` is its code and this program its host |
+| `Join(code, nickname)` | enters the room with that code, in any case, and waits until it is in |
+| `Send(text)` | to everyone else in the room |
+| `SendTo(member, text)` | to one member |
+| `Leave()` | leaves the room; when the host leaves, the room ends |
+| `Lock()` | the host only: no one else may enter |
+| `Code`, `Me`, `IsHost`, `Members` | the room's code, this program's member ID (`m1`, `m2`, …), whether it made the room, every member's ID as a `String` array (read-only) |
+| `NicknameOf(member)` | a member's nickname |
+| event `Joined(e)`, `Left(e)` | someone entered or left: `e.Member`, `e.Nickname` |
+| event `Message(e)` | a message: `e.Member`, `e.Nickname`, `e.Text`, and `e.Json`, the text read as JSON |
+| event `Closed(e)` | the room ended: `e.Reason` is `"host left"`, `"idle"` (nothing sent for 30 minutes), `"time"`, `"server"` or `"connection lost"` |
+| event `Error(e)` | the server refused something after the program was in, a message too big or too fast: `e.Message` |
+
+Every `e` is a **`RoomEventArgs`**; a member it does not concern is `""`.
+
+```vb
+' The TV
+Sub Form_Load()
+    rmQuiz.Create()
+    lblCode.Caption = "Code: " & rmQuiz.Code
+End Sub
+
+Sub rmQuiz_Joined(e As RoomEventArgs)
+    lstPlayers.AddItem(e.Nickname)
+End Sub
+
+Sub rmQuiz_Message(e As RoomEventArgs)
+    Dim answer As Json = e.Json
+    lblLast.Caption = e.Nickname & ": " & answer("choice").AsInteger
+End Sub
+
+' A phone
+Sub btnJoin_Click()
+    rmQuiz.Join(txtCode.Text, txtNickname.Text)
+End Sub
+
+Sub btnAnswer_Click()
+    rmQuiz.Send("{""choice"":2}")
+End Sub
+```
+
+**Waiting and turns.** `Create` and `Join` wait where they are called, as `Connect` does (§11.11), so the next line can read `Code`. The events run in turn, as a `WebSocket`'s do: a message that comes while `Message` runs waits for it. Messages from one member arrive in the order sent.
+
+**A lost connection** comes back by itself within 30 seconds, keeping the program's place in the room: the others are not told, `Send` waits meanwhile, and what was sent to the program meanwhile comes after. If it cannot come back, `Closed` runs with `"connection lost"`.
+
+**Errors.** A room that cannot be entered is R048 with the server's reason (`room-not-found`, `room-full`, `room-locked`, `server-full`, `too-fast` for too many tries); a relay server that cannot be reached is R047; `Send` while not in a room is R049. All can be caught with `Try` (§9). A `ws://` address in `Server` beyond `localhost` and a private network is warned about (A077), as for `Connect`.
+
+**The relay server.** The relay server keeps rooms in memory only, with limits its owner can change: 50 rooms, 50 members a room, 16 KB a message, 20 messages a second a member. It is `packages/gubasic_relay`; [RELAY_SERVER.md](RELAY_SERVER.md) says how to put it on a server of your own. There is no public one: for an app others use, `Server` names your own.
+
+**Where it runs.** In the IDE and in exported apps, on every platform; the playground has no `Room` (R038). Parity programs use a relay server in memory, and their event scripts act as the others in the room: `Peer 민지 Join`, `Peer 민지 Send …`, `Room Close idle`, `Room Drop`.
+
 ## 12. Open questions
 
 - File extension (`.gbas` is provisional).

@@ -110,6 +110,7 @@ void main() {
               : const [],
           [],
         ),
+        ScriptedRooms([]),
       );
       // The files the program reads (D113): NAME.files/.
       final filesDir = Directory('$base.files');
@@ -132,6 +133,7 @@ void main() {
       );
       http.transcript = host.transcript;
       webSockets.sockets.transcript = host.transcript;
+      webSockets.rooms.transcript = host.transcript;
       final session = RunSession(
         StartupForm(
           startup.file,
@@ -242,9 +244,12 @@ class _FakeHttp implements GbHttp {
 /// the run host's own WebSocket control: the same [ScriptedWebSockets] as
 /// [ScriptedHost]'s, so that the transcripts match.
 class _FakeWebSockets implements GbWebSocket {
-  _FakeWebSockets(this.sockets);
+  _FakeWebSockets(this.sockets, this.rooms);
 
   final ScriptedWebSockets sockets;
+
+  /// The relay server in memory (D136), at [_relay].
+  final ScriptedRooms rooms;
 
   @override
   Future<GbSocket> connect(
@@ -254,12 +259,12 @@ class _FakeWebSockets implements GbWebSocket {
     required void Function(String message) onError,
     Duration timeout = const Duration(seconds: 30),
   }) async {
+    final listener = WebSocketListener(onMessage, onClosed, onError);
     try {
       return _FakeSocket(
-        await sockets.open(
-          url,
-          WebSocketListener(onMessage, onClosed, onError),
-        ),
+        url == _relay
+            ? await rooms.open(url, listener)
+            : await sockets.open(url, listener),
       );
     } on WebSocketFailure catch (f) {
       throw GbWebSocketError(f.detail);
@@ -279,6 +284,10 @@ class _FakeSocket implements GbSocket {
   void close() => link.close();
 }
 
+/// The address of the test's relay server, which a Room with an empty
+/// Server uses, as the IDE's own would be (D136).
+const _relay = 'ws://127.0.0.1:7071/room';
+
 /// Records what the program shows, as [ScriptedHost] does.
 class _RecordingHost extends RunHost {
   _RecordingHost(
@@ -296,6 +305,7 @@ class _RecordingHost extends RunHost {
         files: files,
         http: http,
         webSocket: webSockets,
+        roomServer: _relay,
         sqlite: sqlite,
         pdfFont: () async =>
             File('../../apps/ide/fonts/nanumgothic/NanumGothic-Regular.ttf')
@@ -866,6 +876,20 @@ class _WidgetDriver implements ScriptDriver {
   @override
   Future<bool> server(ServerAction action) async {
     final done = host.webSockets.sockets.serverDoes(action);
+    await tester.pump();
+    return done;
+  }
+
+  @override
+  Future<bool> peer(PeerAction action) async {
+    final done = host.webSockets.rooms.peerDoes(action);
+    await tester.pump();
+    return done;
+  }
+
+  @override
+  Future<bool> relay(String verb, String argument) async {
+    final done = host.webSockets.rooms.serverDoes(verb, argument);
     await tester.pump();
     return done;
   }

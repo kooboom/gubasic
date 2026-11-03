@@ -1,0 +1,49 @@
+' Room (D136): Create waits until the room is made, then Code, Me and
+' IsHost; Joined, Message and Left as the others come, send and go; Send
+' to everyone, SendTo one member, Lock, Members and NicknameOf; Closed when
+' the room ends. The relay server is the test's, in memory; its codes are
+' pinned.
+Sub btnCreate_Click()
+    Debug.Print("[" & rmQuiz.Code & "] " & rmQuiz.IsHost)
+    rmQuiz.Create()
+    Debug.Print(rmQuiz.Code & " " & rmQuiz.Me & " " & rmQuiz.IsHost & " " & rmQuiz.Members.Length)
+End Sub
+
+Sub rmQuiz_Joined(e As RoomEventArgs)
+    Debug.Print("joined: " & e.Nickname & " (" & e.Member & ")")
+End Sub
+
+Sub rmQuiz_Message(e As RoomEventArgs)
+    Dim answer As Json = e.Json
+    Debug.Print(e.Nickname & " chose " & answer("choice").AsInteger)
+    rmQuiz.SendTo(e.Member, "{""kind"":""right""}")
+End Sub
+
+Sub rmQuiz_Left(e As RoomEventArgs)
+    Debug.Print("left: " & e.Nickname & " (" & e.Member & ")")
+End Sub
+
+Sub rmQuiz_Closed(e As RoomEventArgs)
+    Debug.Print("closed: " & e.Reason & " [" & rmQuiz.Code & "]")
+End Sub
+
+Sub btnAsk_Click()
+    Dim q As New Json
+    q("kind") = "question"
+    q("no") = 1
+    rmQuiz.Send(q.Text)
+    For Each m In rmQuiz.Members
+        Debug.Print(m & " = " & rmQuiz.NicknameOf(m))
+    Next
+End Sub
+
+Sub btnLock_Click()
+    rmQuiz.Lock()
+End Sub
+
+Sub btnLeave_Click()
+    rmQuiz.Leave()
+    Debug.Print("[" & rmQuiz.Code & "]")
+    rmQuiz.Create()
+    Debug.Print(rmQuiz.Code)
+End Sub

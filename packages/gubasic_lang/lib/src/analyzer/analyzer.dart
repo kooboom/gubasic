@@ -1230,6 +1230,12 @@ class _Analyzer {
   void _anchorValue(MemberExpr target, Expr value) {
     final type = _result.types[target.target];
     if (value is! StringLiteral || type is! ControlType) return;
+    if (type.component.name == 'Room' &&
+        target.name.name.toLowerCase() == 'server' &&
+        isPlainRemoteWebSocket(value.value)) {
+      // `ws://` beyond this computer and its network (A077, D136).
+      _reportAt(value, DiagnosticCode.plainWebSocket, [value.value]);
+    }
     final property = type.component.properties[target.name.name.toLowerCase()];
     if (property != null &&
         property.shortcut &&

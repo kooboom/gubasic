@@ -187,6 +187,24 @@ class GbSocketEvent {
   final String message;
 }
 
+/// What a Room's events are told (D136): the member and its nickname,
+/// the message's text, why the room ended, what went wrong; "" where the
+/// event has none.
+class GbRoomEvent {
+  const GbRoomEvent(
+      {this.member = '',
+      this.nickname = '',
+      this.text = '',
+      this.reason = '',
+      this.message = ''});
+
+  final String member;
+  final String nickname;
+  final String text;
+  final String reason;
+  final String message;
+}
+
 class GbException {
   GbException(this.message);
 
@@ -221,6 +239,7 @@ String formatValue(Object? value) {
     GbKeyEvent() => 'KeyEventArgs',
     GbMouseEvent() => 'MouseEventArgs',
     GbSocketEvent e => e.kind,
+    GbRoomEvent() => 'RoomEventArgs',
     GbTable() => 'Table',
     GbPdfDocument() => 'PdfDocument',
     GbJson j => j.text,
@@ -248,6 +267,7 @@ String typeNameOf(Object? value) {
     GbKeyEvent() => 'KeyEventArgs',
     GbMouseEvent() => 'MouseEventArgs',
     GbSocketEvent e => e.kind,
+    GbRoomEvent() => 'RoomEventArgs',
     GbTable() => 'Table',
     GbPdfDocument() => 'PdfDocument',
     GbJson() => 'Json',

@@ -1,0 +1,42 @@
+> btnCreate.Click
+Debug.Print: [] False
+Room: create
+Debug.Print: K7QPXM m1 True 1
+> Peer 민지 Join
+Peer 민지: entered K7QPXM as m2
+Debug.Print: joined: 민지 (m2)
+> Peer Kim Join
+Peer Kim: entered K7QPXM as m3
+Debug.Print: joined: Kim (m3)
+> btnAsk.Click
+Room: send {"kind":"question","no":1}
+Peer 민지 got: {"kind":"question","no":1}
+Peer Kim got: {"kind":"question","no":1}
+Debug.Print: m1 = TV
+Debug.Print: m2 = 민지
+Debug.Print: m3 = Kim
+> Peer 민지 Send {"kind":"answer","choice":2}
+Peer Kim got: {"kind":"answer","choice":2}
+Debug.Print: 민지 chose 2
+Room: sendTo m2 {"kind":"right"}
+Peer 민지 got: {"kind":"right"}
+> Peer Kim Leave
+Debug.Print: left: Kim (m3)
+> btnLock.Click
+Room: lock
+> Peer Lee Join
+Peer Lee: error room-locked
+> btnLeave.Click
+Room: leave
+Peer 민지: closed host left
+Debug.Print: []
+Room: create
+Debug.Print: ABCDEF
+> Peer Lee Join
+Peer Lee: entered ABCDEF as m2
+Debug.Print: joined: Lee (m2)
+> Room Close idle
+Peer Lee: closed idle
+Debug.Print: closed: idle []
+Still open
+Closed

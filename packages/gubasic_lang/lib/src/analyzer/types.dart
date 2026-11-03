@@ -26,6 +26,9 @@ sealed class GbType {
   static const messageEventArgs = PrimitiveType._('MessageEventArgs');
   static const closeEventArgs = PrimitiveType._('CloseEventArgs');
   static const errorEventArgs = PrimitiveType._('ErrorEventArgs');
+
+  /// What a Room's events are told (D136): who, what, why.
+  static const roomEventArgs = PrimitiveType._('RoomEventArgs');
   static const table = PrimitiveType._('Table');
 
   /// A PDF file being put together (docs/DESIGN.md D117).
@@ -228,6 +231,7 @@ const Map<String, GbType> namedTypes = {
   'messageeventargs': GbType.messageEventArgs,
   'closeeventargs': GbType.closeEventArgs,
   'erroreventargs': GbType.errorEventArgs,
+  'roomeventargs': GbType.roomEventArgs,
   'table': GbType.table,
   'pdfdocument': GbType.pdfDocument,
   'json': GbType.json,

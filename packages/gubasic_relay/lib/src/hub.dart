@@ -92,10 +92,14 @@ class RoomHub {
     });
   }
 
-  /// Closes every room (`server`), as when the server stops.
-  void shutdown() {
+  /// The codes of the rooms open now, oldest first.
+  List<String> get roomCodes => [..._rooms.keys];
+
+  /// Closes every room, as when the server stops (`server`), or for
+  /// another [reason] (a test's `Room Close idle`).
+  void shutdown([String reason = 'server']) {
     for (final room in _rooms.values.toList()) {
-      _closeRoom(room, 'server');
+      _closeRoom(room, reason);
     }
   }
 

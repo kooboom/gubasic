@@ -18,6 +18,7 @@
 - [Menu](controls/Menu.ko.md)
 - [OpenFileDialog](controls/OpenFileDialog.ko.md)
 - [OptionButton](controls/OptionButton.ko.md)
+- [Room](controls/Room.ko.md)
 - [SaveFileDialog](controls/SaveFileDialog.ko.md)
 - [TextBox](controls/TextBox.ko.md)
 - [Timer](controls/Timer.ko.md)

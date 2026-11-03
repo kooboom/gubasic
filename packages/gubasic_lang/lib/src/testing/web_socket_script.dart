@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import '../components/web_socket_component.dart';
+import 'room_script.dart' show shortened;
 
 /// What a test's WebSocket server does (D136): a stanza of a `NAME.ws`
 /// file.
@@ -158,7 +159,7 @@ class _Connection implements WebSocketLink {
 
   @override
   void send(String text) {
-    sockets.transcript.add('WebSocket: send $text');
+    sockets.transcript.add('WebSocket: send ${shortened(text)}');
     final answer = stub.answers[text];
     if (answer != null) scheduleMicrotask(() => run(answer));
   }

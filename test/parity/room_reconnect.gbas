@@ -1,0 +1,27 @@
+' A lost connection comes back by itself (D136): the program keeps its
+' place in the room (resume), what was sent to it meanwhile comes after,
+' and the others are not told it went.
+Sub btnCreate_Click()
+    rmQuiz.Create()
+    Debug.Print(rmQuiz.Code & " " & rmQuiz.Me)
+End Sub
+
+Sub btnSend_Click()
+    rmQuiz.Send("question 2")
+End Sub
+
+Sub rmQuiz_Message(e As RoomEventArgs)
+    Debug.Print(e.Nickname & ": " & e.Text)
+End Sub
+
+Sub rmQuiz_Joined(e As RoomEventArgs)
+    Debug.Print("joined: " & e.Nickname)
+End Sub
+
+Sub rmQuiz_Left(e As RoomEventArgs)
+    Debug.Print("left: " & e.Nickname)
+End Sub
+
+Sub rmQuiz_Closed(e As RoomEventArgs)
+    Debug.Print("closed: " & e.Reason)
+End Sub

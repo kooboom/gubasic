@@ -1,0 +1,43 @@
+' Room's errors (D136): a room that cannot be entered is R048 with the
+' server's reason (no such room, a locked one), caught by Try; a message
+' over the server's limit comes back as Error; Send while not in a room
+' is R049.
+Sub btnJoin_Click()
+    Try
+        rmGame.Join("NOROOM", "Kim")
+    Catch ex As Exception
+        Debug.Print(ex.Message)
+    End Try
+    Try
+        rmGame.Join("k7q-pxm", "Kim")
+    Catch ex As Exception
+        Debug.Print(ex.Message)
+    End Try
+    rmGame.Join("abcdef", "Kim")
+    Debug.Print(rmGame.Code & " " & rmGame.Me & " " & rmGame.IsHost & " " & rmGame.NicknameOf("m1"))
+End Sub
+
+Sub btnBig_Click()
+    Dim big As String = "x"
+    For i As Integer = 1 To 15
+        big = big & big
+    Next
+    rmGame.Send(big)
+    Debug.Print("sent")
+End Sub
+
+Sub rmGame_Error(e As RoomEventArgs)
+    Debug.Print("error: " & e.Message)
+End Sub
+
+Sub rmGame_Message(e As RoomEventArgs)
+    Debug.Print(e.Nickname & ": " & e.Text)
+End Sub
+
+Sub rmGame_Closed(e As RoomEventArgs)
+    Debug.Print("closed: " & e.Reason)
+End Sub
+
+Sub btnAlone_Click()
+    rmGame.Send("anyone?")
+End Sub

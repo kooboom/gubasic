@@ -12,5 +12,9 @@ dev_dependencies:
   test: ^1.25.0
 dependencies:
   fixnum: ^1.1.1
+  # The relay server's protocol without sockets (D136): the parity tests'
+  # rooms run on it in memory.
+  gubasic_relay:
+    path: ../gubasic_relay
   source_span: ^1.10.2
   yaml: ^3.1.4

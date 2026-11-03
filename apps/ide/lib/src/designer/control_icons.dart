@@ -237,6 +237,14 @@ class _ControlIconPainter extends CustomPainter {
             ..lineTo(12.2, open ? 11.6 : 11.9),
           mark,
         );
+      case 'room':
+        // A square, with three members around a table: one in blue, the
+        // host.
+        body(_square);
+        canvas
+          ..drawCircle(const Offset(10, 7), 1.8, mark)
+          ..drawCircle(const Offset(6.4, 12.6), 1.8, text)
+          ..drawCircle(const Offset(13.6, 12.6), 1.8, text);
       case 'websocket':
         // A square, with a message going out (blue) and one coming in.
         body(_square);

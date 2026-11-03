@@ -1,0 +1,25 @@
+> btnCreate.Click
+Room: create
+Debug.Print: K7QPXM m1
+> Peer 민지 Join
+Peer 민지: entered K7QPXM as m2
+Debug.Print: joined: 민지
+> Room Drop
+Room: resume
+> Peer 민지 Send answer 1
+Debug.Print: 민지: answer 1
+> btnSend.Click
+Room: send question 2
+Peer 민지 got: question 2
+> Peer 민지 Send answer 2
+Debug.Print: 민지: answer 2
+> Room Drop
+Room: resume
+> Peer Kim Join
+Peer Kim: entered K7QPXM as m3
+Debug.Print: joined: Kim
+Still open
+Room: leave
+Peer 민지: closed host left
+Peer Kim: closed host left
+Closed

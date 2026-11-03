@@ -1,0 +1,11 @@
+btnCreate.Click
+Peer 민지 Join
+Peer Kim Join
+btnAsk.Click
+Peer 민지 Send {"kind":"answer","choice":2}
+Peer Kim Leave
+btnLock.Click
+Peer Lee Join
+btnLeave.Click
+Peer Lee Join
+Room Close idle

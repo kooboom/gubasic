@@ -1,0 +1,22 @@
+> Peer Lee Create
+Peer Lee: created K7QPXM as m1
+> Peer Lee Lock
+> Peer 민지 Create
+Peer 민지: created ABCDEF as m1
+> btnJoin.Click
+Room: join NOROOM Kim
+Debug.Print: Could not enter the room: room-not-found. Check the code, and that Room.Server points to a relay server.
+Room: join k7q-pxm Kim
+Debug.Print: Could not enter the room: room-locked. Check the code, and that Room.Server points to a relay server.
+Room: join abcdef Kim
+Debug.Print: ABCDEF m2 False 민지
+> Peer 민지 Send hello, Kim
+Debug.Print: 민지: hello, Kim
+> btnBig.Click
+Room: send (32768 characters)
+Debug.Print: sent
+Debug.Print: error: too-big: a message is at most 16384 bytes
+> Peer 민지 Leave
+Debug.Print: closed: host left
+> btnAlone.Click
+Error R049 @ 42

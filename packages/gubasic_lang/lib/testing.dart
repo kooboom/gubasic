@@ -4,4 +4,5 @@
 library;
 
 export 'src/testing/event_script.dart';
+export 'src/testing/room_script.dart';
 export 'src/testing/web_socket_script.dart';

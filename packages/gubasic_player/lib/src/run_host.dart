@@ -8,6 +8,7 @@ import 'bench/probe.dart';
 import 'database_component.dart';
 import 'form_window.dart';
 import 'http_component.dart';
+import 'room_component.dart';
 import 'web_socket_component.dart';
 
 /// Connects the interpreter to gubasic_runtime (docs/DESIGN.md §2.3): each
@@ -27,6 +28,7 @@ class RunHost implements FormHost, FileHost, ComponentHost {
     GbFiles? files,
     GbHttp? http,
     GbWebSocket? webSocket,
+    this.roomServer,
     GbSqlite? sqlite,
     this.pdfFont,
   }) : _fileSystem = files,
@@ -405,16 +407,21 @@ class RunHost implements FormHost, FileHost, ComponentHost {
   /// pointer as waiting while there is one (D124 A).
   final busyRequests = ValueNotifier<int>(0);
 
-  /// How the program's WebSockets connect (D136): the runtime's, made when
-  /// first used, unless a test gave one.
+  /// How the program's WebSockets and Rooms connect (D136): the
+  /// runtime's, made when first used, unless a test gave one.
   GbWebSocket? _webSockets;
+
+  /// The relay server a Room whose Server is empty uses: the desktop IDE's
+  /// own (D136); null in an exported app and in the web IDE.
+  String? roomServer;
 
   /// The program's SQLite (D126): the runtime's, made when first used.
   GbSqlite? _sql;
 
   /// The components of the component channel (D125, D126, D136): the
   /// built-in objects `Http` and `Database`, whose files are kept under
-  /// [settingsKey], and each `WebSocket` control in a form's tray.
+  /// [settingsKey], and each `WebSocket` and `Room` control in a form's
+  /// tray.
   @override
   ComponentInstance? createComponent(String component, {String name = ''}) =>
       switch (component) {
@@ -423,6 +430,12 @@ class RunHost implements FormHost, FileHost, ComponentHost {
           name,
           _webSockets ??= GbWebSocket(),
           busyRequests,
+        ),
+        'Room' => PlayerRoom(
+          name,
+          _webSockets ??= GbWebSocket(),
+          busyRequests,
+          defaultServer: roomServer,
         ),
         'Database' => _database = PlayerDatabase(
           _sql ??= GbSqlite(),

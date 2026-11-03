@@ -222,6 +222,15 @@ Talks to web servers over HTTP (docs/DESIGN.md D124, D125), the way Visual Basic
 
 - `Message As String`
 
+### RoomEventArgs
+
+- `Member As String`
+- `Nickname As String`
+- `Text As String`
+- `Json As Json`
+- `Reason As String`
+- `Message As String`
+
 ### Table
 
 - `RowCount As Integer`
