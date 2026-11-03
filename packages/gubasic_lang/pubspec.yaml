@@ -1,6 +1,6 @@
 name: gubasic_lang
 description: Lexer, parser, interpreter and transpiler for the GuBASIC language. Pure Dart.
-version: 0.5.1
+version: 0.5.2
 publish_to: none
 
 environment:

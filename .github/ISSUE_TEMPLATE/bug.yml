@@ -25,8 +25,8 @@ body:
     id: version
     attributes:
       label: 버전 / Version
-      description: 릴리스 이름(예 v0.5.1)이나 웹 IDE를 연 날짜. / The release (v0.5.1, say), or the day you used the web IDE.
-      placeholder: v0.5.1
+      description: 릴리스 이름(예 v0.5.2)이나 웹 IDE를 연 날짜. / The release (v0.5.2, say), or the day you used the web IDE.
+      placeholder: v0.5.2
     validations:
       required: true
   - type: input

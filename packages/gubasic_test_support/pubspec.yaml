@@ -2,7 +2,7 @@ name: gubasic_test_support
 description: >-
   What the apps' integration tests share: a failing test leaves its output
   and a picture of the window, locally and on CI.
-version: 0.5.1
+version: 0.5.2
 publish_to: none
 
 environment:
