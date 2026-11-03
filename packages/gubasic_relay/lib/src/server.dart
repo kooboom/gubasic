@@ -57,8 +57,18 @@ class RelayServer {
   /// IDE's "same network" switch).
   Future<void> rebind(String bind) async {
     final port = _server.port;
-    await _server.close();
-    _server = await HttpServer.bind(bind, port);
+    // Stops listening at once; the connections open stay open (closing
+    // waits for them, so it is not awaited).
+    unawaited(_server.close());
+    for (var attempt = 0;; attempt++) {
+      try {
+        _server = await HttpServer.bind(bind, port);
+        break;
+      } on SocketException {
+        if (attempt == 20) rethrow;
+        await Future<void>.delayed(const Duration(milliseconds: 50));
+      }
+    }
     _serve(_server);
   }
 

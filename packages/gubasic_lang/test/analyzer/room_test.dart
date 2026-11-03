@@ -60,4 +60,14 @@ void main() {
             'End Sub\n'),
         isEmpty);
   });
+
+  test('Rooms without a Server, for A078 at export', () {
+    final empty = readFormFile('''
+formatVersion: 1
+controls:
+  - { name: rmA, type: Room }
+  - { name: rmB, type: Room, properties: { Server: " " } }
+''', name: 'FormTV').form;
+    expect(roomsWithoutServer([_form, empty]), ['FormTV.rmA', 'FormTV.rmB']);
+  });
 }

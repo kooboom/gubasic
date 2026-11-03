@@ -4,9 +4,21 @@ import 'dart:convert';
 
 import '../analyzer/types.dart';
 import '../diagnostics/diagnostic.dart';
+import '../forms/form_file.dart';
 import '../interpreter/host.dart';
 import '../interpreter/values.dart';
 import 'web_socket_component.dart';
+
+/// The Rooms of [forms] whose Server is empty, as `Form1.rmQuiz`: they
+/// use the IDE's own relay server while developing, and an exported app
+/// has none (A078, D136).
+List<String> roomsWithoutServer(Iterable<FormFile> forms) => [
+      for (final f in forms)
+        for (final c in f.controls)
+          if (c.component.name == 'Room' &&
+              (c.valueOf('Server') as String).trim().isEmpty)
+            '${f.name}.${c.name}',
+    ];
 
 /// The `Room` control (docs/DESIGN.md D122, D136; the protocol:
 /// docs/ROOM_PROTOCOL.md), a tray control through the component channel:

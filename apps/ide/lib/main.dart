@@ -10,6 +10,7 @@ import 'src/ide_shell.dart';
 import 'src/project/examples.g.dart';
 import 'src/project/app_export.dart' show AppTemplate;
 import 'src/project/browser.dart';
+import 'src/project/local_relay.dart';
 import 'src/project/folders.dart';
 import 'src/project/last_project.dart';
 import 'src/project/mac_app_source.dart';
@@ -124,6 +125,7 @@ class IdeApp extends StatefulWidget {
     this.macAppMaker,
     this.settings,
     this.autoRun = false,
+    this.relay,
   });
 
   /// The built-in projects: name → files.
@@ -170,6 +172,10 @@ class IdeApp extends StatefulWidget {
   /// Runs [open] as soon as the IDE has started, as F5 would: for the
   /// measuring build only (`lib/bench_main.dart`, STAGE2_PLAN §7).
   final bool autoRun;
+
+  /// The relay server for Room (D136); the platform's when null. Tests
+  /// give one.
+  final LocalRelay? relay;
 
   @override
   State<IdeApp> createState() => _IdeAppState();
@@ -264,6 +270,7 @@ class _IdeAppState extends State<IdeApp> {
         fitRun: _fitRun,
         explorerFiles: _explorerFiles,
         autoRun: widget.autoRun,
+        relay: widget.relay,
       ),
     ),
   );

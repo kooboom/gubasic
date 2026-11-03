@@ -13,6 +13,7 @@ import 'code/handlers.dart';
 import 'designer/form_designer.dart';
 import 'designer/form_edit.dart';
 import 'project/app_export.dart' show AppTemplate;
+import 'project/local_relay.dart';
 import 'project/open_project.dart';
 import 'project/pdf_font.dart';
 import 'project/pictures_dialog.dart';
@@ -49,7 +50,11 @@ class IdeShell extends StatefulWidget {
     this.fitRun,
     this.explorerFiles,
     this.autoRun = false,
+    this.relay,
   });
+
+  /// The relay server for Room (D136); the platform's when null.
+  final LocalRelay? relay;
 
   /// Runs the project once the IDE has started (IdeApp.autoRun).
   final bool autoRun;
@@ -104,6 +109,13 @@ class _IdeShellState extends State<IdeShell> {
 
   /// The debugger (D127), kept across runs so that breakpoints stay.
   final _debugger = Debugger();
+
+  /// The IDE's relay server for Room (D136), started when a program whose
+  /// Room has no Server runs.
+  late final LocalRelay _relay = widget.relay ?? LocalRelay();
+
+  /// The output's lines about it: its addresses.
+  var _relayLines = <String>[];
 
   /// The line the caret is on in the code editor, for F9.
   final _caretLine = ValueNotifier(1);
@@ -189,6 +201,20 @@ class _IdeShellState extends State<IdeShell> {
     if (_running) return;
     final project = _project;
     final s = widget.strings;
+    // A Room without a Server uses the IDE's relay server (D136): started
+    // first, then the run.
+    final needsRelay =
+        _relay.available &&
+        project.startup != null &&
+        roomsWithoutServer(project.startup!.forms).isNotEmpty;
+    if (needsRelay && _relay.localAddress == null) {
+      unawaited(
+        _relay.start().then((_) {
+          if (mounted && !_running) _run();
+        }),
+      );
+      return;
+    }
     _session?.dispose();
     _session = null;
     final startup = project.startup;
@@ -223,13 +249,67 @@ class _IdeShellState extends State<IdeShell> {
         pdfFont: () async => (await loadPdfFont())[pdfFontFile],
         debugger: _debugger,
       );
+      _session!.host.roomServer = needsRelay ? _relay.localAddress : null;
+      if (!needsRelay) _relayLines = [];
       _showRun = true;
     });
+    if (needsRelay) unawaited(_showRelay());
     // The view that had the focus is hidden now.
     _focus.requestFocus();
   }
 
   void _stop() => _session?.stop();
+
+  // -------------------------------------------------------------------------
+  // The IDE's relay server (D136)
+
+  /// Writes the relay server's addresses to the output.
+  Future<void> _showRelay() async {
+    final s = widget.strings;
+    final here = _relay.localAddress;
+    final network = await _relay.networkAddresses();
+    if (!mounted) return;
+    setState(
+      () => _relayLines = [
+        if (here != null) s.roomServerHere.replaceAll('{0}', here),
+        for (final a in network) s.roomServerNetwork.replaceAll('{0}', a),
+      ],
+    );
+  }
+
+  /// The Debug menu's "Allow devices on the same network": a warning
+  /// first when it is turned on; Cancel leaves it off.
+  Future<void> _setSameNetwork(bool on) async {
+    final s = widget.strings;
+    if (on) {
+      final ok =
+          await showDialog<bool>(
+            context: context,
+            builder: (context) => AlertDialog(
+              key: const ValueKey('sameNetworkWarning'),
+              title: Text(s.sameNetwork),
+              content: Text(s.sameNetworkWarning),
+              actions: [
+                TextButton(
+                  key: const ValueKey('sameNetworkCancel'),
+                  onPressed: () => Navigator.pop(context, false),
+                  child: Text(s.player.runtime.cancel),
+                ),
+                FilledButton(
+                  key: const ValueKey('sameNetworkOk'),
+                  onPressed: () => Navigator.pop(context, true),
+                  child: Text(s.player.runtime.ok),
+                ),
+              ],
+            ),
+          ) ??
+          false;
+      if (!ok) return;
+    }
+    await _relay.setSameNetwork(on);
+    if (!mounted) return;
+    await _showRelay();
+  }
 
   // -------------------------------------------------------------------------
   // The debugger (D127)
@@ -411,6 +491,15 @@ class _IdeShellState extends State<IdeShell> {
           shortcut: const SingleActivator(LogicalKeyboardKey.f5, shift: true),
           child: Text(s.stop),
         ),
+        if (_relay.available) ...[
+          const Divider(),
+          CheckboxMenuButton(
+            key: const ValueKey('menu.sameNetwork'),
+            value: _relay.sameNetwork,
+            onChanged: (on) => unawaited(_setSameNetwork(on ?? false)),
+            child: Text(s.sameNetwork),
+          ),
+        ],
       ],
       builder: (context, menu, _) => TextButton(
         key: const ValueKey('menu.debug'),
@@ -567,6 +656,7 @@ class _IdeShellState extends State<IdeShell> {
     _clickTimer?.cancel();
     _focus.dispose();
     _session?.dispose();
+    unawaited(_relay.close());
     _debugger.onChanged = null;
     widget.controller.removeListener(_loadBreakpoints);
     _caretLine.dispose();
@@ -1427,6 +1517,7 @@ class _IdeShellState extends State<IdeShell> {
       _ => null,
     };
     final lines = <_Output>[
+      for (final l in _relayLines) (text: l, file: null, line: null),
       ..._problems,
       for (final l in session?.output ?? const <String>[])
         (text: l, file: null, line: null),

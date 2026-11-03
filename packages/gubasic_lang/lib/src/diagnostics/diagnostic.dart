@@ -497,6 +497,10 @@ enum DiagnosticCode {
   /// open it. Args: the address.
   plainWebSocket('A077', DiagnosticSeverity.warning),
 
+  /// An app exported with a Room whose Server is empty (D136): it will
+  /// have no relay server. Args: the control, `Form1.rmQuiz`.
+  emptyRoomServer('A078', DiagnosticSeverity.warning),
+
   // Form and project files (.form.yaml, .gbproj)
 
   /// The file is not in the expected layout (YAML syntax).

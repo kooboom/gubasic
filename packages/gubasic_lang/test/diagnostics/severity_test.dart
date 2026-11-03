@@ -26,6 +26,8 @@ void main() {
       DiagnosticCode.secretHeader,
       // ws:// may be right on one's own network (D136).
       DiagnosticCode.plainWebSocket,
+      // The app may be meant for the IDE's own relay server (D136).
+      DiagnosticCode.emptyRoomServer,
     };
     for (final code in DiagnosticCode.values) {
       expect(

@@ -17,6 +17,9 @@ dependencies:
     path: ../../packages/gubasic_lang
   gubasic_player:
     path: ../../packages/gubasic_player
+  # The relay server the desktop IDE runs for Room (D136).
+  gubasic_relay:
+    path: ../../packages/gubasic_relay
   gubasic_runtime:
     path: ../../packages/gubasic_runtime
   shared_preferences: ^2.5.6

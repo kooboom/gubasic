@@ -251,6 +251,8 @@ const Map<DiagnosticCode, String> koreanMessages = {
       '점으로만 시작하는 멤버는 With 블록 안에서만 씁니다. 점 앞에 이름을 쓰거나, 그 줄을 With … End With 안에 둡니다.',
   DiagnosticCode.withNotValue:
       'With에는 컨트롤, 변수, 칸처럼 값을 줍니다. {0} 항목은 값이 아닙니다. 멤버를 이름과 함께 씁니다.',
+  DiagnosticCode.emptyRoomServer:
+      '{0} 컨트롤의 Server가 비어 있어 앱에 중계 서버가 없습니다. docs/RELAY_SERVER.ko.md대로 자기 서버 주소를 넣어 주세요.',
   DiagnosticCode.plainWebSocket:
       '{0} 주소로의 ws://는 암호화되지 않고, https로 열린 페이지에서는 열리지 않습니다. localhost나 같은 네트워크가 아니면 wss://를 써 주세요.',
   DiagnosticCode.secretHeader:

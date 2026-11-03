@@ -321,6 +321,9 @@ const Map<DiagnosticCode, String> englishMessages = {
   DiagnosticCode.withNotValue:
       'With needs a value, such as a control, a variable or an item: {0} '
           'is not one. Write its members in full.',
+  DiagnosticCode.emptyRoomServer: 'The Server of {0} is empty: the app '
+      'will have no relay server. Set it to your server\'s address, as '
+      'docs/RELAY_SERVER.md says.',
   DiagnosticCode.plainWebSocket: 'ws:// to {0} is not encrypted and a page '
       'served over https cannot open it. Use wss:// for anything but '
       'localhost or your own network.',

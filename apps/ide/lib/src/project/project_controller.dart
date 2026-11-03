@@ -884,6 +884,25 @@ class ProjectController extends ChangeNotifier {
       await _tell(context, strings.webAppCannotRun);
       return;
     }
+    // A Room without a Server has no relay server in an app (A078, D136).
+    final rooms = roomsWithoutServer(project.project.startup?.forms ?? []);
+    if (rooms.isNotEmpty) {
+      final warning = [
+        for (final r in rooms)
+          Diagnostic(
+            code: DiagnosticCode.emptyRoomServer,
+            line: 0,
+            column: 0,
+            offset: 0,
+            length: 0,
+            args: [r],
+          ).formatMessage(strings.player.messages),
+      ].join('\n');
+      if (!await _confirm(context, warning, strings.exportAnyway) ||
+          !context.mounted) {
+        return;
+      }
+    }
     final String id;
     try {
       id = await _appId(project);

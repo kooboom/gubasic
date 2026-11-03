@@ -16,6 +16,11 @@ class IdeStrings {
     required this.stepOut,
     required this.pauseRun,
     required this.continueRun,
+    required this.sameNetwork,
+    required this.sameNetworkWarning,
+    required this.roomServerHere,
+    required this.roomServerNetwork,
+    required this.exportAnyway,
     required this.pausedAt,
     required this.variables,
     required this.callStack,
@@ -270,6 +275,19 @@ class IdeStrings {
   final String stepOut;
   final String pauseRun;
   final String continueRun;
+
+  /// The Debug menu's "Allow devices on the same network" (D136): off at
+  /// first, and the warning shown before it is turned on.
+  final String sameNetwork;
+  final String sameNetworkWarning;
+
+  /// The output's lines about the IDE's relay server (D136): `{0}` its
+  /// address on this computer, and on the same network.
+  final String roomServerHere;
+  final String roomServerNetwork;
+
+  /// Export goes on after a warning (A078).
+  final String exportAnyway;
 
   /// `{0}` the file, `{1}` the line, `{2}` the procedure.
   final String pausedAt;
@@ -777,6 +795,13 @@ class IdeStrings {
     stepOut: 'Step Out',
     pauseRun: 'Pause',
     continueRun: 'Continue',
+    sameNetwork: 'Allow Devices on the Same Network',
+    sameNetworkWarning:
+        'Other devices on the same network will be able to connect to this '
+        'computer\'s relay server. Do not turn this on, on a public network.',
+    roomServerHere: 'Room server: {0} (this computer only)',
+    roomServerNetwork: 'Room server: {0} (same network)',
+    exportAnyway: 'Export Anyway',
     pausedAt: 'Paused at line {1} of {0}, in {2}',
     variables: 'Variables',
     callStack: 'Call stack',
@@ -1151,6 +1176,12 @@ class IdeStrings {
     stepOut: '프로시저 나가기',
     pauseRun: '일시 중지',
     continueRun: '계속',
+    sameNetwork: '같은 네트워크의 기기 허용',
+    sameNetworkWarning:
+        '같은 네트워크의 다른 기기가 이 컴퓨터의 중계 서버에 접속할 수 있습니다. 공용 네트워크에서는 켜지 마세요.',
+    roomServerHere: 'Room 서버: {0} (이 컴퓨터만)',
+    roomServerNetwork: 'Room 서버: {0} (같은 네트워크)',
+    exportAnyway: '그래도 내보내기',
     pausedAt: '{2} 프로시저가 {0} 파일의 {1} 줄에서 멈춤',
     variables: '변수',
     callStack: '호출 스택',

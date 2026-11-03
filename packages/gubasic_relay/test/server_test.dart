@@ -97,6 +97,24 @@ void main() {
     expect(c.socket.closeCode, 1008);
   });
 
+  test('rebind keeps the port, the rooms and the connections', () async {
+    await start();
+    final tv = await _Client.open(server.port);
+    tv.say({'type': 'hello', 'v': 1});
+    await tv.next();
+    tv.say({'type': 'create'});
+    await tv.next();
+    final port = server.port;
+    await server.rebind(InternetAddress.anyIPv4.address);
+    expect(server.port, port);
+    final phone = await _Client.open(port);
+    phone.say({'type': 'hello', 'v': 1});
+    await phone.next();
+    phone.say({'type': 'join', 'room': 'K7QPXM', 'nickname': 'Kim'});
+    expect((await phone.next())['type'], 'entered');
+    expect((await tv.next())['type'], 'joined');
+  });
+
   test('other paths are not the relay server\'s', () async {
     await start();
     final client = HttpClient();

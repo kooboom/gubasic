@@ -18,6 +18,12 @@ Problems we know about and have **deliberately** left unfixed for now. Each entr
 - **Why deferred:** it is not a correctness problem, and programs of the size beginners write do not notice it.
 - **Revisit:** when someone finds the playground or the IDE noticeably slow in practice; step 2-2 measures it in the player and sets the criteria for the transpiler (STAGE2_PLAN §7, D79).
 
+## The web IDE has no relay server of its own
+
+- **What:** the desktop IDE runs a relay server for a `Room` whose `Server` is empty (D136); the web IDE cannot, so there such a program stops with R048 ("no relay server").
+- **Why deferred:** a page in a browser cannot open a server. The web IDE can still use a relay server named in `Room.Server`, such as one's own (RELAY_SERVER.md).
+- **Revisit:** if the web IDE is used for Room in practice; a relay server reachable from the web page would be one the user runs.
+
 ## `WebSocket` sends text only, with no headers of its own
 
 - **What:** `WebSocket` (D136) sends and receives text messages; a binary message from a server is not passed on, and the connection carries no headers the program chooses.
