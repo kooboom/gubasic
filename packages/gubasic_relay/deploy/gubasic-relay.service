@@ -1,0 +1,27 @@
+# The GuBASIC relay server as a systemd service (docs/RELAY_SERVER.md).
+# install.sh puts it in /etc/systemd/system/.
+[Unit]
+Description=GuBASIC relay server (Room)
+After=network.target
+
+[Service]
+Type=simple
+User=gubasic-relay
+Group=gubasic-relay
+ExecStart=/opt/gubasic-relay/gubasic-relay --config /etc/gubasic-relay/relay.yaml
+Restart=on-failure
+RestartSec=2
+# It keeps nothing on disk and needs no privileges.
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+LockPersonality=true
+
+[Install]
+WantedBy=multi-user.target

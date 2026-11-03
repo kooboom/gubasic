@@ -1,0 +1,24 @@
+# Apache in front of the GuBASIC relay server (docs/RELAY_SERVER.md):
+# Apache ends TLS and passes /room, the WebSocket upgrade included, to the
+# relay server on this computer. Needs Apache 2.4.47 or later and the
+# modules ssl, proxy and proxy_http:
+#
+#   sudo a2enmod ssl proxy proxy_http
+#
+# Replace relay.example.com with your server's name everywhere. The
+# certificate comes from Let's Encrypt (sudo certbot --apache -d
+# relay.example.com); certbot writes the two SSLCertificate lines.
+<VirtualHost *:443>
+    ServerName relay.example.com
+
+    SSLEngine on
+    SSLCertificateFile /etc/letsencrypt/live/relay.example.com/fullchain.pem
+    SSLCertificateKeyFile /etc/letsencrypt/live/relay.example.com/privkey.pem
+
+    # The room protocol and /room/health; upgrade=websocket passes the
+    # WebSocket upgrade on (mod_proxy_http).
+    ProxyPass        "/room" "http://127.0.0.1:7071/room" upgrade=websocket
+    ProxyPassReverse "/room" "http://127.0.0.1:7071/room"
+    # Rooms are quiet at times: keep an idle WebSocket open.
+    ProxyTimeout 300
+</VirtualHost>

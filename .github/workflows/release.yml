@@ -3,7 +3,8 @@ name: release
 # Builds a release when its tag (v0.2.0) is pushed, and leaves it as a draft
 # for the author to read and publish (D93): the IDE for macOS and Windows,
 # built to take the players' templates from this release, the three
-# templates the IDE makes apps from (web, Windows, macOS), and SHA256SUMS.txt.
+# templates the IDE makes apps from (web, Windows, macOS), the relay server
+# for Linux (x64, arm64; D136), and SHA256SUMS.txt.
 # Run by hand (workflow_dispatch, with the tag it would be), it builds the
 # files only, to try the workflow before a tag is pushed.
 on:
@@ -122,8 +123,39 @@ jobs:
             macos-template.zip
           if-no-files-found: error
 
+  # The relay server of Room (D136) for Linux servers, on x64 and arm64,
+  # which deploy/install.sh downloads.
+  relay:
+    strategy:
+      matrix:
+        include:
+          - runner: ubuntu-latest
+            arch: x64
+          - runner: ubuntu-24.04-arm
+            arch: arm64
+    runs-on: ${{ matrix.runner }}
+    defaults:
+      run:
+        working-directory: packages/gubasic_relay
+    steps:
+      - uses: actions/checkout@v5
+      # The Dart of the pinned Flutter (packages/gubasic_runtime/pubspec.yaml).
+      - uses: dart-lang/setup-dart@v1
+        with:
+          sdk: 3.13.5
+      - run: dart pub get
+      - run: |
+          mkdir -p build
+          dart compile exe bin/gubasic_relay.dart -o build/gubasic-relay-linux-${{ matrix.arch }}
+          build/gubasic-relay-linux-${{ matrix.arch }} --version
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-relay-${{ matrix.arch }}
+          path: packages/gubasic_relay/build/gubasic-relay-linux-${{ matrix.arch }}
+          if-no-files-found: error
+
   draft:
-    needs: [web, windows, macos]
+    needs: [web, windows, macos, relay]
     if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
     steps:

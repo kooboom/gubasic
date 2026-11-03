@@ -1,0 +1,29 @@
+# The settings of the GuBASIC relay server (docs/RELAY_SERVER.md).
+# Every setting left out keeps the default written here.
+
+# Where it listens: on this computer alone, behind Apache.
+bind: 127.0.0.1
+port: 7071
+
+# The web pages allowed to connect, by their address (scheme and host).
+# Empty allows every page: fill it in with your own app's address.
+allowedOrigins: []
+#  - https://quiz.example.com
+
+# An optional word every program must give to use the server. It goes into
+# the apps as it is, so it is not a secret: it only keeps strangers' apps
+# out.
+# key: a-word-of-your-own
+
+# Limits.
+maxRooms: 50              # rooms open at once
+maxMembers: 50            # members in one room, the host among them
+maxMessageBytes: 16384    # one message, in UTF-8 bytes
+messagesPerSecond: 20     # from one member
+joinAttemptsPerMinute: 30 # joins from one address, against guessing codes
+idleMinutes: 30           # a room where nothing is sent for this long ends
+maxRoomMinutes: 360       # a room ends after this long, whatever
+reconnectSeconds: 30      # a lost connection keeps its place this long
+
+# Message bodies are never written to the log unless this is true.
+logMessages: false

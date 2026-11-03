@@ -60,6 +60,21 @@ jobs:
           mkdir -p build
           dart compile exe bin/gubasic_relay.dart -o build/gubasic-relay
           build/gubasic-relay --version
+      # The installer on this machine, as on anyone's Linux server with
+      # systemd (RELAY_SERVER.md): built from this checkout, run as a
+      # service, answering, removed again.
+      - name: Check the installer
+        run: shellcheck deploy/install.sh
+      - name: Install, check and remove the service
+        run: |
+          sudo env "PATH=$PATH" deploy/install.sh --from-source "$GITHUB_WORKSPACE"
+          systemctl is-active gubasic-relay
+          curl -fsS http://127.0.0.1:7071/room/health | grep '"rooms":0'
+          sudo grep -q 'allowedOrigins' /etc/gubasic-relay/relay.yaml
+          sudo env "PATH=$PATH" deploy/install.sh --from-source "$GITHUB_WORKSPACE" | grep 'Kept /etc/gubasic-relay/relay.yaml'
+          sudo deploy/install.sh --uninstall --purge
+          if systemctl is-active --quiet gubasic-relay; then exit 1; fi
+          test ! -e /opt/gubasic-relay && test ! -e /etc/gubasic-relay
 
   playground:
     name: playground (format, analyze, test, build)
