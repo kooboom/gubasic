@@ -18,6 +18,18 @@ Problems we know about and have **deliberately** left unfixed for now. Each entr
 - **Why deferred:** it is not a correctness problem, and programs of the size beginners write do not notice it.
 - **Revisit:** when someone finds the playground or the IDE noticeably slow in practice; step 2-2 measures it in the player and sets the criteria for the transpiler (STAGE2_PLAN §7, D79).
 
+## Keys typed at once after a click into a text box on the web can be lost
+
+- **What:** in a web app, letters typed in the moment right after a TextBox is clicked, before the browser's input element has the focus, can be lost; a script typing with no pause (Playwright) loses one or more letters, or all of them. Once the box has the focus, even letters with no pause between them all arrive, Korean included.
+- **Why deferred:** it is Flutter's web engine, not GuBASIC: a plain Flutter `TextField` without GuBASIC loses letters the same way, with accessibility turned on and the same script (checked 2026-11-03). People do not type that fast after a click; tool/web_check/livequiz.mjs waits after its click and types with a pause.
+- **Revisit:** when a Flutter release changes how the web engine hands the focus to its input element, or if a user meets it typing by hand.
+
+## LiveQuiz on a real phone through the IDE's preview is not checked yet
+
+- **What:** "Preview on the Web" and its QR code (D136) were checked with two browser contexts in Playwright playing a whole round, the page's own server passing `/room` on as the preview does; nobody has yet opened the QR code with a real phone on the same Wi-Fi.
+- **Why deferred:** checking it needs a phone and a Wi-Fi network at hand, outside what the tests can do; the author judged the Playwright round enough to merge (2026-11-03).
+- **Revisit:** the next time the author has a phone at hand: open LiveQuiz in the desktop IDE, turn on "Allow Devices on the Same Network", choose "Preview on the Web", scan the code and play one round.
+
 ## The web IDE has no relay server of its own
 
 - **What:** the desktop IDE runs a relay server for a `Room` whose `Server` is empty (D136); the web IDE cannot, so there such a program stops with R048 ("no relay server").
