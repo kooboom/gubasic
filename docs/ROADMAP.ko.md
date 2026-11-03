@@ -100,6 +100,8 @@ IDE 안에서 완결되는 비주얼 베이직의 핵심 경험입니다.
 
 ### v0.6 — 함께 쓰기(후보, D122)
 
+계획서: [plans/PLAN_V06.ko.md](plans/PLAN_V06.ko.md) (2026-11-03. 공개 시험 서버는 두지 않음, 계획서 1절)
+
 - [ ] `WebSocket`: `Connect`, `Send`, `Close`, 그리고 `Connected`, `Message`, `Closed`, `Error`. 어떤 표준 WebSocket 서버에도 연결
 - [ ] `Room`: `Create`, `Join`, `Send`, `Leave`, 그리고 `Joined`, `Left`, `Message`. 메시지 형식을 공개한 중계 서버 위에서
 - [ ] 저장소에 둔 중계 서버. 사용자의 자기 서버를 위한 안내, 설치 스크립트, Apache 설정 예. 시험용으로 아주 작은 공개 서버(D123)

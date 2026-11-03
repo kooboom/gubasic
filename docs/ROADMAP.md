@@ -100,6 +100,8 @@ Three releases, then the rest (D94–D96). The order follows who GuBASIC is for 
 
 ### v0.6 — Together (candidate, D122)
 
+Plan: [plans/PLAN_V06.md](plans/PLAN_V06.md) (2026-11-03; no public trial server, see its §1).
+
 - [ ] `WebSocket`: `Connect`, `Send`, `Close`; `Connected`, `Message`, `Closed`, `Error`, for any standard WebSocket server
 - [ ] `Room`: `Create`, `Join`, `Send`, `Leave`; `Joined`, `Left`, `Message`, over a relay server whose message format is published
 - [ ] The relay server, kept in the repository, with a guide, an install script and an Apache configuration for users' own servers; a very small public one for trying (D123)
