@@ -151,11 +151,22 @@ class _SocketPeer implements RelayPeer {
   @override
   final String address;
 
+  /// Closed by the hub: a message that came before is not answered.
+  var _closed = false;
+
   @override
   void send(String text) {
-    if (socket.readyState == WebSocket.open) socket.add(text);
+    if (_closed || socket.readyState != WebSocket.open) return;
+    try {
+      socket.add(text);
+    } on StateError {
+      // Closed meanwhile.
+    }
   }
 
   @override
-  void close(int code, String reason) => unawaited(socket.close(code, reason));
+  void close(int code, String reason) {
+    _closed = true;
+    unawaited(socket.close(code, reason));
+  }
 }
