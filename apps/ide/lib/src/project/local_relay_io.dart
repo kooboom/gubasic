@@ -25,7 +25,50 @@ class IoLocalRelay implements LocalRelay {
   Future<RelayServer> _started() => _starting ??= RelayServer.start(
     // Every limit as a real server has it; the port a free one.
     const RelayConfig().listeningOn('127.0.0.1', 0),
-  ).then((s) => _server = s);
+  ).then((s) => _server = s..fallback = _servePreview);
+
+  /// The web app "Preview on the Web" serves, by path.
+  Map<String, List<int>> _files = const {};
+
+  static const _types = {
+    'html': 'text/html; charset=utf-8',
+    'js': 'text/javascript',
+    'mjs': 'text/javascript',
+    'json': 'application/json',
+    'wasm': 'application/wasm',
+    'png': 'image/png',
+    'ico': 'image/x-icon',
+    'otf': 'font/otf',
+    'ttf': 'font/ttf',
+    'css': 'text/css',
+    'gbz': 'application/zip',
+    'txt': 'text/plain; charset=utf-8',
+  };
+
+  Future<bool> _servePreview(HttpRequest request) async {
+    var path = Uri.decodeComponent(request.uri.path);
+    if (path.endsWith('/')) path = '${path}index.html';
+    final bytes = _files[path.substring(1)];
+    if (bytes == null || request.method != 'GET') return false;
+    final type = _types[path.split('.').last.toLowerCase()];
+    request.response.headers
+      ..set(HttpHeaders.contentTypeHeader, type ?? 'application/octet-stream')
+      // Always the project as it is now.
+      ..set(HttpHeaders.cacheControlHeader, 'no-store');
+    request.response.add(bytes);
+    await request.response.close();
+    return true;
+  }
+
+  @override
+  Future<void> serve(Map<String, List<int>> files) async {
+    await _started();
+    _files = files;
+  }
+
+  @override
+  String? get previewAddress =>
+      _server == null ? null : 'http://localhost:${_server!.port}/';
 
   @override
   Future<String?> start() async {

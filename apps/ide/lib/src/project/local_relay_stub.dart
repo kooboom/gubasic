@@ -23,5 +23,11 @@ class _NoRelay implements LocalRelay {
   Future<List<String>> networkAddresses() async => const [];
 
   @override
+  Future<void> serve(Map<String, List<int>> files) async {}
+
+  @override
+  String? get previewAddress => null;
+
+  @override
   Future<void> close() async {}
 }

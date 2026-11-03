@@ -63,4 +63,32 @@ void main() {
     expect(local.readyState, WebSocket.open);
     await local.close();
   });
+
+  test('Preview on the Web: the app on the same port', () async {
+    final relay = IoLocalRelay();
+    addTearDown(relay.close);
+    await relay.serve({
+      'index.html': utf8.encode('<html>the app</html>'),
+      'project.gbz': [1, 2, 3],
+    });
+    final port = Uri.parse(relay.localAddress!).port;
+    expect(relay.previewAddress, 'http://localhost:$port/');
+    final client = HttpClient();
+    addTearDown(client.close);
+    Future<(int, String)> get(String path) async {
+      final response = await (await client.getUrl(
+        Uri.parse('http://127.0.0.1:$port$path'),
+      )).close();
+      return (
+        response.statusCode,
+        '${response.headers.contentType?.mimeType} '
+            '${await response.transform(utf8.decoder).join()}',
+      );
+    }
+
+    expect(await get('/'), (200, 'text/html <html>the app</html>'));
+    expect((await get('/project.gbz')).$1, 200);
+    expect((await get('/nothing.js')).$1, 404);
+    expect((await get('/room/health')).$2, contains('"rooms":0'));
+  });
 }

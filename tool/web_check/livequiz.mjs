@@ -10,11 +10,15 @@
 //
 //   node tool/web_check/livequiz.mjs [--web apps/player/build/web]
 //        [--bundle apps/player/build/livequiz/livequiz.gbz]
-//        [--shots folder] [--headed] [--channel chrome]
+//        [--same-port] [--shots folder] [--headed] [--channel chrome]
 //
+// --same-port: the page's own server also takes /room and passes it to the
+// relay server, as the desktop IDE's "Preview on the Web" does; for a
+// bundle whose Room.Server is the path /room (livequiz_bundle.dart /room).
 // Exits 0 when the round ends as expected; --shots saves both screens.
 import { createServer } from 'node:http';
 import { spawn } from 'node:child_process';
+import { connect } from 'node:net';
 import { readFileSync, existsSync, statSync, mkdirSync } from 'node:fs';
 import { join, extname, resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -33,6 +37,7 @@ const shots = option('--shots', null);
 const headed = args.includes('--headed');
 const channel = args.includes('--channel') ? args[args.indexOf('--channel') + 1] : undefined;
 const relayPort = 7181;
+const samePort = args.includes('--same-port');
 
 for (const required of [join(web, 'index.html'), bundle]) {
   if (!existsSync(required)) {
@@ -74,6 +79,18 @@ const server = createServer((request, response) => {
   response.writeHead(200, { 'content-type': types[extname(file)] ?? 'application/octet-stream' });
   response.end(readFileSync(file));
 });
+if (samePort) {
+  // /room, the WebSocket upgrade included, goes on to the relay server.
+  server.on('upgrade', (request, socket, head) => {
+    const relay = connect(relayPort, '127.0.0.1', () => {
+      relay.write(`${request.method} ${request.url} HTTP/1.1\r\n` +
+        Object.entries(request.headers).map(([k, v]) => `${k}: ${v}\r\n`).join('') + '\r\n');
+      relay.write(head);
+      socket.pipe(relay).pipe(socket);
+    });
+    relay.on('error', () => socket.destroy());
+  });
+}
 await new Promise((ok) => server.listen(0, '127.0.0.1', ok));
 const base = `http://127.0.0.1:${server.address().port}/`;
 
@@ -90,6 +107,7 @@ async function open(name) {
 }
 const step = (text) => console.log(`- ${text}`);
 const shot = async (page, name) => {
+  if (samePort) name = name.replace('livequiz-web', 'livequiz-preview');
   if (!shots) return;
   mkdirSync(shots, { recursive: true });
   await page.screenshot({ path: join(shots, name) });

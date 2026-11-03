@@ -46,6 +46,17 @@ class _FakeRelay implements LocalRelay {
   Future<List<String>> networkAddresses() async =>
       on ? ['ws://192.0.2.10:53421/room'] : const [];
 
+  Map<String, List<int>>? served;
+
+  @override
+  Future<void> serve(Map<String, List<int>> files) async {
+    if (started == 0) started++;
+    served = files;
+  }
+
+  @override
+  String? get previewAddress => started == 0 ? null : 'http://localhost:53421/';
+
   @override
   Future<void> close() async {}
 }
@@ -207,5 +218,59 @@ void main() {
     await tester.tap(find.text(s.exportAnyway));
     await tester.pumpAndSettle();
     expect(browser.downloads.single.$1, 'Quiz-web.zip');
+  });
+
+  testWidgets('Preview on the Web serves the project as a web app, with a '
+      'QR code once the same network is allowed', (tester) async {
+    bigView(tester);
+    const s = IdeStrings.ko;
+    final relay = _FakeRelay();
+    final archive = Archive()
+      ..add(ArchiveFile.bytes('index.html', utf8.encode('<html></html>')))
+      ..add(
+        ArchiveFile.bytes(
+          'template.json',
+          utf8.encode(
+            '{"gubasic":"0.6.0","bundleFormat":$bundleFormatVersion}',
+          ),
+        ),
+      );
+    await tester.pumpWidget(
+      IdeApp(
+        projects: const {'quiz': quiz},
+        open: 'quiz',
+        strings: s,
+        relay: relay,
+        fetchTemplate: (_) async =>
+            Uint8List.fromList(ZipEncoder().encodeBytes(archive)),
+      ),
+    );
+    await tester.pumpAndSettle();
+    Future<void> preview() async {
+      await openDebugMenu(tester, s);
+      await tester.tap(find.byKey(const ValueKey('menu.preview')));
+      await tester.pumpAndSettle();
+    }
+
+    await preview();
+    expect(
+      find.text(s.previewHere.replaceAll('{0}', 'http://localhost:53421/')),
+      findsOneWidget,
+    );
+    expect(find.text(s.previewNeedsNetwork), findsOneWidget);
+    expect(find.byKey(const ValueKey('previewQr')), findsNothing);
+    final bundle = ProjectBundle.decode(relay.served!['project.gbz']!);
+    expect(bundle.files['Form1.form.yaml'], contains('Server: /room'));
+    expect(relay.served!.keys, contains('index.html'));
+    await tester.tap(find.text(s.runtime.ok));
+    await tester.pumpAndSettle();
+
+    relay.on = true;
+    await preview();
+    expect(
+      find.text(s.previewNetwork.replaceAll('{0}', 'http://192.0.2.10:53421/')),
+      findsOneWidget,
+    );
+    expect(find.byKey(const ValueKey('previewQr')), findsOneWidget);
   });
 }

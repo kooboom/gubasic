@@ -52,7 +52,7 @@ sudo systemctl reload apache2
 curl https://relay.example.com/room/health
 ```
 
-`{"gubasicRelay":"0.6.0","rooms":0}`으로 답합니다. 그다음 앱의 `Room.Server`를 속성 창에서 `wss://relay.example.com/room`으로 정하고, 내보내서 방을 만들어 봅니다.
+`{"gubasicRelay":"0.6.0","rooms":0}`으로 답합니다. 그다음 앱의 `Room.Server`를 속성 창에서 `wss://relay.example.com/room`으로 정하고, 내보내서 방을 만들어 봅니다. 같은 Apache가 내보낸 웹 앱도 서비스한다면 `Room.Server`에 경로만 `/room`으로 적어도 됩니다. 그러면 앱이 자기를 준 서버를 씁니다.
 
 ## 설정
 

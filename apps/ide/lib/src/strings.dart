@@ -21,6 +21,10 @@ class IdeStrings {
     required this.roomServerHere,
     required this.roomServerNetwork,
     required this.exportAnyway,
+    required this.previewOnWeb,
+    required this.previewHere,
+    required this.previewNetwork,
+    required this.previewNeedsNetwork,
     required this.pausedAt,
     required this.variables,
     required this.callStack,
@@ -288,6 +292,14 @@ class IdeStrings {
 
   /// Export goes on after a warning (A078).
   final String exportAnyway;
+
+  /// The Debug menu's "Preview on the Web" (D136) and its dialog: `{0}`
+  /// the address on this computer, and on the same network; what to do
+  /// when the same network is not allowed.
+  final String previewOnWeb;
+  final String previewHere;
+  final String previewNetwork;
+  final String previewNeedsNetwork;
 
   /// `{0}` the file, `{1}` the line, `{2}` the procedure.
   final String pausedAt;
@@ -802,6 +814,12 @@ class IdeStrings {
     roomServerHere: 'Room server: {0} (this computer only)',
     roomServerNetwork: 'Room server: {0} (same network)',
     exportAnyway: 'Export Anyway',
+    previewOnWeb: 'Preview on the Web',
+    previewHere: 'On this computer: {0}',
+    previewNetwork: 'On a phone on the same Wi-Fi: scan the code, or open {0}',
+    previewNeedsNetwork:
+        'To open it on a phone, turn on Debug → Allow Devices on the Same '
+        'Network, then choose Preview on the Web again.',
     pausedAt: 'Paused at line {1} of {0}, in {2}',
     variables: 'Variables',
     callStack: 'Call stack',
@@ -1182,6 +1200,11 @@ class IdeStrings {
     roomServerHere: 'Room 서버: {0} (이 컴퓨터만)',
     roomServerNetwork: 'Room 서버: {0} (같은 네트워크)',
     exportAnyway: '그래도 내보내기',
+    previewOnWeb: '웹으로 미리 보기',
+    previewHere: '이 컴퓨터에서: {0}',
+    previewNetwork: '같은 Wi-Fi의 폰에서: QR 코드를 찍거나 {0} 주소를 엽니다',
+    previewNeedsNetwork:
+        '폰에서 열려면 디버그 → 같은 네트워크의 기기 허용을 켜고, 웹으로 미리 보기를 다시 고릅니다.',
     pausedAt: '{2} 프로시저가 {0} 파일의 {1} 줄에서 멈춤',
     variables: '변수',
     callStack: '호출 스택',

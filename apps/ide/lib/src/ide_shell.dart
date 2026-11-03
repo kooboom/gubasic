@@ -6,6 +6,7 @@ import 'package:flutter/gestures.dart' show kDoubleTapTimeout;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gubasic_lang/gubasic_lang.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 
 import 'code/code_editor.dart';
 import 'code/code_font.dart';
@@ -203,10 +204,19 @@ class _IdeShellState extends State<IdeShell> {
     final s = widget.strings;
     // A Room without a Server uses the IDE's relay server (D136): started
     // first, then the run.
+    // A Room without a Server, or with a path (`/room`), uses the IDE's
+    // relay server (D136).
     final needsRelay =
         _relay.available &&
         project.startup != null &&
-        roomsWithoutServer(project.startup!.forms).isNotEmpty;
+        project.startup!.forms.any(
+          (f) => f.controls.any(
+            (c) =>
+                c.component.name == 'Room' &&
+                ((c.valueOf('Server') as String).trim().isEmpty ||
+                    (c.valueOf('Server') as String).startsWith('/')),
+          ),
+        );
     if (needsRelay && _relay.localAddress == null) {
       unawaited(
         _relay.start().then((_) {
@@ -249,7 +259,11 @@ class _IdeShellState extends State<IdeShell> {
         pdfFont: () async => (await loadPdfFont())[pdfFontFile],
         debugger: _debugger,
       );
-      _session!.host.roomServer = needsRelay ? _relay.localAddress : null;
+      _session!.host
+        ..roomServer = needsRelay ? _relay.localAddress : null
+        ..roomPage = needsRelay
+            ? Uri.parse(_relay.localAddress!).replace(scheme: 'http', path: '/')
+            : null;
       if (!needsRelay) _relayLines = [];
       _showRun = true;
     });
@@ -274,6 +288,62 @@ class _IdeShellState extends State<IdeShell> {
         if (here != null) s.roomServerHere.replaceAll('{0}', here),
         for (final a in network) s.roomServerNetwork.replaceAll('{0}', a),
       ],
+    );
+  }
+
+  /// The Debug menu's "Preview on the Web": the project as a web app on
+  /// the IDE's own server, with its addresses, and a QR code for a phone
+  /// when devices on the same network are allowed.
+  Future<void> _preview() async {
+    final s = widget.strings;
+    final files = await widget.controller.previewFiles(context);
+    if (files == null || !mounted) return;
+    await _relay.serve(files);
+    final here = _relay.previewAddress;
+    final network = [
+      for (final a in await _relay.networkAddresses())
+        a.replaceFirst('ws://', 'http://').replaceFirst(RegExp(r'room$'), ''),
+    ];
+    if (!mounted || here == null) return;
+    await showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        key: const ValueKey('previewDialog'),
+        title: Text(s.previewOnWeb),
+        content: SizedBox(
+          width: 360,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SelectableText(s.previewHere.replaceAll('{0}', here)),
+              const SizedBox(height: 12),
+              if (network.isEmpty)
+                Text(s.previewNeedsNetwork)
+              else ...[
+                SelectableText(
+                  s.previewNetwork.replaceAll('{0}', network.first),
+                ),
+                const SizedBox(height: 12),
+                Center(
+                  child: QrImageView(
+                    key: const ValueKey('previewQr'),
+                    data: network.first,
+                    size: 200,
+                    backgroundColor: Colors.white,
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+        actions: [
+          FilledButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(s.player.runtime.ok),
+          ),
+        ],
+      ),
     );
   }
 
@@ -499,6 +569,12 @@ class _IdeShellState extends State<IdeShell> {
             onChanged: (on) => unawaited(_setSameNetwork(on ?? false)),
             child: Text(s.sameNetwork),
           ),
+          if (widget.controller.canPreview)
+            MenuItemButton(
+              key: const ValueKey('menu.preview'),
+              onPressed: () => unawaited(_preview()),
+              child: Text(s.previewOnWeb),
+            ),
         ],
       ],
       builder: (context, menu, _) => TextButton(

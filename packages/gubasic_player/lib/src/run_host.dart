@@ -415,6 +415,10 @@ class RunHost implements FormHost, FileHost, ComponentHost {
   /// own (D136); null in an exported app and in the web IDE.
   String? roomServer;
 
+  /// Where a Room's Server written as a path (`/room`) is: the web app's
+  /// page when null; the desktop IDE gives its relay server's (D136).
+  Uri? roomPage;
+
   /// The program's SQLite (D126): the runtime's, made when first used.
   GbSqlite? _sql;
 
@@ -436,6 +440,7 @@ class RunHost implements FormHost, FileHost, ComponentHost {
           _webSockets ??= GbWebSocket(),
           busyRequests,
           defaultServer: roomServer,
+          page: roomPage,
         ),
         'Database' => _database = PlayerDatabase(
           _sql ??= GbSqlite(),

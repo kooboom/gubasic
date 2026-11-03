@@ -15,7 +15,7 @@ import 'package:gubasic_player/gubasic_player.dart'
 import 'package:gubasic_runtime/gubasic_runtime.dart';
 
 import '../strings.dart';
-import '../designer/form_edit.dart' show FormSizePreset;
+import '../designer/form_edit.dart' show FormSizePreset, withProperty;
 import 'browser.dart';
 import 'folders.dart';
 import 'pdf_font.dart';
@@ -868,6 +868,10 @@ class ProjectController extends ChangeNotifier {
       (browser != null ||
           (folders != null && pickers?.saveZipLocation != null));
 
+  /// Whether "Preview on the Web" can make the web app (D136): where the
+  /// web template can be had.
+  bool get canPreview => fetchTemplate != null;
+
   /// Whether a macOS app can be made here: in the macOS IDE alone (D87).
   bool get canExportMacApp => canExportApps && macAppMaker != null;
 
@@ -983,6 +987,59 @@ class ProjectController extends ChangeNotifier {
     }
     if (context.mounted) {
       await _tell(context, words.saved.replaceAll('{0}', where));
+    }
+  }
+
+  /// "Preview on the Web" (D136): the open project as the web app an export
+  /// makes, by path, for the IDE's own server to serve; a Room without a
+  /// Server uses `/room` of the server that serves the app. Null, after
+  /// saying why, when the project has errors or there is no web template.
+  Future<Map<String, List<int>>?> previewFiles(BuildContext context) async {
+    context = _lasting(context);
+    if (fetchTemplate == null) return null;
+    final project = _current;
+    if (!project.project.canRun) {
+      await _tell(context, strings.webAppCannotRun);
+      return null;
+    }
+    final files = Map.of(project.files);
+    for (final form in project.project.startup?.forms ?? const <FormFile>[]) {
+      var changed = form;
+      for (final c in form.controls) {
+        if (c.component.name == 'Room' &&
+            (c.valueOf('Server') as String).trim().isEmpty) {
+          changed = withProperty(changed, c.name, 'Server', '/room');
+        }
+      }
+      if (!identical(changed, form)) {
+        files['${form.name}.form.yaml'] = writeFormFile(changed);
+      }
+    }
+    final bundle = ProjectBundle(
+      id: 'idepreview',
+      name: project.project.name,
+      files: files,
+      pictures: project.pictures,
+      fonts: usesPdfDocument(files) ? await loadPdfFont() : const {},
+    );
+    try {
+      return webAppFiles(
+        await fetchTemplate!(AppTemplate.web),
+        bundle,
+        strings.webAppGuide,
+      );
+    } on WebTemplateProblem catch (p) {
+      if (context.mounted) {
+        await _tell(context, switch (p) {
+          TemplateNotUsable(:final bundleFormat) =>
+            strings.webAppTemplateNotUsable.replaceAll(
+              '{0}',
+              '${bundleFormat ?? '?'}',
+            ),
+          _ => strings.webAppTemplateUnavailable,
+        });
+      }
+      return null;
     }
   }
 

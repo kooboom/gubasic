@@ -106,7 +106,7 @@ IDE 안에서 완결되는 비주얼 베이직의 핵심 경험입니다.
 - [x] `WebSocket`: `Connect`(열릴 때까지 기다림), `Send`, `Close`, 그리고 `Message`, `Closed`, `Error`. 어떤 표준 WebSocket 서버에도 연결(D136)
 - [x] `Room`: `Create`와 `Join`(들어갈 때까지 기다림), `Send`, `SendTo`, `Leave`, `Lock`, 그리고 `Joined`, `Left`, `Message`, `Closed`, `Error`. 메시지 형식을 공개한 중계 서버 위에서(`docs/ROOM_PROTOCOL.ko.md`)
 - [x] 저장소에 둔 중계 서버(`packages/gubasic_relay`). 사용자의 자기 서버를 위한 [안내](RELAY_SERVER.ko.md), 설치 스크립트, Apache 설정 예(D123), 릴리스마다 Linux(x64, arm64) 실행 파일. 공개 시험 서버는 두지 않음(D136)
-- [ ] IDE의 로컬 중계 서버: `Room.Server`가 비면 저절로 켜짐, 기본이 꺼진 "같은 네트워크의 기기 허용"과 경고, QR 코드가 있는 "웹으로 미리 보기"(D136)
+- [x] IDE의 로컬 중계 서버: `Room.Server`가 비면 저절로 켜짐, 기본이 꺼진 "같은 네트워크의 기기 허용"과 경고, QR 코드가 있는 "웹으로 미리 보기"(D136)
 - [x] 예제: 폰으로 답하고 TV가 경주를 보여 주는 실시간 퀴즈 [LiveQuiz](../examples/livequiz)([IDEAS](IDEAS.ko.md#실시간으로-함께-websocket과-room))
 
 ### v0.7 — 게임 도구(후보, D121 a)

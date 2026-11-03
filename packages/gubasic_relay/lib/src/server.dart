@@ -34,6 +34,11 @@ class RelayServer {
   final void Function(String line)? _log;
   Timer? _sweeper;
 
+  /// Answers a request that is not the relay server's (the desktop IDE's
+  /// "Preview on the Web" serves the app on the same port, D136); true when
+  /// it did. Unset, such requests get 404.
+  Future<bool> Function(HttpRequest request)? fallback;
+
   /// The port it listens on.
   int get port => _server.port;
 
@@ -43,7 +48,8 @@ class RelayServer {
   void _serve(HttpServer server) {
     server.listen((request) async {
       try {
-        if (!await handle(request)) {
+        if (!await handle(request) &&
+            !(await fallback?.call(request) ?? false)) {
           request.response.statusCode = HttpStatus.notFound;
           await request.response.close();
         }

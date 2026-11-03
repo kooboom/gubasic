@@ -173,34 +173,51 @@ Uint8List webAppZip(
   String guide, {
   Map<String, String> fonts = const {},
 }) {
-  final files = readTemplate(template);
-  if (files.findFile('index.html') == null) throw const TemplateNotUsable();
   final folder = '${appFileName(bundle.name)}-web';
   final out = Archive();
-  void add(String path, List<int> bytes) =>
-      out.add(ArchiveFile.bytes('$folder/$path', bytes));
+  for (final MapEntry(key: path, value: bytes) in webAppFiles(
+    template,
+    bundle,
+    guide,
+    fonts: fonts,
+  ).entries) {
+    out.add(ArchiveFile.bytes('$folder/$path', bytes));
+  }
+  return Uint8List.fromList(ZipEncoder().encodeBytes(out));
+}
+
+/// The files of the web app [webAppZip] makes, by their path in its
+/// folder: what the desktop IDE's "Preview on the Web" serves (D136).
+Map<String, List<int>> webAppFiles(
+  List<int> template,
+  ProjectBundle bundle,
+  String guide, {
+  Map<String, String> fonts = const {},
+}) {
+  final files = readTemplate(template);
+  if (files.findFile('index.html') == null) throw const TemplateNotUsable();
+  final out = <String, List<int>>{};
   for (final file in files.files) {
     if (!file.isFile || file.name == 'template.json') continue;
     final bytes = file.content;
     switch (file.name) {
       case 'index.html':
-        add(file.name, utf8.encode(_titled(utf8.decode(bytes), bundle.name)));
+        out[file.name] = utf8.encode(_titled(utf8.decode(bytes), bundle.name));
       case 'manifest.json':
         final manifest = jsonDecode(utf8.decode(bytes)) as Map<String, Object?>;
         manifest['name'] = bundle.name;
         manifest['short_name'] = bundle.name;
-        add(
-          file.name,
-          utf8.encode(const JsonEncoder.withIndent('  ').convert(manifest)),
+        out[file.name] = utf8.encode(
+          const JsonEncoder.withIndent('  ').convert(manifest),
         );
       default:
-        add(file.name, bytes);
+        out[file.name] = bytes;
     }
   }
-  add(bundleFileName, bundle.encode());
-  add('HOSTING.txt', utf8.encode(guide));
-  add(thirdPartyNoticesFile, _notices(files, 'assets/NOTICES', fonts));
-  return Uint8List.fromList(ZipEncoder().encodeBytes(out));
+  out[bundleFileName] = bundle.encode();
+  out['HOSTING.txt'] = utf8.encode(guide);
+  out[thirdPartyNoticesFile] = _notices(files, 'assets/NOTICES', fonts);
+  return out;
 }
 
 /// The notices beside an exported app (D120): GuBASIC's, the [fonts]',

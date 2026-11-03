@@ -35,5 +35,14 @@ abstract class LocalRelay {
   /// empty while [sameNetwork] is off.
   Future<List<String>> networkAddresses();
 
+  /// "Preview on the Web" (D136): serves [files], by their path in the web
+  /// app's folder, at `/` of the same address; starts the server first if
+  /// it has not started.
+  Future<void> serve(Map<String, List<int>> files);
+
+  /// The address the preview is served at on this computer,
+  /// `http://localhost:53421/`, once started.
+  String? get previewAddress;
+
   Future<void> close();
 }

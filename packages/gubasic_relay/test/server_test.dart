@@ -124,6 +124,15 @@ void main() {
         .statusCode;
     expect(await status('/'), 404);
     expect(await status('/room'), 426);
+    // Another server's paths, on the same port (the IDE's preview).
+    server.fallback = (request) async {
+      if (request.uri.path != '/') return false;
+      request.response.write('the app');
+      await request.response.close();
+      return true;
+    };
+    expect(await status('/'), 200);
+    expect(await status('/other'), 404);
     client.close();
   });
 

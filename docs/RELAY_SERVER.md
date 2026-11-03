@@ -52,7 +52,7 @@ sudo systemctl reload apache2
 curl https://relay.example.com/room/health
 ```
 
-answers `{"gubasicRelay":"0.6.0","rooms":0}`. Then set `Room.Server` in your app to `wss://relay.example.com/room` (in the Properties window), export it, and try a room.
+answers `{"gubasicRelay":"0.6.0","rooms":0}`. Then set `Room.Server` in your app to `wss://relay.example.com/room` (in the Properties window), export it, and try a room. When the same Apache also serves the exported web app, `Room.Server` can be the path alone, `/room`: the app then uses the server it came from.
 
 ## Settings
 
