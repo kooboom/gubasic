@@ -321,6 +321,13 @@ const Map<DiagnosticCode, String> englishMessages = {
   DiagnosticCode.withNotValue:
       'With needs a value, such as a control, a variable or an item: {0} '
           'is not one. Write its members in full.',
+  DiagnosticCode.vb6Color: '{0} is Visual Basic 6\'s colour. GuBASIC uses '
+      'Visual Basic .NET\'s Color: write {1}.',
+  DiagnosticCode.colorPartOutOfRange: 'Color.FromArgb takes red, green and '
+      'blue from 0 to 255; {0} is not one. Check the value.',
+  DiagnosticCode.badColor: 'The colour of {0} is a colour\'s name (Red, '
+      'SkyBlue) or #RRGGBB; "{1}" is neither. Choose one in the Properties '
+      'window.',
   DiagnosticCode.emptyRoomServer: 'The Server of {0} is empty: the app '
       'will have no relay server. Set it to your server\'s address, as '
       'docs/RELAY_SERVER.md says.',

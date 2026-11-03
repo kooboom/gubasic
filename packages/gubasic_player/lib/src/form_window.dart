@@ -14,10 +14,10 @@ GbFormModel formModelOf(
   GbKeySink? onKey,
   GbMouseSink? onMouse,
 }) => GbFormModel(
-  form: {
+  form: modelProperties({
     for (final p in form.component.properties.values)
       p.name: form.valueOf(p.name),
-  },
+  }),
   controls: [
     // A Timer is not seen on the form (D100); the menu items are drawn in
     // the menu bar (D106).
@@ -48,13 +48,39 @@ GbControlState controlStateOf(
 }) => GbControlState(
   name,
   _kind(component.name),
-  properties,
+  modelProperties(properties),
   container: container,
   layer: switch (component.layer) {
     ComponentLayer.graphic => GbLayer.graphic,
     ComponentLayer.control => GbLayer.control,
   },
 );
+
+/// The colour properties (D137): a host keeps their text (`Red`), the
+/// runtime's model their value, 0xAARRGGBB.
+const colorProperties = {'ForeColor', 'BackColor'};
+
+/// [properties] as the runtime's model keeps them (D137): an ambient
+/// property that is not set is left out, a colour is its value.
+Map<String, Object> modelProperties(Map<String, Object> properties) => {
+  for (final MapEntry(:key, :value) in properties.entries)
+    if (value is! Unset)
+      key: colorProperties.contains(key) ? modelValue(key, value) : value,
+};
+
+/// [value] of [property] as the model keeps it.
+Object modelValue(String property, Object value) =>
+    colorProperties.contains(property) && value is String
+    ? parseColor(value)!
+    : value;
+
+/// [property]'s [value] from the model, as a host gives it to the
+/// interpreter; [unset] when the model has none.
+Object hostValue(String property, Object? value) => switch (value) {
+  null => unset,
+  final int argb when colorProperties.contains(property) => colorText(argb),
+  _ => value,
+};
 
 GbControlKind _kind(String component) => switch (component.toLowerCase()) {
   'button' => GbControlKind.button,

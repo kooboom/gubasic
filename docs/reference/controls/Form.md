@@ -15,6 +15,10 @@ Default event (made by a double-click): `Load`
 | `Caption` | String | `""` |  |
 | `Width` | Integer | `480` |  |
 | `Height` | Integer | `360` |  |
+| `FontSize` | Double | `(not set)` | not set: its Frame's or its form's |
+| `FontBold` | Boolean | `(not set)` | not set: its Frame's or its form's |
+| `ForeColor` | Color | `(not set)` | not set: its Frame's or its form's |
+| `BackColor` | Color | `(not set)` |  |
 | `Tag` | String | `""` |  |
 | `KeyPreview` | Boolean | `False` |  |
 | `DialogResult` | Integer | `0` | set only while the program runs |

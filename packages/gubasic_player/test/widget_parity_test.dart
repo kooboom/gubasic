@@ -552,6 +552,18 @@ class _WidgetDriver implements ScriptDriver {
         when item.kind == GbControlKind.menu) {
       return _choose(model, item);
     }
+    // One that is not Visible is not drawn; one that is not Enabled is
+    // greyed and takes no clicks; so are those in such a Frame (D137).
+    if (model.control(control) case final state?
+        when !gbUsable(model, state, 'Visible') ||
+            !gbUsable(model, state, 'Enabled')) {
+      expect(
+        _control(control).hitTestable(),
+        findsNothing,
+        reason: '$control cannot be clicked',
+      );
+      return EventOutcome.disabled;
+    }
     host.lastOutcome = null;
     if (!await _tap(_control(control))) return EventOutcome.blocked;
     return host.lastOutcome ?? EventOutcome.noHandler;

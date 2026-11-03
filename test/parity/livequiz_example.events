@@ -2,6 +2,7 @@ btnTV.Click
 Peer 민지 Join
 Peer Kim Join
 FormTV.btnNext.Click
+FormTV.btnNext.Click
 Peer 민지 SendTo m1 {"kind":"answer","no":1,"choice":1}
 Peer 민지 SendTo m1 {"kind":"answer","no":1,"choice":0}
 Peer Kim SendTo m1 {"kind":"answer","no":1,"choice":0}

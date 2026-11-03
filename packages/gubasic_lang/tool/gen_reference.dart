@@ -141,6 +141,7 @@ final _types = <GbType>[
   GbType.closeEventArgs,
   GbType.errorEventArgs,
   GbType.roomEventArgs,
+  GbType.color,
   GbType.table,
   GbType.pdfDocument,
   GbType.json,
@@ -211,6 +212,7 @@ class _Words {
         notes = 'Notes',
         readOnly = 'read only',
         runTimeOnly = 'set only while the program runs',
+        ambient = 'not set: its Frame\'s or its form\'s',
         constants = 'Constants',
         builtinObjects = 'Built-in objects',
         typeMembers = 'Members of types',
@@ -237,6 +239,7 @@ class _Words {
         notes = '참고',
         readOnly = '읽기만 함',
         runTimeOnly = '실행 중에만 정함',
+        ambient = '정하지 않으면 Frame이나 폼의 것',
         constants = '상수',
         builtinObjects = '내장 객체',
         typeMembers = '형식의 멤버',
@@ -248,7 +251,7 @@ class _Words {
   final bool ko;
   final String title, intro, controls, functions, objects, properties;
   final String methods, events, otherNames, defaultEvent, notOnForm, type;
-  final String initial, notes, readOnly, runTimeOnly, constants;
+  final String initial, notes, readOnly, runTimeOnly, ambient, constants;
   final String builtinObjects, typeMembers, explained, back, language, ext;
 }
 
@@ -256,6 +259,7 @@ String _value(Object v) => switch (v) {
       final String s => s.isEmpty ? '""' : '"$s"',
       final bool b => b ? 'True' : 'False',
       final List<Object?> l => l.isEmpty ? '(none)' : '$l',
+      Unset() => '(not set)',
       _ => '$v',
     };
 
@@ -275,6 +279,8 @@ String _controlPage(ComponentSpec c, _Words w) {
       final notes = [
         if (p.readOnly) w.readOnly,
         if (!p.readOnly && !p.designTime) w.runTimeOnly,
+        // Not BackColor: what has none shows what is behind it (D137).
+        if (p.ambient && p.name != 'BackColor') w.ambient,
       ].join(', ');
       b.write(
         '| `${p.name}` | ${p.type.displayName} | '

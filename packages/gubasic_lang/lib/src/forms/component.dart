@@ -11,6 +11,27 @@ import 'components.g.dart';
 const int integerPropertyMin = -2147483648;
 const int integerPropertyMax = 2147483647;
 
+/// The value of an ambient property that is not set (D137): the control
+/// takes its Frame's, its form's, or the default.
+class Unset {
+  const Unset._();
+
+  @override
+  String toString() => '(unset)';
+}
+
+/// The one [Unset] value.
+const unset = Unset._();
+
+/// What an ambient property is when neither the control, its Frames nor
+/// its form set it (D137): 9.75 points (13 pixels), not bold, the theme's
+/// colours ("").
+Object ambientDefault(GbType type) => switch (type) {
+      GbType.double_ => 9.75,
+      GbType.boolean => false,
+      _ => '',
+    };
+
 /// A property of a component, as declared in its component.yaml.
 class PropertySpec {
   const PropertySpec(
@@ -26,12 +47,14 @@ class PropertySpec {
     this.picture = false,
     this.anchor = false,
     this.shortcut = false,
+    this.ambient = false,
   }) : designTime = designTime && !readOnly && !internal;
 
   final String name;
 
-  /// Integer, Double, Boolean or String; `List(Of String)` for an
-  /// [internal] property, `String()` for a [readOnly] one (D136).
+  /// Integer, Double, Boolean, String or Color (kept as [colorText] gives
+  /// it, D137); `List(Of String)` for an [internal] property, `String()`
+  /// for a [readOnly] one (D136).
   final GbType type;
 
   /// An `int`, `double`, `bool`, `String` or `List<String>`, matching
@@ -77,12 +100,21 @@ class PropertySpec {
   /// shortcuts (F022, A057, R024), kept as [normalShortcut] gives them.
   final bool shortcut;
 
+  /// Whether a control that does not set it takes it from its Frame or
+  /// its form (FontSize, FontBold, ForeColor, BackColor; D137): its
+  /// [defaultValue] is [unset].
+  final bool ambient;
+
   /// Whether a host keeps its value: all but the [readOnly] ones.
   bool get isStored => !readOnly;
 
-  /// Whether [value] (an int for Integer properties) is in range.
-  bool accepts(Object value) =>
-      type != GbType.integer || (value is int && value >= min && value <= max);
+  /// Whether [value] (an int for Integer properties) is in range: an
+  /// Integer's, or a Double's with a min and max (FontSize, D137).
+  bool accepts(Object value) => switch (type) {
+        GbType.integer => value is int && value >= min && value <= max,
+        GbType.double_ when value is double => value >= min && value <= max,
+        _ => true,
+      };
 }
 
 /// An event of a component: `Click()`, later `Detected(code As String)`.
@@ -307,6 +339,8 @@ ComponentSpec readComponentFile(String text) {
     final picture = p['picture'] ?? false;
     final anchor = p['anchor'] ?? false;
     final shortcut = p['shortcut'] ?? false;
+    final ambient = p['ambient'] ?? false;
+    if (ambient is! bool) throw FormatException('$name: bad ambient');
     if (internal is! bool ||
         readOnly is! bool ||
         designTime is! bool ||
@@ -320,19 +354,29 @@ ComponentSpec readComponentFile(String text) {
       'list(of string)' when internal => const ListType(GbType.string),
       // A component's own list, read only (Room.Members, D136).
       'string()' when readOnly => const ArrayType(GbType.string),
+      // A colour, ambient (D137).
+      'color' when ambient => GbType.color,
       _ => _valueTypes[typeName],
     };
     if (type == null) throw FormatException('$name: unsupported type');
-    final value = p['default'];
-    final ok = switch (type) {
-      GbType.integer => value is int,
-      GbType.double_ => value is num,
-      GbType.boolean => value is bool,
-      ListType() ||
-      ArrayType() =>
-        value is YamlList && value.every((v) => v is String),
-      _ => value is String,
-    };
+    if (ambient &&
+        (p['default'] != null ||
+            !const {GbType.double_, GbType.boolean, GbType.color}
+                .contains(type))) {
+      throw FormatException('$name: an ambient property is a Double, a '
+          'Boolean or a Color, without a default');
+    }
+    final value = ambient ? unset : p['default'];
+    final ok = ambient ||
+        switch (type) {
+          GbType.integer => value is int,
+          GbType.double_ => value is num,
+          GbType.boolean => value is bool,
+          ListType() ||
+          ArrayType() =>
+            value is YamlList && value.every((v) => v is String),
+          _ => value is String,
+        };
     if (!ok) throw FormatException('$name: default does not match its type');
     final min = p['min'] ?? integerPropertyMin;
     final max = p['max'] ?? integerPropertyMax;
@@ -340,7 +384,9 @@ ComponentSpec readComponentFile(String text) {
         max is! int ||
         min < integerPropertyMin ||
         max > integerPropertyMax ||
-        (type != GbType.integer && (p['min'] != null || p['max'] != null))) {
+        (type != GbType.integer &&
+            type != GbType.double_ &&
+            (p['min'] != null || p['max'] != null))) {
       throw FormatException('$name: bad min or max');
     }
     final changeEvent = p['changeEvent'];
@@ -355,6 +401,7 @@ ComponentSpec readComponentFile(String text) {
         name,
         type,
         switch (type) {
+          _ when ambient => unset,
           GbType.double_ => (value as num).toDouble(),
           ListType() ||
           ArrayType() =>
@@ -369,7 +416,8 @@ ComponentSpec readComponentFile(String text) {
         internal: internal,
         picture: picture,
         anchor: anchor,
-        shortcut: shortcut);
+        shortcut: shortcut,
+        ambient: ambient);
     if (picture && (type != GbType.string || spec.defaultValue != '')) {
       throw FormatException('$name: a picture property is a String, '
           'empty by default');

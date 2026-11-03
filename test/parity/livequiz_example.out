@@ -27,8 +27,10 @@ Room: send {"kind":"question","no":1,"text":"대한민국의 수도는 어디일
 Peer 민지 got: {"kind":"question","no":1,"text":"대한민국의 수도는 어디일까요?","choices":["부산","서울","대구","인천"],"seconds":15,"host":"m1"}
 Peer Kim got: {"kind":"question","no":1,"text":"대한민국의 수도는 어디일까요?","choices":["부산","서울","대구","인천"],"seconds":15,"host":"m1"}
 Set FormTV.lblTime.Caption: 남은 시간: 15초
-Set FormTV.btnNext.Caption: 답을 받는 중…
+Set FormTV.btnNext.Enabled: False
 Set FormTV.tmrQuestion.Enabled: True
+> FormTV.btnNext.Click
+Disabled: FormTV.btnNext.Click
 > Peer 민지 SendTo m1 {"kind":"answer","no":1,"choice":1}
 Room: sendTo m2 {"kind":"result","no":1,"correct":true,"score":10}
 Peer 민지 got: {"kind":"result","no":1,"correct":true,"score":10}
@@ -52,6 +54,7 @@ Room: send {"kind":"score","board":[{"member":"m2","nickname":"민지","score":1
 Peer 민지 got: {"kind":"score","board":[{"member":"m2","nickname":"민지","score":10},{"member":"m3","nickname":"Kim","score":0}]}
 Peer Kim got: {"kind":"score","board":[{"member":"m2","nickname":"민지","score":10},{"member":"m3","nickname":"Kim","score":0}]}
 Set FormTV.btnNext.Caption: 다음 문제
+Set FormTV.btnNext.Enabled: True
 > FormTV.btnNext.Click
 Set FormTV.lblQuestion.Caption: 2. 윤년이 아닌 해는 며칠일까요?
 Set FormTV.lblChoices.Caption: 1) 360일   2) 365일   3) 366일   4) 370일
@@ -60,7 +63,7 @@ Room: send {"kind":"question","no":2,"text":"윤년이 아닌 해는 며칠일�
 Peer 민지 got: {"kind":"question","no":2,"text":"윤년이 아닌 해는 며칠일까요?","choices":["360일","365일","366일","370일"],"seconds":15,"host":"m1"}
 Peer Kim got: {"kind":"question","no":2,"text":"윤년이 아닌 해는 며칠일까요?","choices":["360일","365일","366일","370일"],"seconds":15,"host":"m1"}
 Set FormTV.lblTime.Caption: 남은 시간: 15초
-Set FormTV.btnNext.Caption: 답을 받는 중…
+Set FormTV.btnNext.Enabled: False
 Set FormTV.tmrQuestion.Enabled: True
 > FormTV.tmrQuestion.Tick
 Set FormTV.lblTime.Caption: 남은 시간: 14초
@@ -88,6 +91,7 @@ Room: send {"kind":"score","board":[{"member":"m2","nickname":"민지","score":1
 Peer 민지 got: {"kind":"score","board":[{"member":"m2","nickname":"민지","score":18},{"member":"m3","nickname":"Kim","score":10}]}
 Peer Kim got: {"kind":"score","board":[{"member":"m2","nickname":"민지","score":18},{"member":"m3","nickname":"Kim","score":10}]}
 Set FormTV.btnNext.Caption: 다음 문제
+Set FormTV.btnNext.Enabled: True
 > Peer Lee Join
 Peer Lee: error room-locked
 > Peer Kim Leave

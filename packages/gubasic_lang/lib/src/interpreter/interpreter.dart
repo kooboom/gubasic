@@ -18,6 +18,7 @@ import '../diagnostics/diagnostic.dart';
 import '../diagnostics/messages_en.dart';
 import '../diagnostics/messages_ko.dart';
 import '../forms/anchor.dart';
+import '../forms/colors.dart';
 import '../forms/component.dart';
 import '../forms/keys.dart';
 import '../forms/pictures.dart';
@@ -381,6 +382,14 @@ class Interpreter {
     if (front == null) return EventOutcome.notRunning;
     // A form behind the front one, behind a dialog for one.
     if (form != null && _formNamed(form) != front) return EventOutcome.blocked;
+    // A control that is not Enabled or not Visible, or in such a Frame,
+    // takes nothing from the user (D137).
+    if (control != null) {
+      if (front.controls[control.toLowerCase()] case final c?
+          when !_usable(c)) {
+        return EventOutcome.disabled;
+      }
+    }
     final handler = _handler(front, control, event);
     if (handler != null && _running.contains(handler)) {
       return EventOutcome.ignored;
@@ -1628,6 +1637,46 @@ class Interpreter {
             DiagnosticCode.memberNotFound, e, [e.name.name, c.component.name]),
       };
 
+  /// An ambient property of [c] (D137): its own when it set it, else its
+  /// Frame's, then its form's, then the default. BackColor is only its
+  /// own: one that has none shows what is behind it.
+  Object _ambient(GbControl c, String property) {
+    final key = property.toLowerCase();
+    if (key == 'backcolor') {
+      final own = _raw(c, property);
+      return own is Unset ? '' : own;
+    }
+    final run = c.attached ? _formNamed(c.form) : null;
+    GbControl? at = c;
+    for (var i = 0; at != null && i < 64; i++) {
+      if (at.component.properties.containsKey(key)) {
+        final v = _raw(at, property);
+        if (v is! Unset) return v;
+      }
+      if (at.isForm || run == null) break;
+      at = run.controls[at.container?.toLowerCase()];
+    }
+    return ambientDefault(c.component.properties[key]!.type);
+  }
+
+  /// Whether the user can use [c] (D137): it and every Frame it is in are
+  /// Enabled and Visible.
+  bool _usable(GbControl c) {
+    final run = c.attached ? _formNamed(c.form) : null;
+    GbControl? at = c;
+    for (var i = 0; at != null && !at.isForm && i < 64; i++) {
+      for (final p in const ['enabled', 'visible']) {
+        if (at.component.properties[p] case final spec?
+            when _raw(at, spec.name) == false) {
+          return false;
+        }
+      }
+      if (run == null) break;
+      at = run.controls[at.container?.toLowerCase()];
+    }
+    return true;
+  }
+
   /// A stored property of [c]: from the host while it is on a form, from
   /// itself while it is not (D98).
   Object _raw(GbControl c, String property) => c.attached
@@ -1647,6 +1696,10 @@ class Interpreter {
     if (c.component.channel && spec.readOnly) {
       // The instance's own (D136): `wsChat.State`.
       return _channelDo(c, e, (i) => i.getProperty(spec.name));
+    }
+    if (spec.ambient) {
+      final value = _ambient(c, spec.name);
+      return spec.type == GbType.color ? GbColor.of(value) : value;
     }
     final value =
         spec.readOnly ? _computedProperty(c, spec) : _raw(c, spec.name);
@@ -1871,8 +1924,20 @@ class Interpreter {
         }
         return n;
       case GbType.double_:
-        if (isGbInt(value)) return (value as GbInt).toDouble();
-        if (isGbDouble(value)) return (value as num).toDouble();
+        final d = isGbInt(value)
+            ? (value as GbInt).toDouble()
+            : isGbDouble(value)
+                ? (value as num).toDouble()
+                : null;
+        if (d == null) break;
+        if (!spec.accepts(d)) {
+          _fail(DiagnosticCode.propertyValueOutOfRange, at,
+              [spec.name, '${spec.min}', '${spec.max}']);
+        }
+        return d;
+      case GbType.color:
+        // Color.Empty: the control follows its Frame or form again (D137).
+        if (value is GbColor) return value.isEmpty ? unset : value.text;
       case GbType.boolean:
         if (value is bool) return value;
       default: // String
@@ -3153,6 +3218,34 @@ class Interpreter {
           'x' => m.x,
           _ => m.y,
         });
+      case _BuiltinObject(name: 'Color'):
+        // Colours (D137).
+        if (name == 'empty') return const GbColor.empty();
+        if (name == 'fromargb') {
+          var argb = 0xFF;
+          for (final part in args) {
+            final n = (part as GbInt).toSmallInt();
+            if (n == null || n < 0 || n > 255) {
+              _fail(
+                  DiagnosticCode.colorPartOutOfRange, node, [(part).format()]);
+            }
+            argb = (argb << 8) | n;
+          }
+          return GbColor(argb);
+        }
+        return GbColor(namedColors.entries
+            .firstWhere((e) => e.key.toLowerCase() == name)
+            .value);
+      case GbColor c:
+        final argb = c.argb ?? 0;
+        return switch (name) {
+          'r' => GbInt.of((argb >> 16) & 0xFF),
+          'g' => GbInt.of((argb >> 8) & 0xFF),
+          'b' => GbInt.of(argb & 0xFF),
+          'a' => GbInt.of((argb >> 24) & 0xFF),
+          'isempty' => c.isEmpty,
+          _ => c.name,
+        };
       case _BuiltinObject(name: 'DialogResult'):
         return GbInt.of(dialogResults.entries
             .firstWhere((e) => e.key.toLowerCase() == name)

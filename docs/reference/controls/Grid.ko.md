@@ -16,6 +16,12 @@
 | `Height` | Integer | `160` |  |
 | `Anchor` | String | `"Left Top"` |  |
 | `ReadOnly` | Boolean | `False` |  |
+| `Enabled` | Boolean | `True` |  |
+| `Visible` | Boolean | `True` |  |
+| `FontSize` | Double | `(not set)` | 정하지 않으면 Frame이나 폼의 것 |
+| `FontBold` | Boolean | `(not set)` | 정하지 않으면 Frame이나 폼의 것 |
+| `ForeColor` | Color | `(not set)` | 정하지 않으면 Frame이나 폼의 것 |
+| `BackColor` | Color | `(not set)` |  |
 | `Tag` | String | `""` |  |
 | `Row` | Integer | `-1` | 실행 중에만 정함 |
 | `Col` | Integer | `-1` | 실행 중에만 정함 |

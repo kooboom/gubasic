@@ -183,7 +183,7 @@ void main() {
     await tester.tap(
       find.descendant(
         of: find.byType(PropertiesPanel),
-        matching: find.byType(Checkbox),
+        matching: find.byKey(const ValueKey('properties.Checked')),
       ),
     );
     await tester.pumpAndSettle();

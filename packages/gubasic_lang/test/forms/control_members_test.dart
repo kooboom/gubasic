@@ -25,8 +25,20 @@ void main() {
   test('the ListBox in its component.yaml', () {
     final c = builtinComponents['listbox']!;
     expect(c.defaultEvent, 'Changed');
-    expect(c.designProperties.map((p) => p.name),
-        ['Left', 'Top', 'Width', 'Height', 'Anchor', 'Tag']);
+    expect(c.designProperties.map((p) => p.name), [
+      'Left',
+      'Top',
+      'Width',
+      'Height',
+      'Anchor',
+      'Enabled',
+      'Visible',
+      'FontSize',
+      'FontBold',
+      'ForeColor',
+      'BackColor',
+      'Tag'
+    ]);
     expect(c.properties['listindex']!.changeEvent, 'Changed');
     expect(c.properties['listindex']!.designTime, isFalse);
     expect(c.properties['listcount']!.readOnly, isTrue);

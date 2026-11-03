@@ -134,6 +134,58 @@
 - `Json.Parse(text As String) As Json`
 - `Json.Array() As Json`
 
+### Color
+
+- `Color.Black As Color`
+- `Color.White As Color`
+- `Color.Red As Color`
+- `Color.Green As Color`
+- `Color.Blue As Color`
+- `Color.Yellow As Color`
+- `Color.Orange As Color`
+- `Color.Purple As Color`
+- `Color.Pink As Color`
+- `Color.Brown As Color`
+- `Color.Gray As Color`
+- `Color.DarkGray As Color`
+- `Color.LightGray As Color`
+- `Color.Silver As Color`
+- `Color.WhiteSmoke As Color`
+- `Color.Navy As Color`
+- `Color.DarkBlue As Color`
+- `Color.RoyalBlue As Color`
+- `Color.SkyBlue As Color`
+- `Color.LightBlue As Color`
+- `Color.Teal As Color`
+- `Color.Cyan As Color`
+- `Color.Aqua As Color`
+- `Color.Turquoise As Color`
+- `Color.Lime As Color`
+- `Color.LightGreen As Color`
+- `Color.DarkGreen As Color`
+- `Color.Olive As Color`
+- `Color.Maroon As Color`
+- `Color.DarkRed As Color`
+- `Color.Crimson As Color`
+- `Color.Tomato As Color`
+- `Color.Coral As Color`
+- `Color.Salmon As Color`
+- `Color.Gold As Color`
+- `Color.LightYellow As Color`
+- `Color.Khaki As Color`
+- `Color.Beige As Color`
+- `Color.Ivory As Color`
+- `Color.Tan As Color`
+- `Color.Chocolate As Color`
+- `Color.Magenta As Color`
+- `Color.Fuchsia As Color`
+- `Color.Violet As Color`
+- `Color.Lavender As Color`
+- `Color.Indigo As Color`
+- `Color.Transparent As Color`
+- `Color.Empty As Color`
+- `Color.FromArgb(red As Integer, green As Integer, blue As Integer) As Color`
+
 ### Database
 
 Keeps a program's data in an SQLite database file (docs/DESIGN.md D124, D126), the way Visual Basic 6 kept it in a Jet database through Data Access Objects (https://learn.microsoft.com/en-us/previous-versions/visualstudio/visual-basic-6/aa227845(v=vs.60)). A built-in object used by its name, not put on a form. Every app has a database of its own, data.db in the app's own data folder, opened when first used; Database.Open(name) opens another file there instead. Execute(sql, values…) runs a statement and gives how many rows it changed; Query(sql, values…) gives the rows as a Table; Scalar(sql, values…) gives the first value of the first row as text, "" for NULL or no row, and LastWasNull says which. A value goes into the SQL as a ?, and after it in the call: Database.Execute("INSERT INTO scores(name, points) VALUES (?, ?)", txtName.Text, points); a quote in the value then cannot break the statement. Integer, Double and String go in as they are, Boolean as 1 or 0, Date as "yyyy-MM-dd HH:mm:ss", Nothing as NULL. LastId is the row ID the last INSERT gave; Path is where the file is; Close() closes it (the next use opens it again). Export(path) writes the database as a file, a backup, where File writes files (on the web, a download); Import(path) replaces the database with such a file, one chosen with OpenFileDialog or exported in this run on the web. SQL the database cannot run is R042; a name that is not a file name is R043; a database that cannot be opened is R044; a file that is not an SQLite database is R045. SQL joined with & is a warning (A060).
@@ -230,6 +282,15 @@ Talks to web servers over HTTP (docs/DESIGN.md D124, D125), the way Visual Basic
 - `Json As Json`
 - `Reason As String`
 - `Message As String`
+
+### Color
+
+- `R As Integer`
+- `G As Integer`
+- `B As Integer`
+- `A As Integer`
+- `IsEmpty As Boolean`
+- `Name As String`
 
 ### Table
 

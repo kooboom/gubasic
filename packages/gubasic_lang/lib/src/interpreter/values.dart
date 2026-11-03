@@ -1,5 +1,6 @@
 import '../analyzer/conversions.dart';
 import '../analyzer/types.dart';
+import '../forms/colors.dart';
 import '../forms/component.dart';
 import '../pdf/pdf_document.dart';
 import '../text/json.dart';
@@ -187,6 +188,34 @@ class GbSocketEvent {
   final String message;
 }
 
+/// A colour (D137): [argb] (0xAARRGGBB), or null for `Color.Empty`.
+class GbColor {
+  const GbColor(int this.argb);
+  const GbColor.empty() : argb = null;
+
+  /// The colour a host keeps as [text] (`colorText`), or Empty for "".
+  factory GbColor.of(Object? text) => switch (text) {
+        final String t when t.isNotEmpty => GbColor(parseColor(t)!),
+        _ => const GbColor.empty(),
+      };
+
+  final int? argb;
+
+  bool get isEmpty => argb == null;
+
+  /// `Red`, `#FF8800`, or `Empty`.
+  String get name => argb == null ? 'Empty' : colorText(argb!);
+
+  /// How a host keeps it: [name], or "" for Empty.
+  String get text => argb == null ? '' : colorText(argb!);
+
+  @override
+  bool operator ==(Object other) => other is GbColor && other.argb == argb;
+
+  @override
+  int get hashCode => argb.hashCode;
+}
+
 /// What a Room's events are told (D136): the member and its nickname,
 /// the message's text, why the room ended, what went wrong; "" where the
 /// event has none.
@@ -219,6 +248,7 @@ Object? defaultValue(GbType type) => switch (type) {
       GbType.string => '',
       GbType.date => DateTime(1),
       StructureType() => GbStruct.empty(type),
+      GbType.color => const GbColor.empty(),
       _ => null,
     };
 
@@ -240,6 +270,7 @@ String formatValue(Object? value) {
     GbMouseEvent() => 'MouseEventArgs',
     GbSocketEvent e => e.kind,
     GbRoomEvent() => 'RoomEventArgs',
+    GbColor c => c.name,
     GbTable() => 'Table',
     GbPdfDocument() => 'PdfDocument',
     GbJson j => j.text,
@@ -268,6 +299,7 @@ String typeNameOf(Object? value) {
     GbMouseEvent() => 'MouseEventArgs',
     GbSocketEvent e => e.kind,
     GbRoomEvent() => 'RoomEventArgs',
+    GbColor() => 'Color',
     GbTable() => 'Table',
     GbPdfDocument() => 'PdfDocument',
     GbJson() => 'Json',

@@ -3,8 +3,6 @@
 
 Dim host As String          ' TV의 멤버 ID: 문제와 함께 옵니다
 Dim questionNo As Integer
-Dim joined As Boolean       ' 방에 들어왔는지
-Dim choosing As Boolean     ' 보기를 고를 수 있는지
 
 Sub Form_Load()
     ShowChoices(False)
@@ -17,7 +15,6 @@ Sub txtCode_Changed()
 End Sub
 
 Sub btnJoin_Click()
-    If joined Then Exit Sub
     If txtNickname.Text.Trim() = "" Then
         MsgBox("별명을 넣어 주세요.")
         Exit Sub
@@ -29,9 +26,12 @@ Sub btnJoin_Click()
         MsgBox(ex.Message)
         Exit Sub
     End Try
-    joined = True
     lblStep.Caption = txtNickname.Text & " 님, 들어왔습니다. 문제를 기다리세요."
+    ' 들어온 뒤에는 코드와 별명을 바꾸지 못하게 합니다.
     btnJoin.Caption = "방 " & rmQuiz.Code
+    btnJoin.Enabled = False
+    txtCode.Enabled = False
+    txtNickname.Enabled = False
 End Sub
 
 Sub rmQuiz_Message(e As RoomEventArgs)
@@ -69,7 +69,6 @@ Sub rmQuiz_Message(e As RoomEventArgs)
 End Sub
 
 Sub Choice_Click(sender As Button) Handles btnChoice0.Click, btnChoice1.Click, btnChoice2.Click, btnChoice3.Click
-    If Not choosing Then Exit Sub
     Dim chosen As String = sender.Caption
     Dim answer As New Json
     answer("kind") = "answer"
@@ -85,10 +84,13 @@ Sub rmQuiz_Closed(e As RoomEventArgs)
     lblStep.Caption = "방이 끝났습니다(" & e.Reason & ")."
 End Sub
 
-' 고를 수 없을 때는 보기 버튼에 번호만 남깁니다. 문제가 오면 번호와 보기를
-' 함께 보입니다: TV가 멀거나 작아도 폰에서 읽고 고를 수 있게.
+' 고를 수 없을 때는 보기 버튼을 끄고 번호만 남깁니다. 문제가 오면 번호와
+' 보기를 함께 보입니다: TV가 멀거나 작아도 폰에서 읽고 고를 수 있게.
 Sub ShowChoices(shown As Boolean)
-    choosing = shown
+    btnChoice0.Enabled = shown
+    btnChoice1.Enabled = shown
+    btnChoice2.Enabled = shown
+    btnChoice3.Enabled = shown
     If shown Then Exit Sub
     btnChoice0.Caption = "1"
     btnChoice1.Caption = "2"

@@ -17,6 +17,7 @@ export 'src/grid.dart';
 export 'src/http.dart';
 export 'src/image.dart';
 export 'src/list_box.dart';
+export 'src/look.dart';
 export 'src/menus.dart';
 export 'src/mouse.dart';
 export 'src/option_button.dart';

@@ -240,4 +240,5 @@ const Map<String, String> builtinObjects = {
   'csv': 'Csv',
   'dateinterval': 'DateInterval',
   'json': 'Json',
+  'color': 'Color',
 };

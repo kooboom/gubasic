@@ -3,6 +3,7 @@ import 'package:yaml/yaml.dart';
 import '../analyzer/types.dart';
 import '../diagnostics/diagnostic.dart';
 import 'anchor.dart';
+import 'colors.dart';
 import 'component.dart';
 import 'pictures.dart';
 import 'shortcut.dart';
@@ -263,6 +264,16 @@ void _properties(YamlReader r, YamlNode node, ComponentSpec component,
       continue;
     }
     final v = _value(value, spec.type);
+    if (spec.type == GbType.color && v is String) {
+      // A colour's name or #RRGGBB, kept as colorText writes it (D137).
+      final argb = parseColor(v);
+      if (argb == null) {
+        r.report(value.span, DiagnosticCode.badColor, [spec.name, v]);
+        continue;
+      }
+      into[spec.name] = colorText(argb);
+      continue;
+    }
     if (v == null) {
       r.report(value.span, DiagnosticCode.wrongPropertyType,
           [spec.name, spec.type.displayName]);

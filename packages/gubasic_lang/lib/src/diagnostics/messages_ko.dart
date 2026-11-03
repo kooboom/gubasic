@@ -251,6 +251,12 @@ const Map<DiagnosticCode, String> koreanMessages = {
       '점으로만 시작하는 멤버는 With 블록 안에서만 씁니다. 점 앞에 이름을 쓰거나, 그 줄을 With … End With 안에 둡니다.',
   DiagnosticCode.withNotValue:
       'With에는 컨트롤, 변수, 칸처럼 값을 줍니다. {0} 항목은 값이 아닙니다. 멤버를 이름과 함께 씁니다.',
+  DiagnosticCode.vb6Color:
+      '{0} 표기는 Visual Basic 6의 색입니다. GuBASIC은 Visual Basic .NET의 Color를 씁니다: {1} 형태로 써 주세요.',
+  DiagnosticCode.colorPartOutOfRange:
+      'Color.FromArgb의 빨강·초록·파랑은 0부터 255까지입니다. 받은 값: {0}. 값을 확인해 주세요.',
+  DiagnosticCode.badColor:
+      '{0} 속성의 색은 색 이름(Red, SkyBlue)이나 #RRGGBB로 적습니다. 받은 글 "{1}" 값은 둘 다 아닙니다. 속성 창에서 골라 주세요.',
   DiagnosticCode.emptyRoomServer:
       '{0} 컨트롤의 Server가 비어 있어 앱에 중계 서버가 없습니다. docs/RELAY_SERVER.ko.md대로 자기 서버 주소를 넣어 주세요.',
   DiagnosticCode.plainWebSocket:

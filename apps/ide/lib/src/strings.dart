@@ -140,6 +140,9 @@ class IdeStrings {
     required this.properties,
     required this.integerRange,
     required this.numberNeeded,
+    required this.colorNeeded,
+    required this.notSet,
+    required this.numberRange,
     required this.formNameIsFile,
     required this.addForm,
     required this.addModule,
@@ -532,6 +535,14 @@ class IdeStrings {
 
   /// `{0}` the property.
   final String numberNeeded;
+
+  /// A colour property (D137): what it takes, and what an empty field
+  /// means for it and for FontSize and FontBold.
+  final String colorNeeded;
+  final String notSet;
+
+  /// A number property with a range (FontSize, D137).
+  final String numberRange;
   final String formNameIsFile;
 
   /// File → Add Form (D88).
@@ -1029,6 +1040,11 @@ class IdeStrings {
     properties: 'Properties',
     integerRange: '{0} takes a whole number from {1} to {2}.',
     numberNeeded: '{0} takes a number, such as 1.5.',
+    colorNeeded:
+        '{0} takes a colour\'s name, such as Red or SkyBlue, or #RRGGBB; '
+        'empty, the Frame\'s or the form\'s.',
+    notSet: '(the Frame\'s or the form\'s)',
+    numberRange: '{0} takes a number from {1} to {2}.',
     formNameIsFile:
         'A form is named after its files. To rename it, use ⋮ next to the '
         'form in the project list.',
@@ -1382,6 +1398,9 @@ class IdeStrings {
     properties: '속성',
     integerRange: '{0} 속성에는 정수만 쓸 수 있습니다. 범위: {1} ~ {2}',
     numberNeeded: '{0} 속성에는 1.5 같은 숫자만 쓸 수 있습니다.',
+    colorNeeded: '{0} 속성에는 Red, SkyBlue 같은 색 이름이나 #RRGGBB를 씁니다. 비워 두면 Frame이나 폼의 것을 따릅니다.',
+    notSet: '(Frame·폼을 따름)',
+    numberRange: '{0} 속성에는 {1}부터 {2}까지의 숫자를 씁니다.',
     formNameIsFile: '폼 이름은 파일 이름입니다. 이름을 바꾸려면 프로젝트 목록에서 폼 옆의 ⋮ 버튼을 누릅니다.',
     addForm: '폼 추가',
     addModule: '모듈 추가',

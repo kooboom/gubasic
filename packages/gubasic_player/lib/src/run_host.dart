@@ -241,7 +241,9 @@ class RunHost implements FormHost, FileHost, ComponentHost {
   Object getProperty(String form, String? control, String property) {
     final timer = _timers[form.toLowerCase()]?[control?.toLowerCase()];
     if (timer != null) return timer.$2[property]!;
-    return modelOf(form).control(control)![property];
+    final state = modelOf(form).control(control)!;
+    // An ambient property not set is not in the model (D137).
+    return hostValue(property, state.has(property) ? state[property] : null);
   }
 
   @override
@@ -253,7 +255,12 @@ class RunHost implements FormHost, FileHost, ComponentHost {
   ) {
     final timer = _timers[form.toLowerCase()]?[control?.toLowerCase()];
     if (timer == null) {
-      modelOf(form).setProperty(control, property, value);
+      if (value is Unset) {
+        modelOf(form).control(control)!.unset(property);
+      } else {
+        modelOf(form)
+            .setProperty(control, property, modelValue(property, value));
+      }
       return;
     }
     timer.$2[property] = value;

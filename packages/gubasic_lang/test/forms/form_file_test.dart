@@ -162,8 +162,10 @@ controls:
         '  - { name: t, type: TextBox, properties: { Caption: Hi } }\n',
         name: 'F');
     expect(r.diagnostics.map((d) => '${d.code.code}@${d.line} ${d.args}'), [
-      'F009@2 [Left, Form, Caption, Width, Height, Tag, KeyPreview]',
-      'F009@4 [Caption, TextBox, Text, Left, Top, Width, Height, Anchor, Tag]',
+      'F009@2 [Left, Form, Caption, Width, Height, FontSize, FontBold, '
+          'ForeColor, BackColor, Tag, KeyPreview]',
+      'F009@4 [Caption, TextBox, Text, Left, Top, Width, Height, Anchor, '
+          'Enabled, Visible, FontSize, FontBold, ForeColor, BackColor, Tag]',
     ]);
     expect(r.form.controls.single.properties, isEmpty,
         reason: 'the control is kept without it');

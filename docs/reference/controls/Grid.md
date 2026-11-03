@@ -18,6 +18,12 @@ Default event (made by a double-click): `Changed`
 | `Height` | Integer | `160` |  |
 | `Anchor` | String | `"Left Top"` |  |
 | `ReadOnly` | Boolean | `False` |  |
+| `Enabled` | Boolean | `True` |  |
+| `Visible` | Boolean | `True` |  |
+| `FontSize` | Double | `(not set)` | not set: its Frame's or its form's |
+| `FontBold` | Boolean | `(not set)` | not set: its Frame's or its form's |
+| `ForeColor` | Color | `(not set)` | not set: its Frame's or its form's |
+| `BackColor` | Color | `(not set)` |  |
 | `Tag` | String | `""` |  |
 | `Row` | Integer | `-1` | set only while the program runs |
 | `Col` | Integer | `-1` | set only while the program runs |

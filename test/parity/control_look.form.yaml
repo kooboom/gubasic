@@ -1,0 +1,13 @@
+formatVersion: 2
+properties: { Caption: Look, Width: 480, Height: 240, FontSize: 12 }
+controls:
+  - { name: btnGo, type: Button, properties: { Caption: Go, Left: 16, Top: 16 } }
+  - { name: btnOff, type: Button, properties: { Caption: Off, Left: 120, Top: 16, Enabled: false } }
+  - { name: lblPlain, type: Label, properties: { Left: 16, Top: 64 } }
+  - { name: lblRed, type: Label, properties: { Left: 16, Top: 96, ForeColor: Red, FontBold: true } }
+  - name: fraBox
+    type: Frame
+    properties: { Left: 200, Top: 64, Width: 240, Height: 120, FontSize: 15, BackColor: "#FFEECC" }
+    controls:
+      - { name: btnInside, type: Button, properties: { Caption: Inside, Left: 16, Top: 32 } }
+      - { name: lblInside, type: Label, properties: { Left: 16, Top: 80 } }

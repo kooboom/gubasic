@@ -17,6 +17,19 @@ properties:
   # The edges of the form, or of the Frame it is in, whose distance it
   # keeps (D57, D105).
   - { name: Anchor, type: String, default: "Left Top", anchor: true }
+  # Whether the user can use it: False greys it, and it takes no clicks
+  # or typing; a Frame that is not Enabled holds back what is in it too
+  # (D137).
+  - { name: Enabled, type: Boolean, default: true }
+  # Whether it is seen; a hidden Frame hides what is in it (D137).
+  - { name: Visible, type: Boolean, default: true }
+  # Its text's size in points and weight, and its text's colour; not set,
+  # those of the Frame it is in, or of its form (D137).
+  - { name: FontSize, type: Double, min: 1, max: 200, ambient: true }
+  - { name: FontBold, type: Boolean, ambient: true }
+  - { name: ForeColor, type: Color, ambient: true }
+  # Its background colour; not set, the Frame's or the form's (D137).
+  - { name: BackColor, type: Color, ambient: true }
   # Any text the program keeps with it, as in Visual Basic; GuBASIC does
   # nothing with it (D98).
   - { name: Tag, type: String, default: "" }

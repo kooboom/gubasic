@@ -13,6 +13,10 @@
 | `Caption` | String | `""` |  |
 | `Width` | Integer | `480` |  |
 | `Height` | Integer | `360` |  |
+| `FontSize` | Double | `(not set)` | 정하지 않으면 Frame이나 폼의 것 |
+| `FontBold` | Boolean | `(not set)` | 정하지 않으면 Frame이나 폼의 것 |
+| `ForeColor` | Color | `(not set)` | 정하지 않으면 Frame이나 폼의 것 |
+| `BackColor` | Color | `(not set)` |  |
 | `Tag` | String | `""` |  |
 | `KeyPreview` | Boolean | `False` |  |
 | `DialogResult` | Integer | `0` | 실행 중에만 정함 |

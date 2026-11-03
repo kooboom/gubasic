@@ -3,12 +3,14 @@ import 'dart:async';
 import 'dart:convert';
 
 import '../analyzer/compile.dart';
+import '../analyzer/conversions.dart';
 import '../analyzer/forms.dart';
 import '../components/database_component.dart';
 import '../components/http_component.dart';
 import '../components/room_component.dart';
 import '../components/web_socket_component.dart';
 import '../forms/anchor.dart';
+import '../forms/component.dart';
 import '../forms/form_file.dart';
 import '../forms/keys.dart';
 import '../interpreter/host.dart';
@@ -346,7 +348,12 @@ abstract final class TranscriptLine {
   static String setProperty(String? control, String property, Object value,
           {String? form}) =>
       'Set ${form == null ? '' : '$form.'}${control ?? 'Form'}.$property: '
-      '${value is bool ? (value ? 'True' : 'False') : value}';
+      '${switch (value) {
+        bool b => b ? 'True' : 'False',
+        double d => formatDouble(d),
+        Unset() => '(not set)',
+        _ => value,
+      }}';
 
   /// The program put a control made with New on a form (D98).
   static String addControl(String control, String component, {String? form}) =>

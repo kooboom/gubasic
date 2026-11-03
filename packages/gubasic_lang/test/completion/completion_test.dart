@@ -41,7 +41,12 @@ void main() {
       expect(items.map((c) => c.toString()), [
         'method AddItem (item As String)',
         'property Anchor String',
+        'property BackColor Color',
         'method Clear ()',
+        'property Enabled Boolean',
+        'property FontBold Boolean',
+        'property FontSize Double',
+        'property ForeColor Color',
         'property Height Integer',
         'property Left Integer',
         'method List (index As Integer) As String',
@@ -52,6 +57,7 @@ void main() {
         'property Tag String',
         'property Text String',
         'property Top Integer',
+        'property Visible Boolean',
         'property Width Integer',
       ]);
       // Internal properties (the items) are not members; events are not
@@ -113,10 +119,14 @@ void main() {
       expect(_names('Sub W()\n    Integer.|\nEnd Sub\n'),
           ['MaxValue', 'MinValue']);
       expect(_names('Sub W()\n    Me.|\nEnd Sub\n'), [
+        'BackColor',
         'Caption',
         'Close',
         'Controls',
         'DialogResult',
+        'FontBold',
+        'FontSize',
+        'ForeColor',
         'Height',
         'Hide',
         'KeyPreview',
@@ -200,6 +210,7 @@ void main() {
         'Button',
         'CheckBox',
         'CloseEventArgs',
+        'Color',
         'ComboBox',
         'Control',
         'Date',

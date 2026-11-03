@@ -501,6 +501,11 @@ enum DiagnosticCode {
   /// have no relay server. Args: the control, `Form1.rmQuiz`.
   emptyRoomServer('A078', DiagnosticSeverity.warning),
 
+  /// Visual Basic 6's colours (`vbRed`, `RGB(r, g, b)`): GuBASIC has
+  /// Visual Basic .NET's `Color` (D137). Args: what was written, what to
+  /// write.
+  vb6Color('A079'),
+
   // Form and project files (.form.yaml, .gbproj)
 
   /// The file is not in the expected layout (YAML syntax).
@@ -579,6 +584,10 @@ enum DiagnosticCode {
 
   /// A Shortcut that is not one (D106). Args: the text.
   badShortcut('F022'),
+
+  /// A colour in a form file that is not a named colour or `#RRGGBB`
+  /// (D137). Args: the property, the text.
+  badColor('F023'),
 
   // Run time (the interpreter)
 
@@ -755,7 +764,10 @@ enum DiagnosticCode {
 
   /// Send while a WebSocket or a Room is not connected (D136). Args: the
   /// control's name.
-  notConnected('R049');
+  notConnected('R049'),
+
+  /// A part of `Color.FromArgb` outside 0 to 255 (D137). Args: the value.
+  colorPartOutOfRange('R050');
 
   const DiagnosticCode(this.code, [this.severity = DiagnosticSeverity.error]);
 

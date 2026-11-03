@@ -1,0 +1,38 @@
+' Enabled, Visible, FontSize, FontBold, ForeColor and BackColor (D137):
+' the defaults, what a control takes from its Frame and its form when it
+' sets nothing, Color as Visual Basic .NET's, and the clicks a control
+' that is not Enabled or not Visible, or is in such a Frame, does not get.
+Sub btnGo_Click()
+    Debug.Print(lblPlain.FontSize & " " & lblPlain.FontBold & " " & lblPlain.ForeColor.Name & " " & lblPlain.BackColor.IsEmpty)
+    Debug.Print(lblRed.FontSize & " " & lblRed.FontBold & " " & lblRed.ForeColor.Name)
+    Debug.Print(lblInside.FontSize & " " & fraBox.BackColor.Name & " " & btnInside.BackColor.Name)
+    Debug.Print(btnOff.Enabled & " " & btnGo.Visible)
+    Me.FontSize = 10
+    Debug.Print(lblPlain.FontSize & " " & lblInside.FontSize)
+    Dim c As Color = Color.FromArgb(255, 136, 0)
+    lblPlain.ForeColor = c
+    Debug.Print(lblPlain.ForeColor.Name & " " & c.R & " " & c.G & " " & c.B & " " & (c = Color.FromArgb(255, 136, 0)))
+    lblPlain.ForeColor = Color.Empty
+    Debug.Print(lblPlain.ForeColor.Name & " " & (Color.Red <> Color.Blue))
+    fraBox.Enabled = False
+    lblRed.Visible = False
+End Sub
+
+Sub btnOff_Click()
+    Debug.Print("Off clicked")
+    Debug.Print(Color.FromArgb(1, 2, 300).Name)
+End Sub
+
+Sub btnInside_Click()
+    Debug.Print("Inside clicked")
+End Sub
+
+Sub lblRed_Click()
+    Debug.Print("Red clicked")
+End Sub
+
+Sub lblPlain_Click()
+    btnOff.Enabled = True
+    fraBox.Enabled = True
+    fraBox.Visible = False
+End Sub

@@ -4,6 +4,7 @@ import '../components/http_component.dart' show looksLikeSecretHeader;
 import '../components/web_socket_component.dart' show isPlainRemoteWebSocket;
 import '../diagnostics/diagnostic.dart';
 import '../forms/anchor.dart';
+import '../forms/colors.dart';
 import '../forms/component.dart';
 import '../forms/form_file.dart';
 import '../forms/pictures.dart';
@@ -1765,6 +1766,17 @@ class _Analyzer {
           e, DiagnosticCode.usedBeforeDeclaration, [e.name, '${_line(later)}']);
       return;
     }
+    if (vb6Colors[e.name.toLowerCase()] case final color?) {
+      // Visual Basic 6's colours (D137).
+      _reportAt(e, DiagnosticCode.vb6Color, [e.name, 'Color.$color'],
+          ['Color.$color']);
+      return;
+    }
+    if (e.name.toLowerCase() == 'rgb') {
+      _reportAt(e, DiagnosticCode.vb6Color,
+          ['RGB(r, g, b)', 'Color.FromArgb(r, g, b)'], ['Color.FromArgb']);
+      return;
+    }
     if (beforeDot && form == null) {
       _reportAt(e, DiagnosticCode.unknownNameMaybeControl, [e.name]);
       return;
@@ -2322,7 +2334,7 @@ class _Analyzer {
       if (l != r && at is BinaryExpr) _widen(at, l, r, toDouble: true);
     } else if (l == r && (l == GbType.string || l == GbType.date)) {
       ok = true;
-    } else if (l == r && l == GbType.boolean) {
+    } else if (l == r && (l == GbType.boolean || l == GbType.color)) {
       ok = op == BinaryOp.equal || op == BinaryOp.notEqual;
     } else {
       ok = false;

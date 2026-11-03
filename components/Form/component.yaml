@@ -15,6 +15,13 @@ properties:
   - { name: Caption, type: String, default: "" }
   - { name: Width, type: Integer, min: 0, default: 480, changeEvent: Resize }
   - { name: Height, type: Integer, min: 0, default: 360, changeEvent: Resize }
+  # The size in points and weight of its controls' text, and their
+  # colours, unless a control or its Frame sets its own (D137); BackColor
+  # is the form's own background too.
+  - { name: FontSize, type: Double, min: 1, max: 200, ambient: true }
+  - { name: FontBold, type: Boolean, ambient: true }
+  - { name: ForeColor, type: Color, ambient: true }
+  - { name: BackColor, type: Color, ambient: true }
   # Any text the program keeps with it, as in Visual Basic; GuBASIC does
   # nothing with it (D98).
   - { name: Tag, type: String, default: "" }

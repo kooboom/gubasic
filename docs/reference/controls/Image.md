@@ -19,6 +19,9 @@ Default event (made by a double-click): `Click`
 | `Width` | Integer | `120` |  |
 | `Height` | Integer | `120` |  |
 | `Anchor` | String | `"Left Top"` |  |
+| `Enabled` | Boolean | `True` |  |
+| `Visible` | Boolean | `True` |  |
+| `BackColor` | Color | `(not set)` |  |
 | `Tag` | String | `""` |  |
 
 ## Events

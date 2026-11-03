@@ -1,0 +1,30 @@
+> btnOff.Click
+Disabled: btnOff.Click
+> btnInside.Click
+Debug.Print: Inside clicked
+> btnGo.Click
+Debug.Print: 12 False Empty True
+Debug.Print: 12 True Red
+Debug.Print: 15 #FFEECC Empty
+Debug.Print: False True
+Set Form.FontSize: 10
+Debug.Print: 10 15
+Set lblPlain.ForeColor: #FF8800
+Debug.Print: #FF8800 255 136 0 True
+Set lblPlain.ForeColor: (not set)
+Debug.Print: Empty True
+Set fraBox.Enabled: False
+Set lblRed.Visible: False
+> btnInside.Click
+Disabled: btnInside.Click
+> lblRed.Click
+Disabled: lblRed.Click
+> lblPlain.Click
+Set btnOff.Enabled: True
+Set fraBox.Enabled: True
+Set fraBox.Visible: False
+> btnInside.Click
+Disabled: btnInside.Click
+> btnOff.Click
+Debug.Print: Off clicked
+Error R050 @ 23

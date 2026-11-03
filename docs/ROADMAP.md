@@ -107,6 +107,7 @@ Plan: [plans/PLAN_V06.md](plans/PLAN_V06.md) (2026-11-03; the answers are D136; 
 - [x] `Room`: `Create` and `Join` (wait until in), `Send`, `SendTo`, `Leave`, `Lock`; `Joined`, `Left`, `Message`, `Closed`, `Error`, over a relay server whose message format is published (`docs/ROOM_PROTOCOL.md`)
 - [x] The relay server (`packages/gubasic_relay`), kept in the repository, with [a guide](RELAY_SERVER.md), an install script and an Apache configuration for users' own servers (D123), its executable for Linux (x64, arm64) in every release; no public trial server (D136)
 - [x] The IDE's local relay server: started by itself when `Room.Server` is empty; "Allow devices on the same network", off by default, with a warning; "Preview on the web" with a QR code (D136)
+- [x] Controls' `Enabled`, `Visible`, `FontSize`, `FontBold`, `ForeColor` and `BackColor`, with Visual Basic .NET's `Color`; a control takes its Frame's or its form's font (D137)
 - [x] Example: a live quiz, phones answering and a TV showing the race: [LiveQuiz](../examples/livequiz) ([IDEAS](IDEAS.md#real-time-together-websocket-and-room))
 
 ### v0.7 — Game tools (candidate, D121 a)

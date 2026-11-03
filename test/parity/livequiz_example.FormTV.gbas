@@ -79,8 +79,6 @@ Sub rmQuiz_Left(e As RoomEventArgs)
 End Sub
 
 Sub btnNext_Click()
-    ' 문제가 진행 중이거나 다 끝났으면 아무것도 하지 않습니다.
-    If asking Or current = UBound(questions) Then Exit Sub
     If current = -1 Then
         ' 시작하면 더는 들어오지 못하게 방을 잠급니다.
         rmQuiz.Lock()
@@ -113,7 +111,8 @@ Sub btnNext_Click()
     secondsLeft = Seconds
     lblTime.Caption = "남은 시간: " & secondsLeft & "초"
     asking = True
-    btnNext.Caption = "답을 받는 중…"
+    ' 답을 받는 동안에는 누를 수 없게 합니다.
+    btnNext.Enabled = False
     tmrQuestion.Start()
 End Sub
 
@@ -176,15 +175,15 @@ Sub EndQuestion()
         btnNext.Caption = "끝"
     Else
         btnNext.Caption = "다음 문제"
+        btnNext.Enabled = True
     End If
 End Sub
 
 Sub rmQuiz_Closed(e As RoomEventArgs)
     tmrQuestion.Stop()
     asking = False
-    current = UBound(questions)
     lblCode.Caption = "방이 끝났습니다(" & e.Reason & ")."
-    btnNext.Caption = "끝"
+    btnNext.Enabled = False
 End Sub
 
 ' 목록에는 별명과 점수를, 캐릭터는 점수만큼 결승선 쪽으로.

@@ -325,7 +325,12 @@ class _PropertyFieldState extends State<PropertyField> {
     super.dispose();
   }
 
-  static String _show(Object value) => '$value';
+  static String _show(Object value) => switch (value) {
+    // Not set: its Frame's or its form's (D137).
+    Unset() => '',
+    double d => formatDouble(d),
+    _ => '$value',
+  };
 
   bool get _isText => widget.spec.type == GbType.string;
 
@@ -369,12 +374,29 @@ class _PropertyFieldState extends State<PropertyField> {
         }
         return v;
       case GbType.double_:
+        if (spec.ambient && text.trim().isEmpty) return unset;
         final v = double.tryParse(text.trim());
         if (v == null) {
           _error = s.numberNeeded.replaceAll('{0}', spec.name);
           return null;
         }
+        if (!spec.accepts(v)) {
+          _error = s.numberRange
+              .replaceAll('{0}', spec.name)
+              .replaceAll('{1}', '${spec.min}')
+              .replaceAll('{2}', '${spec.max}');
+          return null;
+        }
         return v;
+      case GbType.color:
+        // A colour's name or #RRGGBB; empty, none of its own (D137).
+        if (text.trim().isEmpty) return unset;
+        final argb = parseColor(text);
+        if (argb == null) {
+          _error = s.colorNeeded.replaceAll('{0}', spec.name);
+          return null;
+        }
+        return colorText(argb);
       default:
         return text;
     }
@@ -594,20 +616,32 @@ class _PropertyFieldState extends State<PropertyField> {
     if (widget.spec.picture) return _pictureList(context);
     if (widget.spec.anchor) return _anchorBox(context);
     if (widget.spec.type == GbType.boolean) {
+      // FontBold has a third state, not set: its Frame's or its form's
+      // (D137).
+      final ambient = widget.spec.ambient;
       return Align(
         alignment: Alignment.centerLeft,
-        child: Checkbox(
-          key: propertyFieldKey(widget.spec.name),
-          value: widget.value as bool,
-          onChanged: widget.editable
-              ? (v) {
-                  widget.onChange(v!, Object());
-                  widget.onDone();
-                }
-              : null,
+        child: Tooltip(
+          message: ambient && widget.value is Unset
+              ? widget.strings.notSet
+              : '',
+          child: Checkbox(
+            key: propertyFieldKey(widget.spec.name),
+            tristate: ambient,
+            value: widget.value is bool ? widget.value as bool : null,
+            onChanged: widget.editable
+                ? (v) {
+                    widget.onChange(v ?? unset, Object());
+                    widget.onDone();
+                  }
+                : null,
+          ),
         ),
       );
     }
+    final color = widget.spec.type == GbType.color
+        ? parseColor(_controller.text)
+        : null;
     return CallbackShortcuts(
       bindings: {const SingleActivator(LogicalKeyboardKey.escape): _escape},
       child: TextField(
@@ -621,6 +655,56 @@ class _PropertyFieldState extends State<PropertyField> {
           border: const OutlineInputBorder(),
           errorText: _error,
           errorMaxLines: 4,
+          hintText: widget.spec.ambient ? widget.strings.notSet : null,
+          // A colour shows itself, and offers the named ones (D137).
+          prefixIcon: widget.spec.type == GbType.color && color != null
+              ? Padding(
+                  padding: const EdgeInsets.all(8),
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: Color(color),
+                      border: Border.all(
+                        color: Theme.of(context).colorScheme.outline,
+                      ),
+                    ),
+                    child: const SizedBox(width: 14, height: 14),
+                  ),
+                )
+              : null,
+          suffixIcon: widget.spec.type == GbType.color && widget.editable
+              ? PopupMenuButton<String>(
+                  key: ValueKey('colors.${widget.spec.name}'),
+                  icon: const Icon(Icons.arrow_drop_down),
+                  tooltip: '',
+                  onSelected: (name) {
+                    widget.onChange(name.isEmpty ? unset : name, Object());
+                    widget.onDone();
+                  },
+                  itemBuilder: (context) => [
+                    PopupMenuItem(
+                      value: '',
+                      child: Text(widget.strings.notSet),
+                    ),
+                    for (final MapEntry(:key, :value) in namedColors.entries)
+                      PopupMenuItem(
+                        value: key,
+                        child: Row(
+                          children: [
+                            DecoratedBox(
+                              decoration: BoxDecoration(
+                                color: Color(value),
+                                border: Border.all(color: Colors.black26),
+                              ),
+                              child: const SizedBox(width: 14, height: 14),
+                            ),
+                            const SizedBox(width: 8),
+                            Text(key),
+                          ],
+                        ),
+                      ),
+                  ],
+                )
+              : null,
         ),
         onChanged: widget.editable ? _changed : null,
         // Enter applies and stays in the field.

@@ -134,6 +134,58 @@
 - `Json.Parse(text As String) As Json`
 - `Json.Array() As Json`
 
+### Color
+
+- `Color.Black As Color`
+- `Color.White As Color`
+- `Color.Red As Color`
+- `Color.Green As Color`
+- `Color.Blue As Color`
+- `Color.Yellow As Color`
+- `Color.Orange As Color`
+- `Color.Purple As Color`
+- `Color.Pink As Color`
+- `Color.Brown As Color`
+- `Color.Gray As Color`
+- `Color.DarkGray As Color`
+- `Color.LightGray As Color`
+- `Color.Silver As Color`
+- `Color.WhiteSmoke As Color`
+- `Color.Navy As Color`
+- `Color.DarkBlue As Color`
+- `Color.RoyalBlue As Color`
+- `Color.SkyBlue As Color`
+- `Color.LightBlue As Color`
+- `Color.Teal As Color`
+- `Color.Cyan As Color`
+- `Color.Aqua As Color`
+- `Color.Turquoise As Color`
+- `Color.Lime As Color`
+- `Color.LightGreen As Color`
+- `Color.DarkGreen As Color`
+- `Color.Olive As Color`
+- `Color.Maroon As Color`
+- `Color.DarkRed As Color`
+- `Color.Crimson As Color`
+- `Color.Tomato As Color`
+- `Color.Coral As Color`
+- `Color.Salmon As Color`
+- `Color.Gold As Color`
+- `Color.LightYellow As Color`
+- `Color.Khaki As Color`
+- `Color.Beige As Color`
+- `Color.Ivory As Color`
+- `Color.Tan As Color`
+- `Color.Chocolate As Color`
+- `Color.Magenta As Color`
+- `Color.Fuchsia As Color`
+- `Color.Violet As Color`
+- `Color.Lavender As Color`
+- `Color.Indigo As Color`
+- `Color.Transparent As Color`
+- `Color.Empty As Color`
+- `Color.FromArgb(red As Integer, green As Integer, blue As Integer) As Color`
+
 ### Database
 
 - `Database.Path As String`
@@ -226,6 +278,15 @@
 - `Json As Json`
 - `Reason As String`
 - `Message As String`
+
+### Color
+
+- `R As Integer`
+- `G As Integer`
+- `B As Integer`
+- `A As Integer`
+- `IsEmpty As Boolean`
+- `Name As String`
 
 ### Table
 

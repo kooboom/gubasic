@@ -47,6 +47,8 @@ void main() {
     expect(
         describe('Form'),
         'Caption As String = , Width As Integer = 480, Height As Integer = 360, '
+        'FontSize As Double = (unset), FontBold As Boolean = (unset), '
+        'ForeColor As Color = (unset), BackColor As Color = (unset), '
         'Tag As String = , KeyPreview As Boolean = false, '
         'DialogResult As Integer = 0 | x_Load(), '
         'x_Resize(), x_Closed(), x_KeyDown(e As KeyEventArgs), '
@@ -55,21 +57,27 @@ void main() {
     expect(
         describe('Button'),
         'Caption As String = , Left As Integer = 0, Top As Integer = 0, '
-        'Width As Integer = 96, Height As Integer = 32, Anchor As String = Left Top, Tag As String =  | '
+        'Width As Integer = 96, Height As Integer = 32, Anchor As String = Left Top, '
+        'Enabled As Boolean = true, Visible As Boolean = true, FontSize As Double = (unset), FontBold As Boolean = (unset), ForeColor As Color = (unset), BackColor As Color = (unset), '
+        'Tag As String =  | '
         'x_Click(), x_MouseDown(e As MouseEventArgs), '
         'x_MouseUp(e As MouseEventArgs) | '
         'default Click');
     expect(
         describe('Label'),
         'Caption As String = , Left As Integer = 0, Top As Integer = 0, '
-        'Width As Integer = 120, Height As Integer = 24, Anchor As String = Left Top, Tag As String =  | '
+        'Width As Integer = 120, Height As Integer = 24, Anchor As String = Left Top, '
+        'Enabled As Boolean = true, Visible As Boolean = true, FontSize As Double = (unset), FontBold As Boolean = (unset), ForeColor As Color = (unset), BackColor As Color = (unset), '
+        'Tag As String =  | '
         'x_Click(), x_MouseDown(e As MouseEventArgs), '
         'x_MouseUp(e As MouseEventArgs) | '
         'default Click');
     expect(
         describe('TextBox'),
         'Text As String = , Left As Integer = 0, Top As Integer = 0, '
-        'Width As Integer = 160, Height As Integer = 32, Anchor As String = Left Top, Tag As String =  | '
+        'Width As Integer = 160, Height As Integer = 32, Anchor As String = Left Top, '
+        'Enabled As Boolean = true, Visible As Boolean = true, FontSize As Double = (unset), FontBold As Boolean = (unset), ForeColor As Color = (unset), BackColor As Color = (unset), '
+        'Tag As String =  | '
         'x_Changed(), x_MouseDown(e As MouseEventArgs), '
         'x_MouseUp(e As MouseEventArgs) | '
         'default Changed');
@@ -77,7 +85,9 @@ void main() {
         describe('CheckBox'),
         'Caption As String = , Checked As Boolean = false, '
         'Left As Integer = 0, Top As Integer = 0, '
-        'Width As Integer = 120, Height As Integer = 32, Anchor As String = Left Top, Tag As String =  | '
+        'Width As Integer = 120, Height As Integer = 32, Anchor As String = Left Top, '
+        'Enabled As Boolean = true, Visible As Boolean = true, FontSize As Double = (unset), FontBold As Boolean = (unset), ForeColor As Color = (unset), BackColor As Color = (unset), '
+        'Tag As String =  | '
         'x_Changed(), x_MouseDown(e As MouseEventArgs), '
         'x_MouseUp(e As MouseEventArgs) | '
         'default Changed');

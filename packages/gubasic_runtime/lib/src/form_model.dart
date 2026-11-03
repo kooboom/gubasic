@@ -1,4 +1,4 @@
-import 'dart:ui' show Offset;
+import 'dart:ui' show Color, Offset;
 
 import 'package:flutter/foundation.dart';
 
@@ -66,6 +66,12 @@ class GbControlState extends ChangeNotifier {
     if (_properties[property] == value) return;
     _properties[property] = value;
     notifyListeners();
+  }
+
+  /// Takes [property] away: an ambient one (FontSize, FontBold,
+  /// ForeColor, BackColor) is then its Frame's or its form's (D137).
+  void unset(String property) {
+    if (_properties.remove(property) != null) notifyListeners();
   }
 }
 
@@ -173,6 +179,26 @@ class GbFormModel {
   /// on top: the graphic layer first, each layer in the form file's order
   /// (D41). Those in a Frame are drawn in it: [drawnIn].
   List<GbControlState> get drawingOrder => drawnIn(null);
+
+  /// The Frames [state] is in, the innermost first (D105, D137).
+  List<GbControlState> framesOf(GbControlState state) {
+    final frames = <GbControlState>[];
+    var at = state.container == null ? null : control(state.container);
+    while (at != null && frames.length < 64) {
+      frames.add(at);
+      at = at.container == null ? null : control(at.container);
+    }
+    return frames;
+  }
+
+  /// The background behind [state]: the BackColor of the innermost Frame
+  /// it is in that has one, or the form's; null for the theme's (D137).
+  Color? backBehind(GbControlState state) {
+    for (final f in [...framesOf(state), form]) {
+      if (f.has('BackColor')) return Color(f['BackColor'] as int);
+    }
+    return null;
+  }
 
   /// The controls in the Frame named [container] (null: on the form
   /// itself), in the order they are drawn (D41, D105).

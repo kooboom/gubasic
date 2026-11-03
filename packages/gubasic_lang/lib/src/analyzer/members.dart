@@ -1,3 +1,4 @@
+import '../forms/colors.dart';
 import '../forms/component.dart';
 import '../forms/keys.dart';
 import '../text/dates.dart';
@@ -166,6 +167,17 @@ Map<String, MemberSpec>? membersOf(GbType type) {
       list = const [MemberSpec.property('Reason', _s)];
     case GbType.errorEventArgs:
       list = const [MemberSpec.property('Message', _s)];
+    case GbType.color:
+      // A colour (D137): its parts, from 0 to 255, whether it is Empty,
+      // and its name or #RRGGBB.
+      list = const [
+        MemberSpec.property('R', _i),
+        MemberSpec.property('G', _i),
+        MemberSpec.property('B', _i),
+        MemberSpec.property('A', _i),
+        MemberSpec.property('IsEmpty', _b),
+        MemberSpec.property('Name', _s),
+      ];
     case GbType.roomEventArgs:
       // A Room's event (D136): the member and its nickname (Message,
       // Joined, Left), the message (Message), why the room ended (Closed),
@@ -322,6 +334,21 @@ Map<String, MemberSpec> _builtinObjectMembers(String name) => switch (name) {
           'parse': MemberSpec.method(
               'Parse', [const ParamSpec('text', _s)], GbType.json),
           'array': MemberSpec.method('Array', [], GbType.json),
+        },
+      // Colours (D137), as Visual Basic .NET's Color: the named ones,
+      // Empty (none of its own), and FromArgb(red, green, blue).
+      'Color' => {
+          for (final name in namedColors.keys)
+            name.toLowerCase(): MemberSpec.property(name, GbType.color),
+          'empty': const MemberSpec.property('Empty', GbType.color),
+          'fromargb': MemberSpec.method(
+              'FromArgb',
+              [
+                const ParamSpec('red', _i),
+                const ParamSpec('green', _i),
+                const ParamSpec('blue', _i),
+              ],
+              GbType.color),
         },
       // Text files (D113): read, written, added to, there or not.
       'File' => {

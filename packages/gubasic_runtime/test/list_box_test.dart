@@ -70,7 +70,9 @@ void main() {
     await tester.pump();
     expect(find.text('Jeju'), findsOneWidget);
     final chosen = tester.widget<Container>(
-      find.ancestor(of: find.text('Ulsan'), matching: find.byType(Container)),
+      find
+          .ancestor(of: find.text('Ulsan'), matching: find.byType(Container))
+          .first,
     );
     expect(chosen.color, isNotNull);
     expect(log, isEmpty);

@@ -7,6 +7,7 @@ import 'combo_box.dart';
 import 'form_model.dart';
 import 'grid.dart';
 import 'keys.dart';
+import 'look.dart';
 import 'image.dart';
 import 'list_box.dart';
 import 'menus.dart';
@@ -128,7 +129,11 @@ class _GbFormViewState extends State<GbFormView> {
       onPointerMove: (e) => model.mouse?.move(e, e.localPosition),
       onPointerUp: (e) => model.mouse?.up(e, e.localPosition),
       onPointerCancel: (e) => model.mouse?.cancel(e),
-      child: SizedBox(
+      child: Container(
+        // The form's BackColor, when it has one (D137).
+        color: model.form.has('BackColor')
+            ? Color(model.form['BackColor'] as int)
+            : null,
         width: model.form.integer('Width').toDouble(),
         height: model.form.integer('Height').toDouble(),
         child: Stack(
@@ -157,20 +162,36 @@ class _GbPlaced extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => ListenableBuilder(
-    listenable: state,
-    builder: (context, child) => Positioned(
-      left: state.integer('Left').toDouble(),
-      top: state.integer('Top').toDouble(),
-      width: state.integer('Width').toDouble(),
-      height: state.integer('Height').toDouble(),
-      // The innermost control under the pointer takes its MouseDown and
-      // MouseUp (D111).
-      child: Listener(
+    // Its Frames' and its form's look are its own too (D137).
+    listenable: Listenable.merge([state, model.form, ...model.framesOf(state)]),
+    builder: (context, child) {
+      // A control or Frame that is not Visible is not drawn, nor what is
+      // in it, while the program runs; the designer shows it (D137).
+      if (!model.designing && !gbUsable(model, state, 'Visible')) {
+        return const Positioned(left: 0, top: 0, child: SizedBox.shrink());
+      }
+      final look = GbLook.ofControl(model, state, child: child!);
+      Widget body = Listener(
+        // The innermost control under the pointer takes its MouseDown and
+        // MouseUp (D111).
         onPointerDown: (e) =>
             model.mouse?.claim(e, state.name!, e.localPosition),
-        child: child,
-      ),
-    ),
+        child: Builder(builder: (context) => look.apply(context, look)),
+      );
+      if (!look.enabled && !model.designing) {
+        // Greyed, and it takes nothing from the user (D137).
+        body = IgnorePointer(
+          child: ExcludeFocus(child: Opacity(opacity: 0.45, child: body)),
+        );
+      }
+      return Positioned(
+        left: state.integer('Left').toDouble(),
+        top: state.integer('Top').toDouble(),
+        width: state.integer('Width').toDouble(),
+        height: state.integer('Height').toDouble(),
+        child: body,
+      );
+    },
     child: switch (state.kind) {
       GbControlKind.button => GbButton(model: model, state: state),
       GbControlKind.label => GbLabel(model: model, state: state),
@@ -231,7 +252,10 @@ class GbFrame extends StatelessWidget {
               child: Align(
                 alignment: Alignment.centerLeft,
                 child: Container(
-                  color: scheme.surface,
+                  color:
+                      GbLook.of(context)?.back ??
+                      model.backBehind(state) ??
+                      scheme.surface,
                   padding: const EdgeInsets.symmetric(horizontal: 4),
                   child: Text(
                     state.text('Caption'),
@@ -328,10 +352,12 @@ class _GbButtonState extends State<GbButton> {
       focusNode: _focus,
       style: OutlinedButton.styleFrom(
         padding: const EdgeInsets.symmetric(horizontal: gbButtonPadding),
-        backgroundColor: gbButtonFace(Theme.of(context).colorScheme),
-        // Dark text, as on an enabled button; a Button that cannot be
-        // clicked (an Enabled property, later) keeps Material's grey.
-        foregroundColor: Theme.of(context).colorScheme.onSurface,
+        // Its BackColor and ForeColor when it has them (D137).
+        backgroundColor:
+            GbLook.of(context)?.back ??
+            gbButtonFace(Theme.of(context).colorScheme),
+        foregroundColor:
+            GbLook.of(context)?.fore ?? Theme.of(context).colorScheme.onSurface,
         shape: const RoundedRectangleBorder(borderRadius: gbControlRadius),
         minimumSize: Size.zero,
       ),

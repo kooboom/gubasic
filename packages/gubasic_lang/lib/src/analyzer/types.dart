@@ -27,6 +27,10 @@ sealed class GbType {
   static const closeEventArgs = PrimitiveType._('CloseEventArgs');
   static const errorEventArgs = PrimitiveType._('ErrorEventArgs');
 
+  /// A colour (D137): `Color.Red`, `Color.FromArgb(r, g, b)`,
+  /// `Color.Empty`.
+  static const color = PrimitiveType._('Color');
+
   /// What a Room's events are told (D136): who, what, why.
   static const roomEventArgs = PrimitiveType._('RoomEventArgs');
   static const table = PrimitiveType._('Table');
@@ -62,7 +66,8 @@ sealed class GbType {
       this == double_ ||
       this == boolean ||
       this == string ||
-      this == date;
+      this == date ||
+      this == color;
 
   /// Types whose variables may hold `Nothing`.
   bool get isReferenceType =>
@@ -232,6 +237,7 @@ const Map<String, GbType> namedTypes = {
   'closeeventargs': GbType.closeEventArgs,
   'erroreventargs': GbType.errorEventArgs,
   'roomeventargs': GbType.roomEventArgs,
+  'color': GbType.color,
   'table': GbType.table,
   'pdfdocument': GbType.pdfDocument,
   'json': GbType.json,
