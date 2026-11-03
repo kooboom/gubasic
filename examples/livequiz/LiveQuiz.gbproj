@@ -1,0 +1,14 @@
+formatVersion: 2
+name: LiveQuiz
+startup: FormStart
+forms:
+  - FormStart
+  - FormTV
+  - FormPhone
+pictures:
+  - triangle.png
+  - pentagon.png
+  - runner1.png
+  - runner2.png
+  - runner3.png
+  - runner4.png

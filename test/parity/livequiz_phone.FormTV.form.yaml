@@ -1,0 +1,75 @@
+formatVersion: 1
+properties:
+  Caption: LiveQuiz - TV
+  Width: 640
+  Height: 480
+controls:
+  - name: lblCode
+    type: Label
+    properties:
+      Caption: 방을 만드는 중…
+      Left: 16
+      Top: 12
+      Width: 440
+  - name: lblHelp
+    type: Label
+    properties:
+      Caption: 폰에서 LiveQuiz를 열고 "폰으로 참여"를 고른 뒤 이 코드를 넣으세요.
+      Left: 16
+      Top: 36
+      Width: 440
+  - name: btnNext
+    type: Button
+    properties:
+      Caption: 시작
+      Left: 16
+      Top: 68
+      Width: 120
+  - name: lblTime
+    type: Label
+    properties:
+      Left: 152
+      Top: 74
+      Width: 304
+  - name: lblQuestion
+    type: Label
+    properties:
+      Left: 16
+      Top: 112
+      Width: 440
+  - name: lblChoices
+    type: Label
+    properties:
+      Left: 16
+      Top: 140
+      Width: 440
+      Height: 40
+  - name: imgQuestion
+    type: Image
+    properties:
+      Left: 480
+      Top: 176
+      Width: 144
+      Height: 96
+  - name: lstPlayers
+    type: ListBox
+    properties:
+      Left: 480
+      Top: 12
+      Width: 144
+      Height: 156
+  - name: lblFinish
+    type: Label
+    properties:
+      Caption: 결승선 ▶
+      Left: 400
+      Top: 188
+      Width: 72
+  - name: rmQuiz
+    type: Room
+    properties:
+      Nickname: TV
+  - name: tmrQuestion
+    type: Timer
+    properties:
+      Interval: 1000

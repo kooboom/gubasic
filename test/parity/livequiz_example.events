@@ -1,0 +1,14 @@
+btnTV.Click
+Peer 민지 Join
+Peer Kim Join
+FormTV.btnNext.Click
+Peer 민지 SendTo m1 {"kind":"answer","no":1,"choice":1}
+Peer 민지 SendTo m1 {"kind":"answer","no":1,"choice":0}
+Peer Kim SendTo m1 {"kind":"answer","no":1,"choice":0}
+FormTV.btnNext.Click
+FormTV.tmrQuestion.Tick
+FormTV.tmrQuestion.Tick
+Peer Kim SendTo m1 {"kind":"answer","no":2,"choice":1}
+Peer 민지 SendTo m1 {"kind":"answer","no":2,"choice":1}
+Peer Lee Join
+Peer Kim Leave

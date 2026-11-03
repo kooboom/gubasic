@@ -1,0 +1,235 @@
+' TV 쪽: 방을 만들고, 들어온 사람마다 캐릭터를 하나씩 세우고, 문제를 냅니다.
+' 폰과는 JSON 글로 이야기합니다:
+'   TV → 모두  {"kind":"question","no":1,"text":"…","choices":[…],"seconds":15,"host":"m1"}
+'   폰 → TV    {"kind":"answer","no":1,"choice":2}
+'   TV → 그 폰 {"kind":"result","no":1,"correct":true,"score":10}
+'   TV → 모두  {"kind":"score","board":[{"member":"m2","nickname":"민지","score":10}, …]}
+'   TV → 모두  {"kind":"end"}
+
+Structure Question
+    Text As String
+    Choices(3) As String
+    Answer As Integer       ' 정답 보기의 번호(0부터)
+    Picture As String       ' 그림 문제의 그림 이름, 없으면 ""
+End Structure
+
+Structure Player
+    Member As String        ' 방에서의 ID(m2, m3, …)
+    Nickname As String
+    Score As Integer
+    Answered As Boolean     ' 이번 문제에 답했는지
+End Structure
+
+Const Seconds As Integer = 15   ' 문제 하나에 주는 시간
+Const Finish As Integer = 400   ' 결승선의 Left
+
+Dim questions(6) As Question
+Dim players As New List(Of Player)
+Dim runners As New List(Of Image)   ' players와 같은 순서
+Dim current As Integer = -1         ' 지금 문제의 번호(0부터), 시작 전에는 -1
+Dim secondsLeft As Integer
+Dim rightSoFar As Integer           ' 이번 문제를 맞힌 사람 수
+Dim asking As Boolean               ' 문제를 내고 답을 기다리는 중인지
+
+Sub Form_Load()
+    questions(0) = New Question With {.Text = "대한민국의 수도는 어디일까요?",
+                                      .Choices = {"부산", "서울", "대구", "인천"}, .Answer = 1}
+    questions(1) = New Question With {.Text = "윤년이 아닌 해는 며칠일까요?",
+                                      .Choices = {"360일", "365일", "366일", "370일"}, .Answer = 1}
+    questions(2) = New Question With {.Text = "1기압에서 물이 끓는 온도는?",
+                                      .Choices = {"50도", "80도", "100도", "120도"}, .Answer = 2}
+    questions(3) = New Question With {.Text = "세종대왕이 만든 글자는?",
+                                      .Choices = {"한자", "한글", "가나", "알파벳"}, .Answer = 1}
+    questions(4) = New Question With {.Text = "7 × 8은 얼마일까요?",
+                                      .Choices = {"54", "56", "58", "64"}, .Answer = 1}
+    questions(5) = New Question With {.Text = "이 도형의 이름은?",
+                                      .Choices = {"사각형", "원", "삼각형", "오각형"}, .Answer = 2,
+                                      .Picture = "triangle.png"}
+    questions(6) = New Question With {.Text = "이 도형의 꼭짓점은 몇 개일까요?",
+                                      .Choices = {"4개", "5개", "6개", "8개"}, .Answer = 1,
+                                      .Picture = "pentagon.png"}
+    ' 방이 만들어질 때까지 기다리므로, 다음 줄에서 코드를 읽을 수 있습니다.
+    rmQuiz.Create()
+    lblCode.Caption = "방 코드: " & rmQuiz.Code
+End Sub
+
+' 누가 들어오면: 목록에 넣고, 달릴 캐릭터를 하나 세웁니다.
+Sub rmQuiz_Joined(e As RoomEventArgs)
+    players.Add(New Player With {.Member = e.Member, .Nickname = e.Nickname})
+    Dim lane As Integer = (players.Count - 1) Mod 5
+    Dim runner As New Image
+    runner.Picture = "runner" & ((players.Count - 1) Mod 4 + 1) & ".png"
+    runner.Width = 48
+    runner.Height = 48
+    runner.Left = 16
+    runner.Top = 212 + lane * 52
+    Me.Controls.Add(runner)
+    runners.Add(runner)
+    ShowPlayers()
+End Sub
+
+' 누가 나가면: 목록과 캐릭터를 치웁니다.
+Sub rmQuiz_Left(e As RoomEventArgs)
+    Dim i As Integer = IndexOfMember(e.Member)
+    If i < 0 Then Exit Sub
+    Me.Controls.Remove(runners(i))
+    runners.RemoveAt(i)
+    players.RemoveAt(i)
+    ShowPlayers()
+End Sub
+
+Sub btnNext_Click()
+    ' 문제가 진행 중이거나 다 끝났으면 아무것도 하지 않습니다.
+    If asking Or current = UBound(questions) Then Exit Sub
+    If current = -1 Then
+        ' 시작하면 더는 들어오지 못하게 방을 잠급니다.
+        rmQuiz.Lock()
+    End If
+    current = current + 1
+    rightSoFar = 0
+    For i As Integer = 0 To players.Count - 1
+        Dim p As Player = players(i)
+        p.Answered = False
+        players(i) = p
+    Next
+    Dim q As Question = questions(current)
+    lblQuestion.Caption = (current + 1) & ". " & q.Text
+    lblChoices.Caption = "1) " & q.Choices(0) & "   2) " & q.Choices(1) & _
+                         "   3) " & q.Choices(2) & "   4) " & q.Choices(3)
+    imgQuestion.Picture = q.Picture
+    ' 문제를 모두에게 보냅니다. 폰은 "host"로 답을 보낼 곳을 압니다.
+    Dim message As New Json
+    message("kind") = "question"
+    message("no") = current + 1
+    message("text") = q.Text
+    Dim choices As Json = Json.Array()
+    For Each c In q.Choices
+        choices.Add(c)
+    Next
+    message("choices") = choices
+    message("seconds") = Seconds
+    message("host") = rmQuiz.Me
+    rmQuiz.Send(message.Text)
+    secondsLeft = Seconds
+    lblTime.Caption = "남은 시간: " & secondsLeft & "초"
+    asking = True
+    btnNext.Caption = "답을 받는 중…"
+    tmrQuestion.Start()
+End Sub
+
+Sub tmrQuestion_Tick()
+    secondsLeft = secondsLeft - 1
+    lblTime.Caption = "남은 시간: " & secondsLeft & "초"
+    If secondsLeft <= 0 Then EndQuestion()
+End Sub
+
+' 답이 오면: 맞았으면 빨리 맞힌 순서대로 10, 8, 6, 4, 그 뒤로는 3점.
+Sub rmQuiz_Message(e As RoomEventArgs)
+    Dim m As Json = e.Json
+    If m("kind").AsString <> "answer" Then Exit Sub
+    If Not asking Or m("no").AsInteger <> current + 1 Then Exit Sub
+    Dim i As Integer = IndexOfMember(e.Member)
+    If i < 0 Then Exit Sub
+    Dim p As Player = players(i)
+    If p.Answered Then Exit Sub
+    p.Answered = True
+    Dim result As New Json
+    result("kind") = "result"
+    result("no") = current + 1
+    If m("choice").AsInteger = questions(current).Answer Then
+        rightSoFar = rightSoFar + 1
+        Dim points As Integer = 12 - 2 * rightSoFar
+        If points < 3 Then points = 3
+        p.Score = p.Score + points
+        result("correct") = True
+    Else
+        result("correct") = False
+    End If
+    result("score") = p.Score
+    players(i) = p
+    rmQuiz.SendTo(e.Member, result.Text)
+    ShowPlayers()
+    If EveryoneAnswered() Then EndQuestion()
+End Sub
+
+Sub EndQuestion()
+    tmrQuestion.Stop()
+    asking = False
+    Dim q As Question = questions(current)
+    lblTime.Caption = "정답: " & (q.Answer + 1) & ") " & q.Choices(q.Answer)
+    ' 순위표를 모두에게 보냅니다.
+    Dim board As Json = Json.Array()
+    For Each p In Ranked()
+        Dim row As New Json
+        row("member") = p.Member
+        row("nickname") = p.Nickname
+        row("score") = p.Score
+        board.Add(row)
+    Next
+    Dim message As New Json
+    message("kind") = "score"
+    message("board") = board
+    rmQuiz.Send(message.Text)
+    If current = UBound(questions) Then
+        rmQuiz.Send("{""kind"":""end""}")
+        lblQuestion.Caption = "끝! 1등: " & Winner()
+        btnNext.Caption = "끝"
+    Else
+        btnNext.Caption = "다음 문제"
+    End If
+End Sub
+
+Sub rmQuiz_Closed(e As RoomEventArgs)
+    tmrQuestion.Stop()
+    asking = False
+    current = UBound(questions)
+    lblCode.Caption = "방이 끝났습니다(" & e.Reason & ")."
+    btnNext.Caption = "끝"
+End Sub
+
+' 목록에는 별명과 점수를, 캐릭터는 점수만큼 결승선 쪽으로.
+Sub ShowPlayers()
+    lstPlayers.Clear()
+    Dim most As Integer = (UBound(questions) + 1) * 10
+    For i As Integer = 0 To players.Count - 1
+        Dim p As Player = players(i)
+        lstPlayers.AddItem(p.Nickname & " " & p.Score & "점")
+        runners(i).Left = 16 + (Finish - 16) * p.Score \ most
+    Next
+End Sub
+
+Function IndexOfMember(member As String) As Integer
+    For i As Integer = 0 To players.Count - 1
+        If players(i).Member = member Then Return i
+    Next
+    Return -1
+End Function
+
+Function EveryoneAnswered() As Boolean
+    For Each p In players
+        If Not p.Answered Then Return False
+    Next
+    Return players.Count > 0
+End Function
+
+' 점수가 높은 순서로 늘어놓은 목록(같으면 먼저 들어온 사람이 앞).
+Function Ranked() As List(Of Player)
+    Dim result As New List(Of Player)
+    For Each p In players
+        Dim at As Integer = result.Count
+        For i As Integer = 0 To result.Count - 1
+            If p.Score > result(i).Score Then
+                at = i
+                Exit For
+            End If
+        Next
+        result.Insert(at, p)
+    Next
+    Return result
+End Function
+
+Function Winner() As String
+    Dim ranked As List(Of Player) = Ranked()
+    If ranked.Count = 0 Then Return "없음"
+    Return ranked(0).Nickname & " (" & ranked(0).Score & "점)"
+End Function

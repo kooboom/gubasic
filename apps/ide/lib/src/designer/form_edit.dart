@@ -36,6 +36,8 @@ List<ComponentSpec> get toolboxComponents => [
     'timer',
     'openfiledialog',
     'savefiledialog',
+    'websocket',
+    'room',
   ])
     builtinComponents[name]!,
 ];

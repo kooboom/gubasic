@@ -1,0 +1,14 @@
+Peer TV Create
+btnPhone.Click
+txtCode.Type "k7q"
+txtCode.Type "K7Qpxm"
+txtNickname.Type "민지"
+btnJoin.Click
+btnChoice0.Click
+Peer TV Send {"kind":"question","no":1,"text":"7 × 8은 얼마일까요?","choices":["54","56","58","64"],"seconds":15,"host":"m1"}
+btnChoice1.Click
+btnChoice2.Click
+Peer TV SendTo m2 {"kind":"result","no":1,"correct":true,"score":10}
+Peer TV Send {"kind":"score","board":[{"member":"m2","nickname":"민지","score":10}]}
+Peer TV Send {"kind":"end"}
+Peer TV Leave

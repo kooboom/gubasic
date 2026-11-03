@@ -1,0 +1,86 @@
+formatVersion: 1
+properties:
+  Caption: LiveQuiz - 폰
+  Width: 360
+  Height: 480
+controls:
+  - name: lblStep
+    type: Label
+    properties:
+      Caption: 방 코드와 별명을 넣고 "들어가기"를 누르세요.
+      Left: 16
+      Top: 12
+      Width: 328
+      Height: 40
+  - name: txtCode
+    type: TextBox
+    properties:
+      Left: 16
+      Top: 56
+      Width: 120
+  - name: txtNickname
+    type: TextBox
+    properties:
+      Left: 144
+      Top: 56
+      Width: 200
+  - name: btnJoin
+    type: Button
+    properties:
+      Caption: 들어가기
+      Left: 16
+      Top: 96
+      Width: 328
+  - name: lblQuestion
+    type: Label
+    properties:
+      Left: 16
+      Top: 144
+      Width: 328
+      Height: 40
+  - name: btnChoice0
+    type: Button
+    properties:
+      Left: 16
+      Top: 192
+      Width: 328
+      Height: 40
+      Tag: "0"
+  - name: btnChoice1
+    type: Button
+    properties:
+      Left: 16
+      Top: 240
+      Width: 328
+      Height: 40
+      Tag: "1"
+  - name: btnChoice2
+    type: Button
+    properties:
+      Left: 16
+      Top: 288
+      Width: 328
+      Height: 40
+      Tag: "2"
+  - name: btnChoice3
+    type: Button
+    properties:
+      Left: 16
+      Top: 336
+      Width: 328
+      Height: 40
+      Tag: "3"
+  - name: lblResult
+    type: Label
+    properties:
+      Left: 16
+      Top: 392
+      Width: 328
+  - name: lblRank
+    type: Label
+    properties:
+      Left: 16
+      Top: 420
+      Width: 328
+  - name: rmQuiz
+    type: Room

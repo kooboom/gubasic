@@ -297,6 +297,12 @@ jobs:
       - name: A Grid and a PDF file in the IDE's own window
         working-directory: apps/ide
         run: dart run gubasic_test_support:integration integration_test/scores_test.dart -d windows --dart-define=SHOTS=${{ runner.temp }}/scores
+      # LiveQuiz in the IDE's own window (D136): the TV's form makes a room
+      # on the IDE's own relay server, a phone of the test's joins over a
+      # real socket and answers.
+      - name: LiveQuiz on the IDE's relay server
+        working-directory: apps/ide
+        run: dart run gubasic_test_support:integration integration_test/livequiz_test.dart -d windows --dart-define=SHOTS=${{ runner.temp }}/scores
       # The open source licences in the IDE's own window (D120).
       - name: The open source licences in the IDE's own window
         working-directory: apps/ide
@@ -431,6 +437,12 @@ jobs:
       - name: A Grid and a PDF file in the IDE's own window
         working-directory: apps/ide
         run: dart run gubasic_test_support:integration integration_test/scores_test.dart -d macos --dart-define=SHOTS=${{ runner.temp }}/scores
+      # LiveQuiz in the IDE's own window (D136): the TV's form makes a room
+      # on the IDE's own relay server, a phone of the test's joins over a
+      # real socket and answers.
+      - name: LiveQuiz on the IDE's relay server
+        working-directory: apps/ide
+        run: dart run gubasic_test_support:integration integration_test/livequiz_test.dart -d macos --dart-define=SHOTS=${{ runner.temp }}/scores
       # The open source licences in the IDE's own window (D120).
       - name: The open source licences in the IDE's own window
         working-directory: apps/ide

@@ -2,20 +2,92 @@ import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
 
-/// Draws the pictures of examples/quiz, so that they are the project's
-/// own, free of anyone's copyright, and can be drawn again the same.
+/// Draws the pictures of examples/quiz and examples/livequiz, so that they
+/// are the projects' own, free of anyone's copyright, and can be drawn
+/// again the same: the two shapes of the questions, in both, and
+/// LiveQuiz's four runners (D136).
 ///
 ///     dart run tool/draw_quiz_pictures.dart
 void main() {
-  _draw('triangle.png', sides: 3, fill: 0xFF4F8EF7, line: 0xFF1F3F7A);
-  _draw('pentagon.png', sides: 5, fill: 0xFFF2A93B, line: 0xFF8A5300);
+  for (final project in ['quiz', 'livequiz']) {
+    _draw(
+      project,
+      'triangle.png',
+      sides: 3,
+      fill: 0xFF4F8EF7,
+      line: 0xFF1F3F7A,
+    );
+    _draw(
+      project,
+      'pentagon.png',
+      sides: 5,
+      fill: 0xFFF2A93B,
+      line: 0xFF8A5300,
+    );
+  }
+  for (final (k, fill, line) in [
+    (1, 0xFF4F8EF7, 0xFF1F3F7A),
+    (2, 0xFFF2A93B, 0xFF8A5300),
+    (3, 0xFF3BB273, 0xFF1D5E3B),
+    (4, 0xFFE5578E, 0xFF7A2347),
+  ]) {
+    _runner('runner$k.png', fill: fill, line: line);
+  }
 }
 
 const _size = 160;
 
+/// A runner of LiveQuiz: a round face of [fill] edged with [line], with two
+/// eyes looking ahead (to the right), 48 pixels square.
+void _runner(String name, {required int fill, required int line}) {
+  const size = 48, samples = 4;
+  const centre = Point(24.0, 25.0);
+  const radius = 21.0, width = 3.0;
+  final eyes = [const Point(28.0, 19.0), const Point(37.0, 19.0)];
+  final rgba = Uint8List(size * size * 4);
+  for (var y = 0; y < size; y++) {
+    for (var x = 0; x < size; x++) {
+      final counts = [0, 0, 0, 0]; // fill, line, white, black
+      for (var sy = 0; sy < samples; sy++) {
+        for (var sx = 0; sx < samples; sx++) {
+          final p = Point(x + (sx + 0.5) / samples, y + (sy + 0.5) / samples);
+          final d = p.distanceTo(centre);
+          if (d > radius) continue;
+          if (eyes.any((e) => p.distanceTo(e + const Point(1.5, 0.5)) < 1.9)) {
+            counts[3]++;
+          } else if (eyes.any((e) => p.distanceTo(e) < 3.6)) {
+            counts[2]++;
+          } else if (d > radius - width) {
+            counts[1]++;
+          } else {
+            counts[0]++;
+          }
+        }
+      }
+      final covered = counts.reduce((a, b) => a + b);
+      if (covered == 0) continue;
+      final colours = [fill, line, 0xFFFFFFFF, 0xFF1A1A1A];
+      final i = (y * size + x) * 4;
+      for (var c = 0; c < 3; c++) {
+        final shift = 16 - 8 * c;
+        var sum = 0;
+        for (var k = 0; k < 4; k++) {
+          sum += ((colours[k] >> shift) & 0xFF) * counts[k];
+        }
+        rgba[i + c] = sum ~/ covered;
+      }
+      rgba[i + 3] = 255 * covered ~/ (samples * samples);
+    }
+  }
+  File('../../examples/livequiz/pictures/$name')
+    ..createSync(recursive: true)
+    ..writeAsBytesSync(_png(rgba, size));
+}
+
 /// Draws a regular polygon of [sides] with a point at the top, filled with
 /// [fill] (0xAARRGGBB) and edged with [line], on a transparent square.
 void _draw(
+  String project,
   String name, {
   required int sides,
   required int fill,
@@ -54,9 +126,9 @@ void _draw(
       rgba[i + 3] = 255 * covered ~/ (samples * samples);
     }
   }
-  File('../../examples/quiz/pictures/$name')
+  File('../../examples/$project/pictures/$name')
     ..createSync(recursive: true)
-    ..writeAsBytesSync(_png(rgba));
+    ..writeAsBytesSync(_png(rgba, _size));
 }
 
 List<Point<double>> _polygon(int sides, Point<double> centre, double r) => [
@@ -79,17 +151,17 @@ bool _inside(List<Point<double>> polygon, Point<double> p) {
   return true;
 }
 
-/// A PNG file of the [_size] square [rgba]: 8 bits a channel, no filter.
-Uint8List _png(Uint8List rgba) {
+/// A PNG file of the [size] square [rgba]: 8 bits a channel, no filter.
+Uint8List _png(Uint8List rgba, int size) {
   final rows = BytesBuilder();
-  for (var y = 0; y < _size; y++) {
+  for (var y = 0; y < size; y++) {
     rows
       ..addByte(0)
-      ..add(rgba.sublist(y * _size * 4, (y + 1) * _size * 4));
+      ..add(rgba.sublist(y * size * 4, (y + 1) * size * 4));
   }
   final header = ByteData(13)
-    ..setUint32(0, _size)
-    ..setUint32(4, _size)
+    ..setUint32(0, size)
+    ..setUint32(4, size)
     ..setUint8(8, 8) // bits a channel
     ..setUint8(9, 6); // RGBA
   return (BytesBuilder()

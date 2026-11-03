@@ -1,0 +1,101 @@
+Forms: Form1
+> btnTV.Click
+Room: create
+Set FormTV.lblCode.Caption: 방 코드: K7QPXM
+Forms: Form1 > FormTV
+Forms: FormTV
+> Peer 민지 Join
+Peer 민지: entered K7QPXM as m2
+Add FormTV.Image1 (Image)
+Set FormTV.lstPlayers.Items: []
+Set FormTV.lstPlayers.Items: [민지 0점]
+Set FormTV.Image1.Left: 16
+> Peer Kim Join
+Peer Kim: entered K7QPXM as m3
+Add FormTV.Image2 (Image)
+Set FormTV.lstPlayers.Items: []
+Set FormTV.lstPlayers.Items: [민지 0점]
+Set FormTV.Image1.Left: 16
+Set FormTV.lstPlayers.Items: [민지 0점, Kim 0점]
+Set FormTV.Image2.Left: 16
+> FormTV.btnNext.Click
+Room: lock
+Set FormTV.lblQuestion.Caption: 1. 대한민국의 수도는 어디일까요?
+Set FormTV.lblChoices.Caption: 1) 부산   2) 서울   3) 대구   4) 인천
+Set FormTV.imgQuestion.Picture: 
+Room: send {"kind":"question","no":1,"text":"대한민국의 수도는 어디일까요?","choices":["부산","서울","대구","인천"],"seconds":15,"host":"m1"}
+Peer 민지 got: {"kind":"question","no":1,"text":"대한민국의 수도는 어디일까요?","choices":["부산","서울","대구","인천"],"seconds":15,"host":"m1"}
+Peer Kim got: {"kind":"question","no":1,"text":"대한민국의 수도는 어디일까요?","choices":["부산","서울","대구","인천"],"seconds":15,"host":"m1"}
+Set FormTV.lblTime.Caption: 남은 시간: 15초
+Set FormTV.btnNext.Caption: 답을 받는 중…
+Set FormTV.tmrQuestion.Enabled: True
+> Peer 민지 SendTo m1 {"kind":"answer","no":1,"choice":1}
+Room: sendTo m2 {"kind":"result","no":1,"correct":true,"score":10}
+Peer 민지 got: {"kind":"result","no":1,"correct":true,"score":10}
+Set FormTV.lstPlayers.Items: []
+Set FormTV.lstPlayers.Items: [민지 10점]
+Set FormTV.Image1.Left: 70
+Set FormTV.lstPlayers.Items: [민지 10점, Kim 0점]
+Set FormTV.Image2.Left: 16
+> Peer 민지 SendTo m1 {"kind":"answer","no":1,"choice":0}
+> Peer Kim SendTo m1 {"kind":"answer","no":1,"choice":0}
+Room: sendTo m3 {"kind":"result","no":1,"correct":false,"score":0}
+Peer Kim got: {"kind":"result","no":1,"correct":false,"score":0}
+Set FormTV.lstPlayers.Items: []
+Set FormTV.lstPlayers.Items: [민지 10점]
+Set FormTV.Image1.Left: 70
+Set FormTV.lstPlayers.Items: [민지 10점, Kim 0점]
+Set FormTV.Image2.Left: 16
+Set FormTV.tmrQuestion.Enabled: False
+Set FormTV.lblTime.Caption: 정답: 2) 서울
+Room: send {"kind":"score","board":[{"member":"m2","nickname":"민지","score":10},{"member":"m3","nickname":"Kim","score":0}]}
+Peer 민지 got: {"kind":"score","board":[{"member":"m2","nickname":"민지","score":10},{"member":"m3","nickname":"Kim","score":0}]}
+Peer Kim got: {"kind":"score","board":[{"member":"m2","nickname":"민지","score":10},{"member":"m3","nickname":"Kim","score":0}]}
+Set FormTV.btnNext.Caption: 다음 문제
+> FormTV.btnNext.Click
+Set FormTV.lblQuestion.Caption: 2. 윤년이 아닌 해는 며칠일까요?
+Set FormTV.lblChoices.Caption: 1) 360일   2) 365일   3) 366일   4) 370일
+Set FormTV.imgQuestion.Picture: 
+Room: send {"kind":"question","no":2,"text":"윤년이 아닌 해는 며칠일까요?","choices":["360일","365일","366일","370일"],"seconds":15,"host":"m1"}
+Peer 민지 got: {"kind":"question","no":2,"text":"윤년이 아닌 해는 며칠일까요?","choices":["360일","365일","366일","370일"],"seconds":15,"host":"m1"}
+Peer Kim got: {"kind":"question","no":2,"text":"윤년이 아닌 해는 며칠일까요?","choices":["360일","365일","366일","370일"],"seconds":15,"host":"m1"}
+Set FormTV.lblTime.Caption: 남은 시간: 15초
+Set FormTV.btnNext.Caption: 답을 받는 중…
+Set FormTV.tmrQuestion.Enabled: True
+> FormTV.tmrQuestion.Tick
+Set FormTV.lblTime.Caption: 남은 시간: 14초
+> FormTV.tmrQuestion.Tick
+Set FormTV.lblTime.Caption: 남은 시간: 13초
+> Peer Kim SendTo m1 {"kind":"answer","no":2,"choice":1}
+Room: sendTo m3 {"kind":"result","no":2,"correct":true,"score":10}
+Peer Kim got: {"kind":"result","no":2,"correct":true,"score":10}
+Set FormTV.lstPlayers.Items: []
+Set FormTV.lstPlayers.Items: [민지 10점]
+Set FormTV.Image1.Left: 70
+Set FormTV.lstPlayers.Items: [민지 10점, Kim 10점]
+Set FormTV.Image2.Left: 70
+> Peer 민지 SendTo m1 {"kind":"answer","no":2,"choice":1}
+Room: sendTo m2 {"kind":"result","no":2,"correct":true,"score":18}
+Peer 민지 got: {"kind":"result","no":2,"correct":true,"score":18}
+Set FormTV.lstPlayers.Items: []
+Set FormTV.lstPlayers.Items: [민지 18점]
+Set FormTV.Image1.Left: 114
+Set FormTV.lstPlayers.Items: [민지 18점, Kim 10점]
+Set FormTV.Image2.Left: 70
+Set FormTV.tmrQuestion.Enabled: False
+Set FormTV.lblTime.Caption: 정답: 2) 365일
+Room: send {"kind":"score","board":[{"member":"m2","nickname":"민지","score":18},{"member":"m3","nickname":"Kim","score":10}]}
+Peer 민지 got: {"kind":"score","board":[{"member":"m2","nickname":"민지","score":18},{"member":"m3","nickname":"Kim","score":10}]}
+Peer Kim got: {"kind":"score","board":[{"member":"m2","nickname":"민지","score":18},{"member":"m3","nickname":"Kim","score":10}]}
+Set FormTV.btnNext.Caption: 다음 문제
+> Peer Lee Join
+Peer Lee: error room-locked
+> Peer Kim Leave
+Remove FormTV.Image2
+Set FormTV.lstPlayers.Items: []
+Set FormTV.lstPlayers.Items: [민지 18점]
+Set FormTV.Image1.Left: 114
+Still open
+Room: leave
+Peer 민지: closed host left
+Closed

@@ -1,0 +1,96 @@
+' 폰 쪽: TV가 보여 주는 방 코드로 들어가, 문제가 오면 보기 버튼으로 답합니다.
+' 답은 TV에게만 보냅니다(SendTo). 다른 폰은 내 답을 보지 못합니다.
+
+Dim host As String          ' TV의 멤버 ID: 문제와 함께 옵니다
+Dim questionNo As Integer
+Dim joined As Boolean       ' 방에 들어왔는지
+Dim choosing As Boolean     ' 보기를 고를 수 있는지
+
+Sub Form_Load()
+    ShowChoices(False)
+End Sub
+
+' 방 코드는 대문자로: 폰의 자판이 소문자를 넣어도 맞게.
+Sub txtCode_Changed()
+    Dim upper As String = txtCode.Text.ToUpper()
+    If upper <> txtCode.Text Then txtCode.Text = upper
+End Sub
+
+Sub btnJoin_Click()
+    If joined Then Exit Sub
+    If txtNickname.Text.Trim() = "" Then
+        MsgBox("별명을 넣어 주세요.")
+        Exit Sub
+    End If
+    Try
+        ' 방에 들어갈 때까지 기다립니다. 없는 방이면 오류가 납니다.
+        rmQuiz.Join(txtCode.Text, txtNickname.Text)
+    Catch ex As Exception
+        MsgBox(ex.Message)
+        Exit Sub
+    End Try
+    joined = True
+    lblStep.Caption = txtNickname.Text & " 님, 들어왔습니다. 문제를 기다리세요."
+    btnJoin.Caption = "방 " & rmQuiz.Code
+End Sub
+
+Sub rmQuiz_Message(e As RoomEventArgs)
+    Dim m As Json = e.Json
+    Select Case m("kind").AsString
+        Case "question"
+            host = m("host").AsString
+            questionNo = m("no").AsInteger
+            lblQuestion.Caption = questionNo & ". " & m("text").AsString
+            Dim choices As Json = m("choices")
+            btnChoice0.Caption = "1) " & choices(0).AsString
+            btnChoice1.Caption = "2) " & choices(1).AsString
+            btnChoice2.Caption = "3) " & choices(2).AsString
+            btnChoice3.Caption = "4) " & choices(3).AsString
+            ShowChoices(True)
+            lblResult.Caption = m("seconds").AsInteger & "초 안에 고르세요!"
+        Case "result"
+            If m("correct").AsBoolean Then
+                lblResult.Caption = "정답! 지금 " & m("score").AsInteger & "점"
+            Else
+                lblResult.Caption = "아쉽네요. 지금 " & m("score").AsInteger & "점"
+            End If
+        Case "score"
+            Dim board As Json = m("board")
+            For i As Integer = 0 To board.Count - 1
+                If board(i)("member").AsString = rmQuiz.Me Then
+                    lblRank.Caption = "내 순위: " & (i + 1) & " / " & board.Count
+                End If
+            Next
+            ShowChoices(False)
+        Case "end"
+            lblStep.Caption = "끝났습니다. 고맙습니다!"
+            ShowChoices(False)
+    End Select
+End Sub
+
+Sub Choice_Click(sender As Button) Handles btnChoice0.Click, btnChoice1.Click, btnChoice2.Click, btnChoice3.Click
+    If Not choosing Then Exit Sub
+    Dim chosen As String = sender.Caption
+    Dim answer As New Json
+    answer("kind") = "answer"
+    answer("no") = questionNo
+    answer("choice") = CInt(sender.Tag)
+    rmQuiz.SendTo(host, answer.Text)
+    ShowChoices(False)
+    lblResult.Caption = "답을 보냈습니다: " & chosen
+End Sub
+
+Sub rmQuiz_Closed(e As RoomEventArgs)
+    ShowChoices(False)
+    lblStep.Caption = "방이 끝났습니다(" & e.Reason & ")."
+End Sub
+
+' 고를 수 없을 때는 보기 버튼을 비워 둡니다.
+Sub ShowChoices(shown As Boolean)
+    choosing = shown
+    If shown Then Exit Sub
+    btnChoice0.Caption = ""
+    btnChoice1.Caption = ""
+    btnChoice2.Caption = ""
+    btnChoice3.Caption = ""
+End Sub

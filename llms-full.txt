@@ -1193,6 +1193,8 @@ End Sub
 
 **The relay server.** The relay server keeps rooms in memory only, with limits its owner can change: 50 rooms, 50 members a room, 16 KB a message, 20 messages a second a member. It is `packages/gubasic_relay`; [RELAY_SERVER.md](RELAY_SERVER.md) says how to put it on a server of your own. There is no public one: for an app others use, `Server` names your own.
 
+**The example** **LiveQuiz** is one project for both sides: its start form asks whether this is the TV or a phone; the TV makes a room, shows its code, asks the Quiz example's seven questions and moves a runner for each player as far as its score; a phone joins with the code and answers with four buttons, `SendTo` the TV alone. In the desktop IDE it runs on the IDE's relay server; with "Allow devices on the same network" on, phones on the same Wi-Fi can join.
+
 **Where it runs.** In the IDE and in exported apps, on every platform; the playground has no `Room` (R038). Parity programs use a relay server in memory, and their event scripts act as the others in the room: `Peer 민지 Join`, `Peer 민지 Send …`, `Room Close idle`, `Room Drop`.
 
 ## 12. Open questions

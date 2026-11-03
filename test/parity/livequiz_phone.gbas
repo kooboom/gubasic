@@ -1,0 +1,19 @@
+' 실시간 퀴즈 LiveQuiz (docs/LANGUAGE.md 11.12): 한 프로젝트를 TV와 폰이
+' 함께 씁니다. TV 쪽은 Room으로 방을 만들어 코드를 보여 주고 문제를 내며,
+' 폰 쪽은 그 코드로 들어와 답을 보냅니다. 빨리 맞힐수록 점수가 많고,
+' TV에는 점수만큼 캐릭터가 달려 나갑니다.
+'
+' 중계 서버: Room.Server가 비어 있으면 데스크톱 IDE가 이 컴퓨터에 중계
+' 서버를 켭니다. 폰에서 해 보려면 디버그 메뉴의 "같은 네트워크의 기기 허용"을
+' 켭니다. 앱으로 내보낼 때는 두 폼의 rmQuiz.Server에 자기 중계 서버 주소
+' (wss://relay.example.com/room 같은)를 넣습니다(docs/RELAY_SERVER.ko.md).
+
+Sub btnTV_Click()
+    FormTV.Show()
+    Me.Hide()
+End Sub
+
+Sub btnPhone_Click()
+    FormPhone.Show()
+    Me.Hide()
+End Sub
