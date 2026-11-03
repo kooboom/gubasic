@@ -112,7 +112,7 @@ Winsock의 이름은 GuBASIC의 것으로 안내(D50): `SendData`→`Send`, `Dat
 ### 3.2 중계 서버(`gubasic_relay`)
 
 - **프로토콜(v1):** WebSocket 메시지 하나가 JSON 객체 하나. 첫 메시지는 `{"type":"hello","v":1,"key":"…"}`(key는 서버가 요구할 때만). 그 뒤 IDEAS의 초안대로 `create`, `join`, `send`, `sendTo`, `leave`, `lock`; 서버→프로그램 `created`, `joined`, `left`, `message`, `closed`, `error`(코드: `bad-key`, `room-not-found`, `room-full`, `room-locked`, `too-fast`, `too-big`, `server-full`). `ping`/`pong`은 WebSocket 자체의 것을 씀.
-- **방 코드:** 보안 난수, 혼동 글자를 뺀 31자(`23456789ABCDEFGHJKLMNPQRSTUVWXYZ`) 중 6자, 대소문자 구분 없이 받음.
+- **방 코드:** 보안 난수, 혼동 글자를 뺀 32자(`23456789ABCDEFGHJKLMNPQRSTUVWXYZ`) 중 6자, 대소문자 구분 없이 받음.
 - **경로:** `GET /room`에 WebSocket 업그레이드, `GET /room/health`는 `{"gubasicRelay":"0.6.0","rooms":3}`(메시지·별명은 안 나옴).
 - **아무나 못 쓰게 하는 방법(권장 기본값, 모두 `relay.yaml`로 바꿀 수 있음):**
 
@@ -202,9 +202,9 @@ transcript에는 `Room: create K7QPXM`(테스트에서는 코드 생성기를 �
 권장: **예.** 교실 한 반(30~40명)과 학년 행사(방 몇 개)를 서버 하나가 감당하고, 자기 서버이니 더 올리는 것은 설정 한 줄입니다. `allowedOrigins`가 비어 있을 때의 "모두 허용"은 안내서가 첫 단계에서 채우라고 말합니다.
 **답:** 권장안대로.
 
-**Q7. 방 코드.** 혼동 글자를 뺀 31자 중 6자(대소문자 무시)로 할까요, 폰에서 치기 쉬운 숫자 6자리로 할까요?
-권장: **31자 중 6자.** 숫자 6자리는 백만 가지뿐이라 분당 30회 제한이 있어도 코드 추측이 현실적입니다. 폰 입력 칸은 자동으로 대문자로 바꿉니다.
-**답:** 권장안대로, 31자 중 6자.
+**Q7. 방 코드.** 혼동 글자를 뺀 32자 중 6자(대소문자 무시)로 할까요, 폰에서 치기 쉬운 숫자 6자리로 할까요?
+권장: **32자 중 6자.** 숫자 6자리는 백만 가지뿐이라 분당 30회 제한이 있어도 코드 추측이 현실적입니다. 폰 입력 칸은 자동으로 대문자로 바꿉니다.
+**답:** 권장안대로, 32자 중 6자.
 
 **Q8. ws:// 규칙.** GuBASIC이 막지 않고 분석기 경고(A077)만 낼까요(localhost와 사설 네트워크의 주소([RFC 1918](https://www.rfc-editor.org/rfc/rfc1918))는 경고 없음)?
 권장: **경고만.** 같은 네트워크 토글(Q4 b)이 `ws://`로 같은 네트워크의 주소를 쓰고, https 페이지에서 `ws://`를 막는 것은 브라우저가 이미 합니다.

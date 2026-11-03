@@ -112,7 +112,7 @@ One project, three forms. One exported web app is used by the TV and the phones 
 ### 3.2 The relay server (`gubasic_relay`)
 
 - **Protocol (v1):** one WebSocket message is one JSON object. The first message is `{"type":"hello","v":1,"key":"…"}` (`key` only when the server asks for one). Then, as IDEAS drafted: `create`, `join`, `send`, `sendTo`, `leave`, `lock`; from the server to the program `created`, `joined`, `left`, `message`, `closed`, `error` (codes: `bad-key`, `room-not-found`, `room-full`, `room-locked`, `too-fast`, `too-big`, `server-full`). `ping`/`pong` are WebSocket's own.
-- **Room code:** a secure random choice of 6 characters from 31 that leave out the confusable ones (`23456789ABCDEFGHJKLMNPQRSTUVWXYZ`), accepted regardless of case.
+- **Room code:** a secure random choice of 6 characters from 32 that leave out the confusable ones (`23456789ABCDEFGHJKLMNPQRSTUVWXYZ`), accepted regardless of case.
 - **Paths:** `GET /room` takes the WebSocket upgrade; `GET /room/health` answers `{"gubasicRelay":"0.6.0","rooms":3}` (no messages, no nicknames).
 - **Keeping it from being used by anyone (recommended defaults; all changeable in `relay.yaml`):**
 
@@ -202,9 +202,9 @@ Recommended: **yes.** `apps/` is for Flutter apps, and as a library the IDE can 
 Recommended: **yes.** One server carries a class (30 to 40) and a school event (a few rooms), and on one's own server raising a limit is one line of configuration. The guide says to fill `allowedOrigins` as a first step, because empty means "everyone".
 **Answer:** as recommended.
 
-**Q7. The room code.** Six characters from 31 without the confusable ones (case ignored), or six digits, easier to type on a phone?
-Recommended: **six from 31.** Six digits give only a million codes, so guessing is realistic even with 30 attempts a minute. The phone's input box turns letters into capitals by itself.
-**Answer:** as recommended, six from 31.
+**Q7. The room code.** Six characters from 32 without the confusable ones (case ignored), or six digits, easier to type on a phone?
+Recommended: **six from 32.** Six digits give only a million codes, so guessing is realistic even with 30 attempts a minute. The phone's input box turns letters into capitals by itself.
+**Answer:** as recommended, six from 32.
 
 **Q8. The ws:// rule.** GuBASIC does not block it and only warns (A077), with no warning for localhost and private-network addresses ([RFC 1918](https://www.rfc-editor.org/rfc/rfc1918))?
 Recommended: **warn only.** The same-network switch (Q4 b) uses `ws://` with an address on the same network, and blocking `ws://` from an https page is something browsers already do.

@@ -24,6 +24,8 @@ packages/gubasic_lang/   Pure Dart: lexer, parser, AST, analyzer, interpreter, f
 packages/gubasic_runtime/ Flutter runtime used by BOTH interpreter and generated apps
 packages/gubasic_player/  The run window, its host and the project model, shared by the IDE
                          and the player (D79)
+packages/gubasic_relay/  Pure Dart: the relay server of Room (D136), its protocol without sockets
+                         (RoomHub, used in memory by the parity tests) and its dart:io server
 packages/gubasic_test_support/ What the apps' integration tests share: a failing test keeps
                          its output and a picture of the window (D119)
 components/<Name>/       component.yaml (the adapter comes with the transpiler)
@@ -109,6 +111,7 @@ The Mac is the author's own computer, in use while you work.
 
 - `dart tool/check_flutter.dart` in `packages/gubasic_runtime` passes (the pinned Flutter, D29)
 - `dart test` in `packages/gubasic_lang` passes (parity on the VM)
+- `dart test` in `packages/gubasic_relay` passes (the relay server)
 - `flutter test` in `packages/gubasic_runtime` passes
 - `dart test -p vm,chrome` in `apps/playground` passes (parity in Chrome)
 - `flutter test` in `packages/gubasic_player` passes (parity through the run window's widgets)
