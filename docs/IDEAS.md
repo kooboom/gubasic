@@ -117,7 +117,7 @@ Members: `Create()`, `Join(code, nickname)`, `Send(text)` (to everyone) and `Sen
 | Bad | Networks at offices and schools often block incoming connections and keep devices from seeing each other; phones on mobile data cannot reach a private address. A web app served over HTTPS cannot open `ws://`, and Chrome blocks public pages from reaching private addresses ([Chrome](https://developer.chrome.com/blog/private-network-access-update)); a certificate for a private address is hard to get | An account and keys for every app (no secrets in apps: hard rule 12, so security rules must do the work); the service's own protocol, not WebSocket that others can use; the messages are stored with a third party; costs that grow with use | Someone must run it and pay for it, and limit abuse |
 | For | A later option between desktop apps on one network | Users who already use the service: a `Firebase` component is on the ROADMAP | The default for `Room` |
 
-**Decided (D123):** the relay server, and first of all on the user's own server: it comes with a guide, an install script and an Apache configuration to copy, so that putting it on a Linux server takes a few commands, and `Room.Server` points to it. The project also runs a public server, but only for trying `Room`, kept very small (few rooms at once, short-lived rooms, small messages); whether it grows is decided later.
+**Decided (D123):** the relay server, and first of all on the user's own server: it comes with a guide, an install script and an Apache configuration to copy, so that putting it on a Linux server takes a few commands, and `Room.Server` points to it. ~~The project also runs a public server, but only for trying `Room`.~~ Changed by D136: there is no public trial server; documents use `relay.example.com`, tests `localhost`, and the desktop IDE starts a relay server of its own on the computer.
 
 **Built with:** Dart (`dart:io`'s `HttpServer` with its WebSocket upgrade, [Dart](https://api.dart.dev/dart-io/HttpServer-class.html)), the language GuBASIC is written in, so that the "GuBASIC server" later can share its code. Node.js with [ws](https://github.com/websockets/ws) is the common alternative.
 
@@ -129,7 +129,9 @@ Members: `Create()`, `Join(code, nickname)`, `Send(text)` (to everyone) and `Sen
 - **Nothing kept.** Rooms live in the server's memory only; when a room ends (its creator leaves, or no one has sent anything for a while), everything about it is gone. The server logs no messages.
 - **Room codes that cannot be guessed:** made by a secure random number generator, six characters from an alphabet without look-alikes (no `0`/`O`, `1`/`I`), so about a billion codes; join attempts limited per address, as against password guessing ([OWASP](https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html)); rooms that expire. The creator may also lock a room once everyone is in.
 
-### Questions, decided as recommended (D123)
+### Questions, decided as recommended (D123), then changed by D136
+
+D136 (v0.6's plan) changed three answers: `Connect`, `Create` and `Join` wait, as `Http` does (1); tray controls only, no `New` yet (3); `ws://` gets a warning, not a refusal (8). Its limits replace those of 5 (50 members a room, no public server).
 
 1. **Waiting:** `Connect` and `Join` return at once and events say what happened (recommended: the events, as Winsock had), or the program waits for them. This follows v0.5's answer for Http.
 2. **Text or objects:** `Send` takes text and v0.5's JSON helpers make it (recommended), or `Send` takes a structure directly.

@@ -41,7 +41,7 @@ An interpreter cannot load a Dart package at run time, and neither can the prebu
 ## The steps it suggests
 
 1. **v0.5:** write `Http` (done, D125) and `Database` (done, D126) as components through the adapter interface, not as more built-in objects. The interface is then proved by GuBASIC's own components.
-2. **v0.6:** `WebSocket` and `Room` the same way.
+2. **v0.6:** `WebSocket` and `Room` the same way, the first components with events: an instance reports an event through a callback and the interpreter runs its handler in turn, as for a Timer tick (D136).
 3. **With the transpiler:** the "built for the project" route, and a guide "How to wrap a package as a GuBASIC component".
 4. **UserControl** (IDEAS) is the other half: a component made of GuBASIC controls and code, where this one is made of Dart. Both end in the same toolbox.
 
