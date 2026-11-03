@@ -27,8 +27,9 @@ Problems we know about and have **deliberately** left unfixed for now. Each entr
 ## LiveQuiz on a real phone through the IDE's preview is not checked yet
 
 - **What:** "Preview on the Web" and its QR code (D136) were checked with two browser contexts in Playwright playing a whole round, the page's own server passing `/room` on as the preview does; nobody has yet opened the QR code with a real phone on the same Wi-Fi.
+- **What Windows does (checked 2026-11-04, Windows 11):** the first time "Allow Devices on the Same Network" is turned on, Windows Defender Firewall asks whether to let the IDE accept connections, for private networks and for public ones. A phone can connect only when the IDE is allowed on the private network; "Cancel" makes a rule that blocks it, and then the switch looks on but nothing can connect. The IDE's warning does not yet say so, and a rule allowed by mistake is taken back only in Windows Security ("Allow an app through firewall"). The round with a phone was not played.
 - **Why deferred:** checking it needs a phone and a Wi-Fi network at hand, outside what the tests can do; the author judged the Playwright round enough to merge (2026-11-03).
-- **Revisit:** the next time the author has a phone at hand: open LiveQuiz in the desktop IDE, turn on "Allow Devices on the Same Network", choose "Preview on the Web", scan the code and play one round.
+- **Revisit:** the next time the author has a phone at hand: open LiveQuiz in the desktop IDE, turn on "Allow Devices on the Same Network", allow the IDE on the private network when Windows asks, choose "Preview on the Web", scan the code and play one round. Whether macOS's firewall asks the same is to be seen on the Mac.
 
 ## The web IDE has no relay server of its own
 
