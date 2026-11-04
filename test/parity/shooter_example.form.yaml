@@ -1,0 +1,63 @@
+formatVersion: 1
+properties:
+  Caption: Shooter
+  Width: 480
+  Height: 640
+  BackColor: "#0B1026"
+controls:
+  - name: lblScore
+    type: Label
+    properties:
+      Caption: 점수 0
+      Left: 12
+      Top: 8
+      Width: 160
+      Height: 24
+      FontSize: 14.0
+      FontBold: true
+      ForeColor: White
+  - name: lblLives
+    type: Label
+    properties:
+      Caption: 목숨 3
+      Left: 308
+      Top: 8
+      Width: 160
+      Height: 24
+      FontSize: 14.0
+      FontBold: true
+      ForeColor: White
+      Anchor: Right Top
+  - name: lblMessage
+    type: Label
+    properties:
+      Caption: 시작을 누르세요
+      Left: 40
+      Top: 260
+      Width: 400
+      Height: 40
+      FontSize: 22.0
+      FontBold: true
+      ForeColor: Gold
+  - name: btnStart
+    type: Button
+    properties:
+      Caption: 시작
+      Left: 180
+      Top: 592
+      Width: 120
+      Height: 36
+      Anchor: Left Bottom
+  - name: sprShip
+    type: Sprite
+    properties:
+      Frames: ship.png
+      Shape: Rectangle
+      Left: 224
+      Top: 540
+      Width: 32
+      Height: 32
+  - name: tmrGame
+    type: Timer
+    properties:
+      Interval: 16

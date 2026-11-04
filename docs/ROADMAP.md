@@ -117,7 +117,8 @@ Plan: [plans/PLAN_V06.md](plans/PLAN_V06.md) (2026-11-03; the answers are D136; 
 - [x] Sound: effects and music: `Sound.Play`, `PlayMusic`, `StopMusic`, `Volume`, File → Sounds (D138)
 - [x] `Keyboard.IsDown(Keys.Left)`: keys held at once, for a game loop (D138)
 - [x] Time in milliseconds, for a game loop on one Timer: `Milliseconds()` (D138)
-- [ ] Examples: a shooting game showing the usual shape (one Timer as the game loop, a state for each object, a timetable of when enemies come), and a fighting game
+- [x] Example: a shooting game showing the usual shape (one Timer as the game loop, a state for each object, a timetable of when enemies come): Shooter (D138)
+- [ ] Example: a fighting game, the change right after (plans/PLAN_V07.md §6 Q9)
 
 ### After v0.6 (candidates, order recommended)
 

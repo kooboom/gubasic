@@ -320,6 +320,11 @@ jobs:
       - name: LiveQuiz on the IDE's relay server
         working-directory: apps/ide
         run: dart run gubasic_test_support:integration integration_test/livequiz_test.dart -d windows --dart-define=SHOTS=${{ runner.temp }}/scores
+      # The Shooter example in the IDE's own window (D138): keys held and
+      # sounds, through the real engine where the runner has a device.
+      - name: The Shooter in the IDE's own window
+        working-directory: apps/ide
+        run: dart run gubasic_test_support:integration integration_test/shooter_test.dart -d windows --dart-define=SHOTS=${{ runner.temp }}/scores
       # The open source licences in the IDE's own window (D120).
       - name: The open source licences in the IDE's own window
         working-directory: apps/ide
@@ -460,6 +465,10 @@ jobs:
       - name: LiveQuiz on the IDE's relay server
         working-directory: apps/ide
         run: dart run gubasic_test_support:integration integration_test/livequiz_test.dart -d macos --dart-define=SHOTS=${{ runner.temp }}/scores
+      # The Shooter example in the IDE's own window (D138).
+      - name: The Shooter in the IDE's own window
+        working-directory: apps/ide
+        run: dart run gubasic_test_support:integration integration_test/shooter_test.dart -d macos --dart-define=SHOTS=${{ runner.temp }}/scores
       # The open source licences in the IDE's own window (D120).
       - name: The open source licences in the IDE's own window
         working-directory: apps/ide

@@ -91,10 +91,13 @@ void main(List<String> args) {
     out.writeln('  },');
   }
   out.writeln('};');
-  if (soundBytes > maxPictureBytes) {
+  // The sounds have more room than the pictures: a second of 8-bit sound
+  // at 11 kHz is 11 KB.
+  const maxSoundBytes = 64 * 1024;
+  if (soundBytes > maxSoundBytes) {
     stderr.writeln(
       'The examples\' sounds have $soundBytes bytes, more than '
-      '$maxPictureBytes: make them shorter.',
+      '$maxSoundBytes: make them shorter.',
     );
     exit(1);
   }

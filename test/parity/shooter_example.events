@@ -1,0 +1,42 @@
+btnStart.Click        ' the music starts, the loop runs
+Form.KeyDown Space
+Wait 500
+tmrGame.Tick          ' the first shot; no enemy yet
+Form.KeyUp Space
+Form.KeyDown Left
+Wait 500
+tmrGame.Tick          ' the first wave comes, lane 0; the ship goes left
+Wait 300
+tmrGame.Tick          ' the ship is under lane 0
+Form.KeyUp Left
+Form.KeyDown Space
+Wait 100
+tmrGame.Tick          ' fires
+Form.KeyUp Space
+Wait 100
+tmrGame.Tick
+Wait 100
+tmrGame.Tick
+Wait 100
+tmrGame.Tick
+Wait 100
+tmrGame.Tick
+Wait 100
+tmrGame.Tick
+Wait 100
+tmrGame.Tick
+Wait 100
+tmrGame.Tick
+Wait 100
+tmrGame.Tick
+Wait 100
+tmrGame.Tick
+Wait 100
+tmrGame.Tick
+Wait 100
+tmrGame.Tick
+Wait 100
+tmrGame.Tick          ' the shot hits: the enemy explodes, 10 points
+Wait 300
+tmrGame.Tick          ' the explosion is over
+Close

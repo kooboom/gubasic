@@ -1,0 +1,219 @@
+Add Sprite1 (Sprite)
+Add Sprite2 (Sprite)
+Add Sprite3 (Sprite)
+Add Sprite4 (Sprite)
+Add Sprite5 (Sprite)
+Add Sprite6 (Sprite)
+Add Sprite7 (Sprite)
+Add Sprite8 (Sprite)
+Add Sprite9 (Sprite)
+Add Sprite10 (Sprite)
+Add Sprite11 (Sprite)
+Add Sprite12 (Sprite)
+Add Sprite13 (Sprite)
+Add Sprite14 (Sprite)
+Add Sprite15 (Sprite)
+Add Sprite16 (Sprite)
+Add Sprite17 (Sprite)
+Add Sprite18 (Sprite)
+Add Sprite19 (Sprite)
+Add Sprite20 (Sprite)
+Add Sprite21 (Sprite)
+Add Sprite22 (Sprite)
+Add Sprite23 (Sprite)
+Add Sprite24 (Sprite)
+Add Sprite25 (Sprite)
+Add Sprite26 (Sprite)
+Add Sprite27 (Sprite)
+Add Sprite28 (Sprite)
+Set lblMessage.Caption: 시작을 누르세요
+> btnStart.Click
+Set Sprite1.Visible: False
+Set Sprite2.Visible: False
+Set Sprite3.Visible: False
+Set Sprite4.Visible: False
+Set Sprite5.Visible: False
+Set Sprite6.Visible: False
+Set Sprite7.Visible: False
+Set Sprite8.Visible: False
+Set Sprite9.Visible: False
+Set Sprite10.Visible: False
+Set Sprite11.Visible: False
+Set Sprite12.Visible: False
+Set Sprite13.Visible: False
+Set Sprite14.Visible: False
+Set Sprite15.Visible: False
+Set Sprite16.Visible: False
+Set Sprite17.Visible: False
+Set Sprite18.Visible: False
+Set Sprite19.Visible: False
+Set Sprite20.Visible: False
+Set Sprite21.Visible: False
+Set Sprite22.Visible: False
+Set Sprite23.Visible: False
+Set Sprite24.Visible: False
+Set Sprite25.Visible: False
+Set Sprite26.Visible: False
+Set Sprite27.Visible: False
+Set Sprite28.Visible: False
+Set sprShip.Visible: True
+Set lblScore.Caption: 점수 0
+Set lblLives.Caption: 목숨 3
+Set lblMessage.Caption: 
+Set btnStart.Enabled: False
+Music: music.wav
+Set tmrGame.Enabled: True
+> Form.KeyDown Space
+> Wait 500
+> tmrGame.Tick
+Set sprShip.SpeedX: 0
+Set Sprite1.Left: 237
+Set Sprite1.Top: 526
+Set Sprite1.Visible: True
+Sound: shot.wav
+Set Sprite1.Top: 316
+> Form.KeyUp Space
+> Form.KeyDown Left
+> Wait 500
+> tmrGame.Tick
+Set sprShip.SpeedX: 0
+Set sprShip.SpeedX: -240
+Set sprShip.Left: 104
+Set Sprite9.Frames: enemy1.png, enemy2.png
+Set Sprite9.Frame: 0
+Set Sprite9.FrameClock: 0
+Set Sprite9.FrameTime: 150
+Set Sprite9.Left: 32
+Set Sprite9.Top: -32
+Set Sprite9.SpeedY: 90
+Set Sprite9.Visible: True
+Set Sprite1.Top: 106
+Set Sprite9.Top: 13
+Set Sprite9.FrameClock: 50
+Set Sprite9.Frame: 1
+> Wait 300
+> tmrGame.Tick
+Set sprShip.SpeedX: 0
+Set sprShip.SpeedX: -240
+Set sprShip.Left: 32
+Set Sprite1.Top: -20
+Set Sprite1.Visible: False
+Set Sprite9.Top: 40
+Set Sprite9.FrameClock: 50
+Set Sprite9.Frame: 1
+> Form.KeyUp Left
+> Form.KeyDown Space
+> Wait 100
+> tmrGame.Tick
+Set sprShip.SpeedX: 0
+Set Sprite1.Left: 45
+Set Sprite1.Top: 526
+Set Sprite1.Visible: True
+Sound: shot.wav
+Set Sprite1.Top: 484
+Set Sprite9.Top: 49
+Set Sprite9.FrameClock: 0
+Set Sprite9.Frame: 0
+> Form.KeyUp Space
+> Wait 100
+> tmrGame.Tick
+Set sprShip.SpeedX: 0
+Set Sprite1.Top: 442
+Set Sprite9.Top: 58
+Set Sprite9.FrameClock: 100
+> Wait 100
+> tmrGame.Tick
+Set sprShip.SpeedX: 0
+Set Sprite1.Top: 400
+Set Sprite9.Top: 67
+Set Sprite9.FrameClock: 50
+Set Sprite9.Frame: 1
+> Wait 100
+> tmrGame.Tick
+Set sprShip.SpeedX: 0
+Set Sprite1.Top: 358
+Set Sprite9.Top: 76
+Set Sprite9.FrameClock: 0
+Set Sprite9.Frame: 0
+> Wait 100
+> tmrGame.Tick
+Set sprShip.SpeedX: 0
+Set Sprite1.Top: 316
+Set Sprite9.Top: 85
+Set Sprite9.FrameClock: 100
+> Wait 100
+> tmrGame.Tick
+Set sprShip.SpeedX: 0
+Set Sprite1.Top: 274
+Set Sprite9.Top: 94
+Set Sprite9.FrameClock: 50
+Set Sprite9.Frame: 1
+> Wait 100
+> tmrGame.Tick
+Set sprShip.SpeedX: 0
+Set Sprite1.Top: 232
+Set Sprite9.Top: 103
+Set Sprite9.FrameClock: 0
+Set Sprite9.Frame: 0
+> Wait 100
+> tmrGame.Tick
+Set sprShip.SpeedX: 0
+Set Sprite1.Top: 190
+Set Sprite9.Top: 112
+Set Sprite9.FrameClock: 100
+> Wait 100
+> tmrGame.Tick
+Set sprShip.SpeedX: 0
+Set Sprite1.Top: 148
+Set Sprite9.Top: 121
+Set Sprite9.FrameClock: 50
+Set Sprite9.Frame: 1
+Set Sprite1.Visible: False
+Set Sprite9.Frames: boom1.png, boom2.png, boom3.png
+Set Sprite9.Frame: 0
+Set Sprite9.FrameClock: 0
+Set Sprite9.FrameTime: 80
+Set Sprite9.SpeedY: 0
+Sound: hit.wav
+Set lblScore.Caption: 점수 10
+Set lblLives.Caption: 목숨 3
+> Wait 100
+> tmrGame.Tick
+Set sprShip.SpeedX: 0
+Set Sprite9.FrameClock: 20
+Set Sprite9.Frame: 1
+> Wait 100
+> tmrGame.Tick
+Set sprShip.SpeedX: 0
+Set Sprite9.FrameClock: 40
+Set Sprite9.Frame: 2
+> Wait 100
+> tmrGame.Tick
+Set sprShip.SpeedX: 0
+Set Sprite10.Frames: enemy1.png, enemy2.png
+Set Sprite10.Frame: 0
+Set Sprite10.FrameClock: 0
+Set Sprite10.FrameTime: 150
+Set Sprite10.Left: 320
+Set Sprite10.Top: -32
+Set Sprite10.SpeedY: 90
+Set Sprite10.Visible: True
+Set Sprite9.FrameClock: 60
+Set Sprite9.Frame: 0
+Set Sprite9.Visible: False
+Set Sprite10.Top: -23
+Set Sprite10.FrameClock: 100
+> Wait 100
+> tmrGame.Tick
+Set sprShip.SpeedX: 0
+Set Sprite10.Top: -14
+Set Sprite10.FrameClock: 50
+Set Sprite10.Frame: 1
+> Wait 300
+> tmrGame.Tick
+Set sprShip.SpeedX: 0
+Set Sprite10.Top: 13
+Set Sprite10.FrameClock: 50
+Set Sprite10.Frame: 1
+> Close
+Closed

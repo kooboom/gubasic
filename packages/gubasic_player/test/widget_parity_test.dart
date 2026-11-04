@@ -157,6 +157,10 @@ void main() {
         strings: PlayerStrings.en,
         host: host,
       );
+      // Room for a form as tall as a game's (the Shooter's 640 pixels).
+      tester.view.physicalSize = const Size(1000, 900);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(

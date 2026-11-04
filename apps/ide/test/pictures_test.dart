@@ -178,7 +178,7 @@ void main() {
 
   test("the examples' pictures are their files, and would be taken", () {
     final pictures = decodeExamplePictures(examplePictures);
-    expect(pictures.keys, ['livequiz', 'quiz']);
+    expect(pictures.keys, ['livequiz', 'quiz', 'shooter']);
     for (final MapEntry(key: project, value: named) in pictures.entries) {
       final files = exampleProjects[project]!;
       for (final MapEntry(key: name, value: bytes) in named.entries) {

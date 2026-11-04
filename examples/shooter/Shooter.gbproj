@@ -1,0 +1,17 @@
+formatVersion: 4
+name: Shooter
+startup: Form1
+forms:
+  - Form1
+pictures:
+  - ship.png
+  - shot.png
+  - enemy1.png
+  - enemy2.png
+  - boom1.png
+  - boom2.png
+  - boom3.png
+sounds:
+  - shot.wav
+  - hit.wav
+  - music.wav
