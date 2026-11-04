@@ -6,7 +6,8 @@ import 'package:gubasic_lang/gubasic_lang.dart';
 /// The benchmarks of STAGE2_PLAN §7, each a project and the event script
 /// that drives it: the projects in ../../test/bench/ with their
 /// bench.events, and the typing and quiz examples with
-/// ../../test/bench/typing.events and the quiz's parity script. Written to
+/// ../../test/bench/typing.events, the quiz's parity script, and the
+/// Shooter example with ../../test/bench/shooter.events. Written to
 /// lib/src/bench/projects.g.dart, which only the measuring builds import
 /// (`package:gubasic_player/bench.dart`), so apps never carry it.
 ///
@@ -25,6 +26,10 @@ void main(List<String> args) {
     'quiz': (
       Directory('../../examples/quiz'),
       File('../../test/parity/quiz_example.events'),
+    ),
+    'shooter': (
+      Directory('../../examples/shooter'),
+      File('../../test/bench/shooter.events'),
     ),
   };
   final names = benches.keys.toList()..sort();
@@ -73,6 +78,26 @@ void main(List<String> args) {
       final bytes = File('${dir.path}/pictures/$picture').readAsBytesSync();
       out.writeln(
         '    ${jsonEncode(picture)}: ${jsonEncode(base64Encode(bytes))},',
+      );
+    }
+    out.writeln('  },');
+  }
+  out
+    ..writeln('};')
+    ..writeln()
+    ..writeln('/// Each benchmark\'s sounds: name → the bytes in Base64.')
+    ..writeln('const benchSounds = <String, Map<String, String>>{');
+  for (final name in names) {
+    final (dir, _) = benches[name]!;
+    final project = dir.listSync().whereType<File>().firstWhere(
+      (f) => f.path.endsWith('.gbproj'),
+    );
+    final read = readProjectFile(project.readAsStringSync());
+    out.writeln('  ${jsonEncode(name)}: {');
+    for (final sound in read.project.sounds) {
+      final bytes = File('${dir.path}/sounds/$sound').readAsBytesSync();
+      out.writeln(
+        '    ${jsonEncode(sound)}: ${jsonEncode(base64Encode(bytes))},',
       );
     }
     out.writeln('  },');

@@ -239,6 +239,11 @@ class Interpreter {
   /// there is none, and then nothing is asked.
   final Debugger? _debugger;
 
+  /// Told when an event handler has ended, for measuring only (the
+  /// player's measuring builds, STAGE2_PLAN §7): it changes nothing in how
+  /// the program runs, and is null everywhere else.
+  void Function()? onHandlerEnded;
+
   /// Whether the Immediate window's expression is being evaluated (D128):
   /// no pause inside it.
   var _evaluating = false;
@@ -710,6 +715,7 @@ class Interpreter {
     } finally {
       _running.remove(handler);
       _debugger?.handlerEnded();
+      onHandlerEnded?.call();
       // The next event of a component that came meanwhile (D136).
       if (_backlog[handler] case final waiting? when waiting.isNotEmpty) {
         final (sender, next) = waiting.removeFirst();

@@ -1,0 +1,68 @@
+' The Shooter example (D138) measured as STAGE2_PLAN §7 measures a game:
+' Start, then a player's hands, firing all the time and sweeping the ship
+' from side to side, until the game is over (enemies get past a sweeping
+' ship) or about 24 seconds have passed. Its Timer is the loop; the probe
+' times each Tick.
+btnStart.Click
+Form.KeyDown Space
+Form.KeyDown Right
+Wait 1200
+Form.KeyUp Right
+Form.KeyDown Left
+Wait 1200
+Form.KeyUp Left
+Form.KeyDown Right
+Wait 1200
+Form.KeyUp Right
+Form.KeyDown Left
+Wait 1200
+Form.KeyUp Left
+Form.KeyDown Right
+Wait 1200
+Form.KeyUp Right
+Form.KeyDown Left
+Wait 1200
+Form.KeyUp Left
+Form.KeyDown Right
+Wait 1200
+Form.KeyUp Right
+Form.KeyDown Left
+Wait 1200
+Form.KeyUp Left
+Form.KeyDown Right
+Wait 1200
+Form.KeyUp Right
+Form.KeyDown Left
+Wait 1200
+Form.KeyUp Left
+Form.KeyDown Right
+Wait 1200
+Form.KeyUp Right
+Form.KeyDown Left
+Wait 1200
+Form.KeyUp Left
+Form.KeyDown Right
+Wait 1200
+Form.KeyUp Right
+Form.KeyDown Left
+Wait 1200
+Form.KeyUp Left
+Form.KeyDown Right
+Wait 1200
+Form.KeyUp Right
+Form.KeyDown Left
+Wait 1200
+Form.KeyUp Left
+Form.KeyDown Right
+Wait 1200
+Form.KeyUp Right
+Form.KeyDown Left
+Wait 1200
+Form.KeyUp Left
+Form.KeyDown Right
+Wait 1200
+Form.KeyUp Right
+Form.KeyDown Left
+Wait 1200
+Form.KeyUp Left
+Form.KeyUp Space

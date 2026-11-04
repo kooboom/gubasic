@@ -38,6 +38,11 @@ class BenchProbe {
   final _yieldCalls = <int>[];
   final _yieldResumes = <int>[];
 
+  /// When each Timer tick began, and when the handler it started ended
+  /// (-1 until then).
+  final _tickStarts = <int>[];
+  final _tickEnds = <int>[];
+
   /// When the program printed `bench:start` and `bench:end`.
   int? _startAt;
   int? _endAt;
@@ -61,12 +66,31 @@ class BenchProbe {
     SchedulerBinding.instance.addPersistentFrameCallback(
       (_) => _frameAt.add(_now),
     );
+    session.interpreter.onHandlerEnded = _handlerEnded;
     session.addListener(_changed);
   }
 
   /// Called by the run window's host around each `DoEvents`.
   void yieldStarted() => _yieldCalls.add(_now);
   void yieldEnded() => _yieldResumes.add(_now);
+
+  /// Called by the run window's host as a Timer ticks: a game whose loop
+  /// is a Timer (the Shooter example) is timed by its ticks, each from the
+  /// tick to the end of the handler it started.
+  void tickStarted() {
+    _tickStarts.add(_now);
+    _tickEnds.add(-1);
+  }
+
+  /// The tick just begun started no handler (one was still running).
+  void tickDropped() {
+    _tickStarts.removeLast();
+    _tickEnds.removeLast();
+  }
+
+  void _handlerEnded() {
+    if (_tickEnds.isNotEmpty && _tickEnds.last < 0) _tickEnds.last = _now;
+  }
 
   void _onTimings(List<FrameTiming> timings) {
     for (final t in timings) {
@@ -155,9 +179,11 @@ class BenchProbe {
             PickStep() ||
             ServerStep() ||
             PeerStep() ||
-            RoomStep() ||
-            WaitStep():
+            RoomStep():
           break;
+        // Real time passes, as for a player: a Timer's game goes on.
+        case WaitStep(:final milliseconds):
+          await Future<void>.delayed(Duration(milliseconds: milliseconds));
       }
       await _settle();
       await SchedulerBinding.instance.endOfFrame;
@@ -229,7 +255,43 @@ class BenchProbe {
         out['rasterMs'] = ms(mean([for (final t in timings) t.$3]));
       }
     }
+    _reportTicks(out);
     // ignore: avoid_print
     print('GUBASIC_BENCH ${jsonEncode(out)}');
+  }
+
+  /// A Timer's game, from its first tick to its last: ticks a second, the
+  /// handler's milliseconds (mean and the longest), frames drawn and a
+  /// frame's build and raster.
+  void _reportTicks(Map<String, Object?> out) {
+    if (_tickStarts.length < 2) return;
+    double ms(num us) => (us / 1000 * 100).round() / 100;
+    double mean(List<int> xs) =>
+        xs.isEmpty ? 0 : xs.reduce((a, b) => a + b) / xs.length;
+    final start = _tickStarts.first;
+    final end = _tickStarts.last;
+    final seconds = (end - start) / 1e6;
+    final handler = [
+      for (var i = 0; i < _tickStarts.length; i++)
+        if (_tickEnds[i] >= 0) _tickEnds[i] - _tickStarts[i],
+    ];
+    final frames = [
+      for (final f in _frameAt)
+        if (f >= start && f <= end) f,
+    ];
+    final timings = [
+      for (final t in _timings)
+        if (t.$1 >= start && t.$1 <= end + 1500000) t,
+    ];
+    out['ticks'] = _tickStarts.length;
+    out['ticksPerSecond'] =
+        ((_tickStarts.length - 1) / seconds * 10).round() / 10;
+    out['tickHandlerMs'] = ms(mean(handler));
+    out['tickHandlerMaxMs'] = handler.isEmpty
+        ? 0
+        : ms(handler.reduce((a, b) => a > b ? a : b));
+    out['framesPerSecond'] = (frames.length / seconds * 10).round() / 10;
+    out['buildMs'] = ms(mean([for (final t in timings) t.$2]));
+    out['rasterMs'] = ms(mean([for (final t in timings) t.$3]));
   }
 }

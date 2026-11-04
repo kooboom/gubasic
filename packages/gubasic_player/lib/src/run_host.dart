@@ -107,8 +107,15 @@ class RunHost implements FormHost, FileHost, ComponentHost {
 
   /// [timer] of [form] ticks (D100): what its clock does, and what a test
   /// does in its place.
-  EventOutcome tick(String form, String timer) =>
-      interpreter.raiseTick(timer, form: form);
+  EventOutcome tick(String form, String timer) {
+    // Measuring builds only (STAGE2_PLAN §7); compiled away elsewhere.
+    if (benchEnabled) BenchProbe.current?.tickStarted();
+    final outcome = interpreter.raiseTick(timer, form: form);
+    if (benchEnabled && outcome != EventOutcome.started) {
+      BenchProbe.current?.tickDropped();
+    }
+    return outcome;
+  }
 
   final _files = <String, FormFile>{};
   final _models = <String, GbFormModel>{};

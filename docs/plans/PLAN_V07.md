@@ -206,7 +206,7 @@ Every recommendation of §6 is taken, with two changes; DESIGN D138 records them
 - Q1 to Q4, Q6 to Q9, Q11 and Q12: as recommended.
 - **Step 5 is two changes:** (5a) the program side, `Sound` through the component channel, the runtime over flutter_soloud, the project file's `sounds` and version 4, the player's bundle and app, the desktop IDE running a project that already has sounds; (5b) the IDE's side, a Sounds window with Add and Remove, the explorer's group, the browser's storage, the `.zip`, and A082.
 
-### 7.1 The sound packages measured (2026-11-04, Windows and the web)
+### 7.1 The sound packages measured (2026-11-04, Windows, the web and macOS)
 
 `packages/gubasic_runtime/tool/sound_probe` plays five sounds it makes itself (a 50 ms shot, an 80 ms noise, a 30 ms beep, a tone, a chord) through each package and takes the milliseconds from the call to the first progress the package reports; `tool/web_check/sound_probe.mjs` runs its web build in Chrome. Windows 11 with the Windows app; the web in headless Chrome 155 (the browser's own buffer comes on top, the same for both). The median is of what started; "started" counts what reported progress within a second.
 
@@ -216,4 +216,18 @@ Every recommendation of §6 is taken, with two changes; DESIGN D138 records them
 | The same effect 20 times, 10 ms apart | median 452 ms, max 990, **17 of 20 started** | median 27 ms, max 49, 20 of 20 | median 385 ms, max 497, 20 of 20 | median 26 ms, max 53, 20 of 20 |
 | Five different sounds at once | 260 ms each | 2 ms each | 308 ms each | 9 ms each |
 
-Each `audioplayers` play is a player of its own (what a new effect over a playing one needs) and it queues them: the twentieth shot starts a second late, and three were lost on Windows. `flutter_soloud` mixes voices itself and starts each within a frame. **Chosen: `flutter_soloud`**, as the author allowed without another question; the macOS run is taken on the Mac with the same probe, and if it contradicts this the choice is looked at again. What comes with it: its `init_soloud.js` script line in the web pages (the IDE's, the player's and the web template's `index.html`), its WASM files served with the app, and its native plugin registered on Windows and macOS.
+Each `audioplayers` play is a player of its own (what a new effect over a playing one needs) and it queues them: the twentieth shot starts a second late, and three were lost on Windows. `flutter_soloud` mixes voices itself and starts each within a frame. **Chosen: `flutter_soloud`**, as the author allowed without another question; the macOS run below, taken on the Mac the same day, agrees. What comes with it: its `init_soloud.js` script line in the web pages (the IDE's, the player's and the web template's `index.html`), its WASM files served with the app, and its native plugin registered on Windows and macOS.
+
+**macOS** (the author's Mac, macOS 27.0.1, the probe's release app, three runs). In the first run `audioplayers` started nothing: it writes a sound given as bytes to a file in the app's cache folder, and in the sandboxed app that folder did not exist yet (`PathNotFoundException` on every play); it was there for the next runs, made meanwhile by `flutter_soloud`. The second and third runs:
+
+| Case | audioplayers 6.8.1, macOS | flutter_soloud 5.2.2, macOS |
+|---|---|---|
+| One short effect (5 times) | median 13 and 15 ms, max 16 | median 4 ms, max 18 and 40 (the first play) |
+| The same effect 20 times, 10 ms apart | median 268 and 220 ms, max 364 and 528, **19** and 20 of 20 started | median 22 and 27 ms, max 43 and 73, 20 of 20 |
+| Five different sounds at once | 37 to 39 ms each | 42 and 7 ms each |
+
+As on Windows and the web, `audioplayers` queues the rapid plays (up to half a second late) and `flutter_soloud` starts each in time; its numbers on macOS go 2, 33, 22, 11, 43, … as the calls 10 ms apart fall between the moments it reports progress, about 45 ms apart, so they are the wait for its next report rather than later starts. **The choice stands.**
+
+### 7.2 The Shooter measured (2026-11-04, the Mac)
+
+As §3.2 says, the Shooter is measured the way STAGE2_PLAN §7 measures a game, in the player and the IDE, in Chrome, WebKit and the macOS app: [STAGE2_PLAN §7](../STAGE2_PLAN.md#7-speed-what-is-measured-in-2-2-and-when-the-transpiler-comes-back), benchmark 6. It keeps its Timer's 62 ticks a second (50 in WebKit, whose timers come every 20 ms), and a tick needs 1.3 to 6.5 ms of its 16, under the criteria everywhere. Whether `Move` and `Hits` cost less than the BASIC lines they replace is not shown by it: the Shooter and the Galaga benchmark do different work.

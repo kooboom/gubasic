@@ -21,6 +21,10 @@ void main() {
         for (final MapEntry(:key, :value) in benchPictures[name]!.entries)
           key: base64Decode(value),
       },
+      sounds: {
+        for (final MapEntry(:key, :value) in benchSounds[name]!.entries)
+          key: base64Decode(value),
+      },
       strings: playerStringsFor(
         PlatformDispatcher.instance.locale.languageCode,
       ),

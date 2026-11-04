@@ -128,6 +128,7 @@ The player runs the same interpreter as F5, so it should be as fast as the IDE; 
 3. **The examples:** `typing` and `quiz` driven by their event scripts: the time from each step to the screen showing its result.
 4. **A small game:** 20 Images on a form, each moved a little every round; every round checks each pair for a collision and changes a score Label. With no Timer yet (2-9), a loop with `DoEvents` does what a 30 ms Timer would, as fast as it can. Measured: **updates per second (the aim is 30 or more)**, milliseconds per update, and how much of it is the interpreter (from the loop's start to its `DoEvents`) and how much drawing (Flutter's frame timings: build and raster).
 5. **A game like Galaga:** see below, after the measurements.
+6. **The Shooter example** (v0.7, D138): a game on a 16 ms Timer, timed by its ticks; see below.
 
 **Measured in step 2-2** (2026-10-26, `main` at `ba11bc0` with step 2-2; the player and the IDE built for measuring, `lib/bench_main.dart`; Chrome and WebKit through Playwright on the author's Mac, WebKit standing in for Safari; the macOS apps as release builds). The player's numbers first, the IDE's in brackets:
 
@@ -170,6 +171,22 @@ The interpreter needs 2 ms or less of a 16 ms tick, drawing 7 ms or less. **What
 - **Pictures in turn:** an Image showing frames one after another (an explosion, a flying enemy), the "many pictures" of IDEAS.md.
 - **A Timer of 16 ms** (step 2-9) with ticks that do not pile up when one round runs long, and a way to read time in milliseconds for movement that does not depend on the frame rate.
 - **Collision help:** a function for whether two controls overlap, so each check is one call.
+
+**The Shooter example** (benchmark 6, measured 2026-11-04 on the author's Mac, macOS 27.0.1, with v0.7; `examples/shooter` driven by `test/bench/shooter.events`: Start, then the keys a player holds, firing all the time and sweeping the ship from side to side, until the game is over, about 16 seconds). Its loop is a Timer of 16 ms, not `DoEvents`, so the probe times each tick: from the tick to the end of the handler it started (the interpreter tells the measuring build when a handler ends), and ticks a second over the whole game. Up to 8 shots and 20 enemies are `Sprite`s moved with `Move` and checked with `Hits` (at most 8 × 20 and 20 checks a tick). Two runs each, the player first and the IDE in brackets:
+
+| | Chrome | WebKit | macOS app |
+|---|---|---|---|
+| Ticks a second (the Timer asks 62) | 62.5 (62.2) | 50 (50) | 62.2 (62.4) |
+| A tick's handler | 4.0–4.1 ms (4.2 ms) | 6.1–6.5 ms (5.8–6.2 ms) | 2.0–2.1 ms (1.3–2.0 ms) |
+| — the longest tick | 15–18 ms (14–58 ms) | 20–22 ms (19–20 ms) | 8–12 ms (4–9 ms) |
+| Frames drawn a second | 60 (60) | 52 (52) | 56 (64) |
+| A frame's build + raster | 7.7 ms (8.5 ms) | 1.9 ms (1.8 ms) | 2.1 ms (1.1–2.4 ms) |
+
+What they say:
+
+- **The game keeps its Timer's pace everywhere:** 62 ticks a second, as a 16 ms Timer gives, in Chrome and on macOS; 50 in WebKit, whose timers come every 20 ms. The game moves by the milliseconds that passed (`Milliseconds()`), so the ship and the enemies go at the same speed in WebKit, in steps a little larger.
+- **A tick needs 1.3 to 6.5 ms of its 16** on average, under the 10 ms of the criteria below everywhere; drawing as for Galaga (Chrome's raster about 7 ms). Its longest single tick was 58 ms once, in the IDE in Chrome.
+- **A Shooter tick costs more than a Galaga round** (4 ms against 1.4 ms in Chrome, the same day), though it checks fewer pairs. The two do different work: the Shooter reads and sets its sprites' properties (`Visible`, `X`, `Y`, `Frames`) and calls `Move` and `Hits` as members of controls in arrays, where Galaga keeps its numbers in arrays of integers and sets only `Left` and `Top`. So these numbers do not compare `Move` and `Hits` with the BASIC lines they replace (plans/PLAN_V07.md §3.2 hoped to see that); that needs the same game written both ways. "Cheaper control lookups" below is the place to look first if a game comes near the criteria.
 
 **Sizes of the player** (release builds, the hello project built in): **web** 42 MB as a folder, of which 36 MB are CanvasKit's builds for different browsers; a browser loads about 11 MB (`main.dart.js` 2.8 MB, one CanvasKit 7 MB, Pretendard 1.6 MB); 15 MB as a `.zip`. **macOS** 43 MB (universal), 19 MB as a `.zip`. **Windows** 29.5 MB as a folder, with the Visual C++ runtime next to the program (CI prints it with every build; the IDE's folder is 36 MB). The IDE for comparison: 51 MB on macOS, `main.dart.js` 3.4 MB.
 

@@ -19,6 +19,7 @@ void main() {
         startup.form,
         benchScripts[name]!,
         pictures: benchPictures[name]!.keys.toList(),
+        sounds: benchSounds[name]!.keys.toList(),
       );
       expect(transcript.last, anyOf('Closed', 'Ended'));
       // The game waits in DoEvents every round, which lets a script go on,

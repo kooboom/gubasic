@@ -37,12 +37,6 @@
 - **왜 미뤘나:** Sound 변경을 둘로 나눠 각각 작게 했습니다(plans/PLAN_V07.ko.md 7절): 프로그램 쪽 먼저, IDE 쪽은 다음.
 - **다시 볼 때:** v0.7의 다음 변경: 프로젝트 탐색기의 소리 묶음과 더하기·빼기, 브라우저 보관, `.zip`, A082.
 
-## 소리 패키지는 Windows와 웹에서만 재고 macOS에서는 아직 안 쟀음
-
-- **무엇:** `flutter_soloud`는 Windows와 Chrome에서 잰 탐침의 숫자로 `audioplayers` 대신 골랐습니다(plans/PLAN_V07.ko.md 7.1절). 둘 다에서 `audioplayers`는 연달아·겹쳐 내는 소리를 줄 세우고 `flutter_soloud`는 각각을 한 프레임 안에 시작합니다. 같은 탐침을 macOS에서는 아직 돌리지 않았고, Shooter 예제도 계획서 3.2절이 말한 STAGE2_PLAN 7절의 기준으로 아직 재지 않았습니다.
-- **왜 미뤘나:** 작성자가 다시 묻지 않고 정해도 된다고 했고(D138), 2026-11-04에는 맥이 곁에 없었습니다.
-- **다시 볼 때:** 맥에서 `packages/gubasic_runtime/tool/sound_probe`를 `flutter run -d macos --release`로 돌려 숫자를 7.1절에 넣고, 선택과 어긋나면 다시 봅니다. Shooter는 STAGE2_PLAN 7절이 게임을 재는 방법으로 잽니다.
-
 ## 웹 IDE에는 자기 중계 서버가 없음
 
 - **무엇:** 데스크톱 IDE는 `Server`가 빈 `Room`을 위해 중계 서버를 켭니다(D136). 웹 IDE는 그럴 수 없어서, 그런 프로그램은 R048("no relay server")로 멈춥니다.
