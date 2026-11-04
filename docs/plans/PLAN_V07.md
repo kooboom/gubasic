@@ -43,7 +43,7 @@ End Sub
 
 `tmrGame` is a Timer with `Interval` 16; `sprShot` starts with `SpeedY` -400 and `Visible` False; `sprEnemy` has `FrameTime` 120 so that its frames turn by themselves while it moves.
 
-**Stage.** ROADMAP v0.7 "Game tools" (candidate, D121 a). When v0.7 is done there is the **Shooter** example (§2.6), and every item of the v0.7 list is ticked but the fighting game, which §6 Q9 recommends as the change right after.
+**Stage.** ROADMAP v0.7 "Game tools" (candidate, D121 a). When v0.7 is done there is the **Shooter** example (§2.6), and every item of the v0.7 list is ticked; the fighting game, which §6 Q9 recommends as the change right after, became the ROADMAP's next candidate instead, on the author's word before v0.7.0 was released (D138).
 
 **Why now.** v0.6 made "together" possible; the other kind of program the author named in D121, a shooter or a fighting game, is still written around the tools: STAGE2_PLAN's Galaga benchmark moves 61 `Image` controls with arrays of coordinates and checks overlaps with eight comparisons each, and holds no key, plays no sound. Everything in this plan is what that program had to go around.
 

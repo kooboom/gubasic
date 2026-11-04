@@ -118,10 +118,10 @@ Plan: [plans/PLAN_V06.md](plans/PLAN_V06.md) (2026-11-03; the answers are D136; 
 - [x] `Keyboard.IsDown(Keys.Left)`: keys held at once, for a game loop (D138)
 - [x] Time in milliseconds, for a game loop on one Timer: `Milliseconds()` (D138)
 - [x] Example: a shooting game showing the usual shape (one Timer as the game loop, a state for each object, a timetable of when enemies come): Shooter (D138)
-- [ ] Example: a fighting game, the change right after (plans/PLAN_V07.md §6 Q9)
 
 ### After v0.6 (candidates, order recommended)
 
+- [ ] Example: a fighting game, the next candidate after v0.7: two players on one keyboard, punch and kick frames, a health bar, with v0.7's tools (plans/PLAN_V07.md §6 Q9, D138)
 - [ ] The GuBASIC server: programs with no screen, answering HTTP (JSON) and WebSocket on a server ([IDEAS](IDEAS.md#the-gubasic-server)). Example: a bulletin board
 - [ ] The component channel for packages a project chooses, with the transpiler ([COMPONENT_CHANNEL.md](COMPONENT_CHANNEL.md))
 - [ ] UserControl: controls made with GuBASIC for other users' toolboxes ([IDEAS](IDEAS.md#usercontrol)), after the component channel
