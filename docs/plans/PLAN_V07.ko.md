@@ -2,7 +2,7 @@
 
 [English](PLAN_V07.md)
 
-[PLAN_TEMPLATE.ko.md](../PLAN_TEMPLATE.ko.md)의 형식입니다. DESIGN D121(돌아가지 않기: 게임은 게임을 보통 만드는 방식대로 만들 수 있어야 함), D100(Timer), D101(폼의 키), D51(그림), D98과 D132(객체로서의 컨트롤, `New … With`), D137(`Visible`), 그리고 STAGE2_PLAN §7이 Galaga 같은 게임을 재면서 알아낸 것(2단계 너머에 그런 게임이 필요로 하는 것은 동시에 누른 키, 소리, 차례로 바뀌는 그림, 밀리초 단위 시간, 충돌 도움)에 기댑니다. 구현 전에 쓴 계획서이고, 6절에 작성자에게 묻는 질문을 권장안과 함께 모았습니다. 작성자가 답하기 전에는 아무것도 정해지지 않았습니다.
+[PLAN_TEMPLATE.ko.md](../PLAN_TEMPLATE.ko.md)의 형식입니다. DESIGN D121(돌아가지 않기: 게임은 게임을 보통 만드는 방식대로 만들 수 있어야 함), D100(Timer), D101(폼의 키), D51(그림), D98과 D132(객체로서의 컨트롤, `New … With`), D137(`Visible`), 그리고 STAGE2_PLAN §7이 Galaga 같은 게임을 재면서 알아낸 것(2단계 너머에 그런 게임이 필요로 하는 것은 동시에 누른 키, 소리, 차례로 바뀌는 그림, 밀리초 단위 시간, 충돌 도움)에 기댑니다. 구현 전에 쓴 계획서이고, 6절에 작성자에게 묻는 질문을 권장안과 함께, 7절에 2026-11-04 작성자의 답을 모았습니다. 답은 DESIGN D138이 기록합니다.
 
 ## 1. 무엇을, 왜
 
@@ -106,7 +106,7 @@ Visual Basic 6이 `Declare`로 부르던 `GetAsyncKeyState`를 이것이 대신�
 
 **형식:** WAV와 MP3만(`.wav`, `.mp3`). 둘 다 웹 플레이어가 도는 모든 브라우저와 Windows, macOS에서 나고, OGG는 Safari에서 나지 않습니다([MDN: Web audio codec guide](https://developer.mozilla.org/en-US/docs/Web/Media/Formats/Audio_codecs#choosing_an_audio_codec)). 다른 확장자는 그림의 F014처럼 F024, 대소문자만 다른 두 이름은 F015처럼 F025.
 
-**웹에서는** 사용자가 페이지를 클릭하거나 키를 누르기 전에는 소리를 낼 수 없습니다([Chrome의 autoplay 정책](https://developer.chrome.com/blog/autoplay)). 그 전의 `Play`는 오류 없이 버려지고, LANGUAGE가 그렇게 말합니다. 시작 버튼으로 시작하는 게임은 이것을 만나지 않습니다.
+**웹에서는** 사용자가 페이지를 클릭하거나 키를 누르기 전에는 소리를 낼 수 없습니다([Chrome의 autoplay 정책](https://developer.chrome.com/blog/autoplay)). 그 전의 `Play`는 오류 없이 버려집니다. LANGUAGE와 참조가 그렇게 말하고 이유도 말합니다: GuBASIC이 아니라 브라우저의 규칙이고, 데스크톱에서 쓴 프로그램이 웹에서도 돌게 하려는 것입니다. Shooter처럼 시작 버튼을 눌러야 비로소 시작하는 게임은 이것을 만나지 않습니다.
 
 **프로젝트 파일.** `sounds:`에 적습니다. 소리가 있는 프로젝트는 `formatVersion: 4`로 쓰고, 옛 GuBASIC은 아무 소리도 안 내는 대신 열기를 거부합니다(규칙 8; `pictures`가 2로, 모듈이 3으로 한 것처럼, D102). 3을 4로 읽는 데 이행기는 필요 없습니다: `sounds`는 더해질 뿐입니다.
 
@@ -134,7 +134,7 @@ Visual Basic 6이 `Declare`로 부르던 `GetAsyncKeyState`를 이것이 대신�
 - **적이 나오는 시간표:** `At`(밀리초), `Lane`, `Kind`가 있는 `Structure Wave`의 배열을 `Form_Load`에서 채우고, 루프는 `Milliseconds()`가 다음 `At`을 지나면 그 웨이브를 시작함.
 - **소리:** `shot.wav`와 `hit.wav`; 시작 버튼 뒤에 `PlayMusic`으로 `music.mp3`(웹의 규칙, 2.4절).
 - **폭발**은 `Frames`가 그림 셋이고 `FrameTime`이 80인 스프라이트. 마지막 프레임이 보이고 나면 `Visible = False`.
-- 점수와 목숨은 Label에, Game Over, 시작 버튼으로 다시 시작. 폰에는 키가 없음: 예제는 키보드가 있는 데스크톱과 웹용이라고 말함.
+- 점수와 목숨은 Label에, Game Over. **시작 버튼을 누르기 전에는 아무것도 움직이지 않고 소리도 나지 않음:** `Form_Load`는 준비만 하고 Timer는 `btnStart_Click`에서 시작하며, 그것이 웹 페이지가 소리를 낼 수 있게 하는 클릭이기도 함(2.4절). Game Over 뒤에는 같은 버튼으로 다시 시작. 폰에는 키가 없음: 예제는 키보드가 있는 데스크톱과 웹용이라고 말함.
 
 그림과 소리는 LiveQuiz의 그림처럼 도구 스크립트가 만듭니다(`apps/ide/tool/draw_quiz_pictures.dart`): 단순한 도형과, WAV로 합성한 소리(짧은 사각파와 잡음 한 토막). 바깥에서 오는 파일이 없고 라이선스가 걸리는 것이 없습니다.
 
@@ -188,11 +188,19 @@ Visual Basic 6이 `Declare`로 부르던 `GetAsyncKeyState`를 이것이 대신�
 2. **`Frames`는 글자(`"a.png, b.png"`)인가, 선택기가 있는 목록인가?** 권장: `Anchor`처럼 글자, 속성 창이 그것을 써 주는 선택기를 내놓음. 프로그램이 `&`로 만들 수 있고, 폼 파일이 읽히고, 새 속성 형이 필요 없습니다.
 3. **위치: 정수 `Left`/`Top` 옆에 `Double`인 `X`/`Y`?** 권장: 예. 초당 30픽셀의 스프라이트는 라운드에 반 픽셀을 가야 하는데 정수 `Left`만으로는 제자리에 섭니다. `Left`/`Top`은 다른 컨트롤용으로 쓴 모든 것을 위해 남습니다.
 4. **충돌 모양: 스프라이트마다의 속성(`Shape`)인가, `Hits`의 인자인가?** 권장: 속성. 탄을 한 번 "Circle"로 두면 모든 `Hits`가 짧은 호출 하나입니다. 픽셀은 알파 ≥ 128일 때 세고, 안티에일리어싱 가장자리를 무시하는 보통의 문턱입니다.
-5. **소리 패키지:** `audioplayers`(Windows, macOS, Linux, 웹, iOS, Android의 플러그인; MIT), `flutter_soloud`(FFI로 지연이 더 짧지만 웹에서 자기 WASM 파일과 스크립트가 필요해 웹 템플릿과 Pages 배포가 지녀야 함), 또는 웹은 `package:web`의 Web Audio, 데스크톱은 우리의 플랫폼 코드. 권장: `audioplayers`. 플레이어가 있는 모든 플랫폼에 패키지 하나이고, CLAUDE.md대로 플러그인 등록 파일을 커밋합니다. 통합 테스트에서 Windows의 효과음 지연이 너무 길면 `flutter_soloud`가 대안이고, `GbSound` 인터페이스가 선택을 감춥니다.
+5. **소리 패키지:** `audioplayers`(Windows, macOS, Linux, 웹, iOS, Android의 플러그인; MIT), `flutter_soloud`(FFI로 지연이 더 짧지만 웹에서 자기 WASM 파일과 스크립트가 필요해 웹 템플릿과 Pages 배포가 지녀야 함), 또는 웹은 `package:web`의 Web Audio, 데스크톱은 우리의 플랫폼 코드. 권장: `audioplayers`. 플레이어가 있는 모든 플랫폼에 패키지 하나이고, CLAUDE.md대로 플러그인 등록 파일을 커밋합니다. 통합 테스트에서 Windows의 효과음 지연이 너무 길면 `flutter_soloud`가 대안이고, `GbSound` 인터페이스가 선택을 감춥니다. **작성자의 답(7절): 먼저 잰다.**
 6. **`Sound.Play`는 기다리지 않음.** 권장: 그렇게. `Http`·`Room`(D124 A, D136)과 다르지만, 게임 루프는 소리 200 ms를 멈출 수 없고 돌아올 것도 없습니다. `PlayMusic`과 `StopMusic`도 같습니다.
 7. **시계의 이름과 영점: 프로그램 시작부터 세는 `Milliseconds()`.** 권장. `TickCount`는 읽는 사람 머릿속에서 Timer의 `Tick`과 부딪히고, `Timer()`는 컨트롤의 이름입니다(A080이 말함).
 8. **`IsDown`용 키로서의 Shift, Control, Alt**(`Keys.ShiftKey`, `Keys.ControlKey`, `Keys.Menu`, Visual Basic .NET의 것). 권장: `IsDown`용으로만 더함. `KeyDown`·`KeyUp`은 다른 키와 함께 온다는 D101의 규칙을 지킵니다.
 9. **예제: v0.7에 Shooter, 격투 게임은 바로 다음 자기 변경으로.** 권장. v0.7이 작은 변경들로 들어가고(6절 Q11), 한 키보드에 두 사람, 주먹·발차기 프레임, 체력 바가 필요한 격투 게임은 도구가 들어온 뒤 같은 도구를 쓰는 것이지 이 계획서를 넓히는 것이 아닙니다.
-10. **웹의 autoplay 규칙: 첫 클릭이나 키 전의 `Play`는 조용히 버림.** 권장. 대안인 오류는 데스크톱에서 도는 프로그램을 웹에서 멈추게 하고, Shooter는 어차피 버튼으로 시작합니다.
+10. **웹의 autoplay 규칙: 첫 클릭이나 키 전의 `Play`는 조용히 버림.** 권장. 대안인 오류는 데스크톱에서 도는 프로그램을 웹에서 멈추게 하고, Shooter는 어차피 버튼으로 시작합니다. **작성자의 답(7절): 그렇게 하되 이유를 적고, Shooter는 시작 버튼을 기다린다.**
 11. **변경의 순서**, 각각 동일성 프로그램과 함께 따로 병합: (1) `Milliseconds`와 `Wait`; (2) `Keyboard.IsDown`과 키 셋; (3) `Move`와 프레임이 있는 `Sprite`; (4) `Hits`와 `DistanceTo`, 사각형·원·픽셀; (5) `Sound`, 프로젝트 파일, IDE의 소리 묶음; (6) Shooter 예제, 웹 확인, 문서, D138. 권장: 적은 대로. 단계마다 혼자서도 쓸 수 있고, 예제는 필요한 것이 다 들어온 뒤에 옵니다.
 12. **`Frames`를 고를 때의 크기:** 속성 창이 처음 한 번만 `Width`·`Height`를 첫 프레임의 크기로 두고 다시는 안 둠(작성자가 크기를 바꿀 수 있음). 권장. 컨트롤이 스스로 크기를 바꾸지 않는다는 `Image`의 규칙(D51)은 `Image`에 그대로입니다.
+
+## 7. 작성자의 답(2026-11-04)
+
+6절의 권장안을 모두 받되 둘을 바꿉니다. DESIGN D138이 기록합니다.
+
+- **Q5, 소리 패키지는 이 계획서가 아니라 측정으로 고릅니다.** Sound 변경(6절 Q11의 5단계) 전에 `audioplayers`와 `flutter_soloud`의 `Play`부터 첫 소리까지의 지연을 웹·macOS·Windows에서 셋으로 잽니다: 짧은 효과음 하나, 같은 짧은 효과음을 연달아 빠르게 여러 번, 서로 다른 소리 여럿을 겹쳐서. 결과가 나오면 이 절에 표로 넣고, 더 나은 쪽을 다시 묻지 않고 택합니다. `GbSound` 인터페이스는 어느 쪽이든 같습니다.
+- **Q10, 웹에서 첫 클릭 전의 소리는 권장대로 조용히 버리되 이유를 적습니다:** LANGUAGE §11.13과 참조가 브라우저의 규칙이라는 것과 그 때문에 프로그램을 멈추지 않는 이유를 말합니다. Shooter 예제는 시작 버튼을 눌러야 비로소 시작해(2.6절) 첫 소리가 클릭 뒤에 옵니다.
+- Q1~Q4, Q6~Q9, Q11, Q12: 권장안대로.
