@@ -31,11 +31,11 @@ Problems we know about and have **deliberately** left unfixed for now. Each entr
 - **Why deferred:** checking it needs a phone and a Wi-Fi network at hand, outside what the tests can do; the author judged the Playwright round enough to merge (2026-11-03).
 - **Revisit:** the next time the author has a phone at hand: open LiveQuiz in the desktop IDE, turn on "Allow Devices on the Same Network", allow the IDE on the private network when Windows asks, choose "Preview on the Web", scan the code and play one round. Whether macOS's firewall asks the same is to be seen on the Mac.
 
-## The IDE does not add sounds yet
+## What v0.7's game tools leave for later
 
-- **What:** a program plays the project's sounds (`Sound`, D138), and the desktop IDE runs a project whose `.gbproj` lists them under `sounds` with the files in its `sounds/` folder, as an exported app does; but the IDE has no Sounds window to add or remove them, the web IDE does not keep them in the browser, and a project's `.zip` does not carry them. The analyzer does not yet warn of a sound name written in the code that the project does not have (the plan's A082); the program stops there (R053).
-- **Why deferred:** the Sound change was split in two so that each is small (plans/PLAN_V07.md §7): the program side first, the IDE's side next.
-- **Revisit:** the next change of v0.7: a Sounds group in the project explorer with Add and Remove, the browser's storage, the `.zip`, and A082.
+- **What:** a `Sprite` does not turn or flip (`Angle`): a ship facing left is a second picture. There is no tile map or scrolling background: a wide `Image` moved by the loop does it for a start. No joystick or gamepad: the keyboard only, so the Shooter is for the desktop and the web. Music does not fade: `Volume` changes at once. Sound on phones is not tried until stage 3 brings the phone Player.
+- **Why deferred:** plans/PLAN_V07.md §4 left them out so that v0.7 holds what a shooting game needs first; none of them is a way around the tools STAGE2_PLAN §7 found missing.
+- **Revisit:** with the fighting game, the ROADMAP's next candidate, if it needs one of them (a fighter facing either way); a gamepad when the component channel takes packages; sound on phones in stage 3.
 
 ## The web IDE has no relay server of its own
 
