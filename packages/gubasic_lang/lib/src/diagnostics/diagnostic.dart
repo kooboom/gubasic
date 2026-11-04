@@ -183,6 +183,14 @@ enum DiagnosticCode {
   /// A member written with a dot alone outside a With block (D134).
   dotWithoutWith('P041'),
 
+  /// Visual Basic 6's `Declare`: GuBASIC has none; outside abilities come
+  /// as components (D121 c, D138). Args: the declared name.
+  declareStatement('P042'),
+
+  /// `Declare` of `GetAsyncKeyState` or `GetKeyState`: the keys held right
+  /// now are `Keyboard.IsDown` (D138). Args: the declared name.
+  declareKeyState('P043'),
+
   // Analyzer: names
 
   /// A name that is not declared. Args: the name.

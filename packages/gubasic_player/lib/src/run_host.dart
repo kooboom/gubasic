@@ -130,6 +130,7 @@ class RunHost implements FormHost, FileHost, ComponentHost {
           form: form.name,
           inTextBox: inTextBox,
         ),
+    onKeysReleased: () => interpreter.releaseKeys(),
     onMouse: (control, event, button, x, y) =>
         lastOutcome = interpreter.raiseMouse(
           control,

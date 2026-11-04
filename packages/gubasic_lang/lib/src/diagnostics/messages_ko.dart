@@ -249,6 +249,10 @@ const Map<DiagnosticCode, String> koreanMessages = {
       '목록을 받는 배열은 목록에서 크기를 정합니다. {0}() 형태로 크기 없이 씁니다.',
   DiagnosticCode.dotWithoutWith:
       '점으로만 시작하는 멤버는 With 블록 안에서만 씁니다. 점 앞에 이름을 쓰거나, 그 줄을 With … End With 안에 둡니다.',
+  DiagnosticCode.declareStatement:
+      'GuBASIC에는 Declare가 없습니다({0}). 언어 밖의 기능은 컴포넌트로 들어옵니다.',
+  DiagnosticCode.declareKeyState:
+      'GuBASIC에는 Declare가 없습니다({0}). 지금 눌린 키는 Keyboard.IsDown(Keys.Left)으로 묻습니다.',
   DiagnosticCode.withNotValue:
       'With에는 컨트롤, 변수, 칸처럼 값을 줍니다. {0} 항목은 값이 아닙니다. 멤버를 이름과 함께 씁니다.',
   DiagnosticCode.vb6Color:

@@ -2,9 +2,10 @@ import 'package:flutter/services.dart';
 
 /// The number of the key [event] is about, as a program's Keys names it
 /// (docs/DESIGN.md D101), or null for a key the program does not tell
-/// apart: Shift, Control and Alt alone among them, which are held with
-/// another key. The numbers are the Windows virtual-key codes, as Visual Basic
-/// .NET's Keys are. Letters and digits are read by where they are on the
+/// apart. Shift, Control and Alt are told as 16, 17 and 18 (`Keys.ShiftKey`,
+/// `Keys.ControlKey`, `Keys.Menu`), which raise no event of their own but
+/// which `Keyboard.IsDown` knows (D138). The numbers are the Windows
+/// virtual-key codes, as Visual Basic .NET's Keys are. Letters and digits are read by where they are on the
 /// keyboard, so that an input method (Korean) does not change them.
 int? gbKeyCode(KeyEvent event) {
   final physical = event.physicalKey;
@@ -94,6 +95,12 @@ final _others = {
   LogicalKeyboardKey.backspace: 8,
   LogicalKeyboardKey.tab: 9,
   LogicalKeyboardKey.enter: 13,
+  LogicalKeyboardKey.shiftLeft: 16,
+  LogicalKeyboardKey.shiftRight: 16,
+  LogicalKeyboardKey.controlLeft: 17,
+  LogicalKeyboardKey.controlRight: 17,
+  LogicalKeyboardKey.altLeft: 18,
+  LogicalKeyboardKey.altRight: 18,
   LogicalKeyboardKey.numpadEnter: 13,
   LogicalKeyboardKey.escape: 27,
   LogicalKeyboardKey.space: 32,

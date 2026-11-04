@@ -664,6 +664,9 @@ class _WidgetDriver implements ScriptDriver {
     'Enter': LogicalKeyboardKey.enter,
     'Escape': LogicalKeyboardKey.escape,
     'Back': LogicalKeyboardKey.backspace,
+    'ShiftKey': LogicalKeyboardKey.shiftLeft,
+    'ControlKey': LogicalKeyboardKey.controlLeft,
+    'Menu': LogicalKeyboardKey.altLeft,
     for (var d = 0; d <= 9; d++) ...{
       'D$d': LogicalKeyboardKey(LogicalKeyboardKey.digit0.keyId + d),
       'NumPad$d': LogicalKeyboardKey(LogicalKeyboardKey.numpad0.keyId + d),

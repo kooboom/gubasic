@@ -115,6 +115,7 @@ class GbFormModel {
     this.designing = false,
     GbPictureSource? pictures,
     this.onKey,
+    this.onKeysReleased,
     GbMouseSink? onMouse,
   }) : mouse = onMouse == null ? null : GbMouseTracker(onMouse),
        pictures = pictures ?? _noPictures,
@@ -142,6 +143,10 @@ class GbFormModel {
 
   /// Where the form's keys go (D101); null: nowhere.
   final GbKeySink? onKey;
+
+  /// Told that every key is let go: the form lost the keyboard's focus,
+  /// or the app went to the background (D138); null: nobody.
+  final VoidCallback? onKeysReleased;
 
   /// What makes the mouse's buttons MouseDown and MouseUp (D111); null:
   /// they go nowhere.

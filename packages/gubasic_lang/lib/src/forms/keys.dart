@@ -2,12 +2,17 @@
 /// (docs/DESIGN.md D101), by name, with their numbers: `Keys.Left` is 37.
 /// The names and numbers are Visual Basic .NET's `Keys`, which are the
 /// Windows virtual-key codes, so code written for it compares the same.
-/// Shift, Control and Alt are not keys of their own here: they are held
-/// with another key, as `e.Shift`, `e.Control` and `e.Alt` say.
+/// Shift, Control and Alt raise no event of their own: they are held
+/// with another key, as `e.Shift`, `e.Control` and `e.Alt` say; only
+/// `Keyboard.IsDown` knows them, as `Keys.ShiftKey`, `Keys.ControlKey`
+/// and `Keys.Menu` (D138).
 final Map<String, int> keyCodes = {
   'Back': 8,
   'Tab': 9,
   'Enter': 13,
+  'ShiftKey': 16,
+  'ControlKey': 17,
+  'Menu': 18,
   'Escape': 27,
   'Space': 32,
   'PageUp': 33,
@@ -25,6 +30,10 @@ final Map<String, int> keyCodes = {
   for (var d = 0; d <= 9; d++) 'NumPad$d': 96 + d,
   for (var f = 1; f <= 12; f++) 'F$f': 111 + f,
 };
+
+/// The keys that raise no KeyDown or KeyUp of their own (D101): Shift,
+/// Control and Alt. `Keyboard.IsDown` still knows them (D138).
+const modifierKeyCodes = {16, 17, 18};
 
 /// The answers a dialog form gives (docs/DESIGN.md D103), by name, with
 /// Visual Basic .NET's numbers: `DialogResult.OK` is 1.

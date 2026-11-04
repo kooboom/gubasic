@@ -52,7 +52,8 @@ void main() {
     expect(keyCodes['A'], 65);
     expect(keyCodes['D0'], 48);
     expect(keyCodes['F12'], 123);
-    expect(keyCodes.containsKey('ShiftKey'), isFalse);
+    // Shift, Control and Alt are keys for Keyboard.IsDown alone (D138).
+    expect(keyCodes['ShiftKey'], 16);
     expect(
         _codes('Sub Form_KeyDown(e As KeyEventArgs)\ne.KeyCode = 3\n'
             'End Sub\n'),

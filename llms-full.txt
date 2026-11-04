@@ -131,6 +131,8 @@ How the parser recovers:
 | P039 | A field read inside a With list (`.Title = .Name & "!"`) | Write the value itself (§4.1) |
 | P040 | A With list with nothing in it | Leave out `With` and the braces (§4.1) |
 | P041 | A member written with a dot alone outside a With block (`.Caption = "x"`) | Write the name before the dot, or put the line in `With … End With` (§6) |
+| P042 | `Declare Function … Lib …` (Visual Basic 6) | What is outside the language comes in as a component ([COMPONENT_CHANNEL.md](COMPONENT_CHANNEL.md)) |
+| P043 | `Declare` of `GetAsyncKeyState` or `GetKeyState` | `Keyboard.IsDown(Keys.Left)` (§11.1) |
 
 **Analyzer**
 
@@ -842,6 +844,15 @@ End Sub
 - **Other names of control types**, as other versions of BASIC give them (D104): `RadioButton` is `OptionButton`, `CommandButton` is `Button`, `PictureBox` is `Image`, `GroupBox` is `Frame`, `DataGridView` and `MSFlexGrid` are `Grid`, in code (A056) and in form files (F020).
 - **Mouse buttons** (DESIGN.md D111). Every control seen on the form, and the form where no control is, has `MouseDown(e As MouseEventArgs)` when a button goes down on it and `MouseUp(e As MouseEventArgs)` when it goes up, as Visual Basic .NET's ([Microsoft](https://learn.microsoft.com/en-us/dotnet/api/system.windows.forms.mouseeventargs)). `e.Button` is the button, compared with `MouseButtons.Left`, `MouseButtons.Right` and `MouseButtons.Middle`, with Visual Basic .NET's numbers ([Microsoft](https://learn.microsoft.com/en-us/dotnet/api/system.windows.forms.mousebuttons)); `e.X` and `e.Y` are the place in pixels from the top left corner of the control (of the form for the form's), the same control for MouseUp as for its MouseDown. The innermost control under the pointer gets them: a control in a Frame, not the Frame. A click is a left button: MouseDown, MouseUp, then Click. On a touch screen a press is the left button, told when the finger is lifted, and a long press the right button, told when it has been held, which then makes no Click: so `If e.Button = MouseButtons.Right Then Me.PopupMenu(mnuEdit)` in a MouseUp opens a menu where the user right-clicks or long-presses. Like other events they wait for the running handler, do not re-enter, and are blocked while a dialog is open. Visual Basic 6's `(Button As Integer, Shift As Integer, X As Single, Y As Single)` is A059.
 - **The form's keys** (DESIGN.md D101). `Form_KeyDown(e As KeyEventArgs)` runs when a key is pressed, and again while it is held; `Form_KeyUp(e As KeyEventArgs)` when it is let go. `e.KeyCode` is the key's number, compared with `Keys`: `Keys.Left`, `Keys.Right`, `Keys.Up`, `Keys.Down`, `Keys.Space`, `Keys.Enter`, `Keys.Escape`, `Keys.Back`, `Keys.Tab`, `Keys.Delete`, `Keys.Insert`, `Keys.Home`, `Keys.End`, `Keys.PageUp`, `Keys.PageDown`, `Keys.A` to `Keys.Z`, `Keys.D0` to `Keys.D9`, `Keys.NumPad0` to `Keys.NumPad9`, `Keys.F1` to `Keys.F12`, with Visual Basic .NET's numbers ([Microsoft](https://learn.microsoft.com/en-us/dotnet/api/system.windows.forms.keys)). `e.Shift`, `e.Control` and `e.Alt` say which modifiers are held; they raise no event alone. Letters and digits are told by where they are on the keyboard, whatever the input method types. The form in front gets the keys while it or a control other than a TextBox has the focus, from when it is shown; while a TextBox is typed in, only when its **`KeyPreview`** is `True` (`False` at first, as in Visual Basic .NET: [Microsoft](https://learn.microsoft.com/en-us/dotnet/api/system.windows.forms.form.keypreview)), and the TextBox still gets the key. A key event waits for the running handler, does not re-enter, and is blocked while a dialog is open. Visual Basic 6's `(KeyCode As Integer, Shift As Integer)` is A053. On phones (stage 3) key events do not come.
+- **The keys held right now** (DESIGN.md D138): **`Keyboard.IsDown(key)`** answers whether that key is down at this moment, `key` being a `Keys` value: `Keyboard.IsDown(Keys.Left)`. Several keys can be down at once, which a game loop needs (left and fire together); it is a question, not an event, so it waits for nothing and runs no handler. It knows every key that went down and has not gone up since, whether or not the form's `KeyDown` ran, and while a `TextBox` is typed in; when the window loses the focus or a dialog opens, every key counts as let go. For it, `Keys.ShiftKey`, `Keys.ControlKey` and `Keys.Menu` (Alt) are keys too, with Visual Basic .NET's numbers (16, 17, 18); they still raise no `KeyDown` or `KeyUp` alone. On phones it is always `False`. Visual Basic 6 asked this of Windows through `Declare` (`GetAsyncKeyState`), which GuBASIC does not have (P042, P043).
+
+  ```vb
+  Sub tmrGame_Tick()
+      If Keyboard.IsDown(Keys.Left) Then picShip.Left = picShip.Left - 4
+      If Keyboard.IsDown(Keys.Right) Then picShip.Left = picShip.Left + 4
+      If Keyboard.IsDown(Keys.Space) Then Fire()
+  End Sub
+  ```
 
   ```vb
   Sub Form_KeyDown(e As KeyEventArgs)
@@ -1977,6 +1988,9 @@ Default event (made by a double-click): `Message`
 - `Keys.Back As Integer`
 - `Keys.Tab As Integer`
 - `Keys.Enter As Integer`
+- `Keys.ShiftKey As Integer`
+- `Keys.ControlKey As Integer`
+- `Keys.Menu As Integer`
 - `Keys.Escape As Integer`
 - `Keys.Space As Integer`
 - `Keys.PageUp As Integer`
@@ -2047,6 +2061,10 @@ Default event (made by a double-click): `Message`
 - `Keys.F10 As Integer`
 - `Keys.F11 As Integer`
 - `Keys.F12 As Integer`
+
+### Keyboard
+
+- `Keyboard.IsDown(key As Integer) As Boolean`
 
 ### DialogResult
 

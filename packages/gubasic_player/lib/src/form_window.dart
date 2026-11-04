@@ -12,6 +12,7 @@ GbFormModel formModelOf(
   bool designing = false,
   GbPictureSource? pictures,
   GbKeySink? onKey,
+  VoidCallback? onKeysReleased,
   GbMouseSink? onMouse,
 }) => GbFormModel(
   form: modelProperties({
@@ -34,6 +35,7 @@ GbFormModel formModelOf(
   designing: designing,
   pictures: pictures,
   onKey: onKey,
+  onKeysReleased: onKeysReleased,
   onMouse: onMouse,
 );
 

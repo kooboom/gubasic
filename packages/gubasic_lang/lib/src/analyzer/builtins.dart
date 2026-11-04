@@ -236,6 +236,7 @@ const Map<String, String> builtinObjects = {
   'debug': 'Debug',
   'integer': 'Integer',
   'keys': 'Keys',
+  'keyboard': 'Keyboard',
   'dialogresult': 'DialogResult',
   'mousebuttons': 'MouseButtons',
   'file': 'File',

@@ -37,7 +37,7 @@ class GbFormView extends StatefulWidget {
   State<GbFormView> createState() => _GbFormViewState();
 }
 
-class _GbFormViewState extends State<GbFormView> {
+class _GbFormViewState extends State<GbFormView> with WidgetsBindingObserver {
   final _focus = FocusNode(debugLabel: 'form');
 
   GbFormModel get model => widget.model;
@@ -46,6 +46,13 @@ class _GbFormViewState extends State<GbFormView> {
   void initState() {
     super.initState();
     model.requestFocus = _focus.requestFocus;
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  /// In the background, every key is let go (D138).
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state != AppLifecycleState.resumed) model.onKeysReleased?.call();
   }
 
   @override
@@ -56,6 +63,7 @@ class _GbFormViewState extends State<GbFormView> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     if (model.requestFocus == _focus.requestFocus) model.requestFocus = null;
     _focus.dispose();
     super.dispose();
@@ -100,6 +108,10 @@ class _GbFormViewState extends State<GbFormView> {
           focusNode: _focus,
           autofocus: model.onKey != null,
           onKeyEvent: _key,
+          // Without the focus (a dialog opened), every key is let go.
+          onFocusChange: (has) {
+            if (!has) model.onKeysReleased?.call();
+          },
           child: Builder(builder: _form),
         ),
       ),

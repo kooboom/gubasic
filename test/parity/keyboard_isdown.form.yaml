@@ -1,0 +1,5 @@
+formatVersion: 1
+controls:
+  - { name: txtName, type: TextBox }
+  - { name: btnAsk, type: Button, properties: { Caption: Ask, Top: 40 } }
+  - { name: tmrGame, type: Timer, properties: { Interval: 16, Enabled: true } }

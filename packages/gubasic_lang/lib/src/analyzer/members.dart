@@ -305,6 +305,11 @@ Map<String, MemberSpec> _builtinObjectMembers(String name) => switch (name) {
           for (final name in keyCodes.keys)
             name.toLowerCase(): MemberSpec.property(name, _i),
         },
+      // The keys held right now (D138).
+      'Keyboard' => {
+          'isdown':
+              MemberSpec.method('IsDown', [const ParamSpec('key', _i)], _b),
+        },
       // The mouse's buttons (D111): MouseButtons.Left is 1048576.
       'MouseButtons' => {
           for (final name in mouseButtons.keys)

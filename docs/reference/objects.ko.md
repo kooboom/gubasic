@@ -18,6 +18,9 @@
 - `Keys.Back As Integer`
 - `Keys.Tab As Integer`
 - `Keys.Enter As Integer`
+- `Keys.ShiftKey As Integer`
+- `Keys.ControlKey As Integer`
+- `Keys.Menu As Integer`
 - `Keys.Escape As Integer`
 - `Keys.Space As Integer`
 - `Keys.PageUp As Integer`
@@ -88,6 +91,10 @@
 - `Keys.F10 As Integer`
 - `Keys.F11 As Integer`
 - `Keys.F12 As Integer`
+
+### Keyboard
+
+- `Keyboard.IsDown(key As Integer) As Boolean`
 
 ### DialogResult
 

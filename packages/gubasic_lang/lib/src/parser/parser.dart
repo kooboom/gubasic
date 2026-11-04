@@ -537,6 +537,7 @@ class _Parser {
         return null;
       default:
     }
+    if (_declare(t)) return null;
     if (_atStructure()) return _structure(t, null);
     if (_atEndStructure()) {
       _strayEndStructure();
@@ -1023,6 +1024,27 @@ class _Parser {
     return _statementBody();
   }
 
+  /// VB6's `Declare Function GetAsyncKeyState Lib "user32" …` at [t],
+  /// in a procedure or outside: reported (P042; P043 for a key state) and
+  /// skipped, the rest of the line being VB6's, not GuBASIC's (D138).
+  bool _declare(Token t) {
+    if (t.kind != TokenKind.identifier ||
+        t.text.toLowerCase() != 'declare' ||
+        (_peek(1).keyword != Keyword.kwFunction &&
+            _peek(1).keyword != Keyword.kwSub)) {
+      return false;
+    }
+    final name = _peek(2).text;
+    _errorAt(
+        t,
+        const {'getasynckeystate', 'getkeystate'}.contains(name.toLowerCase())
+            ? DiagnosticCode.declareKeyState
+            : DiagnosticCode.declareStatement,
+        [name]);
+    _skipLine();
+    return true;
+  }
+
   Stmt _statementBody() {
     final t = _tok;
     if (_atStructure()) {
@@ -1036,6 +1058,7 @@ class _Parser {
       return ErrorStmt(t.offset, _lastEnd);
     }
     if (_atWithBlock) return _withBlock();
+    if (_declare(t)) return ErrorStmt(t.offset, _lastEnd);
     if (t.kind != TokenKind.keyword) return _callOrAssignment();
     switch (t.keyword!) {
       case Keyword.kwDim || Keyword.kwStatic || Keyword.kwConst:

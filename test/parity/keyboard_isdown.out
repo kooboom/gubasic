@@ -1,0 +1,28 @@
+> tmrGame.Tick
+Debug.Print: Down: 
+> Form.KeyDown Left
+Debug.Print: KeyDown 37
+> Form.KeyDown Space
+Debug.Print: KeyDown 32
+> tmrGame.Tick
+Debug.Print: Down: Left Space 
+> Form.KeyUp Space
+> Form.KeyDown ShiftKey
+> tmrGame.Tick
+Debug.Print: Down: Left Shift 
+> Form.KeyUp ShiftKey
+> Form.KeyUp Left
+> txtName.KeyDown A
+> tmrGame.Tick
+Debug.Print: Down: A 
+> txtName.KeyUp A
+> Form.KeyDown Right
+Debug.Print: KeyDown 39
+> btnAsk.Click
+MsgBox: Every key is let go while this is open
+> OK
+> tmrGame.Tick
+Debug.Print: Down: 
+> Form.KeyUp Right
+> Close
+Closed

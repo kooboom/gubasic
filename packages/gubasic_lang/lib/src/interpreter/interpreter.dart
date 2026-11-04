@@ -428,6 +428,18 @@ class Interpreter {
   /// dialog is open.
   EventOutcome raiseKey(String event, GbKeyEvent key,
       {String? form, bool inTextBox = false}) {
+    // What Keyboard.IsDown answers (D138): every key that goes down or up
+    // while the program runs and no dialog is open, whether or not a
+    // handler runs, and in a TextBox too.
+    if (_formRun != null && _ended == null && _openDialogs == 0) {
+      if (event == 'KeyDown') {
+        _keysDown.add(key.keyCode);
+      } else {
+        _keysDown.remove(key.keyCode);
+      }
+    }
+    // Shift, Control and Alt raise no event of their own (D101).
+    if (modifierKeyCodes.contains(key.keyCode)) return EventOutcome.noHandler;
     if (refusal(null, event, form: form) case final refused?) return refused;
     final front = _front!;
     if (inTextBox &&
@@ -439,6 +451,13 @@ class Interpreter {
     _runHandler(handler, front.controls[null], args: [key]);
     return EventOutcome.started;
   }
+
+  /// The keys down right now, by their Keys number (D138).
+  final _keysDown = <int>{};
+
+  /// All keys are let go: the window lost the focus, or a dialog opened
+  /// (D138), so that none stays held in `Keyboard.IsDown`.
+  void releaseKeys() => _keysDown.clear();
 
   /// The user presses or lets go a mouse button on [control] (null: the
   /// form) of the form in front (D111): its MouseDown or MouseUp, told
@@ -776,6 +795,7 @@ class Interpreter {
   /// blocked, until the dialog is closed (D28).
   Future<Object?> _dialog(Future<Object?> open) async {
     _openDialogs++;
+    releaseKeys();
     final Object? answer;
     try {
       answer = await open;
@@ -3149,6 +3169,9 @@ class Interpreter {
         return name == 'maxvalue' ? GbInt.maxValue : GbInt.minValue;
       case _BuiltinObject(name: 'Keys'):
         return GbInt.of(keyCodesByLowerName[name]!.$2);
+      case _BuiltinObject(name: 'Keyboard'):
+        // IsDown(key) (D138).
+        return _keysDown.contains((args[0] as GbInt).toSmallInt());
       case _BuiltinObject(name: 'File'):
         _pendingCall = () => _file(name, args, node);
         return null;

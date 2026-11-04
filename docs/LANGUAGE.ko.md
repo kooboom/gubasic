@@ -125,6 +125,8 @@ TypeOf CType AddHandler AddressOf
 | P039 | With 목록 안에서 필드를 읽음(`.Title = .Name & "!"`) | 값을 직접 씀(4.1절) |
 | P040 | 빈 With 목록 | `With`와 중괄호를 지움(4.1절) |
 | P041 | With 블록 밖의 점만 쓴 멤버(`.Caption = "x"`) | 점 앞에 이름을 쓰거나 그 줄을 `With … End With` 안에 둠(6절) |
+| P042 | `Declare Function … Lib …`(Visual Basic 6) | 언어 밖의 기능은 컴포넌트로 들어옴([COMPONENT_CHANNEL.ko.md](COMPONENT_CHANNEL.ko.md)) |
+| P043 | `GetAsyncKeyState`나 `GetKeyState`의 `Declare` | `Keyboard.IsDown(Keys.Left)`(11.1절) |
 
 **분석기**
 
@@ -839,6 +841,15 @@ End Sub
 - **컨트롤 타입의 다른 이름**(D104): 다른 BASIC의 `RadioButton`은 `OptionButton`, `CommandButton`은 `Button`, `PictureBox`는 `Image`, `GroupBox`는 `Frame`, `DataGridView`와 `MSFlexGrid`는 `Grid`이고, 코드(A056)와 폼 파일(F020)에서 알려 줍니다.
 - **마우스 버튼**(DESIGN.ko.md D111). 폼에 보이는 모든 컨트롤과, 컨트롤이 없는 곳의 폼에는 Visual Basic .NET처럼([Microsoft](https://learn.microsoft.com/en-us/dotnet/api/system.windows.forms.mouseeventargs)) 버튼이 눌릴 때 `MouseDown(e As MouseEventArgs)`, 떼어질 때 `MouseUp(e As MouseEventArgs)`이 있습니다. `e.Button`은 버튼이고 `MouseButtons.Left`, `MouseButtons.Right`, `MouseButtons.Middle`과 비교합니다. 번호는 Visual Basic .NET과 같습니다([Microsoft](https://learn.microsoft.com/en-us/dotnet/api/system.windows.forms.mousebuttons)). `e.X`와 `e.Y`는 컨트롤(폼의 이벤트는 폼)의 왼쪽 위 모서리에서 잰 픽셀 위치이고, MouseUp은 그 MouseDown과 같은 컨트롤이 받습니다. 포인터 아래 가장 안쪽 컨트롤이 받습니다: Frame 안의 컨트롤이면 Frame이 아니라 그 컨트롤입니다. 클릭은 왼쪽 버튼입니다: MouseDown, MouseUp, 그다음 Click. 터치 화면에서는 누르기가 왼쪽 버튼이고 손가락을 뗄 때 알려지며, 길게 누르기는 오른쪽 버튼이고 누르고 있는 동안 알려지며 Click은 생기지 않습니다. 그래서 MouseUp에 `If e.Button = MouseButtons.Right Then Me.PopupMenu(mnuEdit)`를 쓰면 사용자가 오른쪽 클릭하거나 길게 누른 곳에 메뉴가 열립니다. 다른 이벤트처럼 도는 처리기를 기다리고, 다시 들어가지 않으며, 대화상자가 열려 있으면 막힙니다. Visual Basic 6의 `(Button As Integer, Shift As Integer, X As Single, Y As Single)`은 A059입니다.
 - **폼의 키**(DESIGN.ko.md D101). `Form_KeyDown(e As KeyEventArgs)`는 키를 누를 때와 누르고 있는 동안 다시 실행되고, `Form_KeyUp(e As KeyEventArgs)`는 키를 뗄 때 실행됩니다. `e.KeyCode`는 키의 번호이고 `Keys`와 비교합니다: `Keys.Left`, `Keys.Right`, `Keys.Up`, `Keys.Down`, `Keys.Space`, `Keys.Enter`, `Keys.Escape`, `Keys.Back`, `Keys.Tab`, `Keys.Delete`, `Keys.Insert`, `Keys.Home`, `Keys.End`, `Keys.PageUp`, `Keys.PageDown`, `Keys.A`부터 `Keys.Z`, `Keys.D0`부터 `Keys.D9`, `Keys.NumPad0`부터 `Keys.NumPad9`, `Keys.F1`부터 `Keys.F12`. 번호는 Visual Basic .NET과 같습니다([Microsoft](https://learn.microsoft.com/en-us/dotnet/api/system.windows.forms.keys)). `e.Shift`, `e.Control`, `e.Alt`는 함께 누른 키를 알려 주고, 그 키만 눌러서는 이벤트가 오지 않습니다. 글자와 숫자 키는 입력기가 무엇을 치든 자판의 자리로 구별합니다. 맨 앞의 폼은 보인 때부터, 폼이나 TextBox가 아닌 컨트롤에 포커스가 있는 동안 키를 받습니다. TextBox에 입력하는 동안에는 **`KeyPreview`**가 `True`일 때만 받고(Visual Basic .NET처럼 처음에는 `False`: [Microsoft](https://learn.microsoft.com/en-us/dotnet/api/system.windows.forms.form.keypreview)), TextBox도 그 키를 그대로 받습니다. 키 이벤트는 도는 처리기를 기다리고, 다시 들어가지 않으며, 대화상자가 열려 있으면 막힙니다. Visual Basic 6의 `(KeyCode As Integer, Shift As Integer)`는 A053입니다. 폰(3단계)에서는 키 이벤트가 오지 않습니다.
+- **지금 눌린 키**(DESIGN.ko.md D138). **`Keyboard.IsDown(key)`** 는 그 키가 지금 눌려 있는지 답합니다. `key`는 `Keys` 값입니다: `Keyboard.IsDown(Keys.Left)`. 여러 키가 동시에 눌려 있을 수 있고, 게임 루프에 필요한 것이 그것입니다(왼쪽과 발사를 함께). 이벤트가 아니라 질문이라 아무것도 기다리지 않고 핸들러를 실행하지 않습니다. 눌린 뒤 아직 떼지 않은 모든 키를 알고, 폼의 `KeyDown`이 실행됐든 아니든, `TextBox`에 치는 동안에도 그렇습니다. 창이 포커스를 잃거나 대화 상자가 열리면 모든 키를 뗀 것으로 칩니다. 이것을 위해 `Keys.ShiftKey`, `Keys.ControlKey`, `Keys.Menu`(Alt)도 키이고 번호는 Visual Basic .NET과 같습니다(16, 17, 18). 이 키들은 여전히 혼자서는 `KeyDown`·`KeyUp`을 일으키지 않습니다. 폰에서는 늘 `False`입니다. Visual Basic 6은 이것을 `Declare`(`GetAsyncKeyState`)로 Windows에 물었는데, GuBASIC에는 `Declare`가 없습니다(P042, P043).
+
+  ```vb
+  Sub tmrGame_Tick()
+      If Keyboard.IsDown(Keys.Left) Then picShip.Left = picShip.Left - 4
+      If Keyboard.IsDown(Keys.Right) Then picShip.Left = picShip.Left + 4
+      If Keyboard.IsDown(Keys.Space) Then Fire()
+  End Sub
+  ```
 
   ```vb
   Sub Form_KeyDown(e As KeyEventArgs)

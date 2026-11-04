@@ -1,0 +1,18 @@
+tmrGame.Tick          ' nothing held
+Form.KeyDown Left
+Form.KeyDown Space
+tmrGame.Tick          ' two keys at once
+Form.KeyUp Space
+Form.KeyDown ShiftKey ' Shift alone: no KeyDown, but IsDown knows it
+tmrGame.Tick
+Form.KeyUp ShiftKey
+Form.KeyUp Left
+txtName.KeyDown A     ' typing in the TextBox: the form gets no KeyDown
+tmrGame.Tick
+txtName.KeyUp A
+Form.KeyDown Right
+btnAsk.Click          ' the MsgBox opens: every key is let go
+OK
+tmrGame.Tick          ' Right is not held any more
+Form.KeyUp Right
+Close

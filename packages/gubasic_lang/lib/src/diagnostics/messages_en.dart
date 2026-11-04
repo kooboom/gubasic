@@ -318,6 +318,12 @@ const Map<DiagnosticCode, String> englishMessages = {
   DiagnosticCode.dotWithoutWith:
       'A member written with a dot alone belongs to a With block. Write '
           'the name before the dot, or put the line inside With … End With.',
+  DiagnosticCode.declareStatement:
+      'GuBASIC has no Declare ({0}): what is outside the language comes in '
+          'as a component.',
+  DiagnosticCode.declareKeyState:
+      'GuBASIC has no Declare ({0}). The keys held right now are asked with '
+          'Keyboard.IsDown(Keys.Left).',
   DiagnosticCode.withNotValue:
       'With needs a value, such as a control, a variable or an item: {0} '
           'is not one. Write its members in full.',

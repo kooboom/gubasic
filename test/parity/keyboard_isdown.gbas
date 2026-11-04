@@ -1,0 +1,21 @@
+' Keyboard.IsDown (D138): which keys are held right now, several at once,
+' asked from a game loop. It knows every key that went down and has not
+' gone up, whether or not Form_KeyDown ran (a TextBox typed in, Shift
+' alone), and every key counts as let go when a dialog opens.
+Sub tmrGame_Tick()
+    Dim held As String = ""
+    If Keyboard.IsDown(Keys.Left) Then held = held & "Left "
+    If Keyboard.IsDown(Keys.Right) Then held = held & "Right "
+    If Keyboard.IsDown(Keys.Space) Then held = held & "Space "
+    If Keyboard.IsDown(Keys.ShiftKey) Then held = held & "Shift "
+    If Keyboard.IsDown(Keys.A) Then held = held & "A "
+    Debug.Print("Down: " & held)
+End Sub
+
+Sub Form_KeyDown(e As KeyEventArgs)
+    Debug.Print("KeyDown " & e.KeyCode)
+End Sub
+
+Sub btnAsk_Click()
+    MsgBox("Every key is let go while this is open")
+End Sub
