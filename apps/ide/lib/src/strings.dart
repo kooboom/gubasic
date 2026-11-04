@@ -18,6 +18,7 @@ class IdeStrings {
     required this.continueRun,
     required this.sameNetwork,
     required this.sameNetworkWarning,
+    required this.sameNetworkWindows,
     required this.roomServerHere,
     required this.roomServerNetwork,
     required this.exportAnyway,
@@ -287,6 +288,10 @@ class IdeStrings {
   /// first, and the warning shown before it is turned on.
   final String sameNetwork;
   final String sameNetworkWarning;
+
+  /// Added to the warning on Windows, where Windows Defender Firewall
+  /// asks whether to let the IDE accept connections (KNOWN_ISSUES).
+  final String sameNetworkWindows;
 
   /// The output's lines about the IDE's relay server (D136): `{0}` its
   /// address on this computer, and on the same network.
@@ -822,6 +827,12 @@ class IdeStrings {
     sameNetworkWarning:
         'Other devices on the same network will be able to connect to this '
         'computer\'s relay server. Do not turn this on, on a public network.',
+    sameNetworkWindows:
+        'When Windows asks whether to let the IDE through the firewall, allow '
+        'it on private networks only, not on public ones. With Cancel, the '
+        'switch looks on but no other device can connect. To take it back, '
+        'remove the IDE under "Allow an app through firewall" in Windows '
+        'Security.',
     roomServerHere: 'Room server: {0} (this computer only)',
     roomServerNetwork: 'Room server: {0} (same network)',
     exportAnyway: 'Export Anyway',
@@ -1213,6 +1224,10 @@ class IdeStrings {
     sameNetwork: '같은 네트워크의 기기 허용',
     sameNetworkWarning:
         '같은 네트워크의 다른 기기가 이 컴퓨터의 중계 서버에 접속할 수 있습니다. 공용 네트워크에서는 켜지 마세요.',
+    sameNetworkWindows:
+        'Windows가 방화벽을 통해 IDE를 허용할지 물으면 개인 네트워크에서만 허용하고 공용 네트워크는 허용하지 마세요. '
+        '취소하면 스위치가 켜져 보여도 다른 기기는 접속할 수 없습니다. '
+        '되돌리려면 Windows 보안의 "방화벽을 통해 앱 허용"에서 지웁니다.',
     roomServerHere: 'Room 서버: {0} (이 컴퓨터만)',
     roomServerNetwork: 'Room 서버: {0} (같은 네트워크)',
     exportAnyway: '그래도 내보내기',

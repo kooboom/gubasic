@@ -358,7 +358,11 @@ class _IdeShellState extends State<IdeShell> {
             builder: (context) => AlertDialog(
               key: const ValueKey('sameNetworkWarning'),
               title: Text(s.sameNetwork),
-              content: Text(s.sameNetworkWarning),
+              content: Text(
+                defaultTargetPlatform == TargetPlatform.windows
+                    ? '${s.sameNetworkWarning}\n\n${s.sameNetworkWindows}'
+                    : s.sameNetworkWarning,
+              ),
               actions: [
                 TextButton(
                   key: const ValueKey('sameNetworkCancel'),
