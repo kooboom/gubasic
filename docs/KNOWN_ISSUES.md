@@ -37,6 +37,12 @@ Problems we know about and have **deliberately** left unfixed for now. Each entr
 - **Why deferred:** the Sound change was split in two so that each is small (plans/PLAN_V07.md §7): the program side first, the IDE's side next.
 - **Revisit:** the next change of v0.7: a Sounds group in the project explorer with Add and Remove, the browser's storage, the `.zip`, and A082.
 
+## The sound packages were measured on Windows and the web, not yet on macOS
+
+- **What:** `flutter_soloud` was chosen over `audioplayers` from the probe's numbers on Windows and in Chrome (plans/PLAN_V07.md §7.1): on both, `audioplayers` queues rapid and overlapping plays and `flutter_soloud` starts each within a frame. The same probe has not run on macOS, and the Shooter example has not been measured against STAGE2_PLAN §7's criteria as the plan's §3.2 says.
+- **Why deferred:** the author allowed the choice without another question (D138), and the Mac was not at hand on 2026-11-04.
+- **Revisit:** on the Mac: `flutter run -d macos --release` in `packages/gubasic_runtime/tool/sound_probe`, the numbers into §7.1; if they contradict the choice, look at it again. Measure the Shooter as STAGE2_PLAN §7 measures a game.
+
 ## The web IDE has no relay server of its own
 
 - **What:** the desktop IDE runs a relay server for a `Room` whose `Server` is empty (D136); the web IDE cannot, so there such a program stops with R048 ("no relay server").
