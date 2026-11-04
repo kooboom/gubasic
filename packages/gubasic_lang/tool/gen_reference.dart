@@ -161,6 +161,7 @@ String _param(ParamSpec p) {
     ArgKind.convertible => 'number, Boolean or String',
     ArgKind.array => 'array',
     ArgKind.menu => 'Menu',
+    ArgKind.sprite => 'Sprite',
     ArgKind.tableOrGrid => 'Table or Grid',
     ArgKind.jsonValue => 'number, Boolean, String, Json or Nothing',
     ArgKind.sqlValue => 'number, Boolean, String, Date or Nothing',

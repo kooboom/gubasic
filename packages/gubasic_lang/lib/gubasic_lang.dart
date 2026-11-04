@@ -33,6 +33,7 @@ export 'src/forms/form_file.dart';
 export 'src/forms/keys.dart';
 export 'src/forms/form_writer.dart';
 export 'src/forms/names.dart';
+export 'src/forms/collision.dart';
 export 'src/forms/pictures.dart';
 export 'src/forms/project_file.dart';
 export 'src/forms/project_writer.dart';

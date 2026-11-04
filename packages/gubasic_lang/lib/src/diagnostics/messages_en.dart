@@ -332,10 +332,16 @@ const Map<DiagnosticCode, String> englishMessages = {
   DiagnosticCode.vb6TimerFunction: '{0} is not in GuBASIC, where Timer is a '
       'control. The milliseconds since the program started are '
       'Milliseconds().',
+  DiagnosticCode.badShapeInCode: '{0} is not a shape. A Sprite\'s Shape is '
+      'Rectangle, Circle or Pixels; the program would stop here.',
   DiagnosticCode.colorPartOutOfRange: 'Color.FromArgb takes red, green and '
       'blue from 0 to 255; {0} is not one. Check the value.',
   DiagnosticCode.frameOutOfRange: 'Frame goes from 0 to {0}, the last of '
       'the Frames; it is {1}. Check the value, or add the frame.',
+  DiagnosticCode.badShape: '{0} is not a shape. A Sprite\'s Shape is '
+      'Rectangle, Circle or Pixels.',
+  DiagnosticCode.badShapeInFile: '{0} is not a shape. A Sprite\'s Shape '
+      'is Rectangle, Circle or Pixels.',
   DiagnosticCode.badColor: 'The colour of {0} is a colour\'s name (Red, '
       'SkyBlue) or #RRGGBB; "{1}" is neither. Choose one in the Properties '
       'window.',

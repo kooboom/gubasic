@@ -635,6 +635,9 @@ List<ParamSpec> _parameters(String text) {
         // A form's menu (D106): Menu is a component, read after this one.
         final pm? when pm[3]!.toLowerCase() == 'menu' =>
           ParamSpec.of(pm[2]!, ArgKind.menu),
+        // A Sprite (D138): Hits(other As Sprite).
+        final pm? when pm[3]!.toLowerCase() == 'sprite' =>
+          ParamSpec.of(pm[2]!, ArgKind.sprite),
         // A table's column, by its number or its name (D116).
         final pm? when pm[3]!.toLowerCase() == 'column' =>
           ParamSpec.of(pm[2]!, ArgKind.numericOrString),

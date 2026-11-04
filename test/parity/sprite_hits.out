@@ -1,0 +1,45 @@
+Debug.Print: Box hits ball: True
+Debug.Print: Ball hits box: True
+Set sprBall.Left: 20
+Debug.Print: Touching edges: False
+Set sprBall.Left: 19
+Set sprBall.FracX: 0.5
+Debug.Print: Half a pixel in: True
+Set sprBox.Shape: Circle
+Debug.Print: Shape reads Circle
+Set sprBall.Shape: Circle
+Set sprBall.Left: 17
+Set sprBall.FracX: 0
+Set sprBall.Top: 17
+Debug.Print: Two circles, corners overlapping: False
+Set sprBall.Left: 14
+Set sprBall.Top: 14
+Debug.Print: Two circles, closer: True
+Set sprBox.Shape: Rectangle
+Set sprBall.Left: 17
+Set sprBall.Top: 17
+Debug.Print: Rectangle and circle, corner: True
+Set sprBall.Left: 15
+Set sprBall.Top: 0
+Debug.Print: Rectangle and circle, side: True
+Debug.Print: Distance 15
+Set sprBlob.Left: 18
+Set sprBlob.Top: 18
+Debug.Print: Rectangle and the blob's clear corner: False
+Set sprBlob.Left: 13
+Debug.Print: Rectangle and the blob's edge: True
+Set sprBall.Shape: Pixels
+Debug.Print: Pixels and pixels (the ball has no frames): False
+Set sprBall.Shape: Circle
+Set sprBall.Left: 10
+Set sprBall.Top: 10
+Debug.Print: Circle and pixels: True
+Set sprBlob.Visible: False
+Debug.Print: Hidden blob: False
+Set sprBlob.Visible: True
+Debug.Print: Itself: False
+> btnShape.Click
+Debug.Print: Triangle is not a shape. A Sprite's Shape is Rectangle, Circle or Pixels.
+Debug.Print: Still Rectangle
+> Close
+Closed

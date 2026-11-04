@@ -13,6 +13,7 @@ import '../forms/anchor.dart';
 import '../forms/component.dart';
 import '../forms/form_file.dart';
 import '../forms/keys.dart';
+import '../forms/pictures.dart';
 import '../interpreter/host.dart';
 import '../interpreter/interpreter.dart';
 import '../interpreter/run_result.dart';
@@ -537,10 +538,12 @@ class ScriptedHost implements FormHost, FileHost, ComponentHost, DatabaseFiles {
       Map<String, List<int>> disk = const {},
       List<HttpStub> http = const [],
       List<WebSocketStub> webSockets = const [],
+      Map<String, PictureMask> masks = const {},
       DatabaseComponent? database})
       : this.forms([form],
             settings: settings,
             disk: disk,
+            masks: masks,
             http: http,
             webSockets: webSockets,
             database: database);
@@ -554,6 +557,7 @@ class ScriptedHost implements FormHost, FileHost, ComponentHost, DatabaseFiles {
       Map<String, List<int>> disk = const {},
       this.http = const [],
       List<WebSocketStub> webSockets = const [],
+      this.masks = const {},
       this.database})
       : _webSocketStubs = webSockets,
         _files = {for (final f in forms) f.name.toLowerCase(): f},
@@ -809,6 +813,16 @@ class ScriptedHost implements FormHost, FileHost, ComponentHost, DatabaseFiles {
     return true;
   }
 
+  /// The masks of the project's pictures for pixel collisions (D138), by
+  /// picture key: a test's NAME.masks.
+  final Map<String, PictureMask> masks;
+
+  @override
+  PictureMask? pictureMask(String name) => masks[pictureKey(name)];
+
+  @override
+  Future<void> loadPictureMask(String name) async {}
+
   /// The host's clock, which the script's `Wait` moves (D138).
   var clock = 0;
 
@@ -1047,6 +1061,7 @@ Future<List<String>> runProjectScript(List<FormSource> forms, String script,
     {String? startup,
     String? settings,
     List<String> pictures = const [],
+    Map<String, PictureMask> masks = const {},
     List<ModuleSource> modules = const [],
     bool startsWithMain = false,
     Map<String, List<int>> disk = const {},
@@ -1073,6 +1088,7 @@ Future<List<String>> runProjectScript(List<FormSource> forms, String script,
   final host = ScriptedHost.forms([for (final f in forms) f.file],
       settings: settings,
       disk: disk,
+      masks: masks,
       http: http,
       webSockets: webSockets,
       database: database);
@@ -1088,6 +1104,7 @@ Future<List<String>> runProjectScript(List<FormSource> forms, String script,
 Future<List<String>> runEventScript(String source, FormFile form, String script,
     {String? settings,
     List<String> pictures = const [],
+    Map<String, PictureMask> masks = const {},
     Map<String, List<int>> disk = const {},
     List<HttpStub> http = const [],
     List<WebSocketStub> webSockets = const [],
@@ -1103,6 +1120,7 @@ Future<List<String>> runEventScript(String source, FormFile form, String script,
   final host = ScriptedHost(form,
       settings: settings,
       disk: disk,
+      masks: masks,
       http: http,
       webSockets: webSockets,
       database: database);

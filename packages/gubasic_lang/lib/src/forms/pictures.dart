@@ -288,3 +288,47 @@ List<String> splitPictureNames(String text) => [
 
 /// [names] as a text naming several pictures is written: `a.png, b.png`.
 String joinPictureNames(Iterable<String> names) => names.join(', ');
+
+/// Which pixels of a picture count for a Sprite's pixel collision (D138):
+/// those whose alpha is 128 or more, one byte each, row by row.
+class PictureMask {
+  const PictureMask(this.width, this.height, this.bits);
+
+  /// A mask from rows of `#` (opaque) and `.` (clear), as a test's
+  /// NAME.masks writes them; the rows are as wide as the widest.
+  factory PictureMask.rows(List<String> rows) {
+    final width = rows.fold(0, (w, r) => r.length > w ? r.length : w);
+    final bits = Uint8List(width * rows.length);
+    for (var y = 0; y < rows.length; y++) {
+      for (var x = 0; x < rows[y].length; x++) {
+        if (rows[y][x] == '#') bits[y * width + x] = 1;
+      }
+    }
+    return PictureMask(width, rows.length, bits);
+  }
+
+  final int width;
+  final int height;
+  final Uint8List bits;
+
+  /// Whether the pixel ([x], [y]) is opaque; false outside the picture.
+  bool at(int x, int y) =>
+      x >= 0 && y >= 0 && x < width && y < height && bits[y * width + x] != 0;
+}
+
+/// The masks of a test's NAME.masks (D138), by picture key: blocks
+/// separated by blank lines, each a picture's name and then its rows of
+/// `#` and `.`.
+Map<String, PictureMask> parsePictureMasks(String text) {
+  final masks = <String, PictureMask>{};
+  for (final block in text.split(RegExp(r'\n\s*\n'))) {
+    final lines = block
+        .split('\n')
+        .map((l) => l.trimRight())
+        .where((l) => l.isNotEmpty)
+        .toList();
+    if (lines.isEmpty) continue;
+    masks[pictureKey(lines.first.trim())] = PictureMask.rows(lines.sublist(1));
+  }
+  return masks;
+}

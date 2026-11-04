@@ -7,6 +7,7 @@ import '../forms/anchor.dart';
 import '../forms/colors.dart';
 import '../forms/component.dart';
 import '../forms/form_file.dart';
+import '../forms/collision.dart';
 import '../forms/pictures.dart';
 import '../forms/shortcut.dart';
 import '../lexer/keyword.dart';
@@ -1254,6 +1255,13 @@ class _Analyzer {
       // A Shortcut likewise (A057, R024, D106).
       _reportAt(value, DiagnosticCode.badShortcutInCode, [value.value]);
     }
+    if (property != null &&
+        type.component.name == 'Sprite' &&
+        property.name == 'Shape' &&
+        spriteShapeNamed(value.value) == null) {
+      // A Shape likewise (A081, R052, D138).
+      _reportAt(value, DiagnosticCode.badShapeInCode, [value.value]);
+    }
     if (property == null || !property.anchor) return;
     if (normalAnchor(value.value) == null) {
       _reportAt(value, DiagnosticCode.badAnchorInCode, [value.value]);
@@ -2171,6 +2179,8 @@ class _Analyzer {
         ok = type is ArrayType;
       case ArgKind.menu:
         ok = type is ControlType && type.component.menu;
+      case ArgKind.sprite:
+        ok = type is ControlType && type.component.name == 'Sprite';
       case ArgKind.tableOrGrid:
         ok = type == GbType.table ||
             (type is ControlType && type.component.name == 'Grid');
@@ -2180,6 +2190,7 @@ class _Analyzer {
         ArgKind.numeric || ArgKind.numericOrString => GbType.double_,
         ArgKind.array => const ArrayType(GbType.object),
         ArgKind.menu => menuComponent.type,
+        ArgKind.sprite => builtinComponents['sprite']!.type,
         ArgKind.tableOrGrid => GbType.table,
         ArgKind.jsonValue => GbType.json,
         _ => GbType.string,

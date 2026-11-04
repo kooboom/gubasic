@@ -1,0 +1,6 @@
+formatVersion: 1
+controls:
+  - { name: sprBox, type: Sprite, properties: { Width: 20, Height: 20 } }
+  - { name: sprBall, type: Sprite, properties: { Left: 10, Top: 10, Width: 20, Height: 20 } }
+  - { name: sprBlob, type: Sprite, properties: { Frames: blob.png, Shape: pixels, Left: 100, Top: 100, Width: 20, Height: 20 } }
+  - { name: btnShape, type: Button, properties: { Caption: Shape, Top: 200 } }

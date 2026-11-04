@@ -1,4 +1,5 @@
 import '../diagnostics/diagnostic.dart';
+import '../forms/pictures.dart';
 import '../pdf/pdf_document.dart';
 
 /// What a running program needs from the screen. The playground shows
@@ -90,6 +91,14 @@ abstract interface class FormHost implements Host {
 
   /// The program takes [control] off [form] (D98).
   void removeControl(String form, String control);
+
+  /// The mask of the project's picture [name], for a Sprite's pixel
+  /// collision (D138), once [loadPictureMask] has loaded it: null before
+  /// that, and for a name that is no picture.
+  PictureMask? pictureMask(String name);
+
+  /// Loads the mask of [name], so that [pictureMask] has it.
+  Future<void> loadPictureMask(String name);
 
   /// `PopupMenu` (D106): shows the items of [menu], a menu of [form], and
   /// completes with the name of the item the user chooses, or null for

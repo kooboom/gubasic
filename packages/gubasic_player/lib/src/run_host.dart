@@ -229,6 +229,24 @@ class RunHost implements FormHost, FileHost, ComponentHost {
   /// Basic puts the application's name there (D68).
   String _title(String title) => title.isEmpty ? project : title;
 
+  /// The masks of the project's pictures for pixel collisions (D138), by
+  /// picture key, once read; null for a name that is no picture.
+  final _masks = <String, PictureMask?>{};
+
+  @override
+  PictureMask? pictureMask(String name) => _masks[pictureKey(name)];
+
+  @override
+  Future<void> loadPictureMask(String name) async {
+    final key = pictureKey(name);
+    if (_masks.containsKey(key)) return;
+    final bytes = _pictures?.call(name);
+    final mask = bytes == null ? null : await gbDecodePictureMask(bytes);
+    _masks[key] = mask == null
+        ? null
+        : PictureMask(mask.width, mask.height, mask.bits);
+  }
+
   /// Since the program started, from a clock that only goes forward
   /// (D138).
   final _stopwatch = Stopwatch()..start();

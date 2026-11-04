@@ -15,6 +15,7 @@
 | `FrameTime` | Integer | `0` |  |
 | `X` | Double | `0.0` | 실행 중에만 정함 |
 | `Y` | Double | `0.0` | 실행 중에만 정함 |
+| `Shape` | String | `"Rectangle"` |  |
 | `SpeedX` | Double | `0.0` |  |
 | `SpeedY` | Double | `0.0` |  |
 | `Left` | Integer | `0` |  |
@@ -29,6 +30,8 @@
 ## 메서드
 
 - `Move(ms As Integer)`
+- `Hits(other As Sprite) As Boolean`
+- `DistanceTo(other As Sprite) As Double`
 
 ## 이벤트
 

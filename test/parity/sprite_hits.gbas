@@ -1,0 +1,64 @@
+' Hits and DistanceTo (D138): whether two sprites touch, by their Shape
+' (Rectangle, Circle or Pixels), and the distance between their centres.
+' Nothing is Visible-blind: a hidden sprite hits nothing, and a sprite
+' never hits itself. The blob's pixels are its mask in sprite_hits.masks:
+' a 4 x 4 picture whose corners are clear.
+Sub Say(what As String, hit As Boolean)
+    Debug.Print(what & ": " & hit)
+End Sub
+
+Sub Form_Load()
+    ' Rectangles: sprBox at 0,0 (20 x 20), sprBall at 10,10 (20 x 20).
+    Say("Box hits ball", sprBox.Hits(sprBall))
+    Say("Ball hits box", sprBall.Hits(sprBox))
+    sprBall.X = 20
+    Say("Touching edges", sprBox.Hits(sprBall))
+    sprBall.X = 19.5
+    Say("Half a pixel in", sprBox.Hits(sprBall))
+    ' Circles: a circle in each corner-touching rectangle misses.
+    sprBox.Shape = "circle"
+    Debug.Print("Shape reads " & sprBox.Shape)
+    sprBall.Shape = "Circle"
+    sprBall.X = 17
+    sprBall.Y = 17
+    Say("Two circles, corners overlapping", sprBox.Hits(sprBall))
+    sprBall.X = 14
+    sprBall.Y = 14
+    Say("Two circles, closer", sprBox.Hits(sprBall))
+    ' A circle and a rectangle.
+    sprBox.Shape = "Rectangle"
+    sprBall.X = 17
+    sprBall.Y = 17
+    Say("Rectangle and circle, corner", sprBox.Hits(sprBall))
+    sprBall.X = 15
+    sprBall.Y = 0
+    Say("Rectangle and circle, side", sprBox.Hits(sprBall))
+    Debug.Print("Distance " & sprBox.DistanceTo(sprBall))
+    ' Pixels: the blob is 4 x 4 drawn at 20 x 20; its corners are clear.
+    sprBlob.X = 18
+    sprBlob.Y = 18
+    Say("Rectangle and the blob's clear corner", sprBox.Hits(sprBlob))
+    sprBlob.X = 13
+    sprBlob.Y = 18
+    Say("Rectangle and the blob's edge", sprBox.Hits(sprBlob))
+    sprBall.Shape = "Pixels"
+    Say("Pixels and pixels (the ball has no frames)", sprBall.Hits(sprBlob))
+    sprBall.Shape = "Circle"
+    sprBall.X = 10
+    sprBall.Y = 10
+    Say("Circle and pixels", sprBall.Hits(sprBlob))
+    ' Hidden, and itself.
+    sprBlob.Visible = False
+    Say("Hidden blob", sprBall.Hits(sprBlob))
+    sprBlob.Visible = True
+    Say("Itself", sprBlob.Hits(sprBlob))
+End Sub
+
+Sub btnShape_Click()
+    Try
+        sprBox.Shape = "Triangle"
+    Catch ex As Exception
+        Debug.Print(ex.Message)
+    End Try
+    Debug.Print("Still " & sprBox.Shape)
+End Sub

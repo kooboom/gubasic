@@ -519,6 +519,10 @@ enum DiagnosticCode {
   /// (D138). Args: what was written.
   vb6TimerFunction('A080'),
 
+  /// Text given to a Sprite's Shape that is not Rectangle, Circle or
+  /// Pixels (D138): the program would stop there (R052). Args: the text.
+  badShapeInCode('A081', DiagnosticSeverity.warning),
+
   // Form and project files (.form.yaml, .gbproj)
 
   /// The file is not in the expected layout (YAML syntax).
@@ -601,6 +605,10 @@ enum DiagnosticCode {
   /// A colour in a form file that is not a named colour or `#RRGGBB`
   /// (D137). Args: the property, the text.
   badColor('F023'),
+
+  /// A Sprite's Shape in a form file that is not Rectangle, Circle or
+  /// Pixels (D138). Args: the word.
+  badShapeInFile('F024'),
 
   // Run time (the interpreter)
 
@@ -784,7 +792,11 @@ enum DiagnosticCode {
 
   /// A Sprite's Frame past its last frame (D138). Args: the last, the
   /// value.
-  frameOutOfRange('R051');
+  frameOutOfRange('R051'),
+
+  /// A Sprite's Shape set to a word that is not Rectangle, Circle or
+  /// Pixels (D138). Args: the word.
+  badShape('R052');
 
   const DiagnosticCode(this.code, [this.severity = DiagnosticSeverity.error]);
 

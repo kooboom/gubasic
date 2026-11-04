@@ -259,10 +259,16 @@ const Map<DiagnosticCode, String> koreanMessages = {
       '{0} 표기는 Visual Basic 6의 색입니다. GuBASIC은 Visual Basic .NET의 Color를 씁니다: {1} 형태로 써 주세요.',
   DiagnosticCode.vb6TimerFunction:
       '{0} 표기는 GuBASIC에 없습니다. GuBASIC에서 Timer는 컨트롤입니다. 프로그램 시작부터의 밀리초는 Milliseconds()입니다.',
+  DiagnosticCode.badShapeInCode:
+      '{0} 표기는 모양이 아닙니다. Sprite의 Shape는 Rectangle, Circle, Pixels 가운데 하나입니다. 프로그램이 여기서 멈춥니다.',
   DiagnosticCode.colorPartOutOfRange:
       'Color.FromArgb의 빨강·초록·파랑은 0부터 255까지입니다. 받은 값: {0}. 값을 확인해 주세요.',
   DiagnosticCode.frameOutOfRange:
       'Frame 값은 0부터 Frames의 마지막 번호 {0} 사이여야 합니다. 받은 값: {1}. 값을 확인하거나 프레임을 더해 주세요.',
+  DiagnosticCode.badShape:
+      '{0} 표기는 모양이 아닙니다. Sprite의 Shape는 Rectangle, Circle, Pixels 가운데 하나입니다.',
+  DiagnosticCode.badShapeInFile:
+      '{0} 표기는 모양이 아닙니다. Sprite의 Shape는 Rectangle, Circle, Pixels 가운데 하나입니다.',
   DiagnosticCode.badColor:
       '{0} 속성의 색은 색 이름(Red, SkyBlue)이나 #RRGGBB로 적습니다. 받은 글 "{1}" 값은 둘 다 아닙니다. 속성 창에서 골라 주세요.',
   DiagnosticCode.emptyRoomServer:

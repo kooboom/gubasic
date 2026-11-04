@@ -11,7 +11,8 @@
 /// whether NAME.startup says it starts with Sub Main; then the
 /// files of NAME.files/ the program reads (D113), name to
 /// base64; then what servers answer it, NAME.http (D125);
-/// last, what its WebSocket servers do, NAME.ws (D136).
+/// then what its WebSocket servers do, NAME.ws (D136); last,
+/// the masks of its pictures, NAME.masks (D138).
 const parityCases = <(
   String,
   String,
@@ -24,6 +25,7 @@ const parityCases = <(
   List<(String, String?, String)>,
   bool,
   Map<String, String>,
+  String?,
   String?,
   String?
 )>[
@@ -39,6 +41,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
     null,
     null,
   ),
@@ -62,6 +65,7 @@ const parityCases = <(
     {},
     null,
     null,
+    null,
   ),
   (
     "big_integers",
@@ -75,6 +79,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
     null,
     null,
   ),
@@ -92,6 +97,7 @@ const parityCases = <(
     {},
     null,
     null,
+    null,
   ),
   (
     "conditions",
@@ -105,6 +111,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
     null,
     null,
   ),
@@ -122,6 +129,7 @@ const parityCases = <(
     {},
     null,
     null,
+    null,
   ),
   (
     "controls_cast_error",
@@ -135,6 +143,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
     null,
     null,
   ),
@@ -152,6 +161,7 @@ const parityCases = <(
     {},
     null,
     null,
+    null,
   ),
   (
     "controls_new",
@@ -167,6 +177,7 @@ const parityCases = <(
     {},
     null,
     null,
+    null,
   ),
   (
     "controls_new_with",
@@ -180,6 +191,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
     null,
     null,
   ),
@@ -200,6 +212,7 @@ const parityCases = <(
     },
     null,
     null,
+    null,
   ),
   (
     "dates_format",
@@ -213,6 +226,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
     null,
     null,
   ),
@@ -230,6 +244,7 @@ const parityCases = <(
     {},
     null,
     null,
+    null,
   ),
   (
     "divide_by_zero",
@@ -243,6 +258,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
     null,
     null,
   ),
@@ -260,6 +276,7 @@ const parityCases = <(
     {},
     null,
     null,
+    null,
   ),
   (
     "events_anchor",
@@ -273,6 +290,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
     null,
     null,
   ),
@@ -290,6 +308,7 @@ const parityCases = <(
     {},
     null,
     null,
+    null,
   ),
   (
     "events_checkbox",
@@ -303,6 +322,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
     null,
     null,
   ),
@@ -320,6 +340,7 @@ const parityCases = <(
     {},
     null,
     null,
+    null,
   ),
   (
     "events_end",
@@ -333,6 +354,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
     null,
     null,
   ),
@@ -350,6 +372,7 @@ const parityCases = <(
     {},
     null,
     null,
+    null,
   ),
   (
     "events_frame",
@@ -363,6 +386,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
     null,
     null,
   ),
@@ -380,6 +404,7 @@ const parityCases = <(
     {},
     null,
     null,
+    null,
   ),
   (
     "events_listbox",
@@ -393,6 +418,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
     null,
     null,
   ),
@@ -410,6 +436,7 @@ const parityCases = <(
     {},
     null,
     null,
+    null,
   ),
   (
     "events_menu",
@@ -423,6 +450,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
     null,
     null,
   ),
@@ -440,6 +468,7 @@ const parityCases = <(
     {},
     null,
     null,
+    null,
   ),
   (
     "events_mouse",
@@ -453,6 +482,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
     null,
     null,
   ),
@@ -470,6 +500,7 @@ const parityCases = <(
     {},
     null,
     null,
+    null,
   ),
   (
     "events_option",
@@ -483,6 +514,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
     null,
     null,
   ),
@@ -500,6 +532,7 @@ const parityCases = <(
     {},
     null,
     null,
+    null,
   ),
   (
     "events_reentry",
@@ -513,6 +546,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
     null,
     null,
   ),
@@ -530,6 +564,7 @@ const parityCases = <(
     {},
     null,
     null,
+    null,
   ),
   (
     "events_shared",
@@ -545,6 +580,7 @@ const parityCases = <(
     {},
     null,
     null,
+    null,
   ),
   (
     "events_static",
@@ -558,6 +594,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
     null,
     null,
   ),
@@ -576,6 +613,7 @@ const parityCases = <(
       "memo.txt": "77u/7JWI64WV7ZWY7IS47JqUCuuRmOynuCDspIQK",
       "old.csv": "wMy4pyzBobz2DQqx6MfPs6osOTANCg==",
     },
+    null,
     null,
     null,
   ),
@@ -599,6 +637,7 @@ const parityCases = <(
     {},
     null,
     null,
+    null,
   ),
   (
     "forms_dialogresult",
@@ -618,6 +657,7 @@ const parityCases = <(
     ],
     false,
     {},
+    null,
     null,
     null,
   ),
@@ -641,6 +681,7 @@ const parityCases = <(
     {},
     null,
     null,
+    null,
   ),
   (
     "forms_last",
@@ -662,6 +703,7 @@ const parityCases = <(
     {},
     null,
     null,
+    null,
   ),
   (
     "forms_show",
@@ -681,6 +723,7 @@ const parityCases = <(
     ],
     false,
     {},
+    null,
     null,
     null,
   ),
@@ -709,6 +752,7 @@ const parityCases = <(
     {},
     null,
     null,
+    null,
   ),
   (
     "grid_scores",
@@ -727,6 +771,7 @@ const parityCases = <(
     },
     null,
     null,
+    null,
   ),
   (
     "handles_shared",
@@ -740,6 +785,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
     null,
     null,
   ),
@@ -757,6 +803,7 @@ const parityCases = <(
     {},
     "GET https://api.example.com/hello\n200 text/plain; charset=utf-8\n안녕하세요\n\nGET https://api.example.com/scores\n200 application/json\nX-Count: 2\n[{\"name\":\"김하나\",\"points\":10,\"ok\":true},\n {\"name\":\"Lee\",\"points\":7.0,\"ok\":false}]\n\nPOST https://api.example.com/echo\n201 text/plain\nechoed\n\nPOST https://api.example.com/scores\n200 application/json\n{\"ok\": true, \"id\": 3}\n\nGET https://api.example.com/missing\n404 text/html\n<html>Not here</html>\n\nGET https://api.example.com/down\nfails connection refused\n",
     null,
+    null,
   ),
   (
     "integer_overflow",
@@ -770,6 +817,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
     null,
     null,
   ),
@@ -787,6 +835,7 @@ const parityCases = <(
     {},
     null,
     null,
+    null,
   ),
   (
     "keyboard_isdown",
@@ -800,6 +849,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
     null,
     null,
   ),
@@ -817,6 +867,7 @@ const parityCases = <(
     {},
     null,
     null,
+    null,
   ),
   (
     "keys_preview",
@@ -832,6 +883,7 @@ const parityCases = <(
     {},
     null,
     null,
+    null,
   ),
   (
     "lists_arrays",
@@ -845,6 +897,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
     null,
     null,
   ),
@@ -880,6 +933,7 @@ const parityCases = <(
     {},
     null,
     null,
+    null,
   ),
   (
     "livequiz_phone",
@@ -913,6 +967,7 @@ const parityCases = <(
     {},
     null,
     null,
+    null,
   ),
   (
     "loops",
@@ -928,6 +983,7 @@ const parityCases = <(
     {},
     null,
     null,
+    null,
   ),
   (
     "milliseconds",
@@ -941,6 +997,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
     null,
     null,
   ),
@@ -964,6 +1021,7 @@ const parityCases = <(
     {},
     null,
     null,
+    null,
   ),
   (
     "modules_main",
@@ -985,6 +1043,7 @@ const parityCases = <(
     {},
     null,
     null,
+    null,
   ),
   (
     "modules_main_ends",
@@ -1004,6 +1063,7 @@ const parityCases = <(
     ],
     true,
     {},
+    null,
     null,
     null,
   ),
@@ -1032,6 +1092,7 @@ const parityCases = <(
     {},
     null,
     null,
+    null,
   ),
   (
     "overflow_caught",
@@ -1045,6 +1106,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
     null,
     null,
   ),
@@ -1062,6 +1124,7 @@ const parityCases = <(
     {},
     null,
     null,
+    null,
   ),
   (
     "quiz_best",
@@ -1075,6 +1138,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
     null,
     null,
   ),
@@ -1092,6 +1156,7 @@ const parityCases = <(
     {},
     null,
     null,
+    null,
   ),
   (
     "random_seeded",
@@ -1105,6 +1170,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
     null,
     null,
   ),
@@ -1122,6 +1188,7 @@ const parityCases = <(
     {},
     null,
     null,
+    null,
   ),
   (
     "room_basics",
@@ -1135,6 +1202,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
     null,
     null,
   ),
@@ -1152,6 +1220,7 @@ const parityCases = <(
     {},
     null,
     null,
+    null,
   ),
   (
     "room_reconnect",
@@ -1167,6 +1236,7 @@ const parityCases = <(
     {},
     null,
     null,
+    null,
   ),
   (
     "rounding",
@@ -1180,6 +1250,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
     null,
     null,
   ),
@@ -1202,6 +1273,7 @@ const parityCases = <(
     },
     null,
     null,
+    null,
   ),
   (
     "settings",
@@ -1215,6 +1287,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
     null,
     null,
   ),
@@ -1232,6 +1305,7 @@ const parityCases = <(
     {},
     null,
     null,
+    null,
   ),
   (
     "sprite_frames",
@@ -1247,6 +1321,23 @@ const parityCases = <(
     {},
     null,
     null,
+    null,
+  ),
+  (
+    "sprite_hits",
+    "' Hits and DistanceTo (D138): whether two sprites touch, by their Shape\n' (Rectangle, Circle or Pixels), and the distance between their centres.\n' Nothing is Visible-blind: a hidden sprite hits nothing, and a sprite\n' never hits itself. The blob's pixels are its mask in sprite_hits.masks:\n' a 4 x 4 picture whose corners are clear.\nSub Say(what As String, hit As Boolean)\n    Debug.Print(what & \": \" & hit)\nEnd Sub\n\nSub Form_Load()\n    ' Rectangles: sprBox at 0,0 (20 x 20), sprBall at 10,10 (20 x 20).\n    Say(\"Box hits ball\", sprBox.Hits(sprBall))\n    Say(\"Ball hits box\", sprBall.Hits(sprBox))\n    sprBall.X = 20\n    Say(\"Touching edges\", sprBox.Hits(sprBall))\n    sprBall.X = 19.5\n    Say(\"Half a pixel in\", sprBox.Hits(sprBall))\n    ' Circles: a circle in each corner-touching rectangle misses.\n    sprBox.Shape = \"circle\"\n    Debug.Print(\"Shape reads \" & sprBox.Shape)\n    sprBall.Shape = \"Circle\"\n    sprBall.X = 17\n    sprBall.Y = 17\n    Say(\"Two circles, corners overlapping\", sprBox.Hits(sprBall))\n    sprBall.X = 14\n    sprBall.Y = 14\n    Say(\"Two circles, closer\", sprBox.Hits(sprBall))\n    ' A circle and a rectangle.\n    sprBox.Shape = \"Rectangle\"\n    sprBall.X = 17\n    sprBall.Y = 17\n    Say(\"Rectangle and circle, corner\", sprBox.Hits(sprBall))\n    sprBall.X = 15\n    sprBall.Y = 0\n    Say(\"Rectangle and circle, side\", sprBox.Hits(sprBall))\n    Debug.Print(\"Distance \" & sprBox.DistanceTo(sprBall))\n    ' Pixels: the blob is 4 x 4 drawn at 20 x 20; its corners are clear.\n    sprBlob.X = 18\n    sprBlob.Y = 18\n    Say(\"Rectangle and the blob's clear corner\", sprBox.Hits(sprBlob))\n    sprBlob.X = 13\n    sprBlob.Y = 18\n    Say(\"Rectangle and the blob's edge\", sprBox.Hits(sprBlob))\n    sprBall.Shape = \"Pixels\"\n    Say(\"Pixels and pixels (the ball has no frames)\", sprBall.Hits(sprBlob))\n    sprBall.Shape = \"Circle\"\n    sprBall.X = 10\n    sprBall.Y = 10\n    Say(\"Circle and pixels\", sprBall.Hits(sprBlob))\n    ' Hidden, and itself.\n    sprBlob.Visible = False\n    Say(\"Hidden blob\", sprBall.Hits(sprBlob))\n    sprBlob.Visible = True\n    Say(\"Itself\", sprBlob.Hits(sprBlob))\nEnd Sub\n\nSub btnShape_Click()\n    Try\n        sprBox.Shape = \"Triangle\"\n    Catch ex As Exception\n        Debug.Print(ex.Message)\n    End Try\n    Debug.Print(\"Still \" & sprBox.Shape)\nEnd Sub\n",
+    [],
+    "Debug.Print: Box hits ball: True\nDebug.Print: Ball hits box: True\nSet sprBall.Left: 20\nDebug.Print: Touching edges: False\nSet sprBall.Left: 19\nSet sprBall.FracX: 0.5\nDebug.Print: Half a pixel in: True\nSet sprBox.Shape: Circle\nDebug.Print: Shape reads Circle\nSet sprBall.Shape: Circle\nSet sprBall.Left: 17\nSet sprBall.FracX: 0\nSet sprBall.Top: 17\nDebug.Print: Two circles, corners overlapping: False\nSet sprBall.Left: 14\nSet sprBall.Top: 14\nDebug.Print: Two circles, closer: True\nSet sprBox.Shape: Rectangle\nSet sprBall.Left: 17\nSet sprBall.Top: 17\nDebug.Print: Rectangle and circle, corner: True\nSet sprBall.Left: 15\nSet sprBall.Top: 0\nDebug.Print: Rectangle and circle, side: True\nDebug.Print: Distance 15\nSet sprBlob.Left: 18\nSet sprBlob.Top: 18\nDebug.Print: Rectangle and the blob's clear corner: False\nSet sprBlob.Left: 13\nDebug.Print: Rectangle and the blob's edge: True\nSet sprBall.Shape: Pixels\nDebug.Print: Pixels and pixels (the ball has no frames): False\nSet sprBall.Shape: Circle\nSet sprBall.Left: 10\nSet sprBall.Top: 10\nDebug.Print: Circle and pixels: True\nSet sprBlob.Visible: False\nDebug.Print: Hidden blob: False\nSet sprBlob.Visible: True\nDebug.Print: Itself: False\n> btnShape.Click\nDebug.Print: Triangle is not a shape. A Sprite's Shape is Rectangle, Circle or Pixels.\nDebug.Print: Still Rectangle\n> Close\nClosed\n",
+    "formatVersion: 1\ncontrols:\n  - { name: sprBox, type: Sprite, properties: { Width: 20, Height: 20 } }\n  - { name: sprBall, type: Sprite, properties: { Left: 10, Top: 10, Width: 20, Height: 20 } }\n  - { name: sprBlob, type: Sprite, properties: { Frames: blob.png, Shape: pixels, Left: 100, Top: 100, Width: 20, Height: 20 } }\n  - { name: btnShape, type: Button, properties: { Caption: Shape, Top: 200 } }\n",
+    "btnShape.Click       ' a word that is not a shape: R052, caught\nClose\n",
+    null,
+    ["blob.png"],
+    [],
+    false,
+    {},
+    null,
+    null,
+    "blob.png\n.##.\n####\n####\n.##.\n",
   ),
   (
     "sprite_move",
@@ -1260,6 +1351,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
     null,
     null,
   ),
@@ -1277,6 +1369,7 @@ const parityCases = <(
     {},
     null,
     null,
+    null,
   ),
   (
     "strings",
@@ -1290,6 +1383,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
     null,
     null,
   ),
@@ -1307,6 +1401,7 @@ const parityCases = <(
     {},
     null,
     null,
+    null,
   ),
   (
     "structure_collections",
@@ -1322,6 +1417,7 @@ const parityCases = <(
     {},
     null,
     null,
+    null,
   ),
   (
     "structure_copy",
@@ -1335,6 +1431,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
     null,
     null,
   ),
@@ -1363,6 +1460,7 @@ const parityCases = <(
     {},
     null,
     null,
+    null,
   ),
   (
     "structure_with",
@@ -1376,6 +1474,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
     null,
     null,
   ),
@@ -1393,6 +1492,7 @@ const parityCases = <(
     {},
     null,
     null,
+    null,
   ),
   (
     "timer_clock",
@@ -1406,6 +1506,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
     null,
     null,
   ),
@@ -1423,6 +1524,7 @@ const parityCases = <(
     {},
     null,
     null,
+    null,
   ),
   (
     "timer_turns",
@@ -1436,6 +1538,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
     null,
     null,
   ),
@@ -1453,6 +1556,7 @@ const parityCases = <(
     {},
     null,
     null,
+    null,
   ),
   (
     "weather_example",
@@ -1467,6 +1571,7 @@ const parityCases = <(
     false,
     {},
     "GET https://api.open-meteo.com/v1/forecast?latitude=37.57&longitude=126.98&current=temperature_2m,wind_speed_10m,weather_code&timezone=Asia%2FSeoul\n200 application/json; charset=utf-8\n{\"latitude\":37.5625,\"longitude\":127.0,\"current_units\":{\"time\":\"iso8601\",\"interval\":\"seconds\",\"temperature_2m\":\"°C\",\"wind_speed_10m\":\"km/h\",\"weather_code\":\"wmo code\"},\"current\":{\"time\":\"2026-11-02T10:15\",\"interval\":900,\"temperature_2m\":12.3,\"wind_speed_10m\":5.4,\"weather_code\":3}}\n\nGET https://api.open-meteo.com/v1/forecast?latitude=35.18&longitude=129.08&current=temperature_2m,wind_speed_10m,weather_code&timezone=Asia%2FSeoul\n200 application/json; charset=utf-8\n{\"current_units\":{\"temperature_2m\":\"°C\",\"wind_speed_10m\":\"km/h\"},\"current\":{\"time\":\"2026-11-02T10:15\",\"temperature_2m\":15,\"wind_speed_10m\":12.0,\"weather_code\":61}}\n\nGET https://api.open-meteo.com/v1/forecast?latitude=33.50&longitude=126.53&current=temperature_2m,wind_speed_10m,weather_code&timezone=Asia%2FSeoul\nfails connection refused\n",
+    null,
     null,
   ),
   (
@@ -1483,6 +1588,7 @@ const parityCases = <(
     {},
     null,
     "CONNECT ws://localhost:8080/chat\n< welcome\nON hello\n< hi, Kim\n< {\"kind\":\"news\",\"text\":\"rain\"}\n\nCONNECT ws://localhost:8080/down\nFAILS connection refused\n",
+    null,
   ),
   (
     "with_block",
@@ -1496,6 +1602,7 @@ const parityCases = <(
     [],
     false,
     {},
+    null,
     null,
     null,
   ),

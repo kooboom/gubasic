@@ -102,6 +102,11 @@ void main() {
           for (final f in filesDir.listSync().whereType<File>())
             f.uri.pathSegments.last: f.readAsBytesSync(),
       };
+      // The masks of its pictures for pixel collisions (D138): NAME.masks.
+      final masksFile = File('$base.masks');
+      final masks = masksFile.existsSync()
+          ? parsePictureMasks(masksFile.readAsStringSync())
+          : const <String, PictureMask>{};
       final otherForms = Directory('../../test/parity')
           .listSync()
           .whereType<File>()
@@ -156,6 +161,7 @@ void main() {
             modules: modules,
             startsWithMain: startsWithMain,
             disk: disk,
+            masks: masks,
             http: http,
             webSockets: webSockets,
             database: database);
@@ -171,6 +177,7 @@ void main() {
             settings: settings,
             pictures: pictures,
             disk: disk,
+            masks: masks,
             http: http,
             webSockets: webSockets,
             database: database);

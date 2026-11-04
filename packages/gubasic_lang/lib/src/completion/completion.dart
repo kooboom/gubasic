@@ -367,6 +367,7 @@ String _signature(Callable c) {
     for (final p in c.parameters)
       switch (p) {
         ParamSpec(kind: ArgKind.menu) => '${p.name} As Menu',
+        ParamSpec(kind: ArgKind.sprite) => '${p.name} As Sprite',
         ParamSpec(kind: ArgKind.tableOrGrid) => '${p.name} As Table',
         ParamSpec(kind: ArgKind.jsonValue) => '${p.name} As Json',
         ParamSpec(kind: ArgKind.sqlValue) => 'ParamArray ${p.name}',

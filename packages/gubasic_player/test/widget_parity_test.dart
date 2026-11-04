@@ -132,6 +132,10 @@ void main() {
         GbSqlite(root: dbRoot.path),
       );
       http.transcript = host.transcript;
+      final masksFile = File('$base.masks');
+      host.masks = masksFile.existsSync()
+          ? parsePictureMasks(masksFile.readAsStringSync())
+          : const {};
       webSockets.sockets.transcript = host.transcript;
       webSockets.rooms.transcript = host.transcript;
       final session = RunSession(
@@ -311,6 +315,16 @@ class _RecordingHost extends RunHost {
             File('../../apps/ide/fonts/nanumgothic/NanumGothic-Regular.ttf')
                 .readAsBytesSync(),
       );
+
+  /// The masks of NAME.masks (D138), in place of decoding the pictures,
+  /// which the test's fake time cannot wait for.
+  Map<String, PictureMask> masks = const {};
+
+  @override
+  PictureMask? pictureMask(String name) => masks[pictureKey(name)];
+
+  @override
+  Future<void> loadPictureMask(String name) async {}
 
   /// The clock the script's `Wait` moves (D138).
   var clock = 0;

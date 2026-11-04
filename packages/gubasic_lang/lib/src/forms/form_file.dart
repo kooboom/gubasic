@@ -5,6 +5,7 @@ import '../diagnostics/diagnostic.dart';
 import 'anchor.dart';
 import 'colors.dart';
 import 'component.dart';
+import 'collision.dart';
 import 'pictures.dart';
 import 'shortcut.dart';
 import 'yaml_reader.dart';
@@ -282,6 +283,16 @@ void _properties(YamlReader r, YamlNode node, ComponentSpec component,
     if (!spec.accepts(v)) {
       r.report(value.span, DiagnosticCode.propertyOutOfRange,
           [spec.name, '${spec.min}', '${spec.max}']);
+      continue;
+    }
+    if (component.name == 'Sprite' && spec.name == 'Shape' && v is String) {
+      // Rectangle, Circle or Pixels, in any case (D138).
+      final shape = spriteShapeNamed(v);
+      if (shape == null) {
+        r.report(value.span, DiagnosticCode.badShapeInFile, [v]);
+        continue;
+      }
+      into[spec.name] = shape.text;
       continue;
     }
     if (spec.anchor && v is String) {

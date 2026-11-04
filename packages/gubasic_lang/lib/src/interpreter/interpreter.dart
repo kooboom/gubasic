@@ -21,6 +21,7 @@ import '../forms/anchor.dart';
 import '../forms/colors.dart';
 import '../forms/component.dart';
 import '../forms/keys.dart';
+import '../forms/collision.dart';
 import '../forms/pictures.dart';
 import '../forms/shortcut.dart';
 import '../pdf/pdf_document.dart';
@@ -1790,6 +1791,11 @@ class Interpreter {
           _rawSet(c, 'Frame', 0);
           _rawSet(c, 'FrameClock', 0);
           return null;
+        case 'Shape':
+          // Rectangle, Circle or Pixels, in any case (D138).
+          v = (spriteShapeNamed(v as String) ??
+                  _fail(DiagnosticCode.badShape, e, [v]))
+              .text;
         case 'Frame':
           final last = _frames(c).length - 1;
           if ((v as int) > last && v != 0) {
@@ -2074,6 +2080,29 @@ class Interpreter {
     }
   }
 
+  /// The picture of a Sprite's frame when its Shape is Pixels (D138);
+  /// null when its shape needs no mask, or it has no frame.
+  String? _spriteFrameName(GbControl c) {
+    if (spriteShapeNamed(_raw(c, 'Shape') as String) != SpriteShape.pixels) {
+      return null;
+    }
+    final frames = _frames(c);
+    final frame = _raw(c, 'Frame') as int;
+    return frame >= 0 && frame < frames.length ? frames[frame] : null;
+  }
+
+  /// A Sprite as Hits and DistanceTo see it (D138).
+  SpriteBox _spriteBox(GbControl c) {
+    final name = _spriteFrameName(c);
+    return SpriteBox(
+        _spritePlace(c, true),
+        _spritePlace(c, false),
+        _raw(c, 'Width') as int,
+        _raw(c, 'Height') as int,
+        spriteShapeNamed(_raw(c, 'Shape') as String)!,
+        mask: name == null ? null : _formHost.pictureMask(name));
+  }
+
   /// A member of form [c] that is not its component's (D88): one of its
   /// controls, a variable or a procedure of its code. A procedure is
   /// called through [_pendingCall].
@@ -2173,6 +2202,33 @@ class Interpreter {
       case ('OpenFileDialog' || 'SaveFileDialog', 'ShowDialog'):
         _pendingCall = () async => GbInt.of(await _fileDialog(c, at));
         return null;
+      case ('Sprite', 'Hits'):
+        final other =
+            args[0] as GbControl? ?? _fail(DiagnosticCode.nothingReference, at);
+        if (other == c ||
+            _raw(c, 'Visible') != true ||
+            _raw(other, 'Visible') != true) {
+          return false;
+        }
+        // The masks of their frames, read once (D138).
+        final unread = [
+          for (final n in [_spriteFrameName(c), _spriteFrameName(other)])
+            if (n != null && _formHost.pictureMask(n) == null) n,
+        ];
+        if (unread.isEmpty) {
+          return spritesHit(_spriteBox(c), _spriteBox(other));
+        }
+        _pendingCall = () async {
+          for (final n in unread) {
+            await _formHost.loadPictureMask(n);
+          }
+          return spritesHit(_spriteBox(c), _spriteBox(other));
+        };
+        return null;
+      case ('Sprite', 'DistanceTo'):
+        final other =
+            args[0] as GbControl? ?? _fail(DiagnosticCode.nothingReference, at);
+        return spriteDistance(_spriteBox(c), _spriteBox(other));
       case ('Sprite', 'Move'):
         _moveSprite(c, (args[0] as GbInt).toSmallInt() ?? 0);
         return null;

@@ -20,6 +20,9 @@ enum ArgKind {
   /// Any array.
   array,
 
+  /// A Sprite control: `Hits(other As Sprite)` (D138).
+  sprite,
+
   /// A menu item of a form (`PopupMenu`, docs/DESIGN.md D106).
   menu,
 

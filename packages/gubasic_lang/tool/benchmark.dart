@@ -97,6 +97,12 @@ class _Host implements FormHost {
   int get milliseconds => _clock.elapsedMilliseconds;
 
   @override
+  PictureMask? pictureMask(String name) => null;
+
+  @override
+  Future<void> loadPictureMask(String name) async {}
+
+  @override
   Future<void> yieldNow() => Future<void>.delayed(Duration.zero);
   @override
   Object getProperty(String form, String? control, String property) =>

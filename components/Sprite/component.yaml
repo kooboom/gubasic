@@ -6,7 +6,9 @@
 # are pixels a second, and Move(ms) moves it by them, nothing moving by
 # itself. The frame is drawn filling Width and Height. Drawn under the
 # other controls, like an Image; what is behind shows through its
-# transparent pixels.
+# transparent pixels. Hits(other) says whether two sprites touch, by
+# their Shape: Rectangle, Circle or Pixels; DistanceTo(other) is the
+# distance between their centres.
 name: Sprite
 version: 1
 visual: true
@@ -29,6 +31,10 @@ properties:
   - { name: FracY, type: Double, default: 0, internal: true }
   # Milliseconds since the frame last turned, kept by Move.
   - { name: FrameClock, type: Integer, default: 0, internal: true }
+  # What Hits takes it for: Rectangle, its whole rectangle; Circle, the
+  # largest circle in it; Pixels, the pixels of its frame whose alpha is
+  # 128 or more, scaled to its size.
+  - { name: Shape, type: String, default: Rectangle }
   # How fast Move moves it, in pixels a second.
   - { name: SpeedX, type: Double, default: 0 }
   - { name: SpeedY, type: Double, default: 0 }
@@ -56,6 +62,11 @@ methods:
   # Moves it by its speed for ms milliseconds, and turns its frame when
   # FrameTime is above 0.
   - Move(ms As Integer)
+  # Whether it touches other, by both their shapes; False when either is
+  # not Visible, or they are the same sprite.
+  - Hits(other As Sprite) As Boolean
+  # Between their centres.
+  - DistanceTo(other As Sprite) As Double
 # Names other versions of BASIC use, pointed to GuBASIC's (A036,
 # docs/DESIGN.md D50).
 otherNames:

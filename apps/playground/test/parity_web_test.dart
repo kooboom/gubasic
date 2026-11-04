@@ -62,11 +62,15 @@ void main() {
         files,
         httpScript,
         wsScript,
+        masksScript,
       ) in parityCases) {
     final disk = {
       for (final MapEntry(:key, :value) in files.entries)
         key: base64Decode(value),
     };
+    final masks = masksScript == null
+        ? const <String, PictureMask>{}
+        : parsePictureMasks(masksScript);
     final http =
         httpScript == null ? const <HttpStub>[] : parseHttpScript(httpScript);
     final webSockets = wsScript == null
@@ -99,6 +103,7 @@ void main() {
             ],
             startsWithMain: startsWithMain,
             disk: disk,
+            masks: masks,
             http: http,
             webSockets: webSockets);
         expect('${lines.join('\n')}\n', expected);
@@ -112,6 +117,7 @@ void main() {
             settings: settings,
             pictures: pictures,
             disk: disk,
+            masks: masks,
             http: http,
             webSockets: webSockets);
         expect('${lines.join('\n')}\n', expected);
