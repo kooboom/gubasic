@@ -2,7 +2,7 @@ name: gubasic_relay
 description: >-
   The relay server of GuBASIC's Room (docs/DESIGN.md D136): passes messages
   between programs with the same room code over WebSocket. Pure Dart.
-version: 0.6.0
+version: 0.7.0
 publish_to: none
 
 environment:

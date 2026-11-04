@@ -8,7 +8,7 @@ import 'config.dart';
 const roomProtocolVersion = 1;
 
 /// The relay server's version, as `/room/health` gives it.
-const relayVersion = '0.6.0';
+const relayVersion = '0.7.0';
 
 /// What the hub needs of one connection: where it comes from, sending a
 /// message, closing it.
