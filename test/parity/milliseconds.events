@@ -1,0 +1,9 @@
+Wait 16
+tmrGame.Tick
+Wait 16
+tmrGame.Tick
+btnLap.Click
+Wait 500
+tmrGame.Tick       ' a long gap: the move is as long
+btnLap.Click
+Close

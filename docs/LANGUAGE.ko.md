@@ -721,6 +721,7 @@ End Try
 | 변환 | `CInt`, `CDbl`, `CStr`, `CBool`, `Val`, `Str` |
 | 수학 | `Abs`, `Int`, `Round`, `Sqr`, `Rnd`, `Randomize`, `Min`, `Max`. 상수 `Integer.MaxValue`, `Integer.MinValue` |
 | 날짜 | `Now`, `Today`, `Year`, `Month`, `Day`, `Hour`, `Minute`, `Second`, `DateAdd`, `DateDiff`, `DateInterval` |
+| 시간 | `Milliseconds` |
 | 서식 | `Format` |
 | 대화상자 | `MsgBox`, `InputBox` |
 | 개발자용 출력 | `Debug.Print(값)`: 놀이터의 직접 실행 창(VB6의 직접 실행 창)에 한 줄 씀. 내보낸 웹 앱에서는 브라우저의 콘솔(F12)에 씀 |
@@ -746,6 +747,7 @@ End Try
   ```
 
 - `Now`와 `Today`는 기기의 현지 시각을 씁니다.
+- **`Milliseconds()`**(DESIGN.ko.md D138)는 프로그램이 시작한 뒤 흐른 밀리초를 `Integer`로 줍니다. 앞으로만 가는 시계라 컴퓨터의 시각을 바꿔도 움직이지 않습니다. 게임 루프는 `Tick`마다 맨 위에서 이것을 읽고 차이만큼 움직여, Timer가 초당 60번 틱했든 40번 틱했든 게임이 같습니다. Visual Basic 6의 `Timer` 함수와 Visual Basic .NET의 `Environment.TickCount`는 여기로 가리킵니다(A080). GuBASIC에서 `Timer`는 컨트롤입니다.
 - **`SaveSetting(key, value)`와 `GetSetting(key, default)`**는 프로그램을 다시 실행해도 남는 글자를 저장합니다. `GetSetting`은 `key`로 저장된 값을, 저장된 것이 없으면 `default`를 돌려줍니다. 키는 대소문자를 가리지 않으며(`best`와 `Best`는 같은 키), 빈 키는 R007입니다. 값은 글자입니다. 숫자는 글자로 저장되므로(2.2절) 읽을 때 바꿔 줍니다: `CInt(GetSetting("best", "0"))`.
 - **설정은 프로젝트마다 따로이며, 프로젝트 이름으로 나뉩니다**(`.gbproj`의 `name`, 11.3절). 이름이 같은 두 프로젝트는 설정을 함께 쓰고, 새 이름으로 저장한 프로젝트는 설정 없이 시작합니다. 설정은 프로젝트의 파일이나 `.zip`에 들어가지 않습니다. IDE의 **파일 → 저장된 설정 지우기**는 열린 프로젝트의 설정을 지웁니다. 프로젝트가 없는 놀이터는 모든 프로그램이 설정 하나를 함께 씁니다.
 - 프로그램 하나의 설정은 모두 합쳐 65536자까지입니다(R011). 웹 IDE가 프로젝트를 보관하는 브라우저 저장 공간을 프로그램이 채우지 못하게 하려는 것입니다. 설정은 평문으로 저장되므로 비밀번호는 넣지 마세요(DESIGN.md D48).

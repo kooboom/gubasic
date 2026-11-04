@@ -47,6 +47,9 @@ class FakeHost implements Host {
   /// Yields to the event loop, as the playground does, so that timers (and
   /// a Stop request) get their turn.
   @override
+  int get milliseconds => 0;
+
+  @override
   Future<void> yieldNow() {
     yields++;
     return Future<void>.delayed(Duration.zero);

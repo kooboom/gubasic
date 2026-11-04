@@ -323,6 +323,9 @@ const Map<DiagnosticCode, String> englishMessages = {
           'is not one. Write its members in full.',
   DiagnosticCode.vb6Color: '{0} is Visual Basic 6\'s colour. GuBASIC uses '
       'Visual Basic .NET\'s Color: write {1}.',
+  DiagnosticCode.vb6TimerFunction: '{0} is not in GuBASIC, where Timer is a '
+      'control. The milliseconds since the program started are '
+      'Milliseconds().',
   DiagnosticCode.colorPartOutOfRange: 'Color.FromArgb takes red, green and '
       'blue from 0 to 255; {0} is not one. Check the value.',
   DiagnosticCode.badColor: 'The colour of {0} is a colour\'s name (Red, '

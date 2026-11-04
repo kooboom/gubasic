@@ -253,6 +253,8 @@ const Map<DiagnosticCode, String> koreanMessages = {
       'With에는 컨트롤, 변수, 칸처럼 값을 줍니다. {0} 항목은 값이 아닙니다. 멤버를 이름과 함께 씁니다.',
   DiagnosticCode.vb6Color:
       '{0} 표기는 Visual Basic 6의 색입니다. GuBASIC은 Visual Basic .NET의 Color를 씁니다: {1} 형태로 써 주세요.',
+  DiagnosticCode.vb6TimerFunction:
+      '{0} 표기는 GuBASIC에 없습니다. GuBASIC에서 Timer는 컨트롤입니다. 프로그램 시작부터의 밀리초는 Milliseconds()입니다.',
   DiagnosticCode.colorPartOutOfRange:
       'Color.FromArgb의 빨강·초록·파랑은 0부터 255까지입니다. 받은 값: {0}. 값을 확인해 주세요.',
   DiagnosticCode.badColor:

@@ -1777,6 +1777,14 @@ class _Analyzer {
           ['RGB(r, g, b)', 'Color.FromArgb(r, g, b)'], ['Color.FromArgb']);
       return;
     }
+    if (e.name.toLowerCase() == 'timer' && !beforeDot ||
+        e.name.toLowerCase() == 'environment' && beforeDot) {
+      // Visual Basic 6's Timer function and Visual Basic .NET's
+      // Environment.TickCount: Milliseconds() (D138).
+      _reportAt(e, DiagnosticCode.vb6TimerFunction,
+          [beforeDot ? 'Environment.TickCount' : 'Timer'], ['Milliseconds()']);
+      return;
+    }
     if (beforeDot && form == null) {
       _reportAt(e, DiagnosticCode.unknownNameMaybeControl, [e.name]);
       return;

@@ -155,7 +155,8 @@ class BenchProbe {
             PickStep() ||
             ServerStep() ||
             PeerStep() ||
-            RoomStep():
+            RoomStep() ||
+            WaitStep():
           break;
       }
       await _settle();

@@ -1,0 +1,23 @@
+' Milliseconds() (D138): the milliseconds since the program started, from
+' a clock that only goes forward. A game loop reads it at the top of each
+' tick and moves by the difference, so that the move does not depend on
+' how often the Timer managed to tick. In a script, Wait moves the clock.
+Dim lastTime As Integer
+Dim x As Double
+
+Sub Form_Load()
+    Debug.Print("At start: " & Milliseconds())
+    lastTime = Milliseconds()
+    tmrGame.Start()
+End Sub
+
+Sub tmrGame_Tick()
+    Dim dt As Integer = Milliseconds() - lastTime
+    lastTime = Milliseconds()
+    x = x + 30 * dt / 1000       ' 30 pixels a second
+    lblTime.Caption = Milliseconds() & " ms, x = " & x
+End Sub
+
+Sub btnLap_Click()
+    Debug.Print("Lap at " & Milliseconds())
+End Sub

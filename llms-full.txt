@@ -727,6 +727,7 @@ String functions follow classic BASIC and **count from 1**. String *methods* (`.
 | Conversion | `CInt`, `CDbl`, `CStr`, `CBool`, `Val`, `Str` |
 | Math | `Abs`, `Int`, `Round`, `Sqr`, `Rnd`, `Randomize`, `Min`, `Max`; constants `Integer.MaxValue`, `Integer.MinValue` |
 | Date | `Now`, `Today`, `Year`, `Month`, `Day`, `Hour`, `Minute`, `Second`, `DateAdd`, `DateDiff`; `DateInterval` |
+| Time | `Milliseconds` |
 | Formatting | `Format` |
 | Dialogs | `MsgBox`, `InputBox` |
 | Output for developers | `Debug.Print(value)`: writes a line to the playground's output window (VB6's Immediate window); an exported web app writes it to the browser's console (F12) |
@@ -752,6 +753,7 @@ String functions follow classic BASIC and **count from 1**. String *methods* (`.
   ```
 
 - `Now` and `Today` use the device's local time.
+- **`Milliseconds()`** (DESIGN.md D138) gives the milliseconds since the program started, an `Integer`, from a clock that only goes forward: a change of the computer's time does not move it. A game loop reads it at the top of every `Tick` and moves things by the difference, so that the game is the same whether the Timer managed 60 ticks a second or 40. Visual Basic 6's `Timer` function and Visual Basic .NET's `Environment.TickCount` are pointed to it (A080): in GuBASIC, `Timer` is the control.
 - **`SaveSetting(key, value)` and `GetSetting(key, default)`** keep text from one run of a program to the next. `GetSetting` gives what was saved under `key`, or `default` if nothing was. Keys do not tell case apart (`best` and `Best` are one key); an empty key is R007. Values are text: a number is saved as its text (§2.2), so read it back with a conversion: `CInt(GetSetting("best", "0"))`.
 - **Each project has its own settings, by its name** (the `name` in its `.gbproj`, §11.3): two projects with the same name share them, and a project saved under a new name starts without them. They are not part of the project's files or its `.zip`. In the IDE, **File → Clear Saved Settings** forgets the open project's settings. The playground, which has no projects, keeps one set for all its programs.
 - A program's settings are at most 65536 characters of text in all (R011), so that a program cannot fill the browser's storage, where the web IDE keeps its projects too. Settings are kept as plain text: do not save passwords in them (DESIGN.md D48).
@@ -1932,6 +1934,7 @@ Default event (made by a double-click): `Message`
 
 - `Now() As Date`: The date and time now, on this device.
 - `Today() As Date`: Today's date, at midnight.
+- `Milliseconds() As Integer`: The milliseconds since the program started, from a clock that only goes forward (for a game loop).
 - `Year(date As Date) As Integer`: The year of a date.
 - `Month(date As Date) As Integer`: The month of a date, 1 to 12.
 - `Day(date As Date) As Integer`: The day of a date.

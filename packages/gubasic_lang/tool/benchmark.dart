@@ -91,6 +91,11 @@ class _Host implements FormHost {
   Future<void> msgBox(String prompt, String title) async {}
   @override
   Future<String> inputBox(String prompt, String title, String d) async => '';
+  final _clock = Stopwatch()..start();
+
+  @override
+  int get milliseconds => _clock.elapsedMilliseconds;
+
   @override
   Future<void> yieldNow() => Future<void>.delayed(Duration.zero);
   @override

@@ -1,0 +1,5 @@
+formatVersion: 1
+controls:
+  - { name: lblTime, type: Label, properties: { Width: 240 } }
+  - { name: btnLap, type: Button, properties: { Caption: Lap, Top: 40 } }
+  - { name: tmrGame, type: Timer, properties: { Interval: 16 } }

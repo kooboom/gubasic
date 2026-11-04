@@ -290,6 +290,7 @@ Choose mnuEditCopy    ' PopupMenu가 보인 메뉴의 항목을 고름 (Dismiss�
 lblName.MouseDown Right 10 5   ' 컨트롤의 한 자리에서 마우스 버튼을 누름. MouseUp은 뗌 (D111)
 Pick "names.csv"      ' 열기·저장 대화상자에서 파일을 고름. Cancel은 취소 (D113)
 Form.Resize 600 400   ' 사용자가 폼을 600 x 400으로 바꿈. Form_Resize가 실행됨 (D57, D58)
+Wait 16               ' Milliseconds()가 읽는 시계가 16밀리초 감 (D138)
 Close                 ' 폼을 닫음
 ```
 

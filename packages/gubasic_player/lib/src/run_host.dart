@@ -228,6 +228,13 @@ class RunHost implements FormHost, FileHost, ComponentHost {
   /// Basic puts the application's name there (D68).
   String _title(String title) => title.isEmpty ? project : title;
 
+  /// Since the program started, from a clock that only goes forward
+  /// (D138).
+  final _stopwatch = Stopwatch()..start();
+
+  @override
+  int get milliseconds => _stopwatch.elapsedMilliseconds;
+
   /// Lets frames be drawn and the Stop button work.
   @override
   Future<void> yieldNow() async {

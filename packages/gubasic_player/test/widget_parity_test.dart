@@ -312,6 +312,12 @@ class _RecordingHost extends RunHost {
                 .readAsBytesSync(),
       );
 
+  /// The clock the script's `Wait` moves (D138).
+  var clock = 0;
+
+  @override
+  int get milliseconds => clock;
+
   /// The files, and the open and save dialogs, the test answers (D113).
   final _FakeFiles files;
 
@@ -904,6 +910,11 @@ class _WidgetDriver implements ScriptDriver {
     final done = host.webSockets.rooms.serverDoes(verb, argument);
     await tester.pump();
     return done;
+  }
+
+  @override
+  Future<void> wait(int milliseconds) async {
+    host.clock += milliseconds;
   }
 
   @override

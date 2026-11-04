@@ -164,6 +164,8 @@ const _builtins = <Callable>[
 
   // Date and time.
   Callable('Now', [], _dt),
+  // Since the program started, from a clock that only goes forward (D138).
+  Callable('Milliseconds', [], _i),
   Callable('Today', [], _dt),
   Callable('Year', [ParamSpec('date', _dt)], _i),
   Callable('Month', [ParamSpec('date', _dt)], _i),

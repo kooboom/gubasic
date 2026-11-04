@@ -102,6 +102,12 @@ class _PlaygroundHost implements Host {
 
   /// Gives the browser a turn (paint, clicks on Stop). A timer, not a
   /// microtask, so that events can run.
+  /// Since the program started (D138).
+  final _clock = Stopwatch()..start();
+
+  @override
+  int get milliseconds => _clock.elapsedMilliseconds;
+
   @override
   Future<void> yieldNow() => Future<void>.delayed(Duration.zero);
 

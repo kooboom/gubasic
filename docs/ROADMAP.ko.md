@@ -110,13 +110,13 @@ IDE 안에서 완결되는 비주얼 베이직의 핵심 경험입니다.
 - [x] 컨트롤의 `Enabled`, `Visible`, `FontSize`, `FontBold`, `ForeColor`, `BackColor`와 Visual Basic .NET의 `Color`. 컨트롤은 Frame이나 폼의 글자를 물려받음(D137)
 - [x] 예제: 폰으로 답하고 TV가 경주를 보여 주는 실시간 퀴즈 [LiveQuiz](../examples/livequiz)([IDEAS](IDEAS.ko.md#실시간으로-함께-websocket과-room))
 
-### v0.7 — 게임 도구(후보, D121 a)
+### v0.7 — 게임 도구(D121 a, D138)
 
 - [ ] `Sprite`: 위치, 속도, 프레임이 있는 움직이는 그림
 - [ ] 충돌 검사: 사각형, 원, 픽셀
 - [ ] 소리: 효과음과 음악
 - [ ] `Keyboard.IsDown(Keys.Left)`: 게임 루프를 위한 동시에 누른 키
-- [ ] 게임 루프를 Timer 하나로 돌리기 위한 ms 단위 시간
+- [x] 게임 루프를 Timer 하나로 돌리기 위한 ms 단위 시간: `Milliseconds()`(D138)
 - [ ] 예제: 정석을 보여 주는 슈팅 게임(Timer 하나의 게임 루프, 물체마다 상태, 적이 나오는 시간표), 격투 게임
 
 ### v0.6 다음(후보, 권장 순서)

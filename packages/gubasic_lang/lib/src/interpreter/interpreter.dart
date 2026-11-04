@@ -3507,6 +3507,8 @@ class Interpreter {
         };
       case 'Now':
         return DateTime.now();
+      case 'Milliseconds':
+        return GbInt.of(host.milliseconds);
       case 'Today':
         final now = DateTime.now();
         return DateTime(now.year, now.month, now.day);

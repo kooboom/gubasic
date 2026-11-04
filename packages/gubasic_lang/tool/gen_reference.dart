@@ -85,6 +85,10 @@ const _functions = <String, Map<String, (String, String)>>{
   'Date and time': {
     'Now': ('The date and time now, on this device.', '이 기기의 지금 날짜와 시각.'),
     'Today': ('Today\'s date, at midnight.', '오늘 날짜(자정).'),
+    'Milliseconds': (
+      'The milliseconds since the program started, from a clock that only goes forward (for a game loop).',
+      '프로그램이 시작한 뒤 흐른 밀리초. 앞으로만 가는 시계(게임 루프용).'
+    ),
     'Year': ('The year of a date.', '날짜의 연.'),
     'Month': ('The month of a date, 1 to 12.', '날짜의 월(1~12).'),
     'Day': ('The day of a date.', '날짜의 일.'),

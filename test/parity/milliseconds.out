@@ -1,0 +1,17 @@
+Debug.Print: At start: 0
+Set tmrGame.Enabled: True
+> Wait 16
+> tmrGame.Tick
+Set lblTime.Caption: 16 ms, x = 0.48
+> Wait 16
+> tmrGame.Tick
+Set lblTime.Caption: 32 ms, x = 0.96
+> btnLap.Click
+Debug.Print: Lap at 32
+> Wait 500
+> tmrGame.Tick
+Set lblTime.Caption: 532 ms, x = 15.96
+> btnLap.Click
+Debug.Print: Lap at 532
+> Close
+Closed

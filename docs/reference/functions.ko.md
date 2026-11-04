@@ -44,6 +44,7 @@
 
 - `Now() As Date`: 이 기기의 지금 날짜와 시각.
 - `Today() As Date`: 오늘 날짜(자정).
+- `Milliseconds() As Integer`: 프로그램이 시작한 뒤 흐른 밀리초. 앞으로만 가는 시계(게임 루프용).
 - `Year(date As Date) As Integer`: 날짜의 연.
 - `Month(date As Date) As Integer`: 날짜의 월(1~12).
 - `Day(date As Date) As Integer`: 날짜의 일.

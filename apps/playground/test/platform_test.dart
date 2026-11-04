@@ -164,6 +164,9 @@ class _QuietHost implements Host {
   @override
   Future<String> inputBox(String p, String t, String d) async => '';
   @override
+  int get milliseconds => 0;
+
+  @override
   Future<void> yieldNow() => Future<void>.delayed(Duration.zero);
   @override
   Future<String?> loadSettings() async => null;

@@ -44,6 +44,7 @@
 
 - `Now() As Date`: The date and time now, on this device.
 - `Today() As Date`: Today's date, at midnight.
+- `Milliseconds() As Integer`: The milliseconds since the program started, from a clock that only goes forward (for a game loop).
 - `Year(date As Date) As Integer`: The year of a date.
 - `Month(date As Date) As Integer`: The month of a date, 1 to 12.
 - `Day(date As Date) As Integer`: The day of a date.

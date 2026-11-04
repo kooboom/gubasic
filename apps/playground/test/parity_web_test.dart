@@ -28,6 +28,9 @@ class _Host implements Host {
   }
 
   @override
+  int get milliseconds => 0;
+
+  @override
   Future<void> yieldNow() async {}
 
   @override

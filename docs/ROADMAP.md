@@ -110,13 +110,13 @@ Plan: [plans/PLAN_V06.md](plans/PLAN_V06.md) (2026-11-03; the answers are D136; 
 - [x] Controls' `Enabled`, `Visible`, `FontSize`, `FontBold`, `ForeColor` and `BackColor`, with Visual Basic .NET's `Color`; a control takes its Frame's or its form's font (D137)
 - [x] Example: a live quiz, phones answering and a TV showing the race: [LiveQuiz](../examples/livequiz) ([IDEAS](IDEAS.md#real-time-together-websocket-and-room))
 
-### v0.7 — Game tools (candidate, D121 a)
+### v0.7 — Game tools (D121 a, D138)
 
 - [ ] `Sprite`: a picture that moves, with its position, speed and frames
 - [ ] Collision tests: rectangles, circles, pixels
 - [ ] Sound: effects and music
 - [ ] `Keyboard.IsDown(Keys.Left)`: keys held at once, for a game loop
-- [ ] Time in milliseconds, for a game loop on one Timer
+- [x] Time in milliseconds, for a game loop on one Timer: `Milliseconds()` (D138)
 - [ ] Examples: a shooting game showing the usual shape (one Timer as the game loop, a state for each object, a timetable of when enemies come), and a fighting game
 
 ### After v0.6 (candidates, order recommended)

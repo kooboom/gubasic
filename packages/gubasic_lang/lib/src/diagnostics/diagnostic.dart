@@ -506,6 +506,11 @@ enum DiagnosticCode {
   /// write.
   vb6Color('A079'),
 
+  /// Visual Basic 6's `Timer` function and Visual Basic .NET's
+  /// `Environment.TickCount`: the time in milliseconds is `Milliseconds()`
+  /// (D138). Args: what was written.
+  vb6TimerFunction('A080'),
+
   // Form and project files (.form.yaml, .gbproj)
 
   /// The file is not in the expected layout (YAML syntax).

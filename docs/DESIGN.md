@@ -290,6 +290,7 @@ Choose mnuEditCopy    ' chooses an item of the menu PopupMenu shows (Dismiss clo
 lblName.MouseDown Right 10 5   ' a mouse button down at a place on a control; MouseUp lets it go (D111)
 Pick "names.csv"      ' chooses a file in the open or save dialog; Cancel cancels it (D113)
 Form.Resize 600 400   ' the user makes the form 600 x 400; Form_Resize runs (D57, D58)
+Wait 16               ' 16 milliseconds pass on the clock Milliseconds() reads (D138)
 Close                 ' closes the form
 ```
 

@@ -18,6 +18,11 @@ abstract interface class Host {
   /// program computes.
   Future<void> yieldNow();
 
+  /// `Milliseconds()`: the milliseconds since the program started, from a
+  /// clock that only goes forward (docs/DESIGN.md D138). A test's host
+  /// moves it with the script's `Wait`.
+  int get milliseconds;
+
   /// The saved settings of the program (`GetSetting`), as the text the
   /// interpreter last gave [saveSettings], or null if there are none. The
   /// IDE keeps them for each project, by its name (docs/DESIGN.md D48).

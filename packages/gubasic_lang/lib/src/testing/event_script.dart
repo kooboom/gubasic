@@ -149,6 +149,14 @@ class CloseStep extends ScriptStep {
   const CloseStep(super.text);
 }
 
+/// `Wait 16`: 16 milliseconds pass on the host's clock, the one
+/// `Milliseconds()` reads (D138); nothing else happens.
+class WaitStep extends ScriptStep {
+  const WaitStep(super.text, this.milliseconds);
+
+  final int milliseconds;
+}
+
 /// `Form.Resize 600 400`: the user makes the inside of the form 600 x 400;
 /// the controls move as their Anchor says (D57), then Form_Resize runs
 /// (D58). Nothing happens when it already is that size.
@@ -204,6 +212,7 @@ final _mouse = RegExp(
 final _gridStep = RegExp(
     r'^([A-Za-z][A-Za-z0-9_]*)\.(Click|Edit)\s+(\d+)\s+(\d+)(?:\s+"((?:[^"]|"")*)")?$');
 final _resize = RegExp(r'^Form\.Resize\s+(\d+)\s+(\d+)$', caseSensitive: false);
+final _wait = RegExp(r'^Wait\s+(\d+)$', caseSensitive: false);
 
 /// Reads an event script. Each line is one step; `'` starts a comment.
 /// Throws a [FormatException] for a line it cannot read.
@@ -233,6 +242,8 @@ List<ScriptStep> parseEventScript(String text) {
       steps.add(AnswerStep(line, null));
     } else if (line == 'Close') {
       steps.add(CloseStep(line));
+    } else if ((m = _wait.firstMatch(line)) != null) {
+      steps.add(WaitStep(line, int.parse(m![1]!)));
     } else if ((m = _pick.firstMatch(line)) != null) {
       steps.add(PickStep(line, m![1]!.replaceAll('""', '"')));
     } else if (line == 'Dismiss') {
@@ -798,6 +809,12 @@ class ScriptedHost implements FormHost, FileHost, ComponentHost, DatabaseFiles {
     return true;
   }
 
+  /// The host's clock, which the script's `Wait` moves (D138).
+  var clock = 0;
+
+  @override
+  int get milliseconds => clock;
+
   @override
   Future<void> yieldNow() => Future<void>.delayed(Duration.zero);
 
@@ -1003,6 +1020,9 @@ abstract interface class ScriptDriver {
   /// it already was that size, so that nothing happens.
   Future<EventOutcome?> resize(int width, int height);
 
+  /// [milliseconds] pass on the host's clock (D138).
+  Future<void> wait(int milliseconds);
+
   /// The test's WebSocket server does [action] (D136); false when no
   /// connection is open.
   Future<bool> server(ServerAction action);
@@ -1153,6 +1173,8 @@ Future<List<String>> driveEventScript(
       case ResizeStep(:final width, :final height):
         final outcome = await driver.resize(width, height);
         if (outcome != null) _record(out, step.text, outcome);
+      case WaitStep(:final milliseconds):
+        await driver.wait(milliseconds);
       case KeyStep():
         _record(out, step.text, await driver.key(step));
       case MouseStep():
@@ -1377,6 +1399,9 @@ class _HostDriver implements ScriptDriver {
     if (!host.resize(width, height)) return null;
     return interpreter.raiseEvent(null, 'Resize');
   }
+
+  @override
+  Future<void> wait(int milliseconds) async => host.clock += milliseconds;
 
   @override
   Future<bool> server(ServerAction action) async =>
