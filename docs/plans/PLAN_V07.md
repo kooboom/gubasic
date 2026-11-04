@@ -204,3 +204,15 @@ Every recommendation of §6 is taken, with two changes; DESIGN D138 records them
 - **Q5, the sound package, is chosen by measurement, not by this plan.** Before the Sound change (§6 Q11, step 5), the latency from `Play` to the first sound of `audioplayers` and of `flutter_soloud` is measured on the web, on macOS and on Windows, in three cases: one short effect, the same short effect many times in quick succession, and several different sounds at once. The results go into a table in this section when they are in, and the better package is taken without another question. The `GbSound` interface is the same for both.
 - **Q10, sound on the web before the first click, is dropped silently as recommended, and the reason is written down:** LANGUAGE §11.13 and the reference say that it is the browser's rule and why a program is not stopped for it. The Shooter example begins only when its Start button is pressed (§2.6), so that its first sound comes after the click.
 - Q1 to Q4, Q6 to Q9, Q11 and Q12: as recommended.
+
+### 7.1 The sound packages measured (2026-11-04, Windows and the web)
+
+`packages/gubasic_runtime/tool/sound_probe` plays five sounds it makes itself (a 50 ms shot, an 80 ms noise, a 30 ms beep, a tone, a chord) through each package and takes the milliseconds from the call to the first progress the package reports; `tool/web_check/sound_probe.mjs` runs its web build in Chrome. Windows 11 with the Windows app; the web in headless Chrome 155 (the browser's own buffer comes on top, the same for both). The median is of what started; "started" counts what reported progress within a second.
+
+| Case | audioplayers 6.8.1, Windows | flutter_soloud 5.2.2, Windows | audioplayers, web | flutter_soloud, web |
+|---|---|---|---|---|
+| One short effect (5 times) | median 53 ms, max 61 | median 27 ms, max 30 | median 23 ms, max 28 | median 24 ms, max 29 |
+| The same effect 20 times, 10 ms apart | median 452 ms, max 990, **17 of 20 started** | median 27 ms, max 49, 20 of 20 | median 385 ms, max 497, 20 of 20 | median 26 ms, max 53, 20 of 20 |
+| Five different sounds at once | 260 ms each | 2 ms each | 308 ms each | 9 ms each |
+
+Each `audioplayers` play is a player of its own (what a new effect over a playing one needs) and it queues them: the twentieth shot starts a second late, and three were lost on Windows. `flutter_soloud` mixes voices itself and starts each within a frame. **Chosen: `flutter_soloud`**, as the author allowed without another question; the macOS run is taken on the Mac with the same probe, and if it contradicts this the choice is looked at again. What comes with it: its `init_soloud.js` script line in the web pages (the IDE's, the player's and the web template's `index.html`), its WASM files served with the app, and its native plugin registered on Windows and macOS.
