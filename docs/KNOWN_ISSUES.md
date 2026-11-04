@@ -43,12 +43,6 @@ Problems we know about and have **deliberately** left unfixed for now. Each entr
 - **Why deferred:** the author allowed the choice without another question (D138), and the Mac was not at hand on 2026-11-04.
 - **Revisit:** on the Mac: `flutter run -d macos --release` in `packages/gubasic_runtime/tool/sound_probe`, the numbers into §7.1; if they contradict the choice, look at it again. Measure the Shooter as STAGE2_PLAN §7 measures a game.
 
-## The Shooter's integration test runs in CI on Windows only
-
-- **What:** `apps/ide/integration_test/shooter_test.dart` presses Start and sends keys to the IDE's window; on CI's macOS runner the window is never the key window ("Failed to foreground app"), the keys never reach the form, and no shot is fired. Telling the engine that the view has the focus did not help. On the Windows runner and on the author's Windows PC it passes; the LiveQuiz test on macOS uses taps only, which do arrive.
-- **Why deferred:** it could not be looked into without a Mac at hand (2026-11-04); the game itself is checked on macOS by the parity program in the run window and by the web check.
-- **Revisit:** on the Mac: `dart run gubasic_test_support:integration integration_test/shooter_test.dart -d macos` in `apps/ide`; if it passes there, find what the runner lacks (the window's key state) and put the step back into `test.yml`.
-
 ## The web IDE has no relay server of its own
 
 - **What:** the desktop IDE runs a relay server for a `Room` whose `Server` is empty (D136); the web IDE cannot, so there such a program stops with R048 ("no relay server").

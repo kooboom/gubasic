@@ -11,6 +11,7 @@ import 'package:gubasic_ide/src/project/project_pictures.dart';
 import 'package:gubasic_ide/src/project/project_sounds.dart';
 import 'package:gubasic_ide/src/strings.dart';
 import 'package:gubasic_player/gubasic_player.dart';
+import 'package:gubasic_runtime/gubasic_runtime.dart' show GbSprite;
 import 'package:gubasic_test_support/gubasic_test_support.dart';
 import 'package:integration_test/integration_test.dart';
 
@@ -20,9 +21,7 @@ import 'package:integration_test/integration_test.dart';
 /// the score goes up. Run with `dart run gubasic_test_support:integration
 /// integration_test/shooter_test.dart -d windows` (or `-d macos`); with
 /// `--dart-define=SHOTS=folder` it saves the run window there as
-/// `shooter-PLATFORM.png`. CI runs it on Windows; on the macOS runner the
-/// window is never the key window and the keys do not reach the form
-/// (KNOWN_ISSUES), so it is run on a Mac by hand.
+/// `shooter-PLATFORM.png`. CI runs it on Windows and macOS.
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
   const shots = String.fromEnvironment('SHOTS');
@@ -72,31 +71,32 @@ void main() {
     // Start: the music and the loop begin.
     await tester.tap(find.text('시작'));
     await tester.pump();
-    // On a CI runner the window may not be the system's key window (macOS
-    // says "Failed to foreground app"), and then the view has no focus and
-    // no key reaches the form. Tell the engine the view has it, as a click
-    // on the window would.
-    tester.binding.platformDispatcher.onViewFocusChange?.call(
-      ui.ViewFocusEvent(
-        viewId: tester.view.viewId,
-        state: ui.ViewFocusState.focused,
-        direction: ui.ViewFocusDirection.forward,
-      ),
-    );
-    await tester.pump();
-    // A player's hands: fire, go right a while, then left.
+    // A player's hands: fire all the time, go right a little, then left
+    // until the ship is under the first lane, and stay there. The first
+    // enemy comes down that lane a second after Start and meets the shots
+    // whatever the computer's speed; a ship swept to the edge would fire
+    // past it (the edge is left of the lane's middle).
+    int shipLeft() => tester
+        .widget<GbSprite>(
+          find.byWidgetPredicate(
+            (w) => w is GbSprite && w.state.name?.toLowerCase() == 'sprship',
+          ),
+        )
+        .state
+        .integer('Left');
     await tester.sendKeyDownEvent(LogicalKeyboardKey.space);
     await tester.sendKeyDownEvent(LogicalKeyboardKey.arrowRight);
-    await tester.runAsync(
-      () => Future<void>.delayed(const Duration(milliseconds: 1500)),
-    );
+    await until('the ship going right', () => shipLeft() > 240);
     await tester.sendKeyUpEvent(LogicalKeyboardKey.arrowRight);
     await tester.sendKeyDownEvent(LogicalKeyboardKey.arrowLeft);
+    // The lane is 96 wide and its enemy 32, at 32 to 64; the shot leaves
+    // the ship's middle, Left + 13 to Left + 19.
+    await until('the ship under the first lane', () => shipLeft() <= 40);
+    await tester.sendKeyUpEvent(LogicalKeyboardKey.arrowLeft);
     await until(
       'a hit',
       () => score.evaluate().isNotEmpty && textOf(score.first) != '점수 0',
     );
-    await tester.sendKeyUpEvent(LogicalKeyboardKey.arrowLeft);
     await tester.sendKeyUpEvent(LogicalKeyboardKey.space);
     expect(textOf(score.first), isNot('점수 0'));
     expect(find.textContaining('목숨 '), findsWidgets);
