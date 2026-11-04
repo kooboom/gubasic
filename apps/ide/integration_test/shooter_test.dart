@@ -70,6 +70,18 @@ void main() {
     // Start: the music and the loop begin.
     await tester.tap(find.text('시작'));
     await tester.pump();
+    // On a CI runner the window may not be the system's key window (macOS
+    // says "Failed to foreground app"), and then the view has no focus and
+    // no key reaches the form. Tell the engine the view has it, as a click
+    // on the window would.
+    tester.binding.platformDispatcher.onViewFocusChange?.call(
+      ui.ViewFocusEvent(
+        viewId: tester.view.viewId,
+        state: ui.ViewFocusState.focused,
+        direction: ui.ViewFocusDirection.forward,
+      ),
+    );
+    await tester.pump();
     // A player's hands: fire, go right a while, then left.
     await tester.sendKeyDownEvent(LogicalKeyboardKey.space);
     await tester.sendKeyDownEvent(LogicalKeyboardKey.arrowRight);
