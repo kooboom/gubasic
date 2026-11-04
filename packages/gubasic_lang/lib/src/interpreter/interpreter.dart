@@ -1721,6 +1721,11 @@ class Interpreter {
       final value = _ambient(c, spec.name);
       return spec.type == GbType.color ? GbColor.of(value) : value;
     }
+    if (c.component.name == 'Sprite' &&
+        (spec.name == 'X' || spec.name == 'Y')) {
+      // Left or Top and the fraction kept with it (D138).
+      return _spritePlace(c, spec.name == 'X');
+    }
     final value =
         spec.readOnly ? _computedProperty(c, spec) : _raw(c, spec.name);
     if (spec.type == GbType.integer) return GbInt.of(value as int);
@@ -1764,6 +1769,34 @@ class Interpreter {
       // spelling (D51).
       v = _a.pictures?[pictureKey(v)] ??
           _fail(DiagnosticCode.pictureNotFound, e, [v]);
+    }
+    if (spec.pictures && v is String && v.isNotEmpty) {
+      // Each name as a picture property's (D138).
+      v = joinPictureNames([
+        for (final n in splitPictureNames(v))
+          _a.pictures?[pictureKey(n)] ??
+              _fail(DiagnosticCode.pictureNotFound, e, [n]),
+      ]);
+    }
+    if (c.component.name == 'Sprite') {
+      switch (spec.name) {
+        case 'X' || 'Y':
+          // Left or Top rounded down, the fraction kept (D138).
+          _setSpritePlace(c, spec.name == 'X', v as double);
+          return null;
+        case 'Frames':
+          // New frames show from the first.
+          _rawSet(c, 'Frames', v);
+          _rawSet(c, 'Frame', 0);
+          _rawSet(c, 'FrameClock', 0);
+          return null;
+        case 'Frame':
+          final last = _frames(c).length - 1;
+          if ((v as int) > last && v != 0) {
+            _fail(DiagnosticCode.frameOutOfRange, e,
+                ['${last < 0 ? 0 : last}', '$v']);
+          }
+      }
     }
     if (_isList(c) && spec.name == 'ListIndex') {
       final count = _items(c).length;
@@ -1998,6 +2031,49 @@ class Interpreter {
   List<String> _items(GbControl c) => _raw(c, 'Items') as List<String>;
   int _listIndex(GbControl c) => _raw(c, 'ListIndex') as int;
 
+  /// A Sprite's frames (D138): the picture names in its Frames.
+  List<String> _frames(GbControl c) =>
+      splitPictureNames(_raw(c, 'Frames') as String);
+
+  /// Where a Sprite is, with fractions (D138): Left (or Top) and the
+  /// fraction kept in FracX (or FracY), so that an Anchor moving Left
+  /// moves X with it.
+  double _spritePlace(GbControl c, bool x) =>
+      (_raw(c, x ? 'Left' : 'Top') as int) +
+      (_raw(c, x ? 'FracX' : 'FracY') as double);
+
+  void _setSpritePlace(GbControl c, bool x, double value) {
+    final whole = value.floor().clamp(integerPropertyMin, integerPropertyMax);
+    final fraction = value - whole;
+    if (_raw(c, x ? 'Left' : 'Top') != whole) {
+      _rawSet(c, x ? 'Left' : 'Top', whole);
+    }
+    if (_raw(c, x ? 'FracX' : 'FracY') != fraction) {
+      _rawSet(c, x ? 'FracX' : 'FracY', fraction);
+    }
+  }
+
+  /// A Sprite's Move(ms) (D138): by its speed, and to the next frames
+  /// when FrameTime is above 0; nothing for 0 or less.
+  void _moveSprite(GbControl c, int ms) {
+    if (ms <= 0) return;
+    for (final x in const [true, false]) {
+      final speed = _raw(c, x ? 'SpeedX' : 'SpeedY') as double;
+      if (speed != 0) {
+        _setSpritePlace(c, x, _spritePlace(c, x) + speed * ms / 1000);
+      }
+    }
+    final frameTime = _raw(c, 'FrameTime') as int;
+    final count = _frames(c).length;
+    if (frameTime <= 0 || count == 0) return;
+    final clock = (_raw(c, 'FrameClock') as int) + ms;
+    final turns = clock ~/ frameTime;
+    _rawSet(c, 'FrameClock', clock - turns * frameTime);
+    if (turns > 0) {
+      _rawSet(c, 'Frame', ((_raw(c, 'Frame') as int) + turns) % count);
+    }
+  }
+
   /// A member of form [c] that is not its component's (D88): one of its
   /// controls, a variable or a procedure of its code. A procedure is
   /// called through [_pendingCall].
@@ -2096,6 +2172,9 @@ class Interpreter {
         return null;
       case ('OpenFileDialog' || 'SaveFileDialog', 'ShowDialog'):
         _pendingCall = () async => GbInt.of(await _fileDialog(c, at));
+        return null;
+      case ('Sprite', 'Move'):
+        _moveSprite(c, (args[0] as GbInt).toSmallInt() ?? 0);
         return null;
       case ('Timer', 'Start'):
         _rawSet(c, 'Enabled', true);

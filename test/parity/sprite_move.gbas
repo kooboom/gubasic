@@ -1,0 +1,31 @@
+' A Sprite's place and speed (D138): X and Y with fractions, Left and Top
+' the same place rounded down, SpeedX and SpeedY in pixels a second, and
+' Move(ms) moving it by them. Nothing moves by itself: the game loop says
+' when, with the milliseconds that passed.
+Dim lastTime As Integer
+
+Sub Form_Load()
+    Debug.Print("At " & sprShip.X & ", " & sprShip.Y & " (" & sprShip.Left & ", " & sprShip.Top & ")")
+    sprShip.X = 10.75
+    Debug.Print("X 10.75: Left " & sprShip.Left & ", X " & sprShip.X)
+    sprShip.Left = 20
+    Debug.Print("Left 20: X " & sprShip.X)
+    sprShip.SpeedX = 30         ' half a pixel a 16 ms round
+    sprShip.SpeedY = -100
+    lastTime = Milliseconds()
+    tmrGame.Start()
+End Sub
+
+Sub tmrGame_Tick()
+    Dim dt As Integer = Milliseconds() - lastTime
+    lastTime = Milliseconds()
+    sprShip.Move(dt)
+    Debug.Print(dt & " ms: X " & sprShip.X & ", Y " & sprShip.Y & " (" & sprShip.Left & ", " & sprShip.Top & ")")
+End Sub
+
+Sub btnStop_Click()
+    sprShip.SpeedX = 0
+    sprShip.SpeedY = 0
+    sprShip.Move(1000)          ' no speed: it stays
+    Debug.Print("Stopped at " & sprShip.X & ", " & sprShip.Y)
+End Sub

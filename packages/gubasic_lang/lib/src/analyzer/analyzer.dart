@@ -1220,7 +1220,17 @@ class _Analyzer {
       return;
     }
     final property = type.component.properties[target.name.name.toLowerCase()];
-    if (property == null || !property.picture || value.value.isEmpty) return;
+    if (property == null || value.value.isEmpty) return;
+    if (property.pictures) {
+      // Several names separated by commas (D138), each as one.
+      for (final n in splitPictureNames(value.value)) {
+        if (!pictures.containsKey(pictureKey(n))) {
+          _reportAt(value, DiagnosticCode.unknownPictureInCode, [n]);
+        }
+      }
+      return;
+    }
+    if (!property.picture) return;
     if (!pictures.containsKey(pictureKey(value.value))) {
       _reportAt(value, DiagnosticCode.unknownPictureInCode, [value.value]);
     }

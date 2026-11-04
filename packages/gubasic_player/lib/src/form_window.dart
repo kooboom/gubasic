@@ -91,6 +91,7 @@ GbControlKind _kind(String component) => switch (component.toLowerCase()) {
   'checkbox' => GbControlKind.checkBox,
   'listbox' => GbControlKind.listBox,
   'image' => GbControlKind.image,
+  'sprite' => GbControlKind.sprite,
   'optionbutton' => GbControlKind.optionButton,
   'combobox' => GbControlKind.comboBox,
   'frame' => GbControlKind.frame,

@@ -780,7 +780,11 @@ enum DiagnosticCode {
   notConnected('R049'),
 
   /// A part of `Color.FromArgb` outside 0 to 255 (D137). Args: the value.
-  colorPartOutOfRange('R050');
+  colorPartOutOfRange('R050'),
+
+  /// A Sprite's Frame past its last frame (D138). Args: the last, the
+  /// value.
+  frameOutOfRange('R051');
 
   const DiagnosticCode(this.code, [this.severity = DiagnosticSeverity.error]);
 

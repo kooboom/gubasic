@@ -1,0 +1,64 @@
+# A picture that moves (docs/DESIGN.md D138): a game's ship, shot or
+# enemy. Frames names the project's pictures it is drawn from, separated
+# by commas; Frame is the one shown, from 0, and with FrameTime above 0
+# Move turns them one after another. X and Y are where it is, with
+# fractions, Left and Top the same place rounded down; SpeedX and SpeedY
+# are pixels a second, and Move(ms) moves it by them, nothing moving by
+# itself. The frame is drawn filling Width and Height. Drawn under the
+# other controls, like an Image; what is behind shows through its
+# transparent pixels.
+name: Sprite
+version: 1
+visual: true
+layer: graphic
+defaultEvent: Click
+properties:
+  # The project's pictures it is drawn from, separated by commas:
+  # "enemy1.png, enemy2.png"; "" draws nothing.
+  - { name: Frames, type: String, default: "", pictures: true }
+  # The frame shown, from 0; past the last is R051.
+  - { name: Frame, type: Integer, min: 0, default: 0 }
+  # Milliseconds a frame shows before Move turns to the next; 0: the
+  # program sets Frame itself.
+  - { name: FrameTime, type: Integer, min: 0, default: 0 }
+  # Where it is, in pixels with fractions: Left plus the fraction kept in
+  # FracX (D138). Set in code; the designer sets Left and Top.
+  - { name: X, type: Double, default: 0, designTime: false }
+  - { name: Y, type: Double, default: 0, designTime: false }
+  - { name: FracX, type: Double, default: 0, internal: true }
+  - { name: FracY, type: Double, default: 0, internal: true }
+  # Milliseconds since the frame last turned, kept by Move.
+  - { name: FrameClock, type: Integer, default: 0, internal: true }
+  # How fast Move moves it, in pixels a second.
+  - { name: SpeedX, type: Double, default: 0 }
+  - { name: SpeedY, type: Double, default: 0 }
+  - { name: Left, type: Integer, default: 0 }
+  - { name: Top, type: Integer, default: 0 }
+  - { name: Width, type: Integer, min: 0, default: 32 }
+  - { name: Height, type: Integer, min: 0, default: 32 }
+  # The edges of the form, or of the Frame it is in, whose distance it
+  # keeps (D57, D105).
+  - { name: Anchor, type: String, default: "Left Top", anchor: true }
+  # Whether the user can use it: False greys it, and it takes no clicks;
+  # a Frame that is not Enabled holds back what is in it too (D137).
+  - { name: Enabled, type: Boolean, default: true }
+  # Whether it is seen; a hidden Frame hides what is in it (D137).
+  - { name: Visible, type: Boolean, default: true }
+  # Any text the program keeps with it, as in Visual Basic; GuBASIC does
+  # nothing with it (D98).
+  - { name: Tag, type: String, default: "" }
+events:
+  - Click()
+  # A mouse button pressed and let go on it (D111).
+  - MouseDown(e As MouseEventArgs)
+  - MouseUp(e As MouseEventArgs)
+methods:
+  # Moves it by its speed for ms milliseconds, and turns its frame when
+  # FrameTime is above 0.
+  - Move(ms As Integer)
+# Names other versions of BASIC use, pointed to GuBASIC's (A036,
+# docs/DESIGN.md D50).
+otherNames:
+  # Visual Basic 6's control arrays numbered controls; a Tag can (D99).
+  Index: Tag
+  Picture: Frames

@@ -1,0 +1,3 @@
+btnPast.Click        ' Frame past the last frame: R051, caught
+btnUnknown.Click     ' a picture the project does not have: R013, caught
+Close

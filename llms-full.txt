@@ -821,6 +821,7 @@ End Sub
 | `TextBox` | `Text` (`String`); `Left`, `Top`, `Width`, `Height` (`Integer`) | `Changed` |
 | `CheckBox` | `Caption` (`String`); `Checked` (`Boolean`); `Left`, `Top`, `Width`, `Height` (`Integer`) | `Changed` |
 | `Image` | `Picture` (`String`, the name of one of the project's pictures); `Stretch` (`Boolean`); `Left`, `Top`, `Width`, `Height` (`Integer`) | `Click` |
+| `Sprite` | `Frames` (`String`, the project's pictures it is drawn from, separated by commas); `Frame`, `FrameTime` (`Integer`); `X`, `Y`, `SpeedX`, `SpeedY` (`Double`); `Left`, `Top`, `Width`, `Height` (`Integer`). Methods: `Move(ms)` | `Click` |
 | `OptionButton` | `Caption` (`String`); `Checked` (`Boolean`); `Left`, `Top`, `Width`, `Height` (`Integer`) | `Changed` |
 | `ComboBox` | as a `ListBox`: `ListIndex`, `ListCount`, `Text`; `AddItem(item)`, `RemoveItem(index)`, `Clear()`, `List(index)` | `Changed` |
 | `Frame` | `Caption` (`String`); `Left`, `Top`, `Width`, `Height` (`Integer`); holds other controls | `Click` |
@@ -874,6 +875,19 @@ End Sub
 - **`ListBox.Changed`** runs whenever `ListIndex` changes: when the user picks another item, when the program sets `ListIndex` (right away, as part of the assignment, as for `TextBox.Changed`), and when `RemoveItem` or `Clear` moves or removes the chosen item, as part of that call. Removing an item above the chosen one moves the choice up by one, so the same item stays chosen; removing the chosen one, or `Clear`, leaves nothing chosen. Picking the chosen item again, or setting the same `ListIndex`, does not run it. While a ListBox's `Changed` is running, a pick in that ListBox is ignored and changes nothing (§8.1).
 - **A Grid** (DESIGN.md D116) shows a table of text: a header row of column names, then rows, as a Table (§11.7) does on the form. `Cell(row, column)`, with a column's number or name, and `Header(column)` read a cell and a name and can be assigned to (`grdScores.Cell(r, "점수") = 0`); `RowCount`, `ColumnCount`, `Column`, `AddRow`, `AddColumn` and `Clear` are a Table's; `LoadCsv(path)` and `SaveCsv(path)` read and write a CSV file as `Csv.Read` and `Csv.Write` do. Rows and columns count from 0, the header not among them. `Row` and `Col` are the chosen cell (−1 when none). A click on a cell chooses it and runs `Click`; a second click on it, Enter, F2 or typing edits it (typing starts the text over), unless `ReadOnly` is `True`; Enter or a click elsewhere keeps the edit and Escape drops it. When the user has changed a cell, `Changed` runs with `Row` and `Col` on it. The program's own changes run nothing, so a `Changed` that adds the scores up and writes the total into the Grid does not start again. `ColumnWidth(column)` is a column's width in pixels: 0 at first, when the columns without a width share what the others leave, at least 96 pixels each; what does not fit scrolls. A name no column has is R032 in `Cell` and the other members; only `Column(name)` gives -1 for it. Visual Basic .NET's [DataGridView](https://learn.microsoft.com/en-us/dotnet/api/system.windows.forms.datagridview) and Visual Basic 6's [MSFlexGrid](https://learn.microsoft.com/en-us/previous-versions/visualstudio/visual-basic-6/aa228849(v=vs.60)) are pointed to it: their `TextMatrix` is `Cell`, `Rows` `RowCount`, `Cols` `ColumnCount` (A036), and `CellValueChanged` is `Changed` (A051).
 - **An Image** shows one of the project's pictures (§11.3): `imgShape.Picture = "triangle.png"` shows it, `""` shows none. The name is compared as names in code are, without case (`"Triangle.PNG"` is `triangle.png`), and reads back with the project's spelling. A name the project has no picture of stops the program (R013); written as text in the code, the analyzer warns first (A037), and in a form file it is F016. With `Stretch = False` (the default) the whole picture is fitted inside the control, keeping its proportions; with `True` it fills the control and may look squeezed. Unlike Visual Basic 6, whose Image grows or shrinks to its picture when `Stretch` is False ([Microsoft](https://learn.microsoft.com/en-us/previous-versions/visualstudio/visual-basic-6/aa242027(v=vs.60))), the control keeps the size it was drawn at. An Image is drawn under the other controls, as a Label is (DESIGN.md D41), and takes clicks over its whole area, picture or not.
+- **A Sprite** (DESIGN.md D138) is a picture that moves: a game's ship, shot or enemy. **`Frames`** names the project's pictures it is drawn from, separated by commas (`"enemy1.png, enemy2.png"`), each checked as an Image's `Picture` is (R013, A037, F016); one name is a still sprite, `""` draws nothing. **`Frame`** is the one shown, counted from 0 as arrays are; past the last it is R051, and new `Frames` show from the first. With **`FrameTime`** above 0 (milliseconds), `Move` turns the frames one after another, round to the first after the last; at 0 the program sets `Frame` itself. **`X`** and **`Y`** are where its top left corner is, in pixels with fractions, so that a speed of 30 pixels a second moves it exactly half a pixel in a 16 ms round; `Left` and `Top` are the same place rounded down, and setting one sets the other. **`SpeedX`** and **`SpeedY`** are pixels a second, and **`Move(ms)`** moves it by them for `ms` milliseconds: nothing moves by itself, so a program is the same wherever it runs. The frame is drawn filling `Width` and `Height` (as an Image with `Stretch`), which the Properties window sets once to the first frame's size when `Frames` is first chosen; what is behind shows through its transparent pixels. It is drawn under the other controls like an Image, has `Click`, `MouseDown` and `MouseUp`, and is made with `New Sprite` (§11.4) when a game needs twenty of them.
+
+  ```vb
+  Sub tmrGame_Tick()
+      Dim dt As Integer = Milliseconds() - lastTime
+      lastTime = Milliseconds()
+      sprShip.SpeedX = 0
+      If Keyboard.IsDown(Keys.Left) Then sprShip.SpeedX = -200
+      If Keyboard.IsDown(Keys.Right) Then sprShip.SpeedX = 200
+      sprShip.Move(dt)
+      sprEnemy.Move(dt)          ' FrameTime 120: its frames turn as it flies
+  End Sub
+  ```
 - **`Anchor`**, which every control has, names the edges of the form whose distance the control keeps when the form changes size: when the user resizes the window, or the program sets the form's `Width` or `Height` (DESIGN.md D57). It is text: `"Left Top"` (the default: the control stays where it was drawn), `"Right Bottom"` (it stays in the bottom-right corner), `"Left Right"` (it stretches with the form's width), or `""` (no edge: it stays as near the middle). The words may come in any order and case, separated by spaces or commas, and read back in the order `Left Top Right Bottom`. Anchored to two opposite edges, a control stretches, but never below 0; anchored to neither, it moves half as much as the form grows, rounded down. These are Visual Basic .NET's rules ([Microsoft](https://learn.microsoft.com/en-us/dotnet/api/system.windows.forms.anchorstyles)); in Visual Basic 6 a program moves its controls itself, in `Form_Resize` ([Microsoft](https://learn.microsoft.com/en-us/previous-versions/visualstudio/visual-basic-6/aa445540(v=vs.60))). `Left`, `Top`, `Width` and `Height` read where the control is now. A control the program places, or gives another `Anchor`, stays where it is and follows its `Anchor` from there. Text with another word stops the program (R014); written as text in the code, the analyzer warns first (A038), and in a form file it is F017.
 - **`Form_Resize`** runs when the inside of the form changes size: when the user resizes the window, and when the program sets the form's `Width` or `Height` (right away, as part of the assignment, as for `TextBox.Changed`). It also runs once when the form is first shown, after `Form_Load`, as in Visual Basic 6 ([Microsoft](https://learn.microsoft.com/en-us/previous-versions/visualstudio/visual-basic-6/aa445540(v=vs.60))). The controls have moved as their `Anchor` says by then, so the handler sees where they are and can place the others itself. A handler that sets the form's size is not started again by that change (§8.1). While a dialog is open, the form cannot be resized (DESIGN.md D58).
 - **A click while a character is being composed.** Before a click reaches the program, the characters still being composed in any TextBox are committed. The order is always: the characters are committed, `TextBox.Changed` runs, then `Click` runs (or, for a click on a CheckBox or a ListBox, its `Changed`). So if the user types 한글 and clicks a button straight away, without a space, `txtName.Text` in the `Click` handler is already 한글.
@@ -1795,6 +1809,49 @@ Default event (made by a double-click): `FileOk`
 ## Names other versions of BASIC use
 
 - `index` → `Tag`
+
+# Sprite
+
+A picture that moves (docs/DESIGN.md D138): a game's ship, shot or enemy. Frames names the project's pictures it is drawn from, separated by commas; Frame is the one shown, from 0, and with FrameTime above 0 Move turns them one after another. X and Y are where it is, with fractions, Left and Top the same place rounded down; SpeedX and SpeedY are pixels a second, and Move(ms) moves it by them, nothing moving by itself. The frame is drawn filling Width and Height. Drawn under the other controls, like an Image; what is behind shows through its transparent pixels.
+
+Explained in [LANGUAGE.md §11](../../LANGUAGE.md).
+
+Default event (made by a double-click): `Click`
+
+## Properties
+
+| | Type | At first | Notes |
+|---|---|---|---|
+| `Frames` | String | `""` |  |
+| `Frame` | Integer | `0` |  |
+| `FrameTime` | Integer | `0` |  |
+| `X` | Double | `0.0` | set only while the program runs |
+| `Y` | Double | `0.0` | set only while the program runs |
+| `SpeedX` | Double | `0.0` |  |
+| `SpeedY` | Double | `0.0` |  |
+| `Left` | Integer | `0` |  |
+| `Top` | Integer | `0` |  |
+| `Width` | Integer | `32` |  |
+| `Height` | Integer | `32` |  |
+| `Anchor` | String | `"Left Top"` |  |
+| `Enabled` | Boolean | `True` |  |
+| `Visible` | Boolean | `True` |  |
+| `Tag` | String | `""` |  |
+
+## Methods
+
+- `Move(ms As Integer)`
+
+## Events
+
+- `Click()`
+- `MouseDown(e As MouseEventArgs)`
+- `MouseUp(e As MouseEventArgs)`
+
+## Names other versions of BASIC use
+
+- `index` → `Tag`
+- `picture` → `Frames`
 
 # TextBox
 

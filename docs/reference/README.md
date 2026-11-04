@@ -20,6 +20,7 @@ Every control, function, object and type, generated from what the analyzer knows
 - [OptionButton](controls/OptionButton.md)
 - [Room](controls/Room.md)
 - [SaveFileDialog](controls/SaveFileDialog.md)
+- [Sprite](controls/Sprite.md)
 - [TextBox](controls/TextBox.md)
 - [Timer](controls/Timer.md)
 - [WebSocket](controls/WebSocket.md)

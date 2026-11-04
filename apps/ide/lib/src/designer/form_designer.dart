@@ -1202,6 +1202,24 @@ class _FormDesignerState extends State<FormDesigner> {
     if (!_canEdit) return;
     final before = _text;
     var form = withProperty(_form, control, property, value);
+    if (property == 'Frames' &&
+        value is String &&
+        value.isNotEmpty &&
+        control != null &&
+        '${_form.control(control)?.valueOf('Frames')}'.isEmpty) {
+      // The frames first chosen give the Sprite the first one's size,
+      // once (D138).
+      final first = pictureKey(splitPictureNames(value).first);
+      final bytes = widget.project.pictures.entries
+          .where((e) => pictureKey(e.key) == first)
+          .firstOrNull
+          ?.value;
+      final size = bytes == null ? null : pictureSize(bytes);
+      if (size != null) {
+        form = withProperty(form, control, 'Width', size.$1);
+        form = withProperty(form, control, 'Height', size.$2);
+      }
+    }
     if (value == true &&
         property == 'Checked' &&
         form.control(control ?? '')?.component.name == 'OptionButton') {

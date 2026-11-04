@@ -206,6 +206,21 @@ class _ControlIconPainter extends CustomPainter {
           )
           ..drawCircle(const Offset(13, 7), 1.6, _fill(_yellow))
           ..drawRRect(RRect.fromRectAndRadius(_square, _corner), outline);
+      case 'sprite':
+        // A ship flying right, and its shot (D138).
+        canvas
+          ..drawRRect(RRect.fromRectAndRadius(_square, _corner), faceFill)
+          ..drawPath(
+            Path()
+              ..moveTo(4, 5.5)
+              ..lineTo(13, 10)
+              ..lineTo(4, 14.5)
+              ..lineTo(6.5, 10)
+              ..close(),
+            _fill(accent),
+          )
+          ..drawCircle(const Offset(15.5, 10), 1.3, _fill(_yellow))
+          ..drawRRect(RRect.fromRectAndRadius(_square, _corner), outline);
       case 'timer':
         canvas
           ..drawCircle(const Offset(10, 10.8), 6.2, faceFill)

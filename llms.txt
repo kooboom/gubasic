@@ -26,6 +26,7 @@ Write GuBASIC code as the documents below describe; it is close to Visual Basic 
 - [OptionButton](https://github.com/kooboom/gubasic/blob/main/docs/reference/controls/OptionButton.md): One of a group of choices, of which one is checked: the OptionButtons of a form are one group.
 - [Room](https://github.com/kooboom/gubasic/blob/main/docs/reference/controls/Room.md): Puts programs with the same room code together through a relay server: the TV's program calls Create() and shows Code, the phones' call Join(code, nickname), and each Send reaches the others as Message.
 - [SaveFileDialog](https://github.com/kooboom/gubasic/blob/main/docs/reference/controls/SaveFileDialog.md): The dialog that asks for a file to save to, as Visual Basic .NET's SaveFileDialog.
+- [Sprite](https://github.com/kooboom/gubasic/blob/main/docs/reference/controls/Sprite.md): A picture that moves: a game's ship, shot or enemy.
 - [TextBox](https://github.com/kooboom/gubasic/blob/main/docs/reference/controls/TextBox.md): A box the user types a line of text into: its Text.
 - [Timer](https://github.com/kooboom/gubasic/blob/main/docs/reference/controls/Timer.md): A Timer runs its Tick every Interval milliseconds while Enabled.
 - [WebSocket](https://github.com/kooboom/gubasic/blob/main/docs/reference/controls/WebSocket.md): Talks to any standard WebSocket server (RFC 6455) in text messages, today's version of what Visual Basic 6 programs did with the Winsock control (https://learn.microsoft.com/en-us/previous-versions/visualstudio/visual-basic-6/aa228119(v=vs.60)).

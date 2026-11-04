@@ -1,0 +1,5 @@
+formatVersion: 1
+controls:
+  - { name: sprShip, type: Sprite, properties: { Frames: ship.png, Left: 10, Top: 200, Width: 24, Height: 24 } }
+  - { name: btnStop, type: Button, properties: { Caption: Stop, Left: 200 } }
+  - { name: tmrGame, type: Timer, properties: { Interval: 16 } }

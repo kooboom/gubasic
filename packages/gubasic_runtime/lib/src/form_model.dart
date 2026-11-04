@@ -14,6 +14,7 @@ enum GbControlKind {
   checkBox,
   listBox,
   image,
+  sprite,
   optionButton,
   comboBox,
   frame,

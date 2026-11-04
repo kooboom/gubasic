@@ -278,3 +278,13 @@ bool _gifWhole(Uint8List bytes) {
     if (i >= bytes.length) return false;
   }
 }
+
+/// The names in a text naming several pictures, separated by commas (a
+/// Sprite's Frames, D138): each trimmed, the empty ones left out.
+List<String> splitPictureNames(String text) => [
+      for (final name in text.split(','))
+        if (name.trim().isNotEmpty) name.trim(),
+    ];
+
+/// [names] as a text naming several pictures is written: `a.png, b.png`.
+String joinPictureNames(Iterable<String> names) => names.join(', ');

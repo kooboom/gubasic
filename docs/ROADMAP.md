@@ -112,7 +112,7 @@ Plan: [plans/PLAN_V06.md](plans/PLAN_V06.md) (2026-11-03; the answers are D136; 
 
 ### v0.7 — Game tools (D121 a, D138)
 
-- [ ] `Sprite`: a picture that moves, with its position, speed and frames
+- [x] `Sprite`: a picture that moves, with its position, speed and frames (D138)
 - [ ] Collision tests: rectangles, circles, pixels
 - [ ] Sound: effects and music
 - [x] `Keyboard.IsDown(Keys.Left)`: keys held at once, for a game loop (D138)

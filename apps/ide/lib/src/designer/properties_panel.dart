@@ -501,6 +501,81 @@ class _PropertyFieldState extends State<PropertyField> {
   /// picture, which opens a menu of the project's pictures, with no
   /// picture first and a way to add one last. A name the project does not
   /// have is shown as it is, marked.
+  /// Several pictures in order, separated by commas (a Sprite's Frames,
+  /// D138): each picture of the project goes in and out of the list
+  /// with its check, a picture chosen again going to the end.
+  Widget _framesList(BuildContext context) {
+    final s = widget.strings;
+    final theme = Theme.of(context);
+    final names = splitPictureNames('${widget.value}');
+    final chosen = {for (final n in names) pictureKey(n)};
+    return MenuAnchor(
+      menuChildren: [
+        MenuItemButton(
+          onPressed: () => _chooseFrames(const []),
+          child: Text(s.noPicture),
+        ),
+        for (final p in widget.pictures)
+          CheckboxMenuButton(
+            value: chosen.contains(pictureKey(p)),
+            onChanged: (on) => _chooseFrames(
+              on == true
+                  ? [...names, p]
+                  : [
+                      for (final n in names)
+                        if (pictureKey(n) != pictureKey(p)) n,
+                    ],
+            ),
+            child: Text(p),
+          ),
+        if (widget.onAddPicture != null)
+          MenuItemButton(
+            onPressed: () async {
+              final added = await widget.onAddPicture!();
+              if (added != null && mounted) _chooseFrames([...names, added]);
+            },
+            child: Text(s.addPicture),
+          ),
+      ],
+      builder: (context, menu, _) => GestureDetector(
+        key: propertyFieldKey(widget.spec.name),
+        behavior: HitTestBehavior.opaque,
+        onTap: widget.editable
+            ? () => menu.isOpen ? menu.close() : menu.open()
+            : null,
+        child: InputDecorator(
+          decoration: const InputDecoration(
+            isDense: true,
+            border: OutlineInputBorder(),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  names.isEmpty ? s.noPicture : joinPictureNames(names),
+                  style: theme.textTheme.bodyMedium,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              Icon(
+                Icons.arrow_drop_down,
+                size: 16,
+                color: widget.editable ? null : theme.disabledColor,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _chooseFrames(List<String> names) {
+    final text = joinPictureNames(names);
+    if (text != widget.value) widget.onChange(text, Object());
+    widget.onDone();
+  }
+
   Widget _pictureList(BuildContext context) {
     final s = widget.strings;
     final theme = Theme.of(context);
@@ -614,6 +689,7 @@ class _PropertyFieldState extends State<PropertyField> {
   @override
   Widget build(BuildContext context) {
     if (widget.spec.picture) return _pictureList(context);
+    if (widget.spec.pictures) return _framesList(context);
     if (widget.spec.anchor) return _anchorBox(context);
     if (widget.spec.type == GbType.boolean) {
       // FontBold has a third state, not set: its Frame's or its form's

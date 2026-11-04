@@ -334,6 +334,8 @@ const Map<DiagnosticCode, String> englishMessages = {
       'Milliseconds().',
   DiagnosticCode.colorPartOutOfRange: 'Color.FromArgb takes red, green and '
       'blue from 0 to 255; {0} is not one. Check the value.',
+  DiagnosticCode.frameOutOfRange: 'Frame goes from 0 to {0}, the last of '
+      'the Frames; it is {1}. Check the value, or add the frame.',
   DiagnosticCode.badColor: 'The colour of {0} is a colour\'s name (Red, '
       'SkyBlue) or #RRGGBB; "{1}" is neither. Choose one in the Properties '
       'window.',

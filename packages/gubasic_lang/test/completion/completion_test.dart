@@ -238,6 +238,7 @@ void main() {
         'Room',
         'RoomEventArgs',
         'SaveFileDialog',
+        'Sprite',
         'String',
         'Table',
         'TextBox',

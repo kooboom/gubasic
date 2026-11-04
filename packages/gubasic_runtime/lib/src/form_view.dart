@@ -9,6 +9,7 @@ import 'grid.dart';
 import 'keys.dart';
 import 'look.dart';
 import 'image.dart';
+import 'sprite.dart';
 import 'list_box.dart';
 import 'menus.dart';
 import 'option_button.dart';
@@ -211,6 +212,7 @@ class _GbPlaced extends StatelessWidget {
       GbControlKind.checkBox => GbCheckBox(model: model, state: state),
       GbControlKind.listBox => GbListBox(model: model, state: state),
       GbControlKind.image => GbImage(model: model, state: state),
+      GbControlKind.sprite => GbSprite(model: model, state: state),
       GbControlKind.optionButton => GbOptionButton(model: model, state: state),
       GbControlKind.comboBox => GbComboBox(model: model, state: state),
       GbControlKind.frame => GbFrame(model: model, state: state),

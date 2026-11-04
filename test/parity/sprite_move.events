@@ -1,0 +1,10 @@
+Wait 16
+tmrGame.Tick
+Wait 16
+tmrGame.Tick
+Wait 100
+tmrGame.Tick          ' a long round: a long move
+btnStop.Click
+Wait 16
+tmrGame.Tick          ' no speed: it stays
+Close

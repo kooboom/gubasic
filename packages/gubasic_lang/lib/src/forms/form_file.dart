@@ -302,6 +302,24 @@ void _properties(YamlReader r, YamlNode node, ComponentSpec component,
       into[spec.name] = shortcut;
       continue;
     }
+    if (spec.pictures && v is String && v.isNotEmpty) {
+      // Several pictures separated by commas (D138), each as one.
+      final names = <String>[];
+      var unknown = false;
+      for (final n in splitPictureNames(v)) {
+        final picture = composeHangul(n);
+        final known = pictures?[pictureKey(picture)];
+        if (pictures != null && known == null) {
+          r.report(value.span, DiagnosticCode.unknownPicture, [picture]);
+          unknown = true;
+          break;
+        }
+        names.add(known ?? picture);
+      }
+      if (unknown) continue;
+      into[spec.name] = joinPictureNames(names);
+      continue;
+    }
     if (spec.picture && v is String && v.isNotEmpty) {
       final picture = composeHangul(v);
       if (pictures != null) {

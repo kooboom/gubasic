@@ -20,6 +20,7 @@
 - [OptionButton](controls/OptionButton.ko.md)
 - [Room](controls/Room.ko.md)
 - [SaveFileDialog](controls/SaveFileDialog.ko.md)
+- [Sprite](controls/Sprite.ko.md)
 - [TextBox](controls/TextBox.ko.md)
 - [Timer](controls/Timer.ko.md)
 - [WebSocket](controls/WebSocket.ko.md)

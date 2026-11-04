@@ -508,6 +508,7 @@ class _WidgetDriver implements ScriptDriver {
         GbComboBox(:final state) ||
         GbFrame(:final state) ||
         GbGrid(:final state) ||
+        GbSprite(:final state) ||
         GbImage(
           :final state,
         ) => state.name?.toLowerCase() == name.toLowerCase(),

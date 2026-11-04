@@ -45,6 +45,7 @@ class PropertySpec {
     this.readOnly = false,
     this.internal = false,
     this.picture = false,
+    this.pictures = false,
     this.anchor = false,
     this.shortcut = false,
     this.ambient = false,
@@ -88,6 +89,10 @@ class PropertySpec {
   /// for none (Image's Picture, D51): the form file and the program may
   /// give it only those names (F016, A037, R013), in any case.
   final bool picture;
+
+  /// A String property naming several of the project's pictures,
+  /// separated by commas (a Sprite's Frames, D138), or "".
+  final bool pictures;
 
   /// A String property naming the edges of the form a control keeps its
   /// distance to (`Anchor`, D57): the form file and the program may give
@@ -337,6 +342,7 @@ ComponentSpec readComponentFile(String text) {
     final readOnly = p['readOnly'] ?? false;
     final designTime = p['designTime'] ?? true;
     final picture = p['picture'] ?? false;
+    final pictures = p['pictures'] ?? false;
     final anchor = p['anchor'] ?? false;
     final shortcut = p['shortcut'] ?? false;
     final ambient = p['ambient'] ?? false;
@@ -345,10 +351,11 @@ ComponentSpec readComponentFile(String text) {
         readOnly is! bool ||
         designTime is! bool ||
         picture is! bool ||
+        pictures is! bool ||
         anchor is! bool ||
         shortcut is! bool) {
       throw FormatException('$name: internal, readOnly, designTime, '
-          'picture, anchor and shortcut are true or false');
+          'picture, pictures, anchor and shortcut are true or false');
     }
     final type = switch (typeName) {
       'list(of string)' when internal => const ListType(GbType.string),
@@ -415,11 +422,16 @@ ComponentSpec readComponentFile(String text) {
         readOnly: readOnly,
         internal: internal,
         picture: picture,
+        pictures: pictures,
         anchor: anchor,
         shortcut: shortcut,
         ambient: ambient);
     if (picture && (type != GbType.string || spec.defaultValue != '')) {
       throw FormatException('$name: a picture property is a String, '
+          'empty by default');
+    }
+    if (pictures && (type != GbType.string || spec.defaultValue != '')) {
+      throw FormatException('$name: a pictures property is a String, '
           'empty by default');
     }
     if (anchor &&

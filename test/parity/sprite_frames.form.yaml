@@ -1,0 +1,5 @@
+formatVersion: 1
+controls:
+  - { name: sprEnemy, type: Sprite, properties: { Frames: "Enemy1.png, enemy2.png, enemy3.png", Width: 32, Height: 32 } }
+  - { name: btnPast, type: Button, properties: { Caption: Past, Top: 60 } }
+  - { name: btnUnknown, type: Button, properties: { Caption: Unknown, Top: 100 } }

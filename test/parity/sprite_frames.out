@@ -1,0 +1,33 @@
+Debug.Print: Frames: enemy1.png, enemy2.png, enemy3.png; frame 0
+Set sprEnemy.Frame: 1
+Debug.Print: Frame 1
+Set sprEnemy.FrameTime: 100
+Set sprEnemy.FrameClock: 50
+Debug.Print: After 50 ms: frame 1
+Set sprEnemy.FrameClock: 0
+Set sprEnemy.Frame: 2
+Debug.Print: After 100 ms: frame 2
+Set sprEnemy.FrameClock: 50
+Set sprEnemy.Frame: 1
+Debug.Print: After 350 ms: frame 1
+Set sprEnemy.Frames: boom1.png, boom2.png
+Set sprEnemy.Frame: 0
+Set sprEnemy.FrameClock: 0
+Debug.Print: New frames: boom1.png, boom2.png; frame 0
+Set sprEnemy.FrameTime: 0
+Debug.Print: FrameTime 0: frame 0
+Set sprEnemy.Frames: 
+Set sprEnemy.Frame: 0
+Set sprEnemy.FrameClock: 0
+Debug.Print: No frames: frame 0
+> btnPast.Click
+Set sprEnemy.Frames: enemy1.png
+Set sprEnemy.Frame: 0
+Set sprEnemy.FrameClock: 0
+Debug.Print: Frame goes from 0 to 0, the last of the Frames; it is 1. Check the value, or add the frame.
+Debug.Print: Still frame 0
+> btnUnknown.Click
+Debug.Print: This project has no picture "nothing.png". Add it to the project, or check the name.
+Debug.Print: Still enemy1.png
+> Close
+Closed

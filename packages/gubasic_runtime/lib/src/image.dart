@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
 import 'form_model.dart';
@@ -28,22 +30,23 @@ class GbImage extends StatelessWidget {
                 fit: state['Stretch'] == true ? BoxFit.fill : BoxFit.contain,
                 // A new picture replaces the old one without a blank frame.
                 gaplessPlayback: true,
-                errorBuilder: (context, _, _) => _Missing(name: name),
+                errorBuilder: (context, _, _) => GbMissingPicture(name: name),
               )
             : name.isNotEmpty
-            ? _Missing(name: name)
+            ? GbMissingPicture(name: name)
             : model.designing
-            ? _Missing(name: state.name ?? '', empty: true)
+            ? GbMissingPicture(name: state.name ?? '', empty: true)
             : const SizedBox.expand(),
       );
     },
   );
 }
 
-/// What stands for a picture that cannot be shown: an outline with an
+/// What stands for a picture that cannot be shown, in an Image or a
+/// Sprite: an outline with an
 /// icon and [name]; [empty] when no picture is chosen yet.
-class _Missing extends StatelessWidget {
-  const _Missing({required this.name, this.empty = false});
+class GbMissingPicture extends StatelessWidget {
+  const GbMissingPicture({super.key, required this.name, this.empty = false});
 
   final String name;
   final bool empty;
@@ -53,22 +56,34 @@ class _Missing extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     return DecoratedBox(
       decoration: BoxDecoration(border: Border.all(color: scheme.outline)),
-      child: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              empty ? Icons.image_outlined : Icons.broken_image_outlined,
-              color: scheme.outline,
-            ),
-            Text(
-              name,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(color: scheme.outline),
-            ),
-          ],
-        ),
+      // A small one (a Sprite of 32 pixels, D138) has room for the icon
+      // alone, scaled to fit.
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final side = math.min(constraints.maxWidth, constraints.maxHeight);
+          final small = side < 48;
+          final icon = Icon(
+            empty ? Icons.image_outlined : Icons.broken_image_outlined,
+            color: scheme.outline,
+            size: small ? math.max(side * 0.6, 4) : null,
+          );
+          return Center(
+            child: small
+                ? icon
+                : Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      icon,
+                      Text(
+                        name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(color: scheme.outline),
+                      ),
+                    ],
+                  ),
+          );
+        },
       ),
     );
   }

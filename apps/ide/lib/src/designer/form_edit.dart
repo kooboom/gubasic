@@ -33,6 +33,7 @@ List<ComponentSpec> get toolboxComponents => [
     'frame',
     'grid',
     'image',
+    'sprite',
     'timer',
     'openfiledialog',
     'savefiledialog',

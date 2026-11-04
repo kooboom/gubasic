@@ -1,0 +1,42 @@
+' A Sprite's frames (D138): Frames names the project's pictures, in any
+' case, and reads back with the project's spelling; Frame is the one
+' shown, from 0; with FrameTime above 0, Move turns them, round to the
+' first after the last; new Frames show from the first.
+Sub Form_Load()
+    Debug.Print("Frames: " & sprEnemy.Frames & "; frame " & sprEnemy.Frame)
+    sprEnemy.Frame = 1
+    Debug.Print("Frame " & sprEnemy.Frame)
+    sprEnemy.FrameTime = 100
+    sprEnemy.Move(50)
+    Debug.Print("After 50 ms: frame " & sprEnemy.Frame)
+    sprEnemy.Move(50)
+    Debug.Print("After 100 ms: frame " & sprEnemy.Frame)
+    sprEnemy.Move(250)
+    Debug.Print("After 350 ms: frame " & sprEnemy.Frame)
+    sprEnemy.Frames = "BOOM1.PNG, boom2.png"
+    Debug.Print("New frames: " & sprEnemy.Frames & "; frame " & sprEnemy.Frame)
+    sprEnemy.FrameTime = 0
+    sprEnemy.Move(1000)
+    Debug.Print("FrameTime 0: frame " & sprEnemy.Frame)
+    sprEnemy.Frames = ""
+    Debug.Print("No frames: frame " & sprEnemy.Frame)
+End Sub
+
+Sub btnPast_Click()
+    sprEnemy.Frames = "enemy1.png"
+    Try
+        sprEnemy.Frame = 1              ' past the last: R051
+    Catch ex As Exception
+        Debug.Print(ex.Message)
+    End Try
+    Debug.Print("Still frame " & sprEnemy.Frame)
+End Sub
+
+Sub btnUnknown_Click()
+    Try
+        sprEnemy.Frames = "enemy1.png, nothing.png"
+    Catch ex As Exception
+        Debug.Print(ex.Message)
+    End Try
+    Debug.Print("Still " & sprEnemy.Frames)
+End Sub
