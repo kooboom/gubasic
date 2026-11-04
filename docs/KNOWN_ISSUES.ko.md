@@ -43,6 +43,12 @@
 - **왜 미뤘나:** 작성자가 다시 묻지 않고 정해도 된다고 했고(D138), 2026-11-04에는 맥이 곁에 없었습니다.
 - **다시 볼 때:** 맥에서 `packages/gubasic_runtime/tool/sound_probe`를 `flutter run -d macos --release`로 돌려 숫자를 7.1절에 넣고, 선택과 어긋나면 다시 봅니다. Shooter는 STAGE2_PLAN 7절이 게임을 재는 방법으로 잽니다.
 
+## Shooter의 통합 테스트는 CI에서 Windows에서만 돎
+
+- **무엇:** `apps/ide/integration_test/shooter_test.dart`는 시작을 누르고 IDE 창에 키를 보냅니다. CI의 macOS 러너에서는 창이 키 창이 되지 못해("Failed to foreground app") 키가 폼에 닿지 않고 탄이 나가지 않습니다. 엔진에 뷰가 포커스를 가졌다고 알려도 소용없었습니다. Windows 러너와 작성자의 Windows PC에서는 통과합니다. macOS의 LiveQuiz 테스트는 탭만 쓰고, 탭은 닿습니다.
+- **왜 미뤘나:** 맥이 곁에 없어 들여다볼 수 없었습니다(2026-11-04). 게임 자체는 macOS에서 실행 창의 동일성 프로그램과 웹 확인으로 검사됩니다.
+- **다시 볼 때:** 맥에서 `apps/ide`의 `dart run gubasic_test_support:integration integration_test/shooter_test.dart -d macos`. 거기서 통과하면 러너에 모자란 것(창의 키 상태)을 찾아 `test.yml`에 단계를 되돌립니다.
+
 ## 웹 IDE에는 자기 중계 서버가 없음
 
 - **무엇:** 데스크톱 IDE는 `Server`가 빈 `Room`을 위해 중계 서버를 켭니다(D136). 웹 IDE는 그럴 수 없어서, 그런 프로그램은 R048("no relay server")로 멈춥니다.

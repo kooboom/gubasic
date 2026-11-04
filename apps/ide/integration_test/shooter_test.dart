@@ -20,7 +20,9 @@ import 'package:integration_test/integration_test.dart';
 /// the score goes up. Run with `dart run gubasic_test_support:integration
 /// integration_test/shooter_test.dart -d windows` (or `-d macos`); with
 /// `--dart-define=SHOTS=folder` it saves the run window there as
-/// `shooter-PLATFORM.png`.
+/// `shooter-PLATFORM.png`. CI runs it on Windows; on the macOS runner the
+/// window is never the key window and the keys do not reach the form
+/// (KNOWN_ISSUES), so it is run on a Mac by hand.
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
   const shots = String.fromEnvironment('SHOTS');
