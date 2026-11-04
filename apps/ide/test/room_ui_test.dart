@@ -1,7 +1,7 @@
 import 'dart:convert';
-import 'dart:typed_data';
 
 import 'package:archive/archive.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gubasic_ide/main.dart';
@@ -84,6 +84,28 @@ void main() {
 
   bool checked(WidgetTester tester) =>
       tester.widget<CheckboxMenuButton>(find.byType(CheckboxMenuButton)).value!;
+
+  testWidgets('on Windows the warning says what the firewall asks', (
+    tester,
+  ) async {
+    bigView(tester);
+    final s = IdeStrings.ko;
+    await tester.pumpWidget(
+      IdeApp(
+        projects: const {'quiz': quiz},
+        open: 'quiz',
+        strings: s,
+        relay: _FakeRelay(),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await openDebugMenu(tester, s);
+    await tester.tap(find.byType(CheckboxMenuButton));
+    await tester.pumpAndSettle();
+    expect(find.textContaining(s.sameNetworkWindows), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('sameNetworkCancel')));
+    await tester.pumpAndSettle();
+  }, variant: TargetPlatformVariant.only(TargetPlatform.windows));
 
   for (final s in [IdeStrings.en, IdeStrings.ko]) {
     testWidgets('a Room without a Server runs on the IDE\'s relay server '
