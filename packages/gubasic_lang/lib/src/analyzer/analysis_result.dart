@@ -29,6 +29,7 @@ class AnalysisResult {
     required this.fileScope,
     this.form,
     this.pictures,
+    this.sounds,
   });
 
   /// The form the code belongs to, or null for code without a form (the
@@ -38,6 +39,10 @@ class AnalysisResult {
   /// The project's pictures by [pictureKey], each with the project's
   /// spelling; null when they are not known (code without a project).
   final Map<String, String>? pictures;
+
+  /// The project's sounds by [soundKey], each with the project's
+  /// spelling (D138); null when they are not known.
+  final Map<String, String>? sounds;
 
   /// Analyzer diagnostics only (A codes).
   final List<Diagnostic> diagnostics;

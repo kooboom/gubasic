@@ -18,6 +18,7 @@ import 'src/project/platform_browser.dart';
 import 'src/project/platform_folders.dart';
 import 'src/project/project_controller.dart';
 import 'src/project/project_pictures.dart';
+import 'src/project/project_sounds.dart';
 import 'src/project/template_source.dart';
 import 'src/licenses.dart';
 import 'src/strings.dart';
@@ -42,6 +43,7 @@ Future<void> main() async {
     IdeApp(
       projects: exampleProjects,
       examplePictures: decodeExamplePictures(examplePictures),
+      exampleSounds: decodeExampleSounds(exampleSounds),
       strings: IdeStrings.forLanguage(language),
       folders: platformFolders(),
       browser: browser,
@@ -84,6 +86,14 @@ Future<void> main() async {
           if (file == null) return null;
           return (name: file.name, bytes: await file.readAsBytes());
         },
+        openSound: (confirm) async {
+          final file = await openFile(
+            acceptedTypeGroups: const [_sounds],
+            confirmButtonText: confirm,
+          );
+          if (file == null) return null;
+          return (name: file.name, bytes: await file.readAsBytes());
+        },
       ),
     ),
   );
@@ -108,11 +118,19 @@ const _pictures = XTypeGroup(
   uniformTypeIdentifiers: ['public.png', 'public.jpeg', 'com.compuserve.gif'],
 );
 
+/// The sounds a project takes (D138), for the system's open dialog.
+const _sounds = XTypeGroup(
+  label: 'WAV, MP3',
+  extensions: ['wav', 'mp3'],
+  uniformTypeIdentifiers: ['com.microsoft.waveform-audio', 'public.mp3'],
+);
+
 class IdeApp extends StatefulWidget {
   const IdeApp({
     super.key,
     required this.projects,
     this.examplePictures = const {},
+    this.exampleSounds = const {},
     required this.strings,
     this.open = 'hello',
     this.folders,
@@ -133,6 +151,9 @@ class IdeApp extends StatefulWidget {
 
   /// Their pictures: name → picture name → bytes.
   final Map<String, Map<String, Uint8List>> examplePictures;
+
+  /// Their sounds (D138).
+  final Map<String, Map<String, Uint8List>> exampleSounds;
   final IdeStrings strings;
 
   /// The project opened first.
@@ -186,6 +207,7 @@ class _IdeAppState extends State<IdeApp> {
   late final _controller = ProjectController(
     examples: widget.projects,
     examplePictures: widget.examplePictures,
+    exampleSounds: widget.exampleSounds,
     strings: widget.strings,
     folders: widget.folders,
     pickers: widget.pickers,

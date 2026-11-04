@@ -1115,6 +1115,7 @@ Future<List<String>> runProjectScript(List<FormSource> forms, String script,
   final project = compileProject(forms,
       startup: startup,
       pictures: pictures,
+      sounds: sounds,
       modules: modules,
       startsWithMain: startsWithMain);
   if (project.hasErrors) {
@@ -1155,7 +1156,8 @@ Future<List<String>> runEventScript(String source, FormFile form, String script,
     List<WebSocketStub> webSockets = const [],
     DatabaseComponent? database}) async {
   final steps = parseEventScript(script);
-  final program = compile(source, form: form, pictures: pictures);
+  final program =
+      compile(source, form: form, pictures: pictures, sounds: sounds);
   if (program.hasErrors) {
     return [
       for (final d in program.diagnostics)

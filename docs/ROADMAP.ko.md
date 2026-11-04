@@ -114,7 +114,7 @@ IDE 안에서 완결되는 비주얼 베이직의 핵심 경험입니다.
 
 - [x] `Sprite`: 위치, 속도, 프레임이 있는 움직이는 그림(D138)
 - [x] 충돌 검사: 사각형, 원, 픽셀: `Hits`, `DistanceTo`(D138)
-- [x] 소리: 효과음과 음악: `Sound.Play`, `PlayMusic`, `StopMusic`, `Volume`(D138). IDE에서 소리를 더하는 것은 다음
+- [x] 소리: 효과음과 음악: `Sound.Play`, `PlayMusic`, `StopMusic`, `Volume`, 파일 → 소리(D138)
 - [x] `Keyboard.IsDown(Keys.Left)`: 게임 루프를 위한 동시에 누른 키(D138)
 - [x] 게임 루프를 Timer 하나로 돌리기 위한 ms 단위 시간: `Milliseconds()`(D138)
 - [ ] 예제: 정석을 보여 주는 슈팅 게임(Timer 하나의 게임 루프, 물체마다 상태, 적이 나오는 시간표), 격투 게임

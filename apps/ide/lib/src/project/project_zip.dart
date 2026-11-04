@@ -21,6 +21,7 @@ List<int> zipProject(
   String name,
   Map<String, String> files, {
   Map<String, Uint8List> pictures = const {},
+  Map<String, Uint8List> sounds = const {},
 }) {
   final archive = Archive();
   for (final MapEntry(key: file, value: text) in files.entries) {
@@ -28,6 +29,9 @@ List<int> zipProject(
   }
   for (final MapEntry(key: picture, value: bytes) in pictures.entries) {
     archive.add(ArchiveFile.bytes('$name/$picturesFolder/$picture', bytes));
+  }
+  for (final MapEntry(key: sound, value: bytes) in sounds.entries) {
+    archive.add(ArchiveFile.bytes('$name/$soundsFolder/$sound', bytes));
   }
   return ZipEncoder().encodeBytes(archive);
 }
@@ -41,6 +45,7 @@ class UnzippedProject {
     this.files,
     this.ignored, {
     this.pictures = const {},
+    this.sounds = const {},
     this.missing = const [],
   });
 
@@ -49,6 +54,9 @@ class UnzippedProject {
 
   /// Picture name, as the `.gbproj` file has it → bytes.
   final Map<String, Uint8List> pictures;
+
+  /// Sound name, as the `.gbproj` file has it → bytes (D138).
+  final Map<String, Uint8List> sounds;
   final List<String> ignored;
   final List<String> missing;
 }
@@ -116,6 +124,7 @@ UnzippedProject unzipProject(List<int> bytes) {
 
   final kept = <(List<String>, ArchiveFile)>[];
   final pictureEntries = <(List<String>, ArchiveFile)>[];
+  final soundEntries = <(List<String>, ArchiveFile)>[];
   final ignored = <String>[];
   var unpacked = 0;
   for (final entry in archive.files) {
@@ -130,6 +139,10 @@ UnzippedProject unzipProject(List<int> bytes) {
     if (parts.any((p) => p.startsWith('.') || p == '__MACOSX')) continue;
     if (parts.length >= 2 && parts[parts.length - 2] == picturesFolder) {
       pictureEntries.add((parts, entry));
+      continue;
+    }
+    if (parts.length >= 2 && parts[parts.length - 2] == soundsFolder) {
+      soundEntries.add((parts, entry));
       continue;
     }
     if (!_isGuBasicFile(parts.last)) {
@@ -199,14 +212,41 @@ UnzippedProject unzipProject(List<int> bytes) {
     if (data.length > maxPictureBytes) throw const ZipTooLarge();
     pictures[name] = data;
   }
+  // The sounds the .gbproj lists, from sounds/ next to it (D138).
+  final listedSounds = {
+    for (final s in readProjectFile(files[project]!).project.sounds)
+      soundKey(s): s,
+  };
+  final sounds = <String, Uint8List>{};
+  var soundBytes = 0;
+  for (final (parts, entry) in soundEntries) {
+    final name = listedSounds[soundKey(parts.last)];
+    final inPlace = top == null
+        ? parts.length == 2
+        : parts.length == 3 && parts.first == top;
+    if (name == null || !inPlace || sounds.containsKey(name)) {
+      ignored.add(parts.join('/'));
+      continue;
+    }
+    soundBytes += entry.size;
+    if (entry.size > maxSoundBytes || soundBytes > maxProjectSoundBytes) {
+      throw const ZipTooLarge();
+    }
+    final data = Uint8List.fromList(entry.readBytes() ?? const <int>[]);
+    if (data.length > maxSoundBytes) throw const ZipTooLarge();
+    sounds[name] = data;
+  }
   return UnzippedProject(
     project.substring(0, project.length - '.gbproj'.length),
     files,
     ignored,
     pictures: pictures,
+    sounds: sounds,
     missing: [
       for (final name in listed.values)
         if (!pictures.containsKey(name)) '$picturesFolder/$name',
+      for (final name in listedSounds.values)
+        if (!sounds.containsKey(name)) '$soundsFolder/$name',
     ],
   );
 }

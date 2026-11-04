@@ -33,6 +33,7 @@ CompileResult compile(
   String source, {
   FormFile? form,
   List<String>? pictures,
+  List<String>? sounds,
   Map<String, FormInterface>? forms,
   Map<String, ModuleInterface>? modules,
   String? moduleName,
@@ -43,6 +44,7 @@ CompileResult compile(
       analyze(parsed,
           form: form,
           pictures: pictures,
+          sounds: sounds,
           forms: forms,
           modules: modules,
           moduleName: moduleName));

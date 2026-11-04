@@ -15,8 +15,9 @@ const _unsavedKeyPrefix = '${browserKeyPrefix}unsaved.';
 
 /// The layout of a project kept in the browser; a newer one is left
 /// alone. Version 2 lists the project's pictures, which are kept apart
-/// (D53); version 1 is what `localStorage` held (D33).
-const browserProjectVersion = 2;
+/// (D53); version 3 its sounds too (D138); version 1 is what
+/// `localStorage` held (D33).
+const browserProjectVersion = 3;
 
 /// Writing to the browser's storage failed: it is full, or turned off.
 class StorageFailed implements Exception {
@@ -90,6 +91,7 @@ class StoredProject {
     required this.files,
     required this.savedAt,
     this.pictures = const [],
+    this.sounds = const [],
     this.downloadedAt,
     this.changedSinceDownload = true,
   });
@@ -99,6 +101,9 @@ class StoredProject {
 
   /// The names of its pictures.
   final List<String> pictures;
+
+  /// The names of its sounds (D138), kept with the pictures.
+  final List<String> sounds;
   final DateTime savedAt;
 
   /// When it was last downloaded as a `.zip`, or null.
@@ -165,6 +170,7 @@ class BrowserProjects {
                 name: project.name,
                 files: unsaved.files,
                 pictures: project.pictures,
+                sounds: project.sounds,
                 savedAt: _now(),
                 downloadedAt: project.downloadedAt,
                 changedSinceDownload: true,
@@ -276,8 +282,26 @@ class BrowserProjects {
     final store = _store;
     final p = read(name);
     if (store == null || p == null || p.pictures.isEmpty) return const {};
-    return store.readPictures(_key(name));
+    return _named(await store.readPictures(_key(name)), p.pictures);
   }
+
+  /// The sounds of project [name] (D138). Throws [StorageFailed].
+  Future<Map<String, Uint8List>> sounds(String name) async {
+    final store = _store;
+    final p = read(name);
+    if (store == null || p == null || p.sounds.isEmpty) return const {};
+    return _named(await store.readPictures(_key(name)), p.sounds);
+  }
+
+  /// The entries of [all] (a project's pictures and sounds, kept
+  /// together) that [names] lists.
+  static Map<String, Uint8List> _named(
+    Map<String, Uint8List> all,
+    List<String> names,
+  ) => {
+    for (final MapEntry(:key, :value) in all.entries)
+      if (names.contains(key)) key: value,
+  };
 
   /// Keeps [files] and [pictures] as project [name]. [fromFile] says they
   /// came from a `.zip`, so they are not changed since a download. Throws
@@ -286,6 +310,7 @@ class BrowserProjects {
     String name,
     Map<String, String> files, {
     Map<String, Uint8List> pictures = const {},
+    Map<String, Uint8List> sounds = const {},
     bool fromFile = false,
   }) => _queue(() async {
     final before = read(name);
@@ -294,17 +319,19 @@ class BrowserProjects {
         (before == null ||
             before.changedSinceDownload ||
             !_sameFiles(before.files, files) ||
-            !_sameNames(before.pictures, pictures.keys));
+            !_sameNames(before.pictures, pictures.keys) ||
+            !_sameNames(before.sounds, sounds.keys));
     await _write(
       StoredProject(
         name: name,
         files: files,
         pictures: pictures.keys.toList(),
+        sounds: sounds.keys.toList(),
         savedAt: _now(),
         downloadedAt: fromFile ? null : before?.downloadedAt,
         changedSinceDownload: changed,
       ),
-      pictures,
+      {...pictures, ...sounds},
     );
   });
 
@@ -317,6 +344,7 @@ class BrowserProjects {
         name: p.name,
         files: p.files,
         pictures: p.pictures,
+        sounds: p.sounds,
         savedAt: p.savedAt,
         downloadedAt: _now(),
         changedSinceDownload: false,
@@ -359,6 +387,7 @@ class BrowserProjects {
         'name': p.name,
         'files': p.files,
         'pictures': p.pictures,
+        'sounds': p.sounds,
         'savedAt': p.savedAt.toUtc().toIso8601String(),
         'downloadedAt': p.downloadedAt?.toUtc().toIso8601String(),
         'changedSinceDownload': p.changedSinceDownload,
@@ -385,6 +414,10 @@ class BrowserProjects {
         pictures: [
           for (final p in json['pictures'] as List<Object?>? ?? const [])
             p! as String,
+        ],
+        sounds: [
+          for (final s in json['sounds'] as List<Object?>? ?? const [])
+            s! as String,
         ],
         savedAt: DateTime.parse(json['savedAt']! as String).toLocal(),
         downloadedAt: downloaded == null

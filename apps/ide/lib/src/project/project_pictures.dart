@@ -120,6 +120,7 @@ Map<String, String> withPictureList(
         pictures: pictures,
         id: p.id,
         modules: p.modules,
+        sounds: p.sounds,
       ),
     ),
   };

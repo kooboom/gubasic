@@ -9,6 +9,7 @@ import '../forms/component.dart';
 import '../forms/form_file.dart';
 import '../forms/collision.dart';
 import '../forms/pictures.dart';
+import '../forms/sounds.dart';
 import '../forms/shortcut.dart';
 import '../lexer/keyword.dart';
 import '../parser/parse_result.dart';
@@ -48,11 +49,12 @@ AnalysisResult analyze(
   ParseResult parsed, {
   FormFile? form,
   List<String>? pictures,
+  List<String>? sounds,
   Map<String, FormInterface>? forms,
   Map<String, ModuleInterface>? modules,
   String? moduleName,
 }) =>
-    _Analyzer(parsed, form, pictures, forms, modules, moduleName).run();
+    _Analyzer(parsed, form, pictures, sounds, forms, modules, moduleName).run();
 
 /// Analyzes [expression] (parsed from [parsed]'s source) in [scope], for
 /// the debugger's Immediate window (docs/DESIGN.md D128): the scope is a
@@ -68,7 +70,7 @@ AnalysisResult analyzeExpression(
   Map<String, FormInterface>? forms,
   Map<String, ModuleInterface>? modules,
 }) {
-  final analyzer = _Analyzer(parsed, form, pictures, forms, modules, null)
+  final analyzer = _Analyzer(parsed, form, pictures, null, forms, modules, null)
     .._scope = scope;
   analyzer._value(expression);
   return analyzer._result;
@@ -98,8 +100,8 @@ class _ProcedureContext {
 }
 
 class _Analyzer {
-  _Analyzer(this.parsed, this.form, List<String>? pictures, this.forms,
-      this.modules, String? moduleName)
+  _Analyzer(this.parsed, this.form, List<String>? pictures,
+      List<String>? sounds, this.forms, this.modules, String? moduleName)
       : _lines = LineMap(parsed.source),
         _builtins = Scope(ScopeKind.builtins, null) {
     for (final f in builtinFunctions.values) {
@@ -180,6 +182,7 @@ class _Analyzer {
       pictures: pictures == null
           ? null
           : {for (final p in pictures) pictureKey(p): p},
+      sounds: sounds == null ? null : {for (final s in sounds) soundKey(s): s},
     );
     for (final MapEntry(:key, value: (type, _)) in _projectStructures.entries) {
       _result.projectStructures[key] = type;
@@ -1237,6 +1240,28 @@ class _Analyzer {
     }
   }
 
+  /// Warns when text that names no sound of the project is given to
+  /// Sound.Play or Sound.PlayMusic (A082): the program would stop there
+  /// (R053).
+  void _soundName(MemberExpr target, List<Expr> arguments) {
+    final sounds = _result.sounds;
+    final receiver = target.target;
+    if (sounds == null ||
+        arguments.isEmpty ||
+        receiver is! NameExpr ||
+        receiver.name.toLowerCase() != 'sound' ||
+        _result.symbols[receiver]?.kind != SymbolKind.builtinObject) {
+      return;
+    }
+    final method = target.name.name.toLowerCase();
+    if (method != 'play' && method != 'playmusic') return;
+    final value = arguments.first;
+    if (value is! StringLiteral || value.value.isEmpty) return;
+    if (!sounds.containsKey(soundKey(value.value))) {
+      _reportAt(value, DiagnosticCode.unknownSoundInCode, [value.value]);
+    }
+  }
+
   /// Warns when text with a word that is not an edge is given to an
   /// anchor property (A038): the program would stop there (R014).
   void _anchorValue(MemberExpr target, Expr value) {
@@ -1944,6 +1969,7 @@ class _Analyzer {
       final spec = _result.members[target];
       if (spec != null && spec.isMethod) {
         callable = spec.method;
+        _soundName(target, e.arguments);
       } else {
         indexed = t;
       }

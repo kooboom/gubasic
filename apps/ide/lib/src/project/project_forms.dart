@@ -229,6 +229,7 @@ String _written(
     pictures: p.pictures,
     id: p.id,
     modules: modules?.call(p) ?? p.modules,
+    sounds: p.sounds,
   ),
 );
 

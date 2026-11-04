@@ -334,6 +334,8 @@ const Map<DiagnosticCode, String> englishMessages = {
       'Milliseconds().',
   DiagnosticCode.badShapeInCode: '{0} is not a shape. A Sprite\'s Shape is '
       'Rectangle, Circle or Pixels; the program would stop here.',
+  DiagnosticCode.unknownSoundInCode: 'This project has no sound "{0}": the '
+      'program would stop here. Add it in File → Sounds, or check the name.',
   DiagnosticCode.colorPartOutOfRange: 'Color.FromArgb takes red, green and '
       'blue from 0 to 255; {0} is not one. Check the value.',
   DiagnosticCode.frameOutOfRange: 'Frame goes from 0 to {0}, the last of '

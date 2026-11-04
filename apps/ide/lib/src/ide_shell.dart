@@ -18,6 +18,7 @@ import 'project/local_relay.dart';
 import 'project/open_project.dart';
 import 'project/pdf_font.dart';
 import 'project/pictures_dialog.dart';
+import 'project/sounds_dialog.dart';
 
 import 'package:gubasic_player/gubasic_player.dart';
 import 'package:gubasic_runtime/gubasic_runtime.dart';
@@ -943,6 +944,11 @@ class _IdeShellState extends State<IdeShell> {
     builder: (context) => PicturesDialog(controller: widget.controller),
   );
 
+  void _sounds() => showDialog<void>(
+    context: context,
+    builder: (context) => SoundsDialog(controller: widget.controller),
+  );
+
   /// Opens [file], a form or code file, as a click in the list does.
   void _openFile(String? file) {
     if (file == null || !mounted) return;
@@ -1065,6 +1071,11 @@ class _IdeShellState extends State<IdeShell> {
           child: Text(s.picturesMenu),
         ),
         MenuItemButton(
+          key: const ValueKey('menu.sounds'),
+          onPressed: _running ? null : _sounds,
+          child: Text(s.soundsMenu),
+        ),
+        MenuItemButton(
           key: const ValueKey('menu.clearSettings'),
           onPressed: _running
               ? null
@@ -1174,6 +1185,23 @@ class _IdeShellState extends State<IdeShell> {
               contentPadding: const EdgeInsets.only(left: 36, right: 10),
               title: Text(name),
               onTap: _running ? null : _pictures,
+            ),
+        ],
+        // Its sounds likewise (D138): a click opens File → Sounds.
+        if (widget.controller.current.sounds.isNotEmpty) ...[
+          ListTile(
+            key: const ValueKey('files.sounds'),
+            dense: true,
+            leading: const Icon(Icons.music_note_outlined, size: 18),
+            title: Text(widget.strings.soundsGroup),
+            onTap: _running ? null : _sounds,
+          ),
+          for (final name in widget.controller.current.sounds.keys)
+            ListTile(
+              dense: true,
+              contentPadding: const EdgeInsets.only(left: 36, right: 10),
+              title: Text(name),
+              onTap: _running ? null : _sounds,
             ),
         ],
         // In the forms view the project's settings come last, as a line

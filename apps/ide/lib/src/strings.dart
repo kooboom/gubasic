@@ -215,6 +215,20 @@ class IdeStrings {
     required this.menuShortcutOfMenu,
     required this.picturesMenu,
     required this.picturesGroup,
+    required this.soundsMenu,
+    required this.soundsGroup,
+    required this.soundsTitle,
+    required this.noSounds,
+    required this.addSound,
+    required this.removeSound,
+    required this.confirmRemoveSound,
+    required this.replaceSound,
+    required this.soundProjectFileErrors,
+    required this.soundNameTooLong,
+    required this.soundNameCharacters,
+    required this.soundNotTaken,
+    required this.soundTooLarge,
+    required this.soundsFull,
     required this.explorerForms,
     required this.explorerFiles,
     required this.explorerViewHint,
@@ -718,6 +732,27 @@ class IdeStrings {
   /// The group of the project's pictures in the file list (D68).
   final String picturesGroup;
 
+  // The project's sounds (D138): File → Sounds, its group in the file
+  // list, and why a sound is not taken.
+  final String soundsMenu;
+  final String soundsGroup;
+  final String soundsTitle;
+  final String noSounds;
+  final String addSound;
+  final String removeSound;
+
+  /// `{0}` the sound.
+  final String confirmRemoveSound;
+  final String replaceSound;
+  final String soundProjectFileErrors;
+  final String soundNameTooLong;
+  final String soundNameCharacters;
+  final String soundNotTaken;
+
+  /// `{0}` the sound, `{1}` its size in MB.
+  final String soundTooLarge;
+  final String soundsFull;
+
   // The project explorer (D94).
   /// Its two views: the forms, and the files as they are on disk.
   final String explorerForms;
@@ -1159,6 +1194,20 @@ class IdeStrings {
         '{0} holds items, so no Shortcut can choose it: clear its Shortcut.',
     picturesMenu: 'Pictures…',
     picturesGroup: 'Pictures',
+    soundsMenu: 'Sounds…',
+    soundsGroup: 'Sounds',
+    soundsTitle: 'Sounds',
+    noSounds: 'This project has no sounds yet. Add WAV or MP3 sounds for Sound.Play and Sound.PlayMusic.',
+    addSound: 'Add Sound…',
+    removeSound: 'Remove',
+    confirmRemoveSound: 'Take the sound {0} out of the project? Its file in the sounds folder is deleted when the project is saved.',
+    replaceSound: 'The project already has a sound named {0}. Replace it with the new one?',
+    soundProjectFileErrors: 'The .gbproj file has errors, so sounds cannot be added to it. Fix the file in a text editor, then open the project again.',
+    soundNameTooLong: 'The name "{0}" is too long for a sound: at most 100 characters. Rename the file, then add it again.',
+    soundNameCharacters: '"{0}" cannot be the name of a sound: it has one of / \\ : * ? " < > |, or starts or ends with a dot or a space. Rename the file, then add it again.',
+    soundNotTaken: '"{0}" is not a WAV or MP3 sound, the formats a project takes. Save it in one of them, then add it.',
+    soundTooLarge: '"{0}" takes {1} MB; a sound can take at most 4 MB. Make it shorter, or MP3, then add it.',
+    soundsFull: 'With "{0}", the project\'s sounds would take more than 20 MB. Remove sounds it does not use, or make them smaller.',
     explorerForms: 'Forms',
     explorerFiles: 'Files',
     explorerViewHint: 'Forms: one line for each form, as Visual Basic shows a project. Files: the files as they are on disk.',
@@ -1505,6 +1554,23 @@ class IdeStrings {
         '{0} 항목은 다른 항목을 담고 있어서 단축키로 고를 수 없습니다. Shortcut을 비워 주세요.',
     picturesMenu: '그림…',
     picturesGroup: '그림',
+    soundsMenu: '소리…',
+    soundsGroup: '소리',
+    soundsTitle: '소리',
+    noSounds: '이 프로젝트에는 아직 소리가 없습니다. Sound.Play와 Sound.PlayMusic이 낼 WAV나 MP3 소리를 더하세요.',
+    addSound: '소리 더하기…',
+    removeSound: '빼기',
+    confirmRemoveSound: '{0} 소리를 프로젝트에서 뺄까요? 프로젝트를 저장할 때 sounds 폴더의 파일이 지워집니다.',
+    replaceSound: '프로젝트에 이미 {0} 소리가 있습니다. 새 소리로 바꿀까요?',
+    soundProjectFileErrors:
+        '.gbproj 파일에 오류가 있어 소리를 더할 수 없습니다. 텍스트 편집기에서 파일을 고친 뒤 프로젝트를 다시 여세요.',
+    soundNameTooLong:
+        '"{0}" 이름은 소리 이름으로 너무 깁니다. 100자까지입니다. 파일 이름을 바꾼 뒤 다시 더하세요.',
+    soundNameCharacters: '"{0}" 이름은 소리 이름이 될 수 없습니다. / \\ : * ? " < > | 가 있거나 점이나 공백으로 시작하거나 끝납니다. 파일 이름을 바꾼 뒤 다시 더하세요.',
+    soundNotTaken: '"{0}" 파일은 프로젝트가 받는 WAV나 MP3 소리가 아닙니다. 그 형식으로 저장한 뒤 더하세요.',
+    soundTooLarge:
+        '"{0}" 파일은 {1} MB입니다. 소리 하나는 4 MB까지입니다. 더 짧게 하거나 MP3로 바꾼 뒤 더하세요.',
+    soundsFull: '"{0}" 파일까지 더하면 프로젝트의 소리가 20 MB를 넘습니다. 쓰지 않는 소리를 빼거나 줄이세요.',
     explorerForms: '폼',
     explorerFiles: '파일 목록',
     explorerViewHint:

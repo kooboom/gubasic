@@ -251,12 +251,13 @@ ModuleInterface moduleInterfaceOf(String name, CompileResult alone) {
 Map<String, FormInterface> formInterfaces(
   List<FormSource> forms, {
   List<String>? pictures,
+  List<String>? sounds,
   Map<String, ModuleInterface>? modules,
 }) {
   final interfaces = <String, FormInterface>{};
   for (final f in forms) {
-    final alone =
-        compile(f.source, form: f.file, pictures: pictures, modules: modules);
+    final alone = compile(f.source,
+        form: f.file, pictures: pictures, sounds: sounds, modules: modules);
     final symbols = alone.analysis.symbols;
     final variables = <String, Symbol>{};
     final procedures = <String, Symbol>{};
@@ -288,12 +289,13 @@ ProjectProgram compileProject(
   List<FormSource> forms, {
   String? startup,
   List<String>? pictures,
+  List<String>? sounds,
   List<ModuleSource> modules = const [],
   bool startsWithMain = false,
 }) {
   final moduleFaces = moduleInterfaces(modules);
-  final interfaces =
-      formInterfaces(forms, pictures: pictures, modules: moduleFaces);
+  final interfaces = formInterfaces(forms,
+      pictures: pictures, sounds: sounds, modules: moduleFaces);
   final programs = [
     for (final f in forms)
       FormProgram(
@@ -302,6 +304,7 @@ ProjectProgram compileProject(
         compile(f.source,
             form: f.file,
             pictures: pictures,
+            sounds: sounds,
             forms: interfaces,
             modules: moduleFaces),
       ),
@@ -312,6 +315,7 @@ ProjectProgram compileProject(
         m.name,
         compile(m.source,
             pictures: pictures,
+            sounds: sounds,
             forms: interfaces,
             modules: moduleFaces,
             moduleName: m.name),

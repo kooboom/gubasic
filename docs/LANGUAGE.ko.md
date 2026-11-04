@@ -940,7 +940,7 @@ pictures:
 - `startup`은 프로그램이 시작하는 폼입니다. 없으면 `forms`의 첫 폼입니다. `startup: Sub Main`은 모듈의 `Sub Main`으로 시작합니다(11.5절). 모듈은 `startup`이 될 수 없습니다(F011).
 - `modules`에는 모듈을 적습니다(11.5절). 모듈마다 `모듈이름.gbas` 파일이 하나 있습니다. 한 이름은 폼이나 모듈 가운데 하나의 것입니다(F007). 모듈이 있거나 `Sub Main`으로 시작하는 프로젝트는 `formatVersion: 3`으로 쓰고, 예전 GuBASIC은 모듈을 잃는 대신 열지 않습니다(DESIGN.ko.md D102).
 - `pictures`에는 프로젝트의 그림을 적습니다. 그림은 프로젝트 폴더의 `pictures/` 안에 있는 파일입니다(`pictures/triangle.png`). PNG, JPEG, GIF 그림만 받으며(`.png`, `.jpg`, `.jpeg`, `.gif`), 이름에 `/ \ : * ? " < > |`를 쓸 수 없습니다(F014). 이름은 영문 대소문자를 가리지 않고 한글은 음절로 비교하며, 모든 플랫폼에서 같습니다. 그래서 대소문자만 다른 두 그림은 한 프로젝트에 둘 수 없습니다(F015). Windows와 macOS도 한 폴더에 둘 다 둘 수 없습니다. 그림이 있는 프로젝트는 `formatVersion: 2`로 쓰고, 예전 GuBASIC은 그림을 잃는 대신 열지 않습니다. 그림이 없으면 여전히 버전 1입니다(DESIGN.ko.md D51).
-- `sounds`에는 프로젝트의 소리를 적습니다(DESIGN.ko.md D138). 소리는 프로젝트 폴더의 `sounds/` 안에 있는 파일입니다(`sounds/shot.wav`). 모든 브라우저와 데스크톱이 내는 WAV와 MP3만 받으며(`.wav`, `.mp3`), 이름의 규칙은 그림과 같고(F025), 대소문자만 다른 두 소리는 둘 수 없습니다(F026). 소리가 있는 프로젝트는 `formatVersion: 4`로 쓰고, 예전 GuBASIC은 아무 소리도 안 내는 대신 열지 않습니다. IDE는 아직 소리를 더하지 못합니다: 파일을 `sounds/`에 두고 적습니다([KNOWN_ISSUES](KNOWN_ISSUES.ko.md)).
+- `sounds`에는 프로젝트의 소리를 적습니다(DESIGN.ko.md D138). 소리는 프로젝트 폴더의 `sounds/` 안에 있는 파일입니다(`sounds/shot.wav`). 모든 브라우저와 데스크톱이 내는 WAV와 MP3만 받으며(`.wav`, `.mp3`), 이름의 규칙은 그림과 같고(F025), 대소문자만 다른 두 소리는 둘 수 없습니다(F026). 소리가 있는 프로젝트는 `formatVersion: 4`로 쓰고, 예전 GuBASIC은 아무 소리도 안 내는 대신 열지 않습니다. **파일 → 소리**가 파일 → 그림처럼 소리를 더하고 뺍니다. 웹 IDE는 브라우저에 보관하고, 프로젝트의 `.zip`은 `sounds/`에 담습니다.
 - `id`는 앱 ID입니다(DESIGN.md D83). 영어 소문자와 숫자 8~32자이고, 프로젝트를 처음 앱으로 내보낼 때 만들어 간직하므로 다시 내보낸 앱도 같은 앱이 되어 설정이 남습니다. 새 이름으로 복사한 프로젝트는 새 ID를 받습니다. 앱 ID가 아닌 값은 무시하고(F018), 다음에 내보낼 때 새로 만듭니다. 예전 GuBASIC은 이 키를 F004와 함께 무시하고, 프로젝트를 저장할 때 버립니다.
 - [examples/hello](../examples/hello)는 README 예제를 프로젝트로 만든 것입니다.
 
@@ -1239,7 +1239,7 @@ End Sub
 | `Sound.StopMusic()` | 음악을 멈춥니다. 나는 음악이 없으면 아무 일도 없습니다 |
 | `Sound.Volume` | 프로그램이 내는 모든 소리에, 0에서 100(처음 100). 벗어나면 R010 |
 
-이름은 그림처럼 대소문자를 가리지 않고 비교하고 아무것도 읽지 않습니다. 프로젝트에 없는 소리는 프로그램을 멈춥니다(R053). **웹에서는** 사용자가 페이지를 클릭하거나 키를 누른 뒤에만 소리를 낼 수 있습니다([Chrome의 autoplay 정책](https://developer.chrome.com/blog/autoplay)). 그 전의 `Play`는 오류 없이 버려집니다. 브라우저의 규칙이지 프로그램의 잘못이 아니고, 시작 버튼으로 시작하는 게임은 이것을 만나지 않습니다. 소리는 측정으로 고른 flutter_soloud가 섞습니다([plans/PLAN_V07.ko.md](plans/PLAN_V07.ko.md) 7.1절). Visual Basic .NET의 `My.Computer.Audio.Stop`은 `StopMusic`입니다(A036). 폼 없는 프로그램을 돌리는 놀이터에는 `Sound`가 없습니다(R038).
+이름은 그림처럼 대소문자를 가리지 않고 비교하고 아무것도 읽지 않습니다. 프로젝트에 없는 소리는 프로그램을 멈춥니다(R053). 코드에 글자로 적으면 분석기가 먼저 경고합니다(A082). **웹에서는** 사용자가 페이지를 클릭하거나 키를 누른 뒤에만 소리를 낼 수 있습니다([Chrome의 autoplay 정책](https://developer.chrome.com/blog/autoplay)). 그 전의 `Play`는 오류 없이 버려집니다. 브라우저의 규칙이지 프로그램의 잘못이 아니고, 시작 버튼으로 시작하는 게임은 이것을 만나지 않습니다. 소리는 측정으로 고른 flutter_soloud가 섞습니다([plans/PLAN_V07.ko.md](plans/PLAN_V07.ko.md) 7.1절). Visual Basic .NET의 `My.Computer.Audio.Stop`은 `StopMusic`입니다(A036). 폼 없는 프로그램을 돌리는 놀이터에는 `Sound`가 없습니다(R038).
 
 ```vb
 Sub btnStart_Click()

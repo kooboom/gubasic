@@ -25,11 +25,15 @@ import 'open_project.dart';
 import 'picture_reduce.dart';
 import 'project_forms.dart';
 import 'project_pictures.dart';
+import 'project_sounds.dart';
 import 'project_zip.dart';
 import 'app_export.dart';
 
 /// A picture file the user chose: its name and its bytes.
 typedef PickedPicture = ({String name, Uint8List bytes});
+
+/// A sound file the user chose (D138): its name and its bytes.
+typedef PickedSound = ({String name, Uint8List bytes});
 
 /// The system's dialogs for choosing where projects are (D32).
 class ProjectPickers {
@@ -37,6 +41,7 @@ class ProjectPickers {
     required this.openProjectFile,
     required this.saveLocation,
     this.openPicture,
+    this.openSound,
     this.saveZipLocation,
   });
 
@@ -48,6 +53,10 @@ class ProjectPickers {
   /// Asks for a picture file to add to the project (D51), or null when
   /// the user cancels. [confirm] is the word on the dialog's button.
   final Future<PickedPicture?> Function(String confirm)? openPicture;
+
+  /// Asks for a sound file to add to the project (D138), or null when
+  /// the user cancels.
+  final Future<PickedSound?> Function(String confirm)? openSound;
 
   /// Asks for a `.gbproj` file to open: its path, or null when the user
   /// cancels. [confirm] is the word on the dialog's button.
@@ -72,6 +81,7 @@ class ProjectController extends ChangeNotifier {
   ProjectController({
     required this.examples,
     this.examplePictures = const {},
+    this.exampleSounds = const {},
     required this.strings,
     this.folders,
     this.pickers,
@@ -84,7 +94,7 @@ class ProjectController extends ChangeNotifier {
     this._settings,
     this.lastProject,
     String open = 'hello',
-  }) : _current = _example(examples, examplePictures, open) {
+  }) : _current = _example(examples, examplePictures, exampleSounds, open) {
     if (browser case final browser?) {
       // Also while a project is being written: closing the page then
       // could stop the write (D53).
@@ -100,14 +110,19 @@ class ProjectController extends ChangeNotifier {
   /// picture name → bytes.
   final Map<String, Map<String, Uint8List>> examplePictures;
 
+  /// The sounds of the built-in projects that have some (D138).
+  final Map<String, Map<String, Uint8List>> exampleSounds;
+
   static OpenProject _example(
     Map<String, Map<String, String>> examples,
     Map<String, Map<String, Uint8List>> pictures,
+    Map<String, Map<String, Uint8List>> sounds,
     String name,
   ) => OpenProject(
     ExampleLocation(name),
     examples[name]!,
     pictures: pictures[name] ?? const {},
+    sounds: sounds[name] ?? const {},
   );
   final IdeStrings strings;
 
@@ -217,7 +232,7 @@ class ProjectController extends ChangeNotifier {
       }
     } else {
       final name = key.substring('example:'.length);
-      _show(_example(examples, examplePictures, name));
+      _show(_example(examples, examplePictures, exampleSounds, name));
     }
   }
 
@@ -276,6 +291,8 @@ class ProjectController extends ChangeNotifier {
         project.saved,
         pictures: project.pictures,
         savedPictures: project.savedPictures,
+        sounds: project.sounds,
+        savedSounds: project.savedSounds,
       );
       if (changed.isNotEmpty) {
         if (!context.mounted) return false;
@@ -293,6 +310,8 @@ class ProjectController extends ChangeNotifier {
         project.saved,
         pictures: project.pictures,
         savedPictures: project.savedPictures,
+        sounds: project.sounds,
+        savedSounds: project.savedSounds,
       );
       project.markSaved();
       if (context.mounted) {
@@ -580,7 +599,7 @@ class ProjectController extends ChangeNotifier {
     switch (kind) {
       case 'example':
         if (examples.containsKey(value) && currentKey != last) {
-          _show(_example(examples, examplePictures, value));
+          _show(_example(examples, examplePictures, exampleSounds, value));
         }
       case 'browser':
         final stored = _kept?.read(value);
@@ -652,9 +671,15 @@ class ProjectController extends ChangeNotifier {
     final project = _current;
     final location = project.location as BrowserLocation;
     final files = project.files, pictures = project.pictures;
+    final sounds = project.sounds;
     try {
-      await _kept!.save(location.name, files, pictures: pictures);
-      project.markSavedAs(files, pictures);
+      await _kept!.save(
+        location.name,
+        files,
+        pictures: pictures,
+        sounds: sounds,
+      );
+      project.markSavedAs(files, pictures, sounds);
       if (!project.isDirty) _kept.clearUnsaved(location.name);
       notifyListeners();
       return true;
@@ -685,14 +710,19 @@ class ProjectController extends ChangeNotifier {
     ]);
     if (name == null || !context.mounted) return false;
     final files = renameProject(project.files, name);
-    final pictures = project.pictures;
+    final pictures = project.pictures, sounds = project.sounds;
     try {
-      await _kept.save(name, files, pictures: pictures);
+      await _kept.save(name, files, pictures: pictures, sounds: sounds);
     } on StorageFailed {
       if (context.mounted) await _tell(context, strings.storageFailed);
       return false;
     }
-    final copy = OpenProject(BrowserLocation(name), files, pictures: pictures);
+    final copy = OpenProject(
+      BrowserLocation(name),
+      files,
+      pictures: pictures,
+      sounds: sounds,
+    );
     _browserProject = copy;
     _show(copy);
     if (notice) _kept.markNoticeShown();
@@ -750,7 +780,7 @@ class ProjectController extends ChangeNotifier {
       _autosave = null;
       _current.removeListener(_changed);
       final first = examples.keys.first;
-      _current = _example(examples, examplePictures, first);
+      _current = _example(examples, examplePictures, exampleSounds, first);
     }
     notifyListeners();
   }
@@ -821,9 +851,10 @@ class ProjectController extends ChangeNotifier {
   Future<void> _openKeptNamed(BuildContext context, String name) async {
     final stored = _kept!.read(name);
     if (stored == null) return;
-    final Map<String, Uint8List> pictures;
+    final Map<String, Uint8List> pictures, sounds;
     try {
       pictures = await _kept.pictures(name);
+      sounds = await _kept.sounds(name);
     } on StorageFailed {
       if (context.mounted) await _tell(context, strings.storageFailed);
       return;
@@ -832,6 +863,7 @@ class ProjectController extends ChangeNotifier {
       BrowserLocation(stored.name),
       stored.files,
       pictures: pictures,
+      sounds: sounds,
     );
     _browserProject = project;
     _show(project);
@@ -849,7 +881,12 @@ class ProjectController extends ChangeNotifier {
     };
     browser!.download(
       '$name.zip',
-      zipProject(name, project.files, pictures: project.pictures),
+      zipProject(
+        name,
+        project.files,
+        pictures: project.pictures,
+        sounds: project.sounds,
+      ),
     );
     if (project.location is BrowserLocation) {
       _kept!
@@ -1144,6 +1181,7 @@ class ProjectController extends ChangeNotifier {
         name,
         files,
         pictures: unzipped.pictures,
+        sounds: unzipped.sounds,
         fromFile: true,
       );
     } on StorageFailed {
@@ -1155,6 +1193,7 @@ class ProjectController extends ChangeNotifier {
       BrowserLocation(name),
       files,
       pictures: unzipped.pictures,
+      sounds: unzipped.sounds,
     );
     _browserProject = project;
     _show(project);
@@ -1416,6 +1455,7 @@ class ProjectController extends ChangeNotifier {
           BrowserLocation(stored.name),
           stored.files,
           pictures: pictures,
+          sounds: await kept.sounds(stored.name),
         );
         _browserProject = project;
         _show(project);
@@ -1438,6 +1478,78 @@ class ProjectController extends ChangeNotifier {
         strings.missingPicturesKept.replaceAll('{0}', missing.join(', ')),
       );
     }
+  }
+
+  /// Whether sounds can be added to projects here (D138): as pictures.
+  bool get canAddSounds =>
+      (folders != null || _kept != null) && pickers?.openSound != null;
+
+  /// Asks for a sound file and adds it to the open project, or replaces
+  /// the sound of that name after asking (D138). Gives the sound's name
+  /// in the project, or null when none was added.
+  Future<String?> addSound(BuildContext context) async {
+    if (!canAddSounds) return null;
+    final picked = await _whilePicking(
+      () => pickers!.openSound!(strings.addButton),
+    );
+    if (picked == null || !context.mounted) return null;
+    final name = composeHangul(picked.name);
+    final bytes = picked.bytes;
+    final project = _current;
+    if (checkSound(name, bytes, project.files, project.sounds)
+        case final refused?) {
+      await _tell(context, _describeSound(refused));
+      return null;
+    }
+    final existing = soundNamed(project.sounds.keys, name);
+    if (existing != null &&
+        !await _confirm(
+          context,
+          strings.replaceSound.replaceAll('{0}', existing),
+          strings.replaceButton,
+        )) {
+      return null;
+    }
+    project.setSound(name, bytes);
+    // Kept at once in the browser, as a picture is (D54).
+    if (project.location is BrowserLocation) await keepNow();
+    return existing ?? name;
+  }
+
+  /// Takes sound [name] out of the open project after asking (D138).
+  Future<bool> removeSound(BuildContext context, String name) async {
+    final project = _current;
+    if (!await _confirm(
+      context,
+      strings.confirmRemoveSound.replaceAll('{0}', name),
+      strings.removeSound,
+    )) {
+      return false;
+    }
+    project.removeSound(name);
+    if (project.location is BrowserLocation) await keepNow();
+    return true;
+  }
+
+  String _describeSound(SoundRefused s) {
+    final strings = this.strings;
+    return switch (s) {
+      SoundProjectFileHasErrors() => strings.soundProjectFileErrors,
+      BadSoundName(:final name, :final problem) => switch (problem) {
+        SoundNameProblem.length => strings.soundNameTooLong,
+        SoundNameProblem.character => strings.soundNameCharacters,
+        SoundNameProblem.extension => strings.soundNotTaken,
+      }.replaceAll('{0}', name),
+      NotASound(:final name) => strings.soundNotTaken.replaceAll('{0}', name),
+      SoundTooLarge(:final name, :final bytes) =>
+        strings.soundTooLarge
+            .replaceAll('{0}', name)
+            .replaceAll('{1}', _megabytes(bytes)),
+      ProjectSoundsFull(:final name) => strings.soundsFull.replaceAll(
+        '{0}',
+        name,
+      ),
+    };
   }
 
   /// The pictures the `.gbproj` file of [files] lists.

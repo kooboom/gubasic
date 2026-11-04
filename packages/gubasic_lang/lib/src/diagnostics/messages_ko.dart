@@ -261,6 +261,8 @@ const Map<DiagnosticCode, String> koreanMessages = {
       '{0} 표기는 GuBASIC에 없습니다. GuBASIC에서 Timer는 컨트롤입니다. 프로그램 시작부터의 밀리초는 Milliseconds()입니다.',
   DiagnosticCode.badShapeInCode:
       '{0} 표기는 모양이 아닙니다. Sprite의 Shape는 Rectangle, Circle, Pixels 가운데 하나입니다. 프로그램이 여기서 멈춥니다.',
+  DiagnosticCode.unknownSoundInCode:
+      '이 프로젝트에 "{0}" 소리가 없습니다. 프로그램이 여기서 멈춥니다. 파일 → 소리에서 더하거나 이름을 확인해 주세요.',
   DiagnosticCode.colorPartOutOfRange:
       'Color.FromArgb의 빨강·초록·파랑은 0부터 255까지입니다. 받은 값: {0}. 값을 확인해 주세요.',
   DiagnosticCode.frameOutOfRange:

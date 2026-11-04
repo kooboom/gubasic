@@ -61,6 +61,7 @@ class Project {
           sources,
           startup: read.project.startupForm,
           pictures: pictures,
+          sounds: read.project.sounds,
           modules: modules,
           startsWithMain: read.project.startsWithMain,
         );

@@ -66,6 +66,38 @@ void main(List<String> args) {
     out.writeln('  },');
   }
   out.writeln('};');
+  out
+    ..writeln()
+    ..writeln('/// The sounds of each example project that has some (D138), by')
+    ..writeln('/// folder name: sound name → the bytes in Base64.')
+    ..writeln('const exampleSounds = <String, Map<String, String>>{');
+  var soundBytes = 0;
+  for (final dir in projects) {
+    final projectFile = dir.listSync().whereType<File>().firstWhere(
+      (f) => f.path.endsWith('.gbproj'),
+    );
+    final sounds = readProjectFile(projectFile.readAsStringSync())
+        .project
+        .sounds;
+    if (sounds.isEmpty) continue;
+    out.writeln('  ${jsonEncode(_name(dir.uri))}: {');
+    for (final name in sounds) {
+      final bytes = File('${dir.path}/sounds/$name').readAsBytesSync();
+      soundBytes += bytes.length;
+      out.writeln(
+        '    ${jsonEncode(name)}: ${jsonEncode(base64Encode(bytes))},',
+      );
+    }
+    out.writeln('  },');
+  }
+  out.writeln('};');
+  if (soundBytes > maxPictureBytes) {
+    stderr.writeln(
+      'The examples\' sounds have $soundBytes bytes, more than '
+      '$maxPictureBytes: make them shorter.',
+    );
+    exit(1);
+  }
   if (pictureBytes > maxPictureBytes) {
     stderr.writeln(
       'The examples\' pictures have $pictureBytes bytes, more than '

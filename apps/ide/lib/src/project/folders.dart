@@ -104,6 +104,10 @@ class ProjectOnDisk {
   final List<String> missing;
 }
 
+/// The path of sound [name] of the project in [folder] (D138).
+String soundPath(ProjectFolders fs, String folder, String name) =>
+    fs.join(fs.join(folder, soundsFolder), name);
+
 /// The path of picture [name] of the project in [folder].
 String picturePath(ProjectFolders fs, String folder, String name) =>
     fs.join(fs.join(folder, picturesFolder), name);
@@ -183,6 +187,8 @@ Future<List<String>> changedOnDisk(
   Map<String, String> saved, {
   Map<String, Uint8List> pictures = const {},
   Map<String, Uint8List> savedPictures = const {},
+  Map<String, Uint8List> sounds = const {},
+  Map<String, Uint8List> savedSounds = const {},
 }) async {
   final changed = <String>[];
   // A form's files taken out of the project are deleted (D88).
@@ -206,6 +212,18 @@ Future<List<String>> changedOnDisk(
     );
     if (!_samePicture(onDisk, before)) changed.add(file);
   }
+  // The sounds likewise (D138).
+  for (final name in {...sounds.keys, ...savedSounds.keys}) {
+    final now = sounds[name], before = savedSounds[name];
+    if (_samePicture(now, before)) continue;
+    final file = '$soundsFolder/$name';
+    final onDisk = await _io(
+      file,
+      writing: false,
+      () => fs.readBytes(soundPath(fs, folder, name)),
+    );
+    if (!_samePicture(onDisk, before)) changed.add(file);
+  }
   return changed;
 }
 
@@ -221,6 +239,8 @@ Future<void> writeChanged(
   Map<String, String> saved, {
   Map<String, Uint8List> pictures = const {},
   Map<String, Uint8List> savedPictures = const {},
+  Map<String, Uint8List> sounds = const {},
+  Map<String, Uint8List> savedSounds = const {},
 }) async {
   final written = [
     for (final MapEntry(:key, :value) in pictures.entries)
@@ -239,6 +259,24 @@ Future<void> writeChanged(
       () => fs.writeBytes(picturePath(fs, folder, name), pictures[name]!),
     );
   }
+  // The sounds likewise, into sounds/ (D138).
+  final soundsWritten = [
+    for (final MapEntry(:key, :value) in sounds.entries)
+      if (!_samePicture(value, savedSounds[key])) key,
+  ];
+  if (soundsWritten.isNotEmpty) {
+    final dir = fs.join(folder, soundsFolder);
+    await _io(soundsFolder, writing: true, () async {
+      if (!await fs.exists(dir)) await fs.createFolder(dir);
+    });
+  }
+  for (final name in soundsWritten) {
+    await _io(
+      '$soundsFolder/$name',
+      writing: true,
+      () => fs.writeBytes(soundPath(fs, folder, name), sounds[name]!),
+    );
+  }
   for (final MapEntry(key: name, value: text) in files.entries) {
     if (saved[name] == text) continue;
     await _io(name, writing: true, () => fs.write(fs.join(folder, name), text));
@@ -254,6 +292,14 @@ Future<void> writeChanged(
       '$picturesFolder/$name',
       writing: true,
       () => fs.delete(picturePath(fs, folder, name)),
+    );
+  }
+  for (final name in savedSounds.keys) {
+    if (sounds.containsKey(name)) continue;
+    await _io(
+      '$soundsFolder/$name',
+      writing: true,
+      () => fs.delete(soundPath(fs, folder, name)),
     );
   }
 }
@@ -291,6 +337,7 @@ Future<(String, Map<String, String>)> saveCopy(
   String name,
   Map<String, String> files, {
   Map<String, Uint8List> pictures = const {},
+  Map<String, Uint8List> sounds = const {},
 }) async {
   final folder = fs.join(parent, name);
   if (await _io(name, writing: true, () => fs.exists(folder))) {
@@ -298,7 +345,14 @@ Future<(String, Map<String, String>)> saveCopy(
   }
   final copy = renameProject(files, name);
   await _io(name, writing: true, () => fs.createFolder(folder));
-  await writeChanged(fs, folder, copy, const {}, pictures: pictures);
+  await writeChanged(
+    fs,
+    folder,
+    copy,
+    const {},
+    pictures: pictures,
+    sounds: sounds,
+  );
   return (folder, copy);
 }
 
@@ -323,6 +377,7 @@ Map<String, String> renameProject(Map<String, String> files, String name) {
               pictures: read.project.pictures,
               id: read.project.id == null ? null : newProjectId(),
               modules: read.project.modules,
+              sounds: read.project.sounds,
             ),
           );
   }

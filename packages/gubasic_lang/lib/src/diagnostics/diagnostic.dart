@@ -523,6 +523,11 @@ enum DiagnosticCode {
   /// Pixels (D138): the program would stop there (R052). Args: the text.
   badShapeInCode('A081', DiagnosticSeverity.warning),
 
+  /// Text given to `Sound.Play` or `Sound.PlayMusic` that names no sound
+  /// of the project (D138): the program would stop there (R053). Args:
+  /// the text.
+  unknownSoundInCode('A082', DiagnosticSeverity.warning),
+
   // Form and project files (.form.yaml, .gbproj)
 
   /// The file is not in the expected layout (YAML syntax).
