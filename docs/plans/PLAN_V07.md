@@ -204,6 +204,7 @@ Every recommendation of §6 is taken, with two changes; DESIGN D138 records them
 - **Q5, the sound package, is chosen by measurement, not by this plan.** Before the Sound change (§6 Q11, step 5), the latency from `Play` to the first sound of `audioplayers` and of `flutter_soloud` is measured on the web, on macOS and on Windows, in three cases: one short effect, the same short effect many times in quick succession, and several different sounds at once. The results go into a table in this section when they are in, and the better package is taken without another question. The `GbSound` interface is the same for both.
 - **Q10, sound on the web before the first click, is dropped silently as recommended, and the reason is written down:** LANGUAGE §11.13 and the reference say that it is the browser's rule and why a program is not stopped for it. The Shooter example begins only when its Start button is pressed (§2.6), so that its first sound comes after the click.
 - Q1 to Q4, Q6 to Q9, Q11 and Q12: as recommended.
+- **Step 5 is two changes:** (5a) the program side, `Sound` through the component channel, the runtime over flutter_soloud, the project file's `sounds` and version 4, the player's bundle and app, the desktop IDE running a project that already has sounds; (5b) the IDE's side, a Sounds window with Add and Remove, the explorer's group, the browser's storage, the `.zip`, and A082.
 
 ### 7.1 The sound packages measured (2026-11-04, Windows and the web)
 

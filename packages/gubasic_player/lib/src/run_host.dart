@@ -8,6 +8,7 @@ import 'bench/probe.dart';
 import 'database_component.dart';
 import 'form_window.dart';
 import 'http_component.dart';
+import 'sound_component.dart';
 import 'room_component.dart';
 import 'web_socket_component.dart';
 
@@ -27,12 +28,15 @@ class RunHost implements FormHost, FileHost, ComponentHost {
     this._pictures,
     GbFiles? files,
     GbHttp? http,
+    GbSound? sound,
+    this._sounds,
     GbWebSocket? webSocket,
     this.roomServer,
     GbSqlite? sqlite,
     this.pdfFont,
   }) : _fileSystem = files,
        _httpSender = http,
+       _soundEngine = sound,
        _webSockets = webSocket,
        _sql = sqlite,
        settingsKey = settingsKey ?? project,
@@ -436,6 +440,11 @@ class RunHost implements FormHost, FileHost, ComponentHost {
   /// first used, unless a test gave one.
   GbHttp? _httpSender;
 
+  /// What plays the program's sounds, and their bytes by name (D138);
+  /// the engine is made when the program first uses Sound.
+  GbSound? _soundEngine;
+  final GbSoundSource? _sounds;
+
   /// How many HTTP requests are under way: the run window shows the
   /// pointer as waiting while there is one (D124 A).
   final busyRequests = ValueNotifier<int>(0);
@@ -463,6 +472,7 @@ class RunHost implements FormHost, FileHost, ComponentHost {
   ComponentInstance? createComponent(String component, {String name = ''}) =>
       switch (component) {
         'Http' => PlayerHttp(_httpSender ??= GbHttp(), busyRequests),
+        'Sound' => PlayerSound(_soundEngine ??= GbSound(), _sounds),
         'WebSocket' => PlayerWebSocket(
           name,
           _webSockets ??= GbWebSocket(),
@@ -494,5 +504,7 @@ class RunHost implements FormHost, FileHost, ComponentHost {
     dialogs.closeAll();
     unawaited(_database?.call('Close', const []));
     _database = null;
+    // The music stops with the program (D138).
+    unawaited(_soundEngine?.stopAll());
   }
 }

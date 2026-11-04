@@ -122,6 +122,12 @@ void main() {
       // Its Database (D126): on SQLite, in a folder of this test's own.
       final dbRoot = Directory.systemTemp.createTempSync('gubasic_parity');
       addTearDown(() => dbRoot.deleteSync(recursive: true));
+      // Its sounds (D138): NAME.sounds, played by a fake that records.
+      final soundsFile = File('$base.sounds');
+      final soundNames = soundsFile.existsSync()
+          ? soundsFile.readAsLinesSync().where((l) => l.isNotEmpty).toList()
+          : const <String>[];
+      final sound = _FakeSound(soundNames);
       final host = _RecordingHost(
         startup.file,
         [for (final f in sources.skip(1)) f.file],
@@ -130,8 +136,11 @@ void main() {
         http,
         webSockets,
         GbSqlite(root: dbRoot.path),
+        sound,
+        soundNames,
       );
       http.transcript = host.transcript;
+      sound.transcript = host.transcript;
       final masksFile = File('$base.masks');
       host.masks = masksFile.existsSync()
           ? parsePictureMasks(masksFile.readAsStringSync())
@@ -220,6 +229,35 @@ class _FakeFiles implements GbFiles {
   Future<bool> exists(String path) async => disk.containsKey(path);
 }
 
+/// Plays nothing: records each play as [ScriptedHost] does (D138).
+class _FakeSound implements GbSound {
+  _FakeSound(this.names);
+
+  /// The project's sounds, whose spelling the transcript shows.
+  final List<String> names;
+  List<String> transcript = [];
+
+  String _spelled(String name) => soundNamed(names, name) ?? name;
+
+  @override
+  Future<void> play(String name, Uint8List bytes) async =>
+      transcript.add(TranscriptLine.sound(_spelled(name)));
+
+  @override
+  Future<void> playMusic(String name, Uint8List bytes) async =>
+      transcript.add(TranscriptLine.music(_spelled(name)));
+
+  @override
+  Future<void> stopMusic() async => transcript.add(TranscriptLine.musicStopped);
+
+  @override
+  void setVolume(double volume) =>
+      transcript.add(TranscriptLine.volume((volume * 100).round()));
+
+  @override
+  Future<void> stopAll() async {}
+}
+
 /// Servers answered from a test's NAME.http (D125), behind the run host's
 /// own Http object, each request recorded as [ScriptedHost] records it.
 class _FakeHttp implements GbHttp {
@@ -302,6 +340,8 @@ class _RecordingHost extends RunHost {
     _FakeHttp http,
     this.webSockets,
     GbSqlite sqlite,
+    _FakeSound sound,
+    List<String> soundNames,
   ) : _several = others.isNotEmpty,
       super(
         others: others,
@@ -311,6 +351,8 @@ class _RecordingHost extends RunHost {
         webSocket: webSockets,
         roomServer: _relay,
         sqlite: sqlite,
+        sound: sound,
+        sounds: soundSource({for (final n in soundNames) n: Uint8List(0)}),
         pdfFont: () async =>
             File('../../apps/ide/fonts/nanumgothic/NanumGothic-Regular.ttf')
                 .readAsBytesSync(),

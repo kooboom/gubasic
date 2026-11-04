@@ -940,6 +940,7 @@ pictures:
 - `startup`은 프로그램이 시작하는 폼입니다. 없으면 `forms`의 첫 폼입니다. `startup: Sub Main`은 모듈의 `Sub Main`으로 시작합니다(11.5절). 모듈은 `startup`이 될 수 없습니다(F011).
 - `modules`에는 모듈을 적습니다(11.5절). 모듈마다 `모듈이름.gbas` 파일이 하나 있습니다. 한 이름은 폼이나 모듈 가운데 하나의 것입니다(F007). 모듈이 있거나 `Sub Main`으로 시작하는 프로젝트는 `formatVersion: 3`으로 쓰고, 예전 GuBASIC은 모듈을 잃는 대신 열지 않습니다(DESIGN.ko.md D102).
 - `pictures`에는 프로젝트의 그림을 적습니다. 그림은 프로젝트 폴더의 `pictures/` 안에 있는 파일입니다(`pictures/triangle.png`). PNG, JPEG, GIF 그림만 받으며(`.png`, `.jpg`, `.jpeg`, `.gif`), 이름에 `/ \ : * ? " < > |`를 쓸 수 없습니다(F014). 이름은 영문 대소문자를 가리지 않고 한글은 음절로 비교하며, 모든 플랫폼에서 같습니다. 그래서 대소문자만 다른 두 그림은 한 프로젝트에 둘 수 없습니다(F015). Windows와 macOS도 한 폴더에 둘 다 둘 수 없습니다. 그림이 있는 프로젝트는 `formatVersion: 2`로 쓰고, 예전 GuBASIC은 그림을 잃는 대신 열지 않습니다. 그림이 없으면 여전히 버전 1입니다(DESIGN.ko.md D51).
+- `sounds`에는 프로젝트의 소리를 적습니다(DESIGN.ko.md D138). 소리는 프로젝트 폴더의 `sounds/` 안에 있는 파일입니다(`sounds/shot.wav`). 모든 브라우저와 데스크톱이 내는 WAV와 MP3만 받으며(`.wav`, `.mp3`), 이름의 규칙은 그림과 같고(F025), 대소문자만 다른 두 소리는 둘 수 없습니다(F026). 소리가 있는 프로젝트는 `formatVersion: 4`로 쓰고, 예전 GuBASIC은 아무 소리도 안 내는 대신 열지 않습니다. IDE는 아직 소리를 더하지 못합니다: 파일을 `sounds/`에 두고 적습니다([KNOWN_ISSUES](KNOWN_ISSUES.ko.md)).
 - `id`는 앱 ID입니다(DESIGN.md D83). 영어 소문자와 숫자 8~32자이고, 프로젝트를 처음 앱으로 내보낼 때 만들어 간직하므로 다시 내보낸 앱도 같은 앱이 되어 설정이 남습니다. 새 이름으로 복사한 프로젝트는 새 ID를 받습니다. 앱 ID가 아닌 값은 무시하고(F018), 다음에 내보낼 때 새로 만듭니다. 예전 GuBASIC은 이 키를 F004와 함께 무시하고, 프로젝트를 저장할 때 버립니다.
 - [examples/hello](../examples/hello)는 README 예제를 프로젝트로 만든 것입니다.
 
@@ -1226,6 +1227,30 @@ End Sub
 **예제** **LiveQuiz** 는 양쪽을 한 프로젝트로 씁니다. 첫 폼에서 TV인지 폰인지 고르고, TV는 방을 만들어 코드를 보여 주며 Quiz 예제의 일곱 문제를 내고, 사람마다 캐릭터를 점수만큼 달리게 합니다. 폰은 코드로 들어와 버튼 넷으로 답하고, 답은 `SendTo`로 TV에게만 보냅니다. 데스크톱 IDE에서는 IDE의 중계 서버로 돌고, "같은 네트워크의 기기 허용"을 켠 뒤 디버그 메뉴의 "웹으로 미리 보기"가 QR 코드를 보이면, 같은 Wi-Fi의 폰이 그것으로 앱을 열고 들어옵니다. Windows에서는 처음 켤 때 Windows Defender 방화벽이 IDE의 연결 수신을 허용할지 묻습니다. 개인 네트워크에서만 허용하고 공용 네트워크는 허용하지 마세요. 취소하면 스위치가 켜져 보여도 어떤 기기도 접속할 수 없고, 규칙은 Windows 보안의 "방화벽을 통해 앱 허용"에서 지웁니다.
 
 **어디서 도나.** IDE와 내보낸 앱에서, 모든 플랫폼에서 돕니다. 놀이터에는 `Room`이 없습니다(R038). 동일성 프로그램은 메모리 안의 중계 서버를 쓰고, 이벤트 스크립트가 방의 다른 사람 노릇을 합니다: `Peer 민지 Join`, `Peer 민지 Send …`, `Room Close idle`, `Room Drop`.
+
+### 11.13 Sound
+
+**`Sound`**(DESIGN.ko.md D138)는 프로젝트의 소리(11.3절)를 냅니다. `Http`처럼 이름으로 쓰는 내장 객체입니다.
+
+| 멤버 | 하는 일 |
+|---|---|
+| `Sound.Play(name)` | 효과음을 바로 내고 기다리지 않고 지나갑니다. 게임 루프는 소리를 기다릴 수 없습니다. 여럿이 겹치고, 같은 소리가 나는 중에 `Play`하면 그 위에 다시 시작합니다 |
+| `Sound.PlayMusic(name)` | 소리 하나를 `StopMusic`, 프로그램 끝, 또는 다른 `PlayMusic`이 바꿀 때까지 되풀이합니다. 한 번에 하나 |
+| `Sound.StopMusic()` | 음악을 멈춥니다. 나는 음악이 없으면 아무 일도 없습니다 |
+| `Sound.Volume` | 프로그램이 내는 모든 소리에, 0에서 100(처음 100). 벗어나면 R010 |
+
+이름은 그림처럼 대소문자를 가리지 않고 비교하고 아무것도 읽지 않습니다. 프로젝트에 없는 소리는 프로그램을 멈춥니다(R053). **웹에서는** 사용자가 페이지를 클릭하거나 키를 누른 뒤에만 소리를 낼 수 있습니다([Chrome의 autoplay 정책](https://developer.chrome.com/blog/autoplay)). 그 전의 `Play`는 오류 없이 버려집니다. 브라우저의 규칙이지 프로그램의 잘못이 아니고, 시작 버튼으로 시작하는 게임은 이것을 만나지 않습니다. 소리는 측정으로 고른 flutter_soloud가 섞습니다([plans/PLAN_V07.ko.md](plans/PLAN_V07.ko.md) 7.1절). Visual Basic .NET의 `My.Computer.Audio.Stop`은 `StopMusic`입니다(A036). 폼 없는 프로그램을 돌리는 놀이터에는 `Sound`가 없습니다(R038).
+
+```vb
+Sub btnStart_Click()
+    Sound.PlayMusic("music.mp3")
+    tmrGame.Start()
+End Sub
+
+Sub Fire()
+    Sound.Play("shot.wav")
+End Sub
+```
 
 ## 12. 열린 질문
 

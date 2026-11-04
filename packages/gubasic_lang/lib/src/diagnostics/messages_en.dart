@@ -342,6 +342,13 @@ const Map<DiagnosticCode, String> englishMessages = {
       'Rectangle, Circle or Pixels.',
   DiagnosticCode.badShapeInFile: '{0} is not a shape. A Sprite\'s Shape '
       'is Rectangle, Circle or Pixels.',
+  DiagnosticCode.soundNotFound: 'This project has no sound "{0}". Add it '
+      'to the project\'s sounds, or check the name.',
+  DiagnosticCode.invalidSoundName: 'A sound is a .wav or .mp3 file whose '
+      'name has none of / \\ : * ? " < > |, and no dot or space at either '
+      'end: {0}.',
+  DiagnosticCode.duplicateSound: 'Two sounds cannot have the same name '
+      'in different cases: {0} and {1} (line {2}).',
   DiagnosticCode.badColor: 'The colour of {0} is a colour\'s name (Red, '
       'SkyBlue) or #RRGGBB; "{1}" is neither. Choose one in the Properties '
       'window.',

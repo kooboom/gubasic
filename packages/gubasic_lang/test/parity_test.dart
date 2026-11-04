@@ -103,6 +103,11 @@ void main() {
             f.uri.pathSegments.last: f.readAsBytesSync(),
       };
       // The masks of its pictures for pixel collisions (D138): NAME.masks.
+      // The names of its sounds (D138): NAME.sounds.
+      final soundsFile = File('$base.sounds');
+      final sounds = soundsFile.existsSync()
+          ? soundsFile.readAsLinesSync().where((l) => l.isNotEmpty).toList()
+          : const <String>[];
       final masksFile = File('$base.masks');
       final masks = masksFile.existsSync()
           ? parsePictureMasks(masksFile.readAsStringSync())
@@ -162,6 +167,7 @@ void main() {
             startsWithMain: startsWithMain,
             disk: disk,
             masks: masks,
+            sounds: sounds,
             http: http,
             webSockets: webSockets,
             database: database);
@@ -178,6 +184,7 @@ void main() {
             pictures: pictures,
             disk: disk,
             masks: masks,
+            sounds: sounds,
             http: http,
             webSockets: webSockets,
             database: database);

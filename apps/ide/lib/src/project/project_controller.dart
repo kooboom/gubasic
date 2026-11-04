@@ -236,6 +236,7 @@ class ProjectController extends ChangeNotifier {
         FolderLocation(folders!.parent(file)),
         read.files,
         pictures: read.pictures,
+        sounds: read.sounds,
       );
       _folderProject = project;
       _show(project);
@@ -920,6 +921,7 @@ class ProjectController extends ChangeNotifier {
       name: name,
       files: project.files,
       pictures: project.pictures,
+      sounds: project.sounds,
       // The font only when the program writes PDF files: other apps stay
       // as small as they were (D117).
       fonts: usesPdfDocument(project.files) ? await loadPdfFont() : const {},
@@ -1020,6 +1022,7 @@ class ProjectController extends ChangeNotifier {
       name: project.project.name,
       files: files,
       pictures: project.pictures,
+      sounds: project.sounds,
       fonts: usesPdfDocument(files) ? await loadPdfFont() : const {},
     );
     try {

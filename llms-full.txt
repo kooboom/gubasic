@@ -946,6 +946,7 @@ pictures:
 - `startup` is the form the program starts with; without it, the first form in `forms`. `startup: Sub Main` starts with `Sub Main` of a module (§11.5); a module cannot be `startup` (F011).
 - `modules` lists the modules (§11.5), each a file `MODULE.gbas`. A name is a form's or a module's, not both (F007). A project with modules, or starting with `Sub Main`, is written as `formatVersion: 3`, which an older GuBASIC refuses to open rather than lose its modules (DESIGN.md D102).
 - `pictures` lists the project's pictures, which are files in its `pictures/` folder: `pictures/triangle.png`. Only PNG, JPEG and GIF pictures are taken (`.png`, `.jpg`, `.jpeg`, `.gif`), and a name cannot have `/ \ : * ? " < > |` (F014). Names are compared without the case of English letters, and Hangul as syllables, the same on every platform: so a project cannot have two pictures whose names differ only in case (F015), as Windows and macOS could not keep both in one folder. A project with pictures is written as `formatVersion: 2`, which an older GuBASIC refuses to open rather than lose its pictures; one without is still version 1 (DESIGN.md D51).
+- `sounds` lists the project's sounds (DESIGN.md D138), which are files in its `sounds/` folder: `sounds/shot.wav`. Only WAV and MP3 sounds are taken (`.wav`, `.mp3`), which every browser and desktop system plays; the rules of a name are a picture's (F025), and two sounds cannot differ only in case (F026). A project with sounds is written as `formatVersion: 4`, which an older GuBASIC refuses to open rather than play nothing. The IDE does not add sounds yet: put the files in `sounds/` and list them ([KNOWN_ISSUES](KNOWN_ISSUES.md)).
 - `id` is the app ID (DESIGN.md D83): 8 to 32 lowercase letters and digits, made the first time the project is exported as an app and kept, so that the app exported again is the same app and keeps its settings. A copy of the project made with a new name gets a new one. One that is not an app ID is ignored (F018), and the next export makes a new one. Older GuBASICs ignore the key with F004 and drop it when they save the project.
 - [examples/hello](../examples/hello) is the README example as a project.
 
@@ -1232,6 +1233,30 @@ End Sub
 **The example** **LiveQuiz** is one project for both sides: its start form asks whether this is the TV or a phone; the TV makes a room, shows its code, asks the Quiz example's seven questions and moves a runner for each player as far as its score; a phone joins with the code and answers with four buttons, `SendTo` the TV alone. In the desktop IDE it runs on the IDE's relay server; with "Allow devices on the same network" on, the Debug menu's "Preview on the Web" shows a QR code, and a phone on the same Wi-Fi opens the app from it and joins. On Windows, the first time it is turned on, Windows Defender Firewall asks whether to let the IDE accept connections: allow it on private networks only, never on a public one. With Cancel the switch looks on but no device can connect; the rule is taken back under "Allow an app through firewall" in Windows Security.
 
 **Where it runs.** In the IDE and in exported apps, on every platform; the playground has no `Room` (R038). Parity programs use a relay server in memory, and their event scripts act as the others in the room: `Peer 민지 Join`, `Peer 민지 Send …`, `Room Close idle`, `Room Drop`.
+
+### 11.13 Sound
+
+**`Sound`** (DESIGN.md D138) plays the project's sounds (§11.3): a built-in object used by its name, like `Http`.
+
+| Member | What it does |
+|---|---|
+| `Sound.Play(name)` | Plays an effect at once and goes on without waiting: a game loop cannot stop for a sound. Several overlap, and a `Play` while the same sound plays starts it again over it |
+| `Sound.PlayMusic(name)` | Plays a sound round and round until `StopMusic`, the program ends, or another `PlayMusic` replaces it; one at a time |
+| `Sound.StopMusic()` | Stops the music; nothing happens when none plays |
+| `Sound.Volume` | For everything the program plays, from 0 to 100 (100 at first); outside that is R010 |
+
+A name is compared as a picture's is, in any case, and reads nothing: a sound the project does not have stops the program (R053). **On the web** a page may play sound only after the user has clicked or pressed a key on it ([Chrome's autoplay policy](https://developer.chrome.com/blog/autoplay)): a `Play` before that is dropped without an error, since it is the browser's rule and not the program's fault, and a game that begins with a Start button never meets it. The sounds are mixed by flutter_soloud, chosen by measurement ([plans/PLAN_V07.md](plans/PLAN_V07.md) §7.1). Visual Basic .NET's `My.Computer.Audio.Stop` is `StopMusic` (A036). The playground, which runs programs without a form, has no `Sound` (R038).
+
+```vb
+Sub btnStart_Click()
+    Sound.PlayMusic("music.mp3")
+    tmrGame.Start()
+End Sub
+
+Sub Fire()
+    Sound.Play("shot.wav")
+End Sub
+```
 
 ## 12. Open questions
 
@@ -2249,6 +2274,15 @@ Talks to web servers over HTTP (docs/DESIGN.md D124, D125), the way Visual Basic
 - `Http.PostJson(url As String, body As Json) As Json`
 - `Http.Send(method As String, url As String, body As String, ParamArray headers As String) As HttpResponse`
 - `Http.Header(name As String) As String (can be assigned to)`
+
+### Sound
+
+Plays the project's sounds (docs/DESIGN.md D138): the files in its sounds/ folder, WAV or MP3, listed in the .gbproj. A built-in object used by its name, not put on a form. Sound.Play(name) plays an effect at once and goes on without waiting, several overlapping; a Play while the same sound plays starts it again over it. Sound.PlayMusic(name) plays a sound round and round until Sound.StopMusic(), the program ends, or another PlayMusic replaces it, one at a time. Volume, from 0 to 100, is for everything the program plays. A name the project has no sound of is R053. On the web a page may play sound only after the user has clicked or pressed a key on it, so a Play before that is dropped without an error. Through the component channel, as Http is.
+
+- `Sound.Volume As Integer (can be set)`
+- `Sound.Play(name As String)`
+- `Sound.PlayMusic(name As String)`
+- `Sound.StopMusic()`
 
 ## Members of types
 

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gubasic_lang/gubasic_lang.dart';
 import 'package:gubasic_player/gubasic_player.dart';
+import 'package:gubasic_runtime/gubasic_runtime.dart';
 
 import 'app_window.dart';
 
@@ -33,6 +34,7 @@ class PlayerApp extends StatelessWidget {
     super.key,
     required this.files,
     this.pictures = const {},
+    this.sounds = const {},
     this.fonts = const {},
     this.settingsKey,
     required this.strings,
@@ -54,6 +56,9 @@ class PlayerApp extends StatelessWidget {
   /// Its pictures, name → bytes.
   final Map<String, Uint8List> pictures;
 
+  /// Its sounds, name → bytes (D138).
+  final Map<String, Uint8List> sounds;
+
   /// The font PDF files are written in, when the program uses PdfDocument
   /// (D117), and its licence.
   final Map<String, Uint8List> fonts;
@@ -67,6 +72,7 @@ class PlayerApp extends StatelessWidget {
     home: PlayerScreen(
       files: files,
       pictures: pictures,
+      sounds: sounds,
       fonts: fonts,
       settingsKey: settingsKey,
       strings: strings,
@@ -81,6 +87,7 @@ class PlayerScreen extends StatefulWidget {
     super.key,
     required this.files,
     required this.pictures,
+    this.sounds = const {},
     this.fonts = const {},
     this.settingsKey,
     required this.strings,
@@ -89,6 +96,7 @@ class PlayerScreen extends StatefulWidget {
 
   final Map<String, String> files;
   final Map<String, Uint8List> pictures;
+  final Map<String, Uint8List> sounds;
   final Map<String, Uint8List> fonts;
   final String? settingsKey;
   final PlayerStrings strings;
@@ -114,6 +122,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
         project: _project.name,
         settingsKey: widget.settingsKey,
         pictures: pictureSource(widget.pictures),
+        sounds: soundSource(widget.sounds),
         pdfFont: () async => widget.fonts[pdfFontFile],
       )..addListener(_changed);
     }

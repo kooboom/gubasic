@@ -1,0 +1,31 @@
+' Sound (D138): the project's sounds, listed in the .gbproj and kept in
+' sounds/. Play plays an effect at once and goes on without waiting;
+' PlayMusic plays round and round until StopMusic; Volume is for all.
+' A sound the project does not have is R053.
+Sub Form_Load()
+    Debug.Print("Volume " & Sound.Volume)
+    Sound.Play("shot.wav")
+    Sound.Play("SHOT.WAV")              ' any case, over the first
+    Sound.Volume = 50
+    Sound.PlayMusic("music.mp3")
+    Debug.Print("Playing on, volume " & Sound.Volume)
+End Sub
+
+Sub btnStop_Click()
+    Sound.StopMusic()
+    Sound.StopMusic()                   ' nothing plays: nothing happens
+End Sub
+
+Sub btnMissing_Click()
+    Try
+        Sound.Play("boom.wav")
+    Catch ex As Exception
+        Debug.Print(ex.Message)
+    End Try
+    Try
+        Sound.Volume = 101
+    Catch ex As Exception
+        Debug.Print(ex.Message)
+    End Try
+    Debug.Print("Still " & Sound.Volume)
+End Sub

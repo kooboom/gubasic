@@ -46,6 +46,7 @@ class ProjectBundle {
     required this.name,
     required this.files,
     this.pictures = const {},
+    this.sounds = const {},
     this.fonts = const {},
     this.madeBy = gubasicVersion,
   });
@@ -59,6 +60,9 @@ class ProjectBundle {
 
   /// Picture name → bytes.
   final Map<String, Uint8List> pictures;
+
+  /// Sound name → bytes (D138): `project/sounds/`.
+  final Map<String, Uint8List> sounds;
 
   /// File name → bytes: [pdfFontFile] and [pdfFontLicense], or nothing.
   final Map<String, Uint8List> fonts;
@@ -85,6 +89,9 @@ class ProjectBundle {
     }
     for (final MapEntry(:key, :value) in pictures.entries) {
       archive.add(ArchiveFile.bytes('project/pictures/$key', value));
+    }
+    for (final MapEntry(:key, :value) in sounds.entries) {
+      archive.add(ArchiveFile.bytes('project/sounds/$key', value));
     }
     for (final MapEntry(:key, :value) in fonts.entries) {
       archive.add(ArchiveFile.bytes('fonts/$key', value));
@@ -121,6 +128,7 @@ class ProjectBundle {
 
     final files = <String, String>{};
     final pictures = <String, Uint8List>{};
+    final sounds = <String, Uint8List>{};
     final fonts = <String, Uint8List>{};
     for (final entry in archive.files) {
       if (!entry.isFile) continue;
@@ -139,6 +147,8 @@ class ProjectBundle {
         }
       } else if (parts.length == 3 && parts[1] == 'pictures') {
         pictures[parts[2]] = Uint8List.fromList(entry.content);
+      } else if (parts.length == 3 && parts[1] == 'sounds') {
+        sounds[parts[2]] = Uint8List.fromList(entry.content);
       }
     }
     if (!files.keys.any((f) => f.endsWith('.gbproj'))) {
@@ -149,6 +159,7 @@ class ProjectBundle {
       name: '${yaml['name'] ?? ''}',
       files: files,
       pictures: pictures,
+      sounds: sounds,
       fonts: fonts,
       madeBy: madeBy,
     );

@@ -20,6 +20,7 @@ import 'project/pdf_font.dart';
 import 'project/pictures_dialog.dart';
 
 import 'package:gubasic_player/gubasic_player.dart';
+import 'package:gubasic_runtime/gubasic_runtime.dart';
 
 import 'project/project_controller.dart';
 import 'project/project_forms.dart' show moduleHasMain;
@@ -255,6 +256,7 @@ class _IdeShellState extends State<IdeShell> {
         settings: widget.controller.settings,
         // The pictures as the run starts; they cannot change while it runs.
         pictures: pictureSource(widget.controller.current.pictures),
+        sounds: soundSource(widget.controller.current.sounds),
         // The run window can always write PDF files (D117).
         pdfFont: () async => (await loadPdfFont())[pdfFontFile],
         debugger: _debugger,

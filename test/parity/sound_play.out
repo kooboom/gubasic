@@ -1,0 +1,15 @@
+Debug.Print: Volume 100
+Sound: shot.wav
+Sound: shot.wav
+Volume: 50
+Music: music.mp3
+Debug.Print: Playing on, volume 50
+> btnStop.Click
+Music stopped
+Music stopped
+> btnMissing.Click
+Debug.Print: This project has no sound "boom.wav". Add it to the project's sounds, or check the name.
+Debug.Print: The value of Volume must be from 0 to 100. Check the value before setting it.
+Debug.Print: Still 50
+> Close
+Closed

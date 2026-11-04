@@ -12,7 +12,8 @@
 /// files of NAME.files/ the program reads (D113), name to
 /// base64; then what servers answer it, NAME.http (D125);
 /// then what its WebSocket servers do, NAME.ws (D136); last,
-/// the masks of its pictures, NAME.masks (D138).
+/// the masks of its pictures, NAME.masks, and the names of its
+/// sounds, NAME.sounds (D138).
 const parityCases = <(
   String,
   String,
@@ -27,7 +28,8 @@ const parityCases = <(
   Map<String, String>,
   String?,
   String?,
-  String?
+  String?,
+  List<String>
 )>[
   (
     "arithmetic",
@@ -44,6 +46,7 @@ const parityCases = <(
     null,
     null,
     null,
+    [],
   ),
   (
     "askname_example",
@@ -66,6 +69,7 @@ const parityCases = <(
     null,
     null,
     null,
+    [],
   ),
   (
     "big_integers",
@@ -82,6 +86,7 @@ const parityCases = <(
     null,
     null,
     null,
+    [],
   ),
   (
     "calculator_example",
@@ -98,6 +103,7 @@ const parityCases = <(
     null,
     null,
     null,
+    [],
   ),
   (
     "conditions",
@@ -114,6 +120,7 @@ const parityCases = <(
     null,
     null,
     null,
+    [],
   ),
   (
     "control_look",
@@ -130,6 +137,7 @@ const parityCases = <(
     null,
     null,
     null,
+    [],
   ),
   (
     "controls_cast_error",
@@ -146,6 +154,7 @@ const parityCases = <(
     null,
     null,
     null,
+    [],
   ),
   (
     "controls_loop",
@@ -162,6 +171,7 @@ const parityCases = <(
     null,
     null,
     null,
+    [],
   ),
   (
     "controls_new",
@@ -178,6 +188,7 @@ const parityCases = <(
     null,
     null,
     null,
+    [],
   ),
   (
     "controls_new_with",
@@ -194,6 +205,7 @@ const parityCases = <(
     null,
     null,
     null,
+    [],
   ),
   (
     "csv_table",
@@ -213,6 +225,7 @@ const parityCases = <(
     null,
     null,
     null,
+    [],
   ),
   (
     "dates_format",
@@ -229,6 +242,7 @@ const parityCases = <(
     null,
     null,
     null,
+    [],
   ),
   (
     "dialogs",
@@ -245,6 +259,7 @@ const parityCases = <(
     null,
     null,
     null,
+    [],
   ),
   (
     "divide_by_zero",
@@ -261,6 +276,7 @@ const parityCases = <(
     null,
     null,
     null,
+    [],
   ),
   (
     "end_statement",
@@ -277,6 +293,7 @@ const parityCases = <(
     null,
     null,
     null,
+    [],
   ),
   (
     "events_anchor",
@@ -293,6 +310,7 @@ const parityCases = <(
     null,
     null,
     null,
+    [],
   ),
   (
     "events_changed",
@@ -309,6 +327,7 @@ const parityCases = <(
     null,
     null,
     null,
+    [],
   ),
   (
     "events_checkbox",
@@ -325,6 +344,7 @@ const parityCases = <(
     null,
     null,
     null,
+    [],
   ),
   (
     "events_combobox",
@@ -341,6 +361,7 @@ const parityCases = <(
     null,
     null,
     null,
+    [],
   ),
   (
     "events_end",
@@ -357,6 +378,7 @@ const parityCases = <(
     null,
     null,
     null,
+    [],
   ),
   (
     "events_error",
@@ -373,6 +395,7 @@ const parityCases = <(
     null,
     null,
     null,
+    [],
   ),
   (
     "events_frame",
@@ -389,6 +412,7 @@ const parityCases = <(
     null,
     null,
     null,
+    [],
   ),
   (
     "events_image",
@@ -405,6 +429,7 @@ const parityCases = <(
     null,
     null,
     null,
+    [],
   ),
   (
     "events_listbox",
@@ -421,6 +446,7 @@ const parityCases = <(
     null,
     null,
     null,
+    [],
   ),
   (
     "events_load",
@@ -437,6 +463,7 @@ const parityCases = <(
     null,
     null,
     null,
+    [],
   ),
   (
     "events_menu",
@@ -453,6 +480,7 @@ const parityCases = <(
     null,
     null,
     null,
+    [],
   ),
   (
     "events_modal",
@@ -469,6 +497,7 @@ const parityCases = <(
     null,
     null,
     null,
+    [],
   ),
   (
     "events_mouse",
@@ -485,6 +514,7 @@ const parityCases = <(
     null,
     null,
     null,
+    [],
   ),
   (
     "events_mouse_sender",
@@ -501,6 +531,7 @@ const parityCases = <(
     null,
     null,
     null,
+    [],
   ),
   (
     "events_option",
@@ -517,6 +548,7 @@ const parityCases = <(
     null,
     null,
     null,
+    [],
   ),
   (
     "events_popup",
@@ -533,6 +565,7 @@ const parityCases = <(
     null,
     null,
     null,
+    [],
   ),
   (
     "events_reentry",
@@ -549,6 +582,7 @@ const parityCases = <(
     null,
     null,
     null,
+    [],
   ),
   (
     "events_resize",
@@ -565,6 +599,7 @@ const parityCases = <(
     null,
     null,
     null,
+    [],
   ),
   (
     "events_shared",
@@ -581,6 +616,7 @@ const parityCases = <(
     null,
     null,
     null,
+    [],
   ),
   (
     "events_static",
@@ -597,6 +633,7 @@ const parityCases = <(
     null,
     null,
     null,
+    [],
   ),
   (
     "files_text",
@@ -616,6 +653,7 @@ const parityCases = <(
     null,
     null,
     null,
+    [],
   ),
   (
     "forms_dialog",
@@ -638,6 +676,7 @@ const parityCases = <(
     null,
     null,
     null,
+    [],
   ),
   (
     "forms_dialogresult",
@@ -660,6 +699,7 @@ const parityCases = <(
     null,
     null,
     null,
+    [],
   ),
   (
     "forms_error",
@@ -682,6 +722,7 @@ const parityCases = <(
     null,
     null,
     null,
+    [],
   ),
   (
     "forms_last",
@@ -704,6 +745,7 @@ const parityCases = <(
     null,
     null,
     null,
+    [],
   ),
   (
     "forms_show",
@@ -726,6 +768,7 @@ const parityCases = <(
     null,
     null,
     null,
+    [],
   ),
   (
     "forms_window",
@@ -753,6 +796,7 @@ const parityCases = <(
     null,
     null,
     null,
+    [],
   ),
   (
     "grid_scores",
@@ -772,6 +816,7 @@ const parityCases = <(
     null,
     null,
     null,
+    [],
   ),
   (
     "handles_shared",
@@ -788,6 +833,7 @@ const parityCases = <(
     null,
     null,
     null,
+    [],
   ),
   (
     "http_json",
@@ -804,6 +850,7 @@ const parityCases = <(
     "GET https://api.example.com/hello\n200 text/plain; charset=utf-8\n안녕하세요\n\nGET https://api.example.com/scores\n200 application/json\nX-Count: 2\n[{\"name\":\"김하나\",\"points\":10,\"ok\":true},\n {\"name\":\"Lee\",\"points\":7.0,\"ok\":false}]\n\nPOST https://api.example.com/echo\n201 text/plain\nechoed\n\nPOST https://api.example.com/scores\n200 application/json\n{\"ok\": true, \"id\": 3}\n\nGET https://api.example.com/missing\n404 text/html\n<html>Not here</html>\n\nGET https://api.example.com/down\nfails connection refused\n",
     null,
     null,
+    [],
   ),
   (
     "integer_overflow",
@@ -820,6 +867,7 @@ const parityCases = <(
     null,
     null,
     null,
+    [],
   ),
   (
     "json_values",
@@ -836,6 +884,7 @@ const parityCases = <(
     null,
     null,
     null,
+    [],
   ),
   (
     "keyboard_isdown",
@@ -852,6 +901,7 @@ const parityCases = <(
     null,
     null,
     null,
+    [],
   ),
   (
     "keys_move",
@@ -868,6 +918,7 @@ const parityCases = <(
     null,
     null,
     null,
+    [],
   ),
   (
     "keys_preview",
@@ -884,6 +935,7 @@ const parityCases = <(
     null,
     null,
     null,
+    [],
   ),
   (
     "lists_arrays",
@@ -900,6 +952,7 @@ const parityCases = <(
     null,
     null,
     null,
+    [],
   ),
   (
     "livequiz_example",
@@ -934,6 +987,7 @@ const parityCases = <(
     null,
     null,
     null,
+    [],
   ),
   (
     "livequiz_phone",
@@ -968,6 +1022,7 @@ const parityCases = <(
     null,
     null,
     null,
+    [],
   ),
   (
     "loops",
@@ -984,6 +1039,7 @@ const parityCases = <(
     null,
     null,
     null,
+    [],
   ),
   (
     "milliseconds",
@@ -1000,6 +1056,7 @@ const parityCases = <(
     null,
     null,
     null,
+    [],
   ),
   (
     "modules_error",
@@ -1022,6 +1079,7 @@ const parityCases = <(
     null,
     null,
     null,
+    [],
   ),
   (
     "modules_main",
@@ -1044,6 +1102,7 @@ const parityCases = <(
     null,
     null,
     null,
+    [],
   ),
   (
     "modules_main_ends",
@@ -1066,6 +1125,7 @@ const parityCases = <(
     null,
     null,
     null,
+    [],
   ),
   (
     "modules_shared",
@@ -1093,6 +1153,7 @@ const parityCases = <(
     null,
     null,
     null,
+    [],
   ),
   (
     "overflow_caught",
@@ -1109,6 +1170,7 @@ const parityCases = <(
     null,
     null,
     null,
+    [],
   ),
   (
     "overflow_edges",
@@ -1125,6 +1187,7 @@ const parityCases = <(
     null,
     null,
     null,
+    [],
   ),
   (
     "quiz_best",
@@ -1141,6 +1204,7 @@ const parityCases = <(
     null,
     null,
     null,
+    [],
   ),
   (
     "quiz_example",
@@ -1157,6 +1221,7 @@ const parityCases = <(
     null,
     null,
     null,
+    [],
   ),
   (
     "random_seeded",
@@ -1173,6 +1238,7 @@ const parityCases = <(
     null,
     null,
     null,
+    [],
   ),
   (
     "recursion",
@@ -1189,6 +1255,7 @@ const parityCases = <(
     null,
     null,
     null,
+    [],
   ),
   (
     "room_basics",
@@ -1205,6 +1272,7 @@ const parityCases = <(
     null,
     null,
     null,
+    [],
   ),
   (
     "room_errors",
@@ -1221,6 +1289,7 @@ const parityCases = <(
     null,
     null,
     null,
+    [],
   ),
   (
     "room_reconnect",
@@ -1237,6 +1306,7 @@ const parityCases = <(
     null,
     null,
     null,
+    [],
   ),
   (
     "rounding",
@@ -1253,6 +1323,7 @@ const parityCases = <(
     null,
     null,
     null,
+    [],
   ),
   (
     "scores_example",
@@ -1274,6 +1345,7 @@ const parityCases = <(
     null,
     null,
     null,
+    [],
   ),
   (
     "settings",
@@ -1290,6 +1362,7 @@ const parityCases = <(
     null,
     null,
     null,
+    [],
   ),
   (
     "settings_limit",
@@ -1306,6 +1379,24 @@ const parityCases = <(
     null,
     null,
     null,
+    [],
+  ),
+  (
+    "sound_play",
+    "' Sound (D138): the project's sounds, listed in the .gbproj and kept in\n' sounds/. Play plays an effect at once and goes on without waiting;\n' PlayMusic plays round and round until StopMusic; Volume is for all.\n' A sound the project does not have is R053.\nSub Form_Load()\n    Debug.Print(\"Volume \" & Sound.Volume)\n    Sound.Play(\"shot.wav\")\n    Sound.Play(\"SHOT.WAV\")              ' any case, over the first\n    Sound.Volume = 50\n    Sound.PlayMusic(\"music.mp3\")\n    Debug.Print(\"Playing on, volume \" & Sound.Volume)\nEnd Sub\n\nSub btnStop_Click()\n    Sound.StopMusic()\n    Sound.StopMusic()                   ' nothing plays: nothing happens\nEnd Sub\n\nSub btnMissing_Click()\n    Try\n        Sound.Play(\"boom.wav\")\n    Catch ex As Exception\n        Debug.Print(ex.Message)\n    End Try\n    Try\n        Sound.Volume = 101\n    Catch ex As Exception\n        Debug.Print(ex.Message)\n    End Try\n    Debug.Print(\"Still \" & Sound.Volume)\nEnd Sub\n",
+    [],
+    "Debug.Print: Volume 100\nSound: shot.wav\nSound: shot.wav\nVolume: 50\nMusic: music.mp3\nDebug.Print: Playing on, volume 50\n> btnStop.Click\nMusic stopped\nMusic stopped\n> btnMissing.Click\nDebug.Print: This project has no sound \"boom.wav\". Add it to the project's sounds, or check the name.\nDebug.Print: The value of Volume must be from 0 to 100. Check the value before setting it.\nDebug.Print: Still 50\n> Close\nClosed\n",
+    "formatVersion: 1\ncontrols:\n  - { name: btnStop, type: Button, properties: { Caption: Stop } }\n  - { name: btnMissing, type: Button, properties: { Caption: Missing, Top: 40 } }\n",
+    "btnStop.Click\nbtnMissing.Click     ' a sound the project does not have: R053, caught; Volume 101: out of range, caught\nClose\n",
+    null,
+    [],
+    [],
+    false,
+    {},
+    null,
+    null,
+    null,
+    ["shot.wav", "music.mp3"],
   ),
   (
     "sprite_frames",
@@ -1322,6 +1413,7 @@ const parityCases = <(
     null,
     null,
     null,
+    [],
   ),
   (
     "sprite_hits",
@@ -1338,6 +1430,7 @@ const parityCases = <(
     null,
     null,
     "blob.png\n.##.\n####\n####\n.##.\n",
+    [],
   ),
   (
     "sprite_move",
@@ -1354,6 +1447,7 @@ const parityCases = <(
     null,
     null,
     null,
+    [],
   ),
   (
     "static_and_scope",
@@ -1370,6 +1464,7 @@ const parityCases = <(
     null,
     null,
     null,
+    [],
   ),
   (
     "strings",
@@ -1386,6 +1481,7 @@ const parityCases = <(
     null,
     null,
     null,
+    [],
   ),
   (
     "structure_basics",
@@ -1402,6 +1498,7 @@ const parityCases = <(
     null,
     null,
     null,
+    [],
   ),
   (
     "structure_collections",
@@ -1418,6 +1515,7 @@ const parityCases = <(
     null,
     null,
     null,
+    [],
   ),
   (
     "structure_copy",
@@ -1434,6 +1532,7 @@ const parityCases = <(
     null,
     null,
     null,
+    [],
   ),
   (
     "structure_module",
@@ -1461,6 +1560,7 @@ const parityCases = <(
     null,
     null,
     null,
+    [],
   ),
   (
     "structure_with",
@@ -1477,6 +1577,7 @@ const parityCases = <(
     null,
     null,
     null,
+    [],
   ),
   (
     "text_form",
@@ -1493,6 +1594,7 @@ const parityCases = <(
     null,
     null,
     null,
+    [],
   ),
   (
     "timer_clock",
@@ -1509,6 +1611,7 @@ const parityCases = <(
     null,
     null,
     null,
+    [],
   ),
   (
     "timer_many",
@@ -1525,6 +1628,7 @@ const parityCases = <(
     null,
     null,
     null,
+    [],
   ),
   (
     "timer_turns",
@@ -1541,6 +1645,7 @@ const parityCases = <(
     null,
     null,
     null,
+    [],
   ),
   (
     "try_catch",
@@ -1557,6 +1662,7 @@ const parityCases = <(
     null,
     null,
     null,
+    [],
   ),
   (
     "weather_example",
@@ -1573,6 +1679,7 @@ const parityCases = <(
     "GET https://api.open-meteo.com/v1/forecast?latitude=37.57&longitude=126.98&current=temperature_2m,wind_speed_10m,weather_code&timezone=Asia%2FSeoul\n200 application/json; charset=utf-8\n{\"latitude\":37.5625,\"longitude\":127.0,\"current_units\":{\"time\":\"iso8601\",\"interval\":\"seconds\",\"temperature_2m\":\"°C\",\"wind_speed_10m\":\"km/h\",\"weather_code\":\"wmo code\"},\"current\":{\"time\":\"2026-11-02T10:15\",\"interval\":900,\"temperature_2m\":12.3,\"wind_speed_10m\":5.4,\"weather_code\":3}}\n\nGET https://api.open-meteo.com/v1/forecast?latitude=35.18&longitude=129.08&current=temperature_2m,wind_speed_10m,weather_code&timezone=Asia%2FSeoul\n200 application/json; charset=utf-8\n{\"current_units\":{\"temperature_2m\":\"°C\",\"wind_speed_10m\":\"km/h\"},\"current\":{\"time\":\"2026-11-02T10:15\",\"temperature_2m\":15,\"wind_speed_10m\":12.0,\"weather_code\":61}}\n\nGET https://api.open-meteo.com/v1/forecast?latitude=33.50&longitude=126.53&current=temperature_2m,wind_speed_10m,weather_code&timezone=Asia%2FSeoul\nfails connection refused\n",
     null,
     null,
+    [],
   ),
   (
     "websocket_basics",
@@ -1589,6 +1696,7 @@ const parityCases = <(
     null,
     "CONNECT ws://localhost:8080/chat\n< welcome\nON hello\n< hi, Kim\n< {\"kind\":\"news\",\"text\":\"rain\"}\n\nCONNECT ws://localhost:8080/down\nFAILS connection refused\n",
     null,
+    [],
   ),
   (
     "with_block",
@@ -1605,5 +1713,6 @@ const parityCases = <(
     null,
     null,
     null,
+    [],
   ),
 ];

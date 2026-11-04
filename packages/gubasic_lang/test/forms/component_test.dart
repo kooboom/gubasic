@@ -103,7 +103,7 @@ void main() {
     expect(http.defaultEvent, '');
     expect(http.events, isEmpty);
     expect(controlComponents.containsKey('http'), isFalse);
-    expect(objectComponents.keys, ['database', 'http']);
+    expect(objectComponents.keys, ['database', 'http', 'sound']);
     expect(lookupNamedType('http'), isNull);
     expect([for (final m in http.methods.values) m.name],
         ['Get', 'Post', 'GetJson', 'PostJson', 'Send', 'Header']);

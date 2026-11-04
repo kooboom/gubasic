@@ -216,6 +216,13 @@
 - `Http.Send(method As String, url As String, body As String, ParamArray headers As String) As HttpResponse`
 - `Http.Header(name As String) As String (can be assigned to)`
 
+### Sound
+
+- `Sound.Volume As Integer (can be set)`
+- `Sound.Play(name As String)`
+- `Sound.PlayMusic(name As String)`
+- `Sound.StopMusic()`
+
 ## 형식의 멤버
 
 ### String

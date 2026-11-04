@@ -220,6 +220,15 @@ Talks to web servers over HTTP (docs/DESIGN.md D124, D125), the way Visual Basic
 - `Http.Send(method As String, url As String, body As String, ParamArray headers As String) As HttpResponse`
 - `Http.Header(name As String) As String (can be assigned to)`
 
+### Sound
+
+Plays the project's sounds (docs/DESIGN.md D138): the files in its sounds/ folder, WAV or MP3, listed in the .gbproj. A built-in object used by its name, not put on a form. Sound.Play(name) plays an effect at once and goes on without waiting, several overlapping; a Play while the same sound plays starts it again over it. Sound.PlayMusic(name) plays a sound round and round until Sound.StopMusic(), the program ends, or another PlayMusic replaces it, one at a time. Volume, from 0 to 100, is for everything the program plays. A name the project has no sound of is R053. On the web a page may play sound only after the user has clicked or pressed a key on it, so a Play before that is dropped without an error. Through the component channel, as Http is.
+
+- `Sound.Volume As Integer (can be set)`
+- `Sound.Play(name As String)`
+- `Sound.PlayMusic(name As String)`
+- `Sound.StopMusic()`
+
 ## Members of types
 
 ### String

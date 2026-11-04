@@ -29,6 +29,7 @@ Future<void> main() async {
         PlayerApp(
           files: bundle.files,
           pictures: bundle.pictures,
+          sounds: bundle.sounds,
           fonts: bundle.fonts,
           settingsKey: bundle.id,
           strings: strings,
@@ -43,11 +44,16 @@ Future<void> main() async {
   final manifest = await AssetManifest.loadFromAssetBundle(rootBundle);
   final files = <String, String>{};
   final pictures = <String, Uint8List>{};
+  final sounds = <String, Uint8List>{};
   for (final asset in manifest.listAssets()) {
     if (asset.startsWith('project/pictures/')) {
       final name = asset.substring('project/pictures/'.length);
       if (name.startsWith('.')) continue;
       pictures[name] = (await rootBundle.load(asset)).buffer.asUint8List();
+    } else if (asset.startsWith('project/sounds/')) {
+      final name = asset.substring('project/sounds/'.length);
+      if (name.startsWith('.')) continue;
+      sounds[name] = (await rootBundle.load(asset)).buffer.asUint8List();
     } else if (asset.startsWith('project/')) {
       files[asset.substring('project/'.length)] = await rootBundle.loadString(
         asset,
@@ -55,7 +61,14 @@ Future<void> main() async {
     }
   }
   addPlayerLicenses(const {});
-  runApp(PlayerApp(files: files, pictures: pictures, strings: strings));
+  runApp(
+    PlayerApp(
+      files: files,
+      pictures: pictures,
+      sounds: sounds,
+      strings: strings,
+    ),
+  );
 }
 
 /// The licences the player shows besides Flutter's (D120): GuBASIC's,

@@ -610,6 +610,14 @@ enum DiagnosticCode {
   /// Pixels (D138). Args: the word.
   badShapeInFile('F024'),
 
+  /// A project's sound with a name a sound cannot have (D138). Args: the
+  /// name.
+  invalidSoundName('F025'),
+
+  /// Two sounds whose names differ only in case (D138). Args: the name,
+  /// the first one's name, its line.
+  duplicateSound('F026'),
+
   // Run time (the interpreter)
 
   /// An Integer result outside the 64-bit range.
@@ -796,7 +804,11 @@ enum DiagnosticCode {
 
   /// A Sprite's Shape set to a word that is not Rectangle, Circle or
   /// Pixels (D138). Args: the word.
-  badShape('R052');
+  badShape('R052'),
+
+  /// `Sound.Play` of a sound the project does not have (D138). Args: the
+  /// name.
+  soundNotFound('R053');
 
   const DiagnosticCode(this.code, [this.severity = DiagnosticSeverity.error]);
 

@@ -63,6 +63,7 @@ void main() {
         httpScript,
         wsScript,
         masksScript,
+        sounds,
       ) in parityCases) {
     final disk = {
       for (final MapEntry(:key, :value) in files.entries)
@@ -104,6 +105,7 @@ void main() {
             startsWithMain: startsWithMain,
             disk: disk,
             masks: masks,
+            sounds: sounds,
             http: http,
             webSockets: webSockets);
         expect('${lines.join('\n')}\n', expected);
@@ -118,6 +120,7 @@ void main() {
             pictures: pictures,
             disk: disk,
             masks: masks,
+            sounds: sounds,
             http: http,
             webSockets: webSockets);
         expect('${lines.join('\n')}\n', expected);

@@ -8,12 +8,14 @@ import '../analyzer/forms.dart';
 import '../components/database_component.dart';
 import '../components/http_component.dart';
 import '../components/room_component.dart';
+import '../components/sound_component.dart';
 import '../components/web_socket_component.dart';
 import '../forms/anchor.dart';
 import '../forms/component.dart';
 import '../forms/form_file.dart';
 import '../forms/keys.dart';
 import '../forms/pictures.dart';
+import '../forms/sounds.dart';
 import '../interpreter/host.dart';
 import '../interpreter/interpreter.dart';
 import '../interpreter/run_result.dart';
@@ -356,6 +358,13 @@ abstract final class TranscriptLine {
 
   static String saveSettings(String text) => 'Settings: $text';
 
+  /// The program played a sound, started music, stopped it or set the
+  /// volume (D138).
+  static String sound(String name) => 'Sound: $name';
+  static String music(String name) => 'Music: $name';
+  static const musicStopped = 'Music stopped';
+  static String volume(int volume) => 'Volume: $volume';
+
   /// [form] is named when the program has several forms (D88).
   static String setProperty(String? control, String property, Object value,
           {String? form}) =>
@@ -465,6 +474,32 @@ List<HttpStub> parseHttpScript(String text) {
   return stubs;
 }
 
+/// The `Sound` object of a test (D138): records each play in
+/// [transcript]; a name not in [sounds] is R053, as it would be.
+class _ScriptedSound extends SoundComponent {
+  _ScriptedSound(this.sounds, this.transcript);
+
+  final List<String> sounds;
+  final List<String> transcript;
+
+  String _named(String name) =>
+      soundNamed(sounds, name) ?? (throw SoundComponent.notFound(name));
+
+  @override
+  Future<void> play(String name) async =>
+      transcript.add(TranscriptLine.sound(_named(name)));
+
+  @override
+  Future<void> playMusic(String name) async =>
+      transcript.add(TranscriptLine.music(_named(name)));
+
+  @override
+  Future<void> stopMusic() async => transcript.add(TranscriptLine.musicStopped);
+
+  @override
+  void volumeChanged() => transcript.add(TranscriptLine.volume(volume));
+}
+
 /// The `Http` object of a test (D125): answers from [stubs], and records
 /// each request in [transcript].
 class _ScriptedHttp extends HttpComponent {
@@ -539,11 +574,13 @@ class ScriptedHost implements FormHost, FileHost, ComponentHost, DatabaseFiles {
       List<HttpStub> http = const [],
       List<WebSocketStub> webSockets = const [],
       Map<String, PictureMask> masks = const {},
+      List<String> sounds = const [],
       DatabaseComponent? database})
       : this.forms([form],
             settings: settings,
             disk: disk,
             masks: masks,
+            sounds: sounds,
             http: http,
             webSockets: webSockets,
             database: database);
@@ -558,6 +595,7 @@ class ScriptedHost implements FormHost, FileHost, ComponentHost, DatabaseFiles {
       this.http = const [],
       List<WebSocketStub> webSockets = const [],
       this.masks = const {},
+      this.sounds = const [],
       this.database})
       : _webSocketStubs = webSockets,
         _files = {for (final f in forms) f.name.toLowerCase(): f},
@@ -598,6 +636,7 @@ class ScriptedHost implements FormHost, FileHost, ComponentHost, DatabaseFiles {
   ComponentInstance? createComponent(String component, {String name = ''}) =>
       switch (component) {
         'Http' => _ScriptedHttp(http, transcript),
+        'Sound' => _ScriptedSound(sounds, transcript),
         'Database' => database,
         'WebSocket' => ScriptedWebSocket(name, webSockets),
         'Room' => ScriptedRoom(name, rooms),
@@ -816,6 +855,9 @@ class ScriptedHost implements FormHost, FileHost, ComponentHost, DatabaseFiles {
   /// The masks of the project's pictures for pixel collisions (D138), by
   /// picture key: a test's NAME.masks.
   final Map<String, PictureMask> masks;
+
+  /// The names of the project's sounds (D138): a test's NAME.sounds.
+  final List<String> sounds;
 
   @override
   PictureMask? pictureMask(String name) => masks[pictureKey(name)];
@@ -1062,6 +1104,7 @@ Future<List<String>> runProjectScript(List<FormSource> forms, String script,
     String? settings,
     List<String> pictures = const [],
     Map<String, PictureMask> masks = const {},
+    List<String> sounds = const [],
     List<ModuleSource> modules = const [],
     bool startsWithMain = false,
     Map<String, List<int>> disk = const {},
@@ -1089,6 +1132,7 @@ Future<List<String>> runProjectScript(List<FormSource> forms, String script,
       settings: settings,
       disk: disk,
       masks: masks,
+      sounds: sounds,
       http: http,
       webSockets: webSockets,
       database: database);
@@ -1105,6 +1149,7 @@ Future<List<String>> runEventScript(String source, FormFile form, String script,
     {String? settings,
     List<String> pictures = const [],
     Map<String, PictureMask> masks = const {},
+    List<String> sounds = const [],
     Map<String, List<int>> disk = const {},
     List<HttpStub> http = const [],
     List<WebSocketStub> webSockets = const [],
@@ -1121,6 +1166,7 @@ Future<List<String>> runEventScript(String source, FormFile form, String script,
       settings: settings,
       disk: disk,
       masks: masks,
+      sounds: sounds,
       http: http,
       webSockets: webSockets,
       database: database);

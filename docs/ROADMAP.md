@@ -114,7 +114,7 @@ Plan: [plans/PLAN_V06.md](plans/PLAN_V06.md) (2026-11-03; the answers are D136; 
 
 - [x] `Sprite`: a picture that moves, with its position, speed and frames (D138)
 - [x] Collision tests: rectangles, circles, pixels: `Hits`, `DistanceTo` (D138)
-- [ ] Sound: effects and music
+- [x] Sound: effects and music: `Sound.Play`, `PlayMusic`, `StopMusic`, `Volume` (D138); the IDE adds sounds next
 - [x] `Keyboard.IsDown(Keys.Left)`: keys held at once, for a game loop (D138)
 - [x] Time in milliseconds, for a game loop on one Timer: `Milliseconds()` (D138)
 - [ ] Examples: a shooting game showing the usual shape (one Timer as the game loop, a state for each object, a timetable of when enemies come), and a fighting game

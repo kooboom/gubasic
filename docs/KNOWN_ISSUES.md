@@ -31,6 +31,12 @@ Problems we know about and have **deliberately** left unfixed for now. Each entr
 - **Why deferred:** checking it needs a phone and a Wi-Fi network at hand, outside what the tests can do; the author judged the Playwright round enough to merge (2026-11-03).
 - **Revisit:** the next time the author has a phone at hand: open LiveQuiz in the desktop IDE, turn on "Allow Devices on the Same Network", allow the IDE on the private network when Windows asks, choose "Preview on the Web", scan the code and play one round. Whether macOS's firewall asks the same is to be seen on the Mac.
 
+## The IDE does not add sounds yet
+
+- **What:** a program plays the project's sounds (`Sound`, D138), and the desktop IDE runs a project whose `.gbproj` lists them under `sounds` with the files in its `sounds/` folder, as an exported app does; but the IDE has no Sounds window to add or remove them, the web IDE does not keep them in the browser, and a project's `.zip` does not carry them. The analyzer does not yet warn of a sound name written in the code that the project does not have (the plan's A082); the program stops there (R053).
+- **Why deferred:** the Sound change was split in two so that each is small (plans/PLAN_V07.md §7): the program side first, the IDE's side next.
+- **Revisit:** the next change of v0.7: a Sounds group in the project explorer with Add and Remove, the browser's storage, the `.zip`, and A082.
+
 ## The web IDE has no relay server of its own
 
 - **What:** the desktop IDE runs a relay server for a `Room` whose `Server` is empty (D136); the web IDE cannot, so there such a program stops with R048 ("no relay server").

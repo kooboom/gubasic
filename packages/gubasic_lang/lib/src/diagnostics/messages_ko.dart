@@ -269,6 +269,12 @@ const Map<DiagnosticCode, String> koreanMessages = {
       '{0} 표기는 모양이 아닙니다. Sprite의 Shape는 Rectangle, Circle, Pixels 가운데 하나입니다.',
   DiagnosticCode.badShapeInFile:
       '{0} 표기는 모양이 아닙니다. Sprite의 Shape는 Rectangle, Circle, Pixels 가운데 하나입니다.',
+  DiagnosticCode.soundNotFound:
+      '이 프로젝트에 "{0}" 소리가 없습니다. 프로젝트의 소리에 더하거나 이름을 확인해 주세요.',
+  DiagnosticCode.invalidSoundName:
+      '소리는 이름에 / \\ : * ? " < > | 가 없고 앞뒤에 점이나 공백이 없는 .wav 또는 .mp3 파일이어야 합니다. 받은 이름: {0}. 이름을 확인해 주세요.',
+  DiagnosticCode.duplicateSound:
+      '대소문자만 다른 같은 이름의 소리를 둘 둘 수 없습니다. {0} 소리는 {2}번 줄의 {1} 소리와 이름이 같습니다. 하나의 이름을 바꿔 주세요.',
   DiagnosticCode.badColor:
       '{0} 속성의 색은 색 이름(Red, SkyBlue)이나 #RRGGBB로 적습니다. 받은 글 "{1}" 값은 둘 다 아닙니다. 속성 창에서 골라 주세요.',
   DiagnosticCode.emptyRoomServer:

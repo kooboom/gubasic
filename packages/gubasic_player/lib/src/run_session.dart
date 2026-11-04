@@ -18,6 +18,7 @@ class RunSession extends ChangeNotifier {
     String? settingsKey,
     GbSettingsStore? settings,
     GbPictureSource? pictures,
+    GbSoundSource? sounds,
     Future<List<int>?> Function()? pdfFont,
     Debugger? debugger,
   }) : host =
@@ -30,6 +31,7 @@ class RunSession extends ChangeNotifier {
              settingsKey: settingsKey,
              settings: settings,
              pictures: pictures,
+             sounds: sounds,
              pdfFont: pdfFont,
            ) {
     final project = startup.project;

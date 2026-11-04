@@ -36,6 +36,7 @@ flutter:
   assets:
     - project/
     - project/pictures/
+    - project/sounds/
     # Pretendard's licence, in the open source licences (D120).
     - fonts/pretendard/LICENSE.txt
   # Pretendard 1.3.9 (OFL, fonts/pretendard/LICENSE.txt), the IDE's font,

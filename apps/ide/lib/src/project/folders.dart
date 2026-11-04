@@ -87,12 +87,20 @@ class FolderExists extends FolderProblem {
 /// A project read from disk. [missing] lists the files its `.gbproj`
 /// names that are not there.
 class ProjectOnDisk {
-  const ProjectOnDisk(this.files, this.missing, {this.pictures = const {}});
+  const ProjectOnDisk(
+    this.files,
+    this.missing, {
+    this.pictures = const {},
+    this.sounds = const {},
+  });
 
   final Map<String, String> files;
 
   /// Picture name → bytes (D51).
   final Map<String, Uint8List> pictures;
+
+  /// Sound name → bytes (D138).
+  final Map<String, Uint8List> sounds;
   final List<String> missing;
 }
 
@@ -147,7 +155,22 @@ Future<ProjectOnDisk> readProject(ProjectFolders fs, String projectFile) async {
       pictures[name] = bytes;
     }
   }
-  return ProjectOnDisk(files, missing, pictures: pictures);
+  // Its sounds (D138), from sounds/.
+  final sounds = <String, Uint8List>{};
+  for (final name in project.sounds) {
+    final file = '$soundsFolder/$name';
+    final bytes = await _io(
+      file,
+      writing: false,
+      () => fs.readBytes(fs.join(fs.join(folder, soundsFolder), name)),
+    );
+    if (bytes == null) {
+      missing.add(file);
+    } else {
+      sounds[name] = bytes;
+    }
+  }
+  return ProjectOnDisk(files, missing, pictures: pictures, sounds: sounds);
 }
 
 /// The files of [files] whose text on disk is no longer what was read or

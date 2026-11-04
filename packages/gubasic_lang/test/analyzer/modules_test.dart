@@ -139,7 +139,7 @@ void main() {
           codes('formatVersion: 3\nname: D\nstartup: Module1\nforms:\n'
               '  - Form1\nmodules:\n  - Module1\n'),
           'F011');
-      expect(codes('formatVersion: 4\nname: D\nforms:\n  - Form1\n'), 'F003');
+      expect(codes('formatVersion: 5\nname: D\nforms:\n  - Form1\n'), 'F003');
     });
   });
 }

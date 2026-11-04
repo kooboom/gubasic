@@ -46,11 +46,12 @@ void main(List<String> args) {
     ..writeln('/// files of NAME.files/ the program reads (D113), name to')
     ..writeln('/// base64; then what servers answer it, NAME.http (D125);')
     ..writeln('/// then what its WebSocket servers do, NAME.ws (D136); last,')
-    ..writeln('/// the masks of its pictures, NAME.masks (D138).')
+    ..writeln('/// the masks of its pictures, NAME.masks, and the names of its')
+    ..writeln('/// sounds, NAME.sounds (D138).')
     ..writeln('const parityCases = <(String, String, List<String>, String, '
         'String?, String?, String?, List<String>, '
         'List<(String, String?, String)>, bool, Map<String, String>, '
-        'String?, String?, String?)>[');
+        'String?, String?, String?, List<String>)>[');
   for (final p in programs) {
     final name = p.uri.pathSegments.last.replaceFirst('.gbas', '');
     final input = read(p.path.replaceFirst('.gbas', '.in'));
@@ -117,6 +118,8 @@ void main(List<String> args) {
       ..writeln('    ${jsonEncode(read('$base.http'))},')
       ..writeln('    ${jsonEncode(read('$base.ws'))},')
       ..writeln('    ${jsonEncode(read('$base.masks'))},')
+      ..writeln(
+          '    ${jsonEncode(const LineSplitter().convert(read('$base.sounds') ?? '').where((l) => l.isNotEmpty).toList())},')
       ..writeln('  ),');
   }
   out.writeln('];');

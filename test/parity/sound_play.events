@@ -1,0 +1,3 @@
+btnStop.Click
+btnMissing.Click     ' a sound the project does not have: R053, caught; Volume 101: out of range, caught
+Close

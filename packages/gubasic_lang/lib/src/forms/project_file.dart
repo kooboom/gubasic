@@ -4,6 +4,7 @@ import 'package:yaml/yaml.dart';
 
 import '../diagnostics/diagnostic.dart';
 import 'pictures.dart';
+import 'sounds.dart';
 import 'yaml_reader.dart';
 
 /// The newest project file layout this GuBASIC reads
@@ -12,7 +13,7 @@ import 'yaml_reader.dart';
 /// oldest version that holds it, so that older GuBASICs open it, and
 /// refuse (F003) one whose pictures or modules they would drop when
 /// saving (D51).
-const projectFileVersion = 3;
+const projectFileVersion = 4;
 
 /// The `startup` of a project that starts with `Sub Main` of a module
 /// (D102).
@@ -29,6 +30,7 @@ class ProjectFile {
     this.pictures = const [],
     this.id,
     this.modules = const [],
+    this.sounds = const [],
   });
 
   final String name;
@@ -45,6 +47,10 @@ class ProjectFile {
 
   /// The pictures' file names, as written, with Hangul as syllables.
   final List<String> pictures;
+
+  /// The sounds' file names (D138), as the pictures'; sound `S` lives in
+  /// `sounds/S`. A project with sounds is version 4.
+  final List<String> sounds;
 
   /// The startup form as written, [startupSubMain], or null for the first
   /// form.
@@ -82,6 +88,7 @@ ProjectFileResult readProjectFile(String text) {
   final forms = <String>[];
   final modules = <String>[];
   final pictures = <String>[];
+  final sounds = <String>[];
   var name = '';
   String? startup;
   String? id;
@@ -91,6 +98,7 @@ ProjectFileResult readProjectFile(String text) {
           forms: forms,
           startup: startup,
           pictures: pictures,
+          sounds: sounds,
           id: id,
           modules: modules),
       r.diagnostics);
@@ -105,6 +113,7 @@ ProjectFileResult readProjectFile(String text) {
     'forms',
     'modules',
     'pictures',
+    'sounds',
   });
   if (!r.checkVersion(doc, top, projectFileVersion)) return result();
 
@@ -178,6 +187,30 @@ ProjectFileResult readProjectFile(String text) {
     }
     pictureLines[pictureKey(picture)] = (picture, line);
     pictures.add(picture);
+  }
+
+  // Its sounds (D138), checked as the pictures are.
+  final soundList = top['sounds'] == null
+      ? null
+      : r.list(top['sounds']!, 'sounds', '- shot.wav');
+  final soundLines = <String, (String, int)>{};
+  for (final node in soundList?.nodes ?? const <YamlNode>[]) {
+    final value = node.value;
+    final sound =
+        composeHangul(node is YamlScalar && value != null ? '$value' : '');
+    if (soundNameProblem(sound) != null) {
+      r.report(node.span, DiagnosticCode.invalidSoundName, [sound]);
+      continue;
+    }
+    final line = node.span.start.line + 1;
+    final first = soundLines[soundKey(sound)];
+    if (first != null) {
+      r.report(node.span, DiagnosticCode.duplicateSound,
+          [sound, first.$1, '${first.$2}']);
+      continue;
+    }
+    soundLines[soundKey(sound)] = (sound, line);
+    sounds.add(sound);
   }
 
   final startupNode = top['startup'];

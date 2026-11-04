@@ -40,7 +40,9 @@ class OpenProject extends ChangeNotifier {
     this._location,
     Map<String, String> files, {
     Map<String, Uint8List> pictures = const {},
+    Map<String, Uint8List> sounds = const {},
   }) : _files = Map.of(files),
+       _sounds = Map.of(sounds),
        _saved = Map.of(files),
        _pictures = Map.of(pictures),
        _savedPictures = Map.of(pictures);
@@ -50,6 +52,9 @@ class OpenProject extends ChangeNotifier {
   Map<String, String> _saved;
   final Map<String, Uint8List> _pictures;
   Map<String, Uint8List> _savedPictures;
+
+  /// Sound name → bytes (D138), as read: the IDE does not change them yet.
+  final Map<String, Uint8List> _sounds;
   Project? _project;
 
   /// Counts the changes to [pictures], so that views showing them know
@@ -71,6 +76,9 @@ class OpenProject extends ChangeNotifier {
 
   /// Picture name → bytes, as they were last read or saved.
   Map<String, Uint8List> get savedPictures => Map.unmodifiable(_savedPictures);
+
+  /// Sound name → bytes (D138).
+  Map<String, Uint8List> get sounds => Map.unmodifiable(_sounds);
 
   /// The project read from [files].
   Project get project => _project ??= Project.read(_files);

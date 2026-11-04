@@ -1,0 +1,4 @@
+formatVersion: 1
+controls:
+  - { name: btnStop, type: Button, properties: { Caption: Stop } }
+  - { name: btnMissing, type: Button, properties: { Caption: Missing, Top: 40 } }

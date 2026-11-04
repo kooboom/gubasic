@@ -7,11 +7,13 @@ import 'yaml_text.dart';
 String writeProjectFile(ProjectFile project) {
   // The oldest version that holds the project, so that older GuBASICs
   // still open it (D51, D102).
-  final version = project.modules.isNotEmpty || project.startsWithMain
-      ? 3
-      : project.pictures.isNotEmpty
-          ? 2
-          : 1;
+  final version = project.sounds.isNotEmpty
+      ? 4
+      : project.modules.isNotEmpty || project.startsWithMain
+          ? 3
+          : project.pictures.isNotEmpty
+              ? 2
+              : 1;
   final out = StringBuffer('formatVersion: $version\n');
   if (project.id case final id?) out.writeln('id: $id');
   out.writeln('name: ${yamlString(project.name)}');
@@ -36,6 +38,12 @@ String writeProjectFile(ProjectFile project) {
     out.writeln('pictures:');
     for (final p in project.pictures) {
       out.writeln('  - ${yamlString(p)}');
+    }
+  }
+  if (project.sounds.isNotEmpty) {
+    out.writeln('sounds:');
+    for (final s in project.sounds) {
+      out.writeln('  - ${yamlString(s)}');
     }
   }
   return '$out';
