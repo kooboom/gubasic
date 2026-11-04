@@ -14,6 +14,7 @@ void main() {
 
   setUp(() async {
     fromProgram.clear();
+    serverSide = null;
     server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
     url = 'ws://127.0.0.1:${server.port}/chat';
     server.listen((request) async {
