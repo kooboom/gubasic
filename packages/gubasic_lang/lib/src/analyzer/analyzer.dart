@@ -1828,6 +1828,11 @@ class _Analyzer {
           [beforeDot ? 'Environment.TickCount' : 'Timer'], ['Milliseconds()']);
       return;
     }
+    if (e.name.toLowerCase() == 'beep' && !beforeDot) {
+      // Visual Basic 6's Beep: a sound of the project (D138).
+      _reportAt(e, DiagnosticCode.vb6Beep, const []);
+      return;
+    }
     if (beforeDot && form == null) {
       _reportAt(e, DiagnosticCode.unknownNameMaybeControl, [e.name]);
       return;

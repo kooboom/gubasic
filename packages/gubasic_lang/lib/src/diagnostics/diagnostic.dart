@@ -191,6 +191,12 @@ enum DiagnosticCode {
   /// now are `Keyboard.IsDown` (D138). Args: the declared name.
   declareKeyState('P043'),
 
+  /// `Declare` of a sound API (`PlaySound`, `sndPlaySound`,
+  /// `mciSendString`, `MessageBeep`, `Beep`): the project's sounds are
+  /// played with `Sound.Play` and `Sound.PlayMusic` (D138). Args: the
+  /// declared name.
+  declareSound('P044'),
+
   // Analyzer: names
 
   /// A name that is not declared. Args: the name.
@@ -527,6 +533,11 @@ enum DiagnosticCode {
   /// of the project (D138): the program would stop there (R053). Args:
   /// the text.
   unknownSoundInCode('A082', DiagnosticSeverity.warning),
+
+  /// Visual Basic 6's `Beep`: a sound is one of the project's, played with
+  /// `Sound.Play` (D138). No replacement: the project needs the sound
+  /// first.
+  vb6Beep('A083'),
 
   // Form and project files (.form.yaml, .gbproj)
 

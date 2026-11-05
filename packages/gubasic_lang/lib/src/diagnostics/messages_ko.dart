@@ -253,6 +253,8 @@ const Map<DiagnosticCode, String> koreanMessages = {
       'GuBASIC에는 Declare가 없습니다({0}). 언어 밖의 기능은 컴포넌트로 들어옵니다.',
   DiagnosticCode.declareKeyState:
       'GuBASIC에는 Declare가 없습니다({0}). 지금 눌린 키는 Keyboard.IsDown(Keys.Left)으로 묻습니다.',
+  DiagnosticCode.declareSound:
+      'GuBASIC에는 Declare가 없습니다({0}). 파일 → 소리에서 소리를 더하고 Sound.Play로, 음악은 Sound.PlayMusic으로 냅니다.',
   DiagnosticCode.withNotValue:
       'With에는 컨트롤, 변수, 칸처럼 값을 줍니다. {0} 항목은 값이 아닙니다. 멤버를 이름과 함께 씁니다.',
   DiagnosticCode.vb6Color:
@@ -261,6 +263,8 @@ const Map<DiagnosticCode, String> koreanMessages = {
       '{0} 표기는 GuBASIC에 없습니다. GuBASIC에서 Timer는 컨트롤입니다. 프로그램 시작부터의 밀리초는 Milliseconds()입니다.',
   DiagnosticCode.badShapeInCode:
       '{0} 표기는 모양이 아닙니다. Sprite의 Shape는 Rectangle, Circle, Pixels 가운데 하나입니다. 프로그램이 여기서 멈춥니다.',
+  DiagnosticCode.vb6Beep:
+      'GuBASIC에는 Beep이 없습니다. 파일 → 소리에서 짧은 소리를 더하고 Sound.Play("beep.wav")처럼 Sound.Play로 냅니다.',
   DiagnosticCode.unknownSoundInCode:
       '이 프로젝트에 "{0}" 소리가 없습니다. 프로그램이 여기서 멈춥니다. 파일 → 소리에서 더하거나 이름을 확인해 주세요.',
   DiagnosticCode.colorPartOutOfRange:

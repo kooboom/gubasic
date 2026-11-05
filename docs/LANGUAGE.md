@@ -127,6 +127,7 @@ How the parser recovers:
 | P041 | A member written with a dot alone outside a With block (`.Caption = "x"`) | Write the name before the dot, or put the line in `With … End With` (§6) |
 | P042 | `Declare Function … Lib …` (Visual Basic 6) | What is outside the language comes in as a component ([COMPONENT_CHANNEL.md](COMPONENT_CHANNEL.md)) |
 | P043 | `Declare` of `GetAsyncKeyState` or `GetKeyState` | `Keyboard.IsDown(Keys.Left)` (§11.1) |
+| P044 | `Declare` of `PlaySound`, `sndPlaySound`, `mciSendString`, `MessageBeep` or `Beep` | `Sound.Play`, `Sound.PlayMusic` (§11.13) |
 
 **Analyzer**
 
@@ -1239,7 +1240,7 @@ End Sub
 | `Sound.StopMusic()` | Stops the music; nothing happens when none plays |
 | `Sound.Volume` | For everything the program plays, from 0 to 100 (100 at first); outside that is R010 |
 
-A name is compared as a picture's is, in any case, and reads nothing: a sound the project does not have stops the program (R053); written as text in the code, the analyzer warns first (A082). **On the web** a page may play sound only after the user has clicked or pressed a key on it ([Chrome's autoplay policy](https://developer.chrome.com/blog/autoplay)): a `Play` before that is dropped without an error, since it is the browser's rule and not the program's fault, and a game that begins with a Start button never meets it. The sounds are mixed by flutter_soloud, chosen by measurement ([plans/PLAN_V07.md](plans/PLAN_V07.md) §7.1). Visual Basic .NET's `My.Computer.Audio.Stop` is `StopMusic` (A036). The playground, which runs programs without a form, has no `Sound` (R038).
+A name is compared as a picture's is, in any case, and reads nothing: a sound the project does not have stops the program (R053); written as text in the code, the analyzer warns first (A082). **On the web** a page may play sound only after the user has clicked or pressed a key on it ([Chrome's autoplay policy](https://developer.chrome.com/blog/autoplay)): a `Play` before that is dropped without an error, since it is the browser's rule and not the program's fault, and a game that begins with a Start button never meets it. The sounds are mixed by flutter_soloud, chosen by measurement ([plans/PLAN_V07.md](plans/PLAN_V07.md) §7.1). Visual Basic .NET's `My.Computer.Audio.Stop` is `StopMusic` (A036). Visual Basic 6's `Beep` ([Microsoft: Beep statement](https://learn.microsoft.com/en-us/office/vba/language/reference/user-interface-help/beep-statement)) is pointed to `Sound.Play` with a short sound of the project (A083), and the Windows calls its programs declared to make sound, [`PlaySound`](https://learn.microsoft.com/en-us/previous-versions/dd743680(v=vs.85)) and `sndPlaySound` for effects, [`mciSendString`](https://learn.microsoft.com/en-us/previous-versions/dd757161(v=vs.85)) for music, `MessageBeep` and `Beep`, to `Sound.Play` and `Sound.PlayMusic` (P044). The playground, which runs programs without a form, has no `Sound` (R038).
 
 ```vb
 Sub btnStart_Click()

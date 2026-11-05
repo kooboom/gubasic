@@ -127,6 +127,7 @@ TypeOf CType AddHandler AddressOf
 | P041 | With 블록 밖의 점만 쓴 멤버(`.Caption = "x"`) | 점 앞에 이름을 쓰거나 그 줄을 `With … End With` 안에 둠(6절) |
 | P042 | `Declare Function … Lib …`(Visual Basic 6) | 언어 밖의 기능은 컴포넌트로 들어옴([COMPONENT_CHANNEL.ko.md](COMPONENT_CHANNEL.ko.md)) |
 | P043 | `GetAsyncKeyState`나 `GetKeyState`의 `Declare` | `Keyboard.IsDown(Keys.Left)`(11.1절) |
+| P044 | `PlaySound`, `sndPlaySound`, `mciSendString`, `MessageBeep`, `Beep`의 `Declare` | `Sound.Play`, `Sound.PlayMusic`(11.13절) |
 
 **분석기**
 
@@ -1239,7 +1240,7 @@ End Sub
 | `Sound.StopMusic()` | 음악을 멈춥니다. 나는 음악이 없으면 아무 일도 없습니다 |
 | `Sound.Volume` | 프로그램이 내는 모든 소리에, 0에서 100(처음 100). 벗어나면 R010 |
 
-이름은 그림처럼 대소문자를 가리지 않고 비교하고 아무것도 읽지 않습니다. 프로젝트에 없는 소리는 프로그램을 멈춥니다(R053). 코드에 글자로 적으면 분석기가 먼저 경고합니다(A082). **웹에서는** 사용자가 페이지를 클릭하거나 키를 누른 뒤에만 소리를 낼 수 있습니다([Chrome의 autoplay 정책](https://developer.chrome.com/blog/autoplay)). 그 전의 `Play`는 오류 없이 버려집니다. 브라우저의 규칙이지 프로그램의 잘못이 아니고, 시작 버튼으로 시작하는 게임은 이것을 만나지 않습니다. 소리는 측정으로 고른 flutter_soloud가 섞습니다([plans/PLAN_V07.ko.md](plans/PLAN_V07.ko.md) 7.1절). Visual Basic .NET의 `My.Computer.Audio.Stop`은 `StopMusic`입니다(A036). 폼 없는 프로그램을 돌리는 놀이터에는 `Sound`가 없습니다(R038).
+이름은 그림처럼 대소문자를 가리지 않고 비교하고 아무것도 읽지 않습니다. 프로젝트에 없는 소리는 프로그램을 멈춥니다(R053). 코드에 글자로 적으면 분석기가 먼저 경고합니다(A082). **웹에서는** 사용자가 페이지를 클릭하거나 키를 누른 뒤에만 소리를 낼 수 있습니다([Chrome의 autoplay 정책](https://developer.chrome.com/blog/autoplay)). 그 전의 `Play`는 오류 없이 버려집니다. 브라우저의 규칙이지 프로그램의 잘못이 아니고, 시작 버튼으로 시작하는 게임은 이것을 만나지 않습니다. 소리는 측정으로 고른 flutter_soloud가 섞습니다([plans/PLAN_V07.ko.md](plans/PLAN_V07.ko.md) 7.1절). Visual Basic .NET의 `My.Computer.Audio.Stop`은 `StopMusic`입니다(A036). Visual Basic 6의 `Beep`([Microsoft: Beep 문](https://learn.microsoft.com/en-us/office/vba/language/reference/user-interface-help/beep-statement))은 프로젝트의 짧은 소리로 내는 `Sound.Play`로 안내하고(A083), Visual Basic 6 프로그램이 소리를 내려고 선언하던 Windows 호출, 효과음의 [`PlaySound`](https://learn.microsoft.com/en-us/previous-versions/dd743680(v=vs.85))와 `sndPlaySound`, 음악의 [`mciSendString`](https://learn.microsoft.com/en-us/previous-versions/dd757161(v=vs.85)), `MessageBeep`과 `Beep`은 `Sound.Play`와 `Sound.PlayMusic`으로 안내합니다(P044). 폼 없는 프로그램을 돌리는 놀이터에는 `Sound`가 없습니다(R038).
 
 ```vb
 Sub btnStart_Click()

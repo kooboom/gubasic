@@ -324,6 +324,9 @@ const Map<DiagnosticCode, String> englishMessages = {
   DiagnosticCode.declareKeyState:
       'GuBASIC has no Declare ({0}). The keys held right now are asked with '
           'Keyboard.IsDown(Keys.Left).',
+  DiagnosticCode.declareSound:
+      'GuBASIC has no Declare ({0}). Add the sound in File → Sounds and '
+          'play it with Sound.Play, or Sound.PlayMusic for music.',
   DiagnosticCode.withNotValue:
       'With needs a value, such as a control, a variable or an item: {0} '
           'is not one. Write its members in full.',
@@ -334,6 +337,8 @@ const Map<DiagnosticCode, String> englishMessages = {
       'Milliseconds().',
   DiagnosticCode.badShapeInCode: '{0} is not a shape. A Sprite\'s Shape is '
       'Rectangle, Circle or Pixels; the program would stop here.',
+  DiagnosticCode.vb6Beep: 'Beep is not in GuBASIC. Add a short sound in '
+      'File → Sounds and play it with Sound.Play, as Sound.Play("beep.wav").',
   DiagnosticCode.unknownSoundInCode: 'This project has no sound "{0}": the '
       'program would stop here. Add it in File → Sounds, or check the name.',
   DiagnosticCode.colorPartOutOfRange: 'Color.FromArgb takes red, green and '

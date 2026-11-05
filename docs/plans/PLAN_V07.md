@@ -61,7 +61,7 @@ A control seen on the form, drawn under the others like `Image` (`layer: graphic
 | `X`, `Y` (`Double`) | Where its top left corner is, in pixels from the form's (or its Frame's) top left corner, with fractions, so that a speed of 30 pixels a second moves it exactly 0.5 pixels in a 16 ms round. `Left` and `Top` (`Integer`), which every control has, are the same place rounded; setting any one sets the others |
 | `SpeedX`, `SpeedY` (`Double`, pixels a second, 0 at first) | How fast `Move` moves it. A speed in pixels a second, not a round, is what keeps a game the same at 30 and at 60 rounds a second |
 | `Width`, `Height` (`Integer`) | The frame is drawn filling them, as `Image` with `Stretch` does. When `Frames` is first chosen in the Properties window, they take the first frame's size; at run time nothing changes them but the program |
-| `Shape` (`String`, `"Rectangle"` at first) | What `Hits` takes it for: `"Rectangle"`, its whole rectangle; `"Circle"`, the largest circle in its rectangle (an ellipse when it is not square); `"Pixels"`, the pixels of its frame whose alpha is 128 or more, scaled to its size. Another word: A038 and R014, as `Anchor` |
+| `Shape` (`String`, `"Rectangle"` at first) | What `Hits` takes it for: `"Rectangle"`, its whole rectangle; `"Circle"`, the largest circle in its rectangle (an ellipse when it is not square); `"Pixels"`, the pixels of its frame whose alpha is 128 or more, scaled to its size. Another word: A081 in the code, R052 at run time, F024 in a form file |
 | `Anchor`, `Enabled`, `Visible`, `Tag` | As every control's (D57, D137, D98). It has no `BackColor`: what is behind it shows through its transparent pixels |
 | `Move(ms As Integer)` | Moves it by its speed for `ms` milliseconds (`X = X + SpeedX * ms / 1000`, and `Y`), and turns its frame when `FrameTime` is above 0. Nothing moves by itself: a sprite moves only when the program's loop says so, which is what keeps a program deterministic and the parity tests possible |
 | `Hits(other As Sprite) As Boolean` | Whether it touches `other`, by both their shapes; `False` when either is not `Visible`, or they are the same sprite. Rectangle with rectangle, circle with circle and circle with rectangle are computed; when either is `"Pixels"`, the overlap of their rectangles is tested pixel by pixel against the other's shape |
@@ -99,10 +99,10 @@ A built-in object with the project's sounds, which are files in its `sounds/` fo
 
 | Member | What it does |
 |---|---|
-| `Sound.Play(name)` | Plays an effect once, at once; several at once overlap, and a `Play` while the same one is playing starts it again over it. A name that is not a sound of the project: A082 as text in the code, R052 at run time |
+| `Sound.Play(name)` | Plays an effect once, at once; several at once overlap, and a `Play` while the same one is playing starts it again over it. A name that is not a sound of the project: A082 as text in the code, R053 at run time |
 | `Sound.PlayMusic(name)` | Plays one sound round and round until `StopMusic`, the program ends, or another `PlayMusic` replaces it. One at a time |
 | `Sound.StopMusic()` | Stops it |
-| `Sound.Volume` (`Integer`, 0 to 100, 100 at first) | For everything the program plays; outside the range R050 as for colours |
+| `Sound.Volume` (`Integer`, 0 to 100, 100 at first) | For everything the program plays; outside the range R010 |
 
 **Formats:** WAV and MP3 only (`.wav`, `.mp3`); both play in every browser the web player runs in and on Windows and macOS, and OGG does not play in Safari ([MDN: Web audio codec guide](https://developer.mozilla.org/en-US/docs/Web/Media/Formats/Audio_codecs#choosing_an_audio_codec)). Another extension: F024, as F014 for pictures; two names differing only in case: F025, as F015.
 
@@ -112,12 +112,12 @@ A built-in object with the project's sounds, which are files in its `sounds/` fo
 
 ### 2.5 Diagnostics (draft)
 
-Numbers follow today's last (A079, R050, F023, P041); the Korean ones in the documents' "~합니다" style, with no particle after a placeholder.
+Numbers followed the last ones then (A079, R050, F023, P041). **As implemented** they differ from this draft: a word that is no shape took A081 (code), R052 (run time) and F024 (form file), so a sound the project does not have is R053, a sound's name F025 and two names differing in case F026; `Volume` out of range is R010, as any property's. The pointer from `Beep` became A083 and the `Declare` of a sound API P044, added after v0.7.0; `My.Computer.Audio.Play` is not pointed (DESIGN D138). The Korean ones in the documents' "~합니다" style, with no particle after a placeholder.
 
 | Code | When | English | Korean |
 |---|---|---|---|
 | A080 | `Timer()` or `Environment.TickCount` as a function | `Timer` is a control in GuBASIC; the time in milliseconds is `Milliseconds()`. | GuBASIC에서 `Timer`는 컨트롤입니다. 밀리초 단위 시간은 `Milliseconds()`입니다. |
-| A081 | `Beep`, `PlaySound`, `My.Computer.Audio.Play` | Write `Sound.Play("NAME.wav")` with a sound of the project. | 프로젝트의 소리로 `Sound.Play("NAME.wav")`라고 씁니다. |
+| A081 (as built: A083, `Beep` only) | `Beep`, `PlaySound`, `My.Computer.Audio.Play` | Write `Sound.Play("NAME.wav")` with a sound of the project. | 프로젝트의 소리로 `Sound.Play("NAME.wav")`라고 씁니다. |
 | A082 | `Sound.Play("x.wav")` with a sound the project does not have (as A037 for a picture) | `{0}` is not a sound of this project. Add it to the project's sounds first. | `{0}` 소리가 이 프로젝트에 없습니다. 먼저 프로젝트의 소리에 더합니다. |
 | P042 | a `Declare` statement; with `GetAsyncKeyState` or `GetKeyState`, the second sentence | GuBASIC has no `Declare`: outside abilities come as components. Keys held right now are asked with `Keyboard.IsDown(Keys.Left)`. | GuBASIC에는 `Declare`가 없습니다. 바깥의 기능은 컴포넌트로 들어옵니다. 지금 눌린 키는 `Keyboard.IsDown(Keys.Left)`로 묻습니다. |
 | R051 | `Frame` outside 0 to the last frame | `Frame` must be from 0 to {0}; it is {1}. | `Frame` 값은 0에서 {0} 사이여야 하는데 {1}입니다. |
@@ -144,10 +144,10 @@ Pictures and sounds are made by a tool script as LiveQuiz's pictures are (`apps/
 
 - **`components/Sprite/component.yaml`**, embedded by `tool/embed_components.dart`. `Frames` is a `String` with `picture: true` meaning several names (the Properties window's picker lets several be chosen and writes the text); `X`, `Y`, `SpeedX`, `SpeedY` are `Double`, which component.yaml already has; `Shape` is text like `Anchor`.
 - **`gubasic_lang`** (pure Dart, rule 1):
-  - the analyzer's members for `Sprite`, `Keyboard`, `Sound` and `Milliseconds`, with A080 to A082 and P042;
+  - the analyzer's members for `Sprite`, `Keyboard`, `Sound` and `Milliseconds`, with A080 to A083 and P042 to P044;
   - the interpreter: `Move`, the set of keys down, `Milliseconds` from `Host.milliseconds`, `Sound` through a `SoundHost` (`play`, `playMusic`, `stopMusic`, `volume`) beside `FileHost`, which the playground does not have (R038, as `Http`);
   - **`lib/src/forms/collision.dart`:** the geometry of `Hits` and `DistanceTo` in pure Dart (rectangle, circle, pixels), with the pixel masks from `FormHost.pictureMask(name)`: width, height and one bit per pixel for alpha ≥ 128. It is pure so that the parity tests run it on the VM and in Chrome, and so that the transpiler's generated code can use the same file;
-  - the project file: `sounds`, `formatVersion: 4`, F024 and F025;
+  - the project file: `sounds`, `formatVersion: 4`, F025 and F026;
   - the event script: `Wait N`.
 - **`gubasic_runtime`:** `sprite.dart` draws the frame, stretched, from the project's pictures (the same bytes `Image` uses); `picture_mask.dart` decodes a picture once (`instantiateImageCodec`, `toByteData` as raw RGBA) into the mask the interpreter asks for, cached by name; `sound.dart`, `GbSound`, over the package of §6 Q5, playing bytes the project gives it; `form_view.dart` tells "all keys up" when the form loses the focus or a dialog opens, as it already tells `KeyDown` and `KeyUp`. The runtime stays the only Flutter code the interpreter and generated apps use (rule 6).
 - **`gubasic_player`:** the project model carries `sounds/` as it carries `pictures/`; the run window's host answers `pictureMask`, `milliseconds` (a `Stopwatch` started with the program) and the sound calls; the exported app's bundle and the web template serve the sounds.
@@ -173,7 +173,7 @@ Pictures and sounds are made by a tool script as LiveQuiz's pictures are (`apps/
 
 ## 5. Tests
 
-- **Parity programs** (`test/parity/`, the VM, Chrome and the run window): `sprite_move` (speed, `Move`, `X` with fractions and `Left` rounded, `Anchor`), `sprite_frames` (`Frames`, `Frame`, `FrameTime`, R051), `sprite_hits` (rectangle, circle, pixels, with small pictures in `sprite_hits.pictures/` whose corners are transparent, `Visible` False, `DistanceTo`), `keyboard_isdown` (several keys at once, up on a dialog, in a TextBox), `milliseconds` (`Wait` lines, differences between ticks), `sound_play` (the transcript shows `Sound: shot.wav`, `Music: music.mp3`, `Music stopped`, as it shows a `MsgBox`; R052; `Volume` out of range), `shooter_example` (the example driven by a script of `Wait`, keys and ticks through a hit and a game over).
+- **Parity programs** (`test/parity/`, the VM, Chrome and the run window): `sprite_move` (speed, `Move`, `X` with fractions and `Left` rounded, `Anchor`), `sprite_frames` (`Frames`, `Frame`, `FrameTime`, R051), `sprite_hits` (rectangle, circle, pixels, with small pictures in `sprite_hits.pictures/` whose corners are transparent, `Visible` False, `DistanceTo`), `keyboard_isdown` (several keys at once, up on a dialog, in a TextBox), `milliseconds` (`Wait` lines, differences between ticks), `sound_play` (the transcript shows `Sound: shot.wav`, `Music: music.mp3`, `Music stopped`, as it shows a `MsgBox`; R053; `Volume` out of range), `shooter_example` (the example driven by a script of `Wait`, keys and ticks through a hit and a game over).
 - **`gubasic_runtime`:** widget tests that a Sprite draws its frame stretched and nothing when `Frames` is `""`; that a mask from a PNG with transparent corners has the bits expected; that `GbSound` is asked to play the bytes of the named sound (a fake player); that losing the focus tells "all keys up".
 - **`gubasic_player`:** the parity programs through the run window's widgets, as today; the exported bundle carries `sounds/`.
 - **The IDE:** widget tests for the toolbox's Sprite, the `Frames` picker, the Sounds group and its dialogs; an integration test (Windows and macOS, in CI) that runs the Shooter example in the IDE's own window for two seconds with keys from the test, hears the sound calls through a fake, and keeps a picture of the window (D119).

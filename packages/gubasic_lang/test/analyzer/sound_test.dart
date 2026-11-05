@@ -84,4 +84,56 @@ sounds:
     expect(soundNamed(['Shot.wav'], 'SHOT.WAV'), 'Shot.wav');
     expect(soundNamed(['Shot.wav'], 'hit.wav'), isNull);
   });
+
+  test("Visual Basic 6's Beep points to Sound.Play (A083)", () {
+    final d = compile('''
+Sub Main()
+    Beep
+    Beep()
+End Sub
+''').diagnostics;
+    expect(d.map((d) => '${d.code.code}@${d.line}'), ['A083@2', 'A083@3']);
+    expect(
+        d.first.message,
+        'Beep is not in GuBASIC. Add a short sound in File → Sounds and play '
+        'it with Sound.Play, as Sound.Play("beep.wav").');
+    // No replacement: the project needs the sound first.
+    expect(d.first.replacements, isEmpty);
+    expect(koreanMessages[d.first.code], startsWith('GuBASIC에는 Beep이 없습니다.'));
+  });
+
+  test('a Sub of its own named Beep is not pointed anywhere', () {
+    expect(codes('''
+Sub Beep()
+    Debug.Print("beep")
+End Sub
+
+Sub Main()
+    Beep()
+End Sub
+'''), isEmpty);
+  });
+
+  test("Visual Basic 6's sound calls by Declare are P044", () {
+    final d = compile('''
+Declare Function PlaySound Lib "winmm.dll" Alias "PlaySoundA" (ByVal name As String, ByVal hmod As Long, ByVal flags As Long) As Long
+Declare Function sndPlaySound Lib "winmm.dll" Alias "sndPlaySoundA" (ByVal name As String, ByVal flags As Long) As Long
+Declare Function mciSendString Lib "winmm.dll" Alias "mciSendStringA" (ByVal command As String, ByVal ret As String, ByVal size As Long, ByVal hwnd As Long) As Long
+Declare Function MessageBeep Lib "user32" (ByVal kind As Long) As Long
+Declare Function Beep Lib "kernel32" (ByVal freq As Long, ByVal ms As Long) As Long
+Declare Sub Sleep Lib "kernel32" (ByVal ms As Long)
+
+Sub Main()
+    Debug.Print("hi")
+End Sub
+''').diagnostics;
+    expect(d.map((d) => '${d.code.code}@${d.line}'),
+        ['P044@1', 'P044@2', 'P044@3', 'P044@4', 'P044@5', 'P042@6']);
+    expect(
+        d.first.message,
+        'GuBASIC has no Declare (PlaySound). Add the sound in File → Sounds '
+        'and play it with Sound.Play, or Sound.PlayMusic for music.');
+    expect(koreanMessages[d.first.code],
+        startsWith('GuBASIC에는 Declare가 없습니다({0}).'));
+  });
 }

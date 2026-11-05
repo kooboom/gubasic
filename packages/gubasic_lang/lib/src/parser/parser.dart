@@ -1025,8 +1025,23 @@ class _Parser {
   }
 
   /// VB6's `Declare Function GetAsyncKeyState Lib "user32" …` at [t],
-  /// in a procedure or outside: reported (P042; P043 for a key state) and
+  /// in a procedure or outside: reported (P042; P043 for a key state, P044
+  /// for a sound) and
   /// skipped, the rest of the line being VB6's, not GuBASIC's (D138).
+  /// The Windows calls Visual Basic 6 programs declared to make sound:
+  /// effects (`PlaySound`, `sndPlaySound`, `MessageBeep`, `Beep`) and
+  /// music (`mciSendString`), with their ANSI names.
+  static const _soundApis = {
+    'playsound',
+    'playsounda',
+    'sndplaysound',
+    'sndplaysounda',
+    'mcisendstring',
+    'mcisendstringa',
+    'messagebeep',
+    'beep',
+  };
+
   bool _declare(Token t) {
     if (t.kind != TokenKind.identifier ||
         t.text.toLowerCase() != 'declare' ||
@@ -1035,11 +1050,14 @@ class _Parser {
       return false;
     }
     final name = _peek(2).text;
+    final lower = name.toLowerCase();
     _errorAt(
         t,
-        const {'getasynckeystate', 'getkeystate'}.contains(name.toLowerCase())
+        const {'getasynckeystate', 'getkeystate'}.contains(lower)
             ? DiagnosticCode.declareKeyState
-            : DiagnosticCode.declareStatement,
+            : _soundApis.contains(lower)
+                ? DiagnosticCode.declareSound
+                : DiagnosticCode.declareStatement,
         [name]);
     _skipLine();
     return true;

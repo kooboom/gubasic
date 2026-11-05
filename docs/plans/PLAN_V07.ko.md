@@ -61,7 +61,7 @@ End Sub
 | `X`, `Y` (`Double`) | 왼쪽 위 모서리가 폼(또는 Frame)의 왼쪽 위에서 몇 픽셀인지, 소수 포함. 초당 30픽셀의 속도가 16 ms 라운드에 정확히 0.5픽셀 움직이게 함. 모든 컨트롤에 있는 `Left`·`Top`(`Integer`)은 같은 자리를 반올림한 것이고, 어느 하나를 정하면 나머지도 정해짐 |
 | `SpeedX`, `SpeedY` (`Double`, 초당 픽셀, 처음 0) | `Move`가 얼마나 빨리 움직이는지. 라운드당이 아니라 초당 픽셀이어야 초당 30라운드와 60라운드에서 게임이 같음 |
 | `Width`, `Height` (`Integer`) | 프레임을 여기에 꽉 채워 그림(`Image`의 `Stretch`처럼). 속성 창에서 `Frames`를 처음 고를 때 첫 프레임의 크기를 받고, 실행 중엔 프로그램 말고는 아무것도 바꾸지 않음 |
-| `Shape` (`String`, 처음 `"Rectangle"`) | `Hits`가 무엇으로 보는지: `"Rectangle"`은 사각형 전체, `"Circle"`은 사각형에 들어가는 가장 큰 원(정사각형이 아니면 타원), `"Pixels"`는 프레임에서 알파가 128 이상인 픽셀을 크기에 맞춰 늘린 것. 다른 낱말은 `Anchor`처럼 A038과 R014 |
+| `Shape` (`String`, 처음 `"Rectangle"`) | `Hits`가 무엇으로 보는지: `"Rectangle"`은 사각형 전체, `"Circle"`은 사각형에 들어가는 가장 큰 원(정사각형이 아니면 타원), `"Pixels"`는 프레임에서 알파가 128 이상인 픽셀을 크기에 맞춰 늘린 것. 다른 낱말은 코드에서 A081, 실행 중 R052, 폼 파일에서 F024 |
 | `Anchor`, `Enabled`, `Visible`, `Tag` | 모든 컨트롤과 같음(D57, D137, D98). `BackColor`는 없음: 투명한 픽셀로는 뒤가 비침 |
 | `Move(ms As Integer)` | 속도로 `ms` 밀리초만큼 움직이고(`X = X + SpeedX * ms / 1000`, `Y`도), `FrameTime`이 0보다 크면 프레임을 넘김. 저절로 움직이는 것은 없음: 프로그램의 루프가 말할 때만 움직임. 그래야 프로그램이 결정적이고 동일성 테스트가 가능함 |
 | `Hits(other As Sprite) As Boolean` | `other`와 닿았는지, 둘의 모양으로. 어느 쪽이든 `Visible`이 아니거나 같은 스프라이트면 `False`. 사각형과 사각형, 원과 원, 원과 사각형은 계산으로; 어느 쪽이든 `"Pixels"`면 두 사각형이 겹치는 부분을 픽셀마다 상대의 모양과 견줌 |
@@ -99,10 +99,10 @@ Visual Basic 6이 `Declare`로 부르던 `GetAsyncKeyState`를 이것이 대신�
 
 | 멤버 | 하는 일 |
 |---|---|
-| `Sound.Play(name)` | 효과음을 한 번, 바로 냄. 여럿이 겹쳐 나고, 같은 소리가 나는 중에 `Play`하면 그 위에 다시 시작함. 프로젝트에 없는 소리 이름: 코드에 글자로 적으면 A082, 실행 중엔 R052 |
+| `Sound.Play(name)` | 효과음을 한 번, 바로 냄. 여럿이 겹쳐 나고, 같은 소리가 나는 중에 `Play`하면 그 위에 다시 시작함. 프로젝트에 없는 소리 이름: 코드에 글자로 적으면 A082, 실행 중엔 R053 |
 | `Sound.PlayMusic(name)` | 소리 하나를 `StopMusic`, 프로그램 끝, 또는 다른 `PlayMusic`이 바꿀 때까지 되풀이함. 한 번에 하나 |
 | `Sound.StopMusic()` | 멈춤 |
-| `Sound.Volume` (`Integer`, 0에서 100, 처음 100) | 프로그램이 내는 모든 소리에. 범위 밖은 색처럼 R050 |
+| `Sound.Volume` (`Integer`, 0에서 100, 처음 100) | 프로그램이 내는 모든 소리에. 범위 밖은 R010 |
 
 **형식:** WAV와 MP3만(`.wav`, `.mp3`). 둘 다 웹 플레이어가 도는 모든 브라우저와 Windows, macOS에서 나고, OGG는 Safari에서 나지 않습니다([MDN: Web audio codec guide](https://developer.mozilla.org/en-US/docs/Web/Media/Formats/Audio_codecs#choosing_an_audio_codec)). 다른 확장자는 그림의 F014처럼 F024, 대소문자만 다른 두 이름은 F015처럼 F025.
 
@@ -112,12 +112,12 @@ Visual Basic 6이 `Declare`로 부르던 `GetAsyncKeyState`를 이것이 대신�
 
 ### 2.5 진단(초안)
 
-번호는 지금의 마지막(A079, R050, F023, P041) 다음입니다. 한국어는 문서의 "~합니다" 체이고, 자리 표시자 바로 뒤에 조사를 붙이지 않습니다.
+번호는 그때의 마지막(A079, R050, F023, P041) 다음이었습니다. **구현에서는** 이 초안과 다릅니다: 모양이 아닌 낱말이 A081(코드), R052(실행 중), F024(폼 파일)를 가져가서, 프로젝트에 없는 소리는 R053, 소리의 이름은 F025, 대소문자만 다른 두 이름은 F026입니다. 범위 밖 `Volume`은 다른 속성처럼 R010입니다. `Beep` 안내는 A083, 소리 API의 `Declare`는 P044가 되었고 v0.7.0 다음에 더했습니다. `My.Computer.Audio.Play`는 안내하지 않습니다(DESIGN D138). 한국어는 문서의 "~합니다" 체이고, 자리 표시자 바로 뒤에 조사를 붙이지 않습니다.
 
 | 코드 | 언제 | 영어 | 한국어 |
 |---|---|---|---|
 | A080 | 함수로 쓴 `Timer()`나 `Environment.TickCount` | `Timer` is a control in GuBASIC; the time in milliseconds is `Milliseconds()`. | GuBASIC에서 `Timer`는 컨트롤입니다. 밀리초 단위 시간은 `Milliseconds()`입니다. |
-| A081 | `Beep`, `PlaySound`, `My.Computer.Audio.Play` | Write `Sound.Play("NAME.wav")` with a sound of the project. | 프로젝트의 소리로 `Sound.Play("NAME.wav")`라고 씁니다. |
+| A081(구현: A083, `Beep`만) | `Beep`, `PlaySound`, `My.Computer.Audio.Play` | Write `Sound.Play("NAME.wav")` with a sound of the project. | 프로젝트의 소리로 `Sound.Play("NAME.wav")`라고 씁니다. |
 | A082 | 프로젝트에 없는 소리로 `Sound.Play("x.wav")`(그림의 A037처럼) | `{0}` is not a sound of this project. Add it to the project's sounds first. | `{0}` 소리가 이 프로젝트에 없습니다. 먼저 프로젝트의 소리에 더합니다. |
 | P042 | `Declare` 문. `GetAsyncKeyState`나 `GetKeyState`면 둘째 문장까지 | GuBASIC has no `Declare`: outside abilities come as components. Keys held right now are asked with `Keyboard.IsDown(Keys.Left)`. | GuBASIC에는 `Declare`가 없습니다. 바깥의 기능은 컴포넌트로 들어옵니다. 지금 눌린 키는 `Keyboard.IsDown(Keys.Left)`로 묻습니다. |
 | R051 | 0에서 마지막 프레임 사이를 벗어난 `Frame` | `Frame` must be from 0 to {0}; it is {1}. | `Frame` 값은 0에서 {0} 사이여야 하는데 {1}입니다. |
@@ -144,10 +144,10 @@ Visual Basic 6이 `Declare`로 부르던 `GetAsyncKeyState`를 이것이 대신�
 
 - **`components/Sprite/component.yaml`**, `tool/embed_components.dart`가 묻음. `Frames`는 `picture: true`가 여러 이름을 뜻하는 `String`(속성 창의 선택기가 여럿을 고르게 하고 글자로 씀); `X`, `Y`, `SpeedX`, `SpeedY`는 component.yaml에 이미 있는 `Double`; `Shape`는 `Anchor`처럼 글자.
 - **`gubasic_lang`**(순수 Dart, 규칙 1):
-  - 분석기의 `Sprite`, `Keyboard`, `Sound`, `Milliseconds` 멤버와 A080~A082, P042;
+  - 분석기의 `Sprite`, `Keyboard`, `Sound`, `Milliseconds` 멤버와 A080~A083, P042~P044;
   - 인터프리터: `Move`, 눌린 키의 집합, `Host.milliseconds`에서 오는 `Milliseconds`, `FileHost` 옆의 `SoundHost`(`play`, `playMusic`, `stopMusic`, `volume`)를 거치는 `Sound`. 플레이그라운드에는 없음(`Http`처럼 R038);
   - **`lib/src/forms/collision.dart`:** `Hits`와 `DistanceTo`의 기하(사각형, 원, 픽셀)를 순수 Dart로. 픽셀 마스크는 `FormHost.pictureMask(name)`에서: 너비, 높이, 알파 ≥ 128인 픽셀마다 비트 하나. 순수여야 동일성 테스트가 VM과 Chrome에서 돌고, 트랜스파일러가 만든 코드도 같은 파일을 쓸 수 있음;
-  - 프로젝트 파일: `sounds`, `formatVersion: 4`, F024와 F025;
+  - 프로젝트 파일: `sounds`, `formatVersion: 4`, F025와 F026;
   - 이벤트 대본: `Wait N`.
 - **`gubasic_runtime`:** `sprite.dart`는 프로젝트의 그림(`Image`가 쓰는 같은 바이트)으로 프레임을 늘려 그림; `picture_mask.dart`는 그림을 한 번 디코드해(`instantiateImageCodec`, raw RGBA의 `toByteData`) 인터프리터가 묻는 마스크를 만들고 이름으로 캐시; `sound.dart`의 `GbSound`는 6절 Q5의 패키지 위에서 프로젝트가 준 바이트를 냄; `form_view.dart`는 이미 `KeyDown`·`KeyUp`을 알리듯 폼이 포커스를 잃거나 대화 상자가 열리면 "모든 키 떼어짐"을 알림. 런타임은 인터프리터와 생성된 앱이 쓰는 유일한 Flutter 코드로 남음(규칙 6).
 - **`gubasic_player`:** 프로젝트 모델이 `pictures/`처럼 `sounds/`를 지님; 실행 창의 호스트가 `pictureMask`, `milliseconds`(프로그램과 함께 시작하는 `Stopwatch`), 소리 호출에 답함; 내보낸 앱의 번들과 웹 템플릿이 소리를 서비스함.
@@ -173,7 +173,7 @@ Visual Basic 6이 `Declare`로 부르던 `GetAsyncKeyState`를 이것이 대신�
 
 ## 5. 테스트
 
-- **동일성 프로그램**(`test/parity/`, VM·Chrome·실행 창): `sprite_move`(속도, `Move`, 소수 있는 `X`와 반올림한 `Left`, `Anchor`), `sprite_frames`(`Frames`, `Frame`, `FrameTime`, R051), `sprite_hits`(사각형, 원, 픽셀. 모서리가 투명한 작은 그림을 `sprite_hits.pictures/`에; `Visible` False; `DistanceTo`), `keyboard_isdown`(동시에 여러 키, 대화 상자에서 떼어짐, TextBox 안), `milliseconds`(`Wait` 줄, 틱 사이 차이), `sound_play`(`MsgBox`를 보이듯 기록에 `Sound: shot.wav`, `Music: music.mp3`, `Music stopped`; R052; 범위 밖 `Volume`), `shooter_example`(예제를 `Wait`·키·틱 대본으로 명중과 게임 오버까지).
+- **동일성 프로그램**(`test/parity/`, VM·Chrome·실행 창): `sprite_move`(속도, `Move`, 소수 있는 `X`와 반올림한 `Left`, `Anchor`), `sprite_frames`(`Frames`, `Frame`, `FrameTime`, R051), `sprite_hits`(사각형, 원, 픽셀. 모서리가 투명한 작은 그림을 `sprite_hits.pictures/`에; `Visible` False; `DistanceTo`), `keyboard_isdown`(동시에 여러 키, 대화 상자에서 떼어짐, TextBox 안), `milliseconds`(`Wait` 줄, 틱 사이 차이), `sound_play`(`MsgBox`를 보이듯 기록에 `Sound: shot.wav`, `Music: music.mp3`, `Music stopped`; R053; 범위 밖 `Volume`), `shooter_example`(예제를 `Wait`·키·틱 대본으로 명중과 게임 오버까지).
 - **`gubasic_runtime`:** 위젯 테스트: Sprite가 프레임을 늘려 그리고 `Frames`가 `""`이면 아무것도 안 그림; 모서리가 투명한 PNG의 마스크 비트가 기대대로; `GbSound`가 이름의 소리 바이트를 내라고 요청받음(가짜 플레이어); 포커스를 잃으면 "모든 키 떼어짐"을 알림.
 - **`gubasic_player`:** 지금처럼 실행 창의 위젯으로 동일성 프로그램; 내보낸 번들이 `sounds/`를 지님.
 - **IDE:** 툴박스의 Sprite, `Frames` 선택기, 소리 묶음과 대화 상자의 위젯 테스트; 통합 테스트(Windows와 macOS, CI에서)는 IDE 자기 창에서 Shooter 예제를 테스트가 보낸 키로 2초 돌리고, 가짜로 소리 호출을 듣고, 창의 그림을 남김(D119).
