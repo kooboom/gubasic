@@ -1,0 +1,127 @@
+# 계획서: v0.8 "격투 게임"
+
+[English](PLAN_V08.md)
+
+2026-11-10에 [PLAN_TEMPLATE.ko.md](../PLAN_TEMPLATE.ko.md)대로 썼습니다. 6절의 질문에 작성자가 답하기 전에는 아무 작업도 시작하지 않습니다.
+
+## 1. 무엇을, 왜
+
+**무엇.** 한 키보드에서 두 사람이 하는 격투 게임을 이런 게임을 쓰는 방식대로 씁니다. 선수마다 상태 기계(서기, 걷기, 점프, 앉기, 공격, 막기, 맞음, KO)가 있습니다. 공격마다 프레임 데이터(맞히기까지, 맞히는 동안, 회복까지의 시간)가 있습니다. 몸과 공격은 그림과 따로 상자로 둡니다(허트박스와 히트박스). 맞으면 둘이 잠깐 멈추고(히트 스톱) 밀려나며 체력 바의 체력이 줄고, 라운드는 시계가 있고 KO로 끝납니다. 예제의 이름은 **Duel**입니다.
+
+새 도구를 보이는 가장 작은 프로그램:
+
+```vb
+Sub tmrGame_Tick()
+    ' 두 선수는 서로를 봅니다: 그림 하나를 반대로 그립니다.
+    sprP1.FlipX = sprP1.X > sprP2.X
+    ' 공격은 키를 누를 때 시작하고, 누르고 있는 동안은 아닙니다.
+    If Keyboard.WasPressed(Keys.F) Then StartAttack(0, Punch)
+    If Keyboard.WasPressed(Keys.OemPeriod) Then StartAttack(1, Punch)
+    ' 공격하는 쪽을 앞에 그립니다.
+    If attacking(1) Then sprP2.BringToFront()
+End Sub
+```
+
+**단계.** ROADMAP "v0.6 다음(후보)"의 "예제: 격투 게임, v0.7 다음 후보"(D138, plans/PLAN_V07.ko.md 6절 Q9)이고, 여기서 v0.8로 부릅니다. D121 a(돌아가지 않기), D138(Sprite, Hits, Keyboard.IsDown, Milliseconds, Sound), D137(체력 바의 BackColor)에 기댑니다.
+
+**왜 이 도구들인가.** v0.7의 도구만으로 쓰면 네 곳을 돌아가야 합니다. 이 분야의 흔한 도구는 넷 모두 갖추고 있습니다.
+
+1. **반대쪽 보기.** 둘이 엇갈릴 때마다 선수가 돌아섭니다. 뒤집기가 없으면 프레임마다 거울로 비춘 그림을 하나 더 그리고, 프로그램이 왼쪽·오른쪽 묶음을 골라야 합니다. KNOWN_ISSUES("v0.7의 게임 도구가 나중으로 남긴 것")가 이것을 격투 게임과 함께 다시 본다고 했습니다.
+2. **방금 눌린 키.** 주먹은 키가 눌릴 때 한 번 나가고, 누르고 있다고 또 나가면 안 됩니다. `IsDown`만으로는 프로그램이 지난 틱의 키 상태를 모두 들고 있다가 비교해야 하고, 두 틱 사이에 눌렀다 뗀 짧은 입력은 놓칩니다.
+3. **무엇을 앞에 그리나.** 공격하는 쪽의 주먹이 상대를 덮어야 합니다. 스프라이트는 만든 순서대로 그려지고, 그 순서를 바꿀 방법이 없습니다.
+4. **두 번째 사람의 키.** 한 키보드를 둘이 쓸 때 흔한 배치는 두 번째 사람이 화살표와 그 옆의 `,` `.` `/`를 씁니다. `Keys`에는 글자, 숫자, 숫자 패드, F 키는 있지만 문장 부호 키가 없어서 읽을 수 없습니다.
+
+상자(허트박스와 히트박스)에는 새것이 필요 없습니다. `Frames = ""`인 `Sprite`는 아무것도 그리지 않으면서 사각형으로 `Hits`하므로, 상자는 틱마다 선수에 맞춰 놓는 스프라이트입니다. 예제가 이것을 보이고, 격투 게임을 만드는 사람들이 상자를 맞출 때 하듯 상자를 그려 보이는 스위치를 둡니다.
+
+## 2. 쓰는 법
+
+### 2.1 `Sprite.FlipX`
+
+| 멤버 | 무엇 |
+|---|---|
+| `FlipX` (`Boolean`, 처음 `False`) | 프레임을 같은 자리, 같은 크기로 좌우를 뒤집어 그립니다. `"Pixels"`의 `Hits`는 뒤집힌 픽셀을 씁니다. `"Rectangle"`과 `"Circle"`은 어느 쪽이든 같습니다. |
+
+좌우만 뒤집습니다. 선수, 걷는 사람, 우주선이 돌아서는 데 쓰입니다. 위아래(`FlipY`)와 회전(`Angle`)은 KNOWN_ISSUES에 남습니다. 디자이너의 속성 창에는 `Visible`처럼 체크 상자로 보입니다.
+
+### 2.2 `Keyboard.WasPressed(key)`
+
+| 멤버 | 무엇 |
+|---|---|
+| `Keyboard.WasPressed(key)` → `Boolean` | 프로그램이 그 키의 `WasPressed`를 마지막으로 물은 뒤(처음이면 프로그램 시작 뒤) `key`가 눌렸는지. 누르고 있는 키도, 시스템의 키 반복도 다시 세지 않고, 두 틱 사이에 눌렀다 뗀 것은 한 번 셉니다. |
+
+`IsDown`은 그대로 "지금 누르고 있나"(걷기, 막기)이고, `WasPressed`는 "눌렸나"(공격, 점프, 메뉴 고르기)입니다. 한 키에 대해 눌림 한 번에 한 번 답합니다. 같은 키를 두 곳에서 물으면 둘이 나눠 가지며, 참조가 이것을 말합니다. 창이 포커스를 잃거나 대화 상자가 열려 있는 동안에는 아무것도 눌리지 않습니다. 폰에서는 `IsDown`처럼 늘 `False`입니다.
+
+### 2.3 `BringToFront()`와 `SendToBack()`
+
+| 멤버 | 무엇 |
+|---|---|
+| `spr.BringToFront()` | 그 스프라이트를 폼의 다른 모든 스프라이트와 이미지 앞에 그립니다(버튼과 레이블 아래인 것은 그대로, D138의 층). |
+| `spr.SendToBack()` | 그것들 모두의 뒤에. |
+
+Visual Basic .NET의 이름입니다([Microsoft: Control.BringToFront](https://learn.microsoft.com/en-us/dotnet/api/system.windows.forms.control.bringtofront), [Control.SendToBack](https://learn.microsoft.com/en-us/dotnet/api/system.windows.forms.control.sendtoback)). 그림 층의 컨트롤인 `Sprite`와 `Image`에 둡니다. 다른 컨트롤은 디자이너의 흔한 폼에서 겹치지 않으니 프로그램이 필요로 할 때 더합니다. `Me.Controls`는 순서(폼 파일과 더한 순서)를 그대로 지키므로 그것을 도는 반복은 바뀌지 않고, 그리는 순서만 바뀝니다.
+
+### 2.4 문장 부호 키
+
+`Keys.Oemcomma`, `Keys.OemPeriod`, `Keys.OemQuestion`, `Keys.OemSemicolon`, `Keys.OemQuotes`, `Keys.OemMinus`, `Keys.Oemplus`, `Keys.OemOpenBrackets`, `Keys.OemCloseBrackets`, `Keys.OemPipe`, `Keys.Oemtilde`. Visual Basic .NET의 이름과 번호입니다(188, 190, 191, 186, 222, 189, 187, 219, 221, 220, 192. [Microsoft: Keys](https://learn.microsoft.com/en-us/dotnet/api/system.windows.forms.keys)). .NET처럼 미국 키보드에서의 자리이고, 다른 배열에서는 같은 자리에 다른 글자가 찍혀 있으며 참조가 이것을 말합니다. 다른 키처럼 `KeyDown`과 `KeyUp`을 일으키고, `IsDown`과 `WasPressed`가 답합니다.
+
+### 2.5 Duel 예제
+
+`examples/duel`, 640×400 폼 하나.
+
+- **키.** 1P: `A` `D` 걷기, `W` 점프, `S` 앉기, `F` 주먹, `G` 발차기. 2P: `←` `→` 걷기, `↑` 점프, `↓` 앉기, `.` 주먹, `/` 발차기. 뒤로(상대 반대쪽으로) 누르고 있으면 막습니다. 두 묶음 모두 `IsDown`과 `WasPressed`로 읽으므로 함께 쓸 수 있습니다.
+- **Timer 하나가 루프**(16 ms)이고 `Milliseconds()`를 씁니다: 키를 읽고, 선수마다 상태 기계를 돌리고, 움직이고, 상자를 놓고, 맞음을 검사하고, 체력 바, 시계, 라운드.
+- **두 선수에 한 루틴:** 0과 1로 찾는 배열(`state(1)`, `health(1)`, `facing(1)`, …)과 배열에 든 스프라이트로, 같은 코드가 둘을 움직입니다.
+- **표로 된 프레임 데이터:** `Structure Attack`에 `Startup`, `Active`, `Recovery`(밀리초), `Damage`, 히트박스의 `Reach`와 `Height`, `Frames`. 주먹과 발차기, 앉으면 낮게.
+- **상자:** 선수마다 프레임 없는 허트박스 스프라이트와 히트박스 스프라이트. "상자 보기"(CheckBox)를 켜면 반투명 그림을 줍니다.
+- **맞음:** 80 ms 히트 스톱(아무것도 움직이지 않음), 밀려남, 체력 감소, 소리. 막으면 덜 밀리고 다른 소리가 나며 체력은 줄지 않습니다.
+- **라운드:** 60초. KO나 시계가 라운드를 끝내고, 두 라운드를 이기면 승리. 시작 버튼이 시작하고 다시 시작합니다.
+- **그림과 소리**는 Shooter처럼 도구 스크립트가 만듭니다(`apps/ide/tool/draw_duel_assets.dart`): 두 색의 단순한 도형, 선수마다 오른쪽을 보는 프레임 한 묶음, 합성한 WAV 소리.
+
+### 2.6 메시지
+
+새 진단은 없습니다. 키가 아닌 숫자의 `WasPressed`는 지금 `IsDown`처럼 `False`입니다. 새 속성, 메서드, 키 이름의 오타는 분석기의 알 수 없는 멤버이고 "이것인가요" 안내가 붙습니다(D50).
+
+## 3. 설계
+
+### 3.1 어디에 두나
+
+- **`gubasic_lang`:** 인터프리터의 `WasPressed`는 `IsDown`이 쓰는 집합 옆에 둡니다. 눌렸지만 아직 묻지 않은 키의 두 번째 집합이고, 떼어 있다가 눌릴 때만 채웁니다(누르고 있는 동안 반복되는 `KeyDown`은 더하지 않음). 물으면 그 키를 지우고, "모든 키 뗌"이 오면(포커스 잃음, 대화 상자) 모두 지웁니다. 문장 부호 키는 `forms/keys.dart`에. `FlipX`, `BringToFront`, `SendToBack`은 `components/Sprite/component.yaml`과 `components/Image/component.yaml`에 두고, 분석기는 거기서 압니다. 이벤트 대본의 키 단계가 새 키 이름을 받습니다.
+- **`gubasic_runtime`:** `FlipX`면 Sprite가 `Transform.flip`으로 프레임을 뒤집어 그립니다. `Hits`의 픽셀 마스크를 뒤집어 읽습니다(기하는 순수 Dart 그대로). 그림 층은 파일 순서만이 아니라 모델이 지키는 순서(컨트롤마다의 번호, `BringToFront`가 올림)로 그립니다.
+- **`gubasic_player`:** 창이 듣는 키를 문장 부호 키에 잇습니다(`LogicalKeyboardKey.comma`, `.period`, `.slash`, …).
+- **IDE:** 속성 창의 `FlipX`, 예제 메뉴의 Duel, 그림·소리 스크립트.
+
+### 3.2 강한 규칙, 그리고 열어 두는 것
+
+- **AST 하나(규칙 2):** 문법에 새것은 없습니다. `FlipX`, `WasPressed`, `BringToFront`, `SendToBack`과 키는 v0.7처럼 분석기가 푸는 멤버와 값입니다.
+- **비동기, 재진입 없음(규칙 4, 5):** `WasPressed`는 `IsDown`처럼 아무것도 기다리지 않는 질문이고, 새 이벤트는 없습니다.
+- **런타임만(규칙 6):** 그리기와 픽셀 마스크는 `gubasic_runtime`에.
+- **모든 컨트롤은 컴포넌트(규칙 7):** 새 멤버는 컴포넌트의 YAML에.
+- **파일 형식(규칙 8):** `FlipX`는 기본값이 있는 새 속성이고, 기존 것의 뜻은 바뀌지 않으며 `formatVersion`은 4 그대로입니다. 그리는 순서는 저장하지 않습니다. 폼은 지금처럼 시작할 때 파일 순서로 그려집니다.
+- **비밀(규칙 12):** 아무것도 보내지 않습니다.
+
+## 4. 돌아가지 않기(D121)
+
+- **사용자가 여전히 돌아가야 하는 곳이 있나?** 나중으로 미루고 KNOWN_ISSUES에 적는 것: `FlipY`와 `Angle`; 게임패드(패드가 없으면 한 키보드에 둘이 흔한 방식이고, 많은 키를 한꺼번에 알리지 못하는 키보드가 있는데 이것은 어떤 프로그램도 바꿀 수 없음); 두 컴퓨터 사이의 온라인 대전(`Room`은 메시지를 나르지만 네트워크 격투 게임에는 롤백이 필요하고, 그것은 따로 다룰 주제); 6절 Q6의 답에 따라 컴퓨터 상대. 남기지 않는 것: 1절의 네 가지.
+- **바깥과 표준으로 이야기하나?** 그림은 전처럼 PNG, 소리는 WAV([RFC 2361](https://www.rfc-editor.org/rfc/rfc2361)), 키는 .NET `Keys`의 번호.
+- **스스로 하지 않는 것이 들어올 길이 있나?** v0.7처럼 컴포넌트 통로([COMPONENT_CHANNEL.ko.md](../COMPONENT_CHANNEL.ko.md)). 게임패드나 물리 엔진은 그 길로 옵니다.
+- **문서와 예제:** LANGUAGE 11.1절(`WasPressed`, 키), Sprite 문단(`FlipX`, 그리는 순서, 상자로 쓰는 프레임 없는 스프라이트); 생성하는 참조와 `llms-full.txt`; Duel 예제; ROADMAP v0.8.
+
+## 5. 테스트
+
+- **동일성 프로그램**(`test/parity/`, VM, Chrome, 실행 창): `keyboard_waspressed`(눌림은 한 번, 누르고 있음과 반복은 세지 않음, 두 키 한꺼번에, 대화 상자가 지움, 한 키를 두 번 물음); `keys_punctuation`(새 `Keys` 값의 숫자와 `KeyDown`); `sprite_flip`(좌우가 같지 않은 그림으로 픽셀 `Hits`, 뒤집었을 때와 아닐 때); `sprite_order`(`BringToFront`와 `SendToBack`, 바뀌지 않는 `Me.Controls`); `duel_example`(예제를 키, `Wait`, 틱 대본으로 맞음, 막음, KO, 라운드까지).
+- **`gubasic_runtime`:** 뒤집은 스프라이트의 픽셀이 화면과 마스크에서 거울처럼 되는지, `BringToFront`가 위에 그리는지(겹친 스프라이트 그림)의 위젯 테스트.
+- **`gubasic_player`:** 창에서 온 문장 부호 키가 `IsDown`과 `WasPressed`에 닿는지.
+- **IDE:** IDE 창 안에서 테스트가 보낸 키로 한 라운드를 하고 그림을 남기는 통합 테스트(CI의 Windows와 macOS, D119).
+- **웹:** `tool/web_check/duel.mjs`(Playwright)가 빌드한 웹 플레이어의 Duel을 `.`와 `/`까지 키보드로 합니다.
+- **속도:** STAGE2_PLAN 7절이 Shooter를 잰 방법으로 한 번(기준 프로그램 7).
+- **손으로:** 작성자가 맥과 Windows에서 다른 사람과 해 보고 키의 느낌을 봅니다.
+
+## 6. 작성자에게 묻는 것
+
+1. **버전.** 권장: **v0.8 "격투 게임"**. 예제만이 아니라 언어와 키에 멤버를 더하기 때문입니다. ROADMAP에 v0.8 목록을 둡니다.
+2. **`FlipX`.** 권장: 2.1절대로 더함(좌우만). 다른 길인 프레임마다 두 번 그리기는 D121이 피하라는 돌아가기입니다.
+3. **`Keyboard.WasPressed`.** 권장: 2.2절대로 "그 키를 마지막으로 물은 뒤"로 더함. 다른 길: "이번 틱에 눌림"은 언어가 틱이 무엇인지 알아야 하는데 모릅니다. 프로그램에 맡기면 짧은 입력을 잃습니다.
+4. **`BringToFront`와 `SendToBack`.** 권장: 2.3절대로 지금은 `Sprite`와 `Image`에, .NET의 이름으로. 다른 컨트롤에는 프로그램이 필요로 할 때.
+5. **문장 부호 키.** 권장: 2.4절의 열한 개를 .NET의 이름과 번호로 더해서 2P가 `.`와 `/`를 쓰게 함. 다른 길: 2P를 숫자 패드에 두기(노트북에는 없음).
+6. **컴퓨터 상대.** 권장: **예, 단순한 것으로**. 시작 화면에서 "1인 / 2인"을 골라 혼자서도 예제를 해 볼 수 있게 합니다. 상대에게 걸어가고, 닿으면 공격하고, 가끔 막는 정도로 같은 상태 기계 40줄쯤입니다. 다른 길: 두 사람만, 컴퓨터 상대는 나중에.
+7. **작업 순서.** 권장, 각각 동일성 프로그램과 함께 따로 병합: (a) 문장 부호 키와 `WasPressed`; (b) `FlipX`; (c) `BringToFront`와 `SendToBack`; (d) Duel 예제와 그림·소리, 웹 확인, 통합 테스트, 문서; 그다음 속도 측정.
