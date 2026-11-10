@@ -119,9 +119,17 @@ IDE 안에서 완결되는 비주얼 베이직의 핵심 경험입니다.
 - [x] 게임 루프를 Timer 하나로 돌리기 위한 ms 단위 시간: `Milliseconds()`(D138)
 - [x] 예제: 정석을 보여 주는 슈팅 게임(Timer 하나의 게임 루프, 물체마다 상태, 적이 나오는 시간표): Shooter(D138)
 
+### v0.8 — 격투 게임(D139)
+
+계획서: [plans/PLAN_V08.ko.md](plans/PLAN_V08.ko.md)(2026-11-10. 답은 D139).
+
+- [ ] 문장 부호 키(`Keys.OemPeriod`, `Keys.OemQuestion`, …)를 키의 자리로, 웹에서는 `event.code`로 읽기; `Keyboard.WasPressed(key)`와 `Keyboard.ClearPressed()`(D139)
+- [ ] `Sprite.FlipX`: 스프라이트 가운데를 기준으로 뒤집은 프레임(D139)
+- [ ] `Sprite`와 `Image`의 `BringToFront()`와 `SendToBack()`(D139)
+- [ ] 예제: Duel, 한 키보드에 둘이 또는 컴퓨터와 하는 격투 게임: 입력 묶음으로 움직이는 선수, 프레임 데이터, 훈련 보기가 있는 허트박스와 히트박스, 라운드(D139)
+
 ### v0.6 다음(후보, 권장 순서)
 
-- [ ] 예제: 격투 게임, v0.7 다음 후보. 한 키보드에 두 사람, 주먹·발차기 프레임, 체력 바를 v0.7의 도구로(plans/PLAN_V07.ko.md 6절 Q9, D138)
 - [ ] GuBASIC 서버: 서버에서 HTTP(JSON)와 WebSocket에 답하는 화면 없는 프로그램([IDEAS](IDEAS.ko.md#gubasic-서버)). 예제: 게시판
 - [ ] 프로젝트가 고른 패키지를 위한 컴포넌트 통로, 트랜스파일러와 함께([COMPONENT_CHANNEL.ko.md](COMPONENT_CHANNEL.ko.md))
 - [ ] UserControl: 다른 사용자의 도구 상자에 넣는, GuBASIC으로 만든 컨트롤([IDEAS](IDEAS.ko.md#usercontrol)). 컴포넌트 통로 다음

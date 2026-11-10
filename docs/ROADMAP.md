@@ -119,9 +119,17 @@ Plan: [plans/PLAN_V06.md](plans/PLAN_V06.md) (2026-11-03; the answers are D136; 
 - [x] Time in milliseconds, for a game loop on one Timer: `Milliseconds()` (D138)
 - [x] Example: a shooting game showing the usual shape (one Timer as the game loop, a state for each object, a timetable of when enemies come): Shooter (D138)
 
+### v0.8 — Fighting game (D139)
+
+Plan: [plans/PLAN_V08.md](plans/PLAN_V08.md) (2026-11-10; the answers are D139).
+
+- [ ] The punctuation keys (`Keys.OemPeriod`, `Keys.OemQuestion`, …), read by the key's place, on the web by `event.code`; `Keyboard.WasPressed(key)` and `Keyboard.ClearPressed()` (D139)
+- [ ] `Sprite.FlipX`: the frame mirrored about the sprite's middle (D139)
+- [ ] `BringToFront()` and `SendToBack()` on `Sprite` and `Image` (D139)
+- [ ] Example: Duel, a fighting game for two on one keyboard or against the computer: fighters driven by an input bundle, frame data, hurtboxes and hitboxes with a training view, rounds (D139)
+
 ### After v0.6 (candidates, order recommended)
 
-- [ ] Example: a fighting game, the next candidate after v0.7: two players on one keyboard, punch and kick frames, a health bar, with v0.7's tools (plans/PLAN_V07.md §6 Q9, D138)
 - [ ] The GuBASIC server: programs with no screen, answering HTTP (JSON) and WebSocket on a server ([IDEAS](IDEAS.md#the-gubasic-server)). Example: a bulletin board
 - [ ] The component channel for packages a project chooses, with the transpiler ([COMPONENT_CHANNEL.md](COMPONENT_CHANNEL.md))
 - [ ] UserControl: controls made with GuBASIC for other users' toolboxes ([IDEAS](IDEAS.md#usercontrol)), after the component channel

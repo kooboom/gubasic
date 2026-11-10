@@ -2,7 +2,7 @@
 
 [한국어](PLAN_V08.ko.md)
 
-Written 2026-11-10 as [PLAN_TEMPLATE.md](../PLAN_TEMPLATE.md) says; the questions in §6 wait for the author's answers before any work starts.
+Written 2026-11-10 as [PLAN_TEMPLATE.md](../PLAN_TEMPLATE.md) says; the author's answers are in §7 (D139), and the sections above are written as answered.
 
 ## 1. What and why
 
@@ -39,9 +39,9 @@ The boxes (hurtbox and hitbox) need nothing new: a `Sprite` with `Frames = ""` d
 
 | Member | What |
 |---|---|
-| `FlipX` (`Boolean`, `False` at first) | The frame is drawn mirrored left to right, in the same place and size. `Hits` by `"Pixels"` uses the mirrored pixels; `"Rectangle"` and `"Circle"` are the same either way. |
+| `FlipX` (`Boolean`, `False` at first) | The frame is drawn mirrored left to right about the sprite's own vertical middle line, in the same place and size: `X`, `Left` and `Width` do not change, and what was at its left edge is at its right edge. `Hits` by `"Pixels"` uses the mirrored pixels; `"Rectangle"` and `"Circle"` are the same either way. |
 
-Only left to right: a fighter, a walker or a ship turns round; upside down (`FlipY`) and rotation (`Angle`) stay in KNOWN_ISSUES. The designer's Properties window shows it as a check box, as `Visible`.
+So a program that turns a fighter round changes nothing else; what depends on the facing, such as where a fist's hitbox goes, the program places itself (the Duel example puts the hitbox in front of the fighter, on the side it faces). Only left to right: a fighter, a walker or a ship turns round; upside down (`FlipY`) and rotation (`Angle`) stay in KNOWN_ISSUES. The designer's Properties window shows it as a check box, as `Visible`.
 
 ### 2.2 `Keyboard.WasPressed(key)`
 
@@ -49,7 +49,7 @@ Only left to right: a fighter, a walker or a ship turns round; upside down (`Fli
 |---|---|
 | `Keyboard.WasPressed(key)` → `Boolean` | Whether `key` went down since the program last asked `WasPressed` of that key (since the program started, the first time). A key held does not count again, nor does the system's key repeat; a press and a release between two ticks counts once. |
 
-`IsDown` stays the question "is it held now" (walking, blocking); `WasPressed` is "was it pressed" (an attack, a jump, a menu choice). Asked of one key, it answers once per press; two places asking of the same key share it, which the reference says. When the window loses the focus or a dialog opens, nothing is pressed meanwhile. On phones always `False`, as `IsDown`.
+`IsDown` stays the question "is it held now" (walking, blocking); `WasPressed` is "was it pressed" (an attack, a jump, a menu choice). Asked of one key, it answers once per press; two places asking of the same key share it, which the reference says. **`Keyboard.ClearPressed()`** forgets every press not yet asked, so that a press made before (on a title screen, during a pause) does not act afterwards. The presses are forgotten by themselves too when the window loses the focus, when a dialog opens, and when the form in front changes (`Show`, `ShowDialog`, `Hide` or `Close` bringing another form forward). On phones `WasPressed` is always `False`, as `IsDown`.
 
 ### 2.3 `BringToFront()` and `SendToBack()`
 
@@ -62,17 +62,20 @@ Visual Basic .NET's names ([Microsoft: Control.BringToFront](https://learn.micro
 
 ### 2.4 The punctuation keys
 
-`Keys.Oemcomma`, `Keys.OemPeriod`, `Keys.OemQuestion`, `Keys.OemSemicolon`, `Keys.OemQuotes`, `Keys.OemMinus`, `Keys.Oemplus`, `Keys.OemOpenBrackets`, `Keys.OemCloseBrackets`, `Keys.OemPipe`, `Keys.Oemtilde`, with Visual Basic .NET's names and numbers (188, 190, 191, 186, 222, 189, 187, 219, 221, 220, 192; [Microsoft: Keys](https://learn.microsoft.com/en-us/dotnet/api/system.windows.forms.keys)). They are the keys' places on a US keyboard, as .NET's are; on another layout the same place has another letter printed, and the reference says so. They raise `KeyDown` and `KeyUp` as other keys, and `IsDown` and `WasPressed` answer them.
+`Keys.Oemcomma`, `Keys.OemPeriod`, `Keys.OemQuestion`, `Keys.OemSemicolon`, `Keys.OemQuotes`, `Keys.OemMinus`, `Keys.Oemplus`, `Keys.OemOpenBrackets`, `Keys.OemCloseBrackets`, `Keys.OemPipe`, `Keys.Oemtilde`, with Visual Basic .NET's names and numbers (188, 190, 191, 186, 222, 189, 187, 219, 221, 220, 192; [Microsoft: Keys](https://learn.microsoft.com/en-us/dotnet/api/system.windows.forms.keys)). They are read by where the key is, as letters and digits already are (D138): the key's place on a US keyboard, whatever the layout and whatever an input method is doing. On the web that is the browser's `event.code` ([UI Events KeyboardEvent code values](https://www.w3.org/TR/uievents-code/)), so the keys work while a Korean input method is on, when `event.key` would be a Korean letter or `Process`; on the desktop it is the key's physical code. On another layout the same place has another sign printed, and the reference says so. They raise `KeyDown` and `KeyUp` as other keys, and `IsDown` and `WasPressed` answer them.
 
 ### 2.5 The Duel example
 
 `examples/duel`, one form of 640×400.
 
 - **Keys.** Player 1: `A` `D` walk, `W` jump, `S` crouch, `F` punch, `G` kick. Player 2: `←` `→` walk, `↑` jump, `↓` crouch, `.` punch, `/` kick. Holding back (away from the other) blocks. Both sets are read with `IsDown` and `WasPressed`, so they work at once.
+- **An input bundle.** Each fighter is driven by a `Structure Inputs` (`Forward`, `Back`, `Jump`, `Crouch`, `Punch`, `Kick`, `Block`), filled each tick before the fighters move: by the keys for a person (forward and back worked out from the facing, block from holding back), by a few rules for the computer. The fighter's state machine reads only the bundle, so a person and the computer play by the same rules.
+- **1 player or 2.** The start screen chooses; with one, the computer fills player 2's bundle: it walks toward the other, attacks when in reach, blocks now and then.
 - **One Timer as the loop** (16 ms), with `Milliseconds()`: read the keys, run each fighter's state machine, move, place the boxes, test the hits, then the health bars, the clock and the round.
 - **One routine for both fighters:** arrays indexed 0 and 1 (`state(1)`, `health(1)`, `facing(1)`, …) and the sprites in arrays, so the same code drives both.
 - **Frame data in a table:** `Structure Attack` with `Startup`, `Active`, `Recovery` (milliseconds), `Damage`, `Reach` and `Height` of the hitbox, `Frames`; a punch and a kick, high and low by crouching.
-- **Boxes:** each fighter has a hurtbox sprite and a hitbox sprite with no frames; "Show boxes" (a CheckBox) gives them a translucent picture.
+- **Boxes:** each fighter has a hurtbox sprite and a hitbox sprite with no frames. The hitbox is placed in front of the fighter on the side it faces, so it moves to the other side when the fighter turns round.
+- **The training view, on `B`:** draws the hurtboxes as blue boxes and the active hitboxes as red ones (by giving the box sprites a translucent picture), and shows each fighter's input bundle as it is filled, as fighting games' training modes do. It is also how two people check that their keyboard reports all the keys they hold at once.
 - **A hit:** hit stop of 80 ms (nothing moves), push back, health down, a sound; blocked, less push and a different sound, and no damage.
 - **Rounds:** 60 seconds; a KO or the clock ends a round; two rounds win; Start begins and starts again.
 - **Pictures and sounds** made by a tool script, as the Shooter's (`apps/ide/tool/draw_duel_assets.dart`): plain shapes in two colours, one set of frames each, facing right; WAV sounds synthesised.
@@ -108,13 +111,13 @@ No new diagnostics. `WasPressed` of a number that is no key answers `False`, as 
 
 ## 5. Tests
 
-- **Parity programs** (`test/parity/`, the VM, Chrome and the run window): `keyboard_waspressed` (a press counts once, held does not, a repeat does not, two keys at once, a dialog clears it, a key asked twice); `keys_punctuation` (the new `Keys` values as numbers and in `KeyDown`); `sprite_flip` (`Hits` by pixels with a picture that is not symmetric, flipped and not); `sprite_order` (`BringToFront` and `SendToBack`, and `Me.Controls` unchanged); `duel_example` (the example driven by a script of keys, `Wait` and ticks through a hit, a block, a KO and a round).
+- **Parity programs** (`test/parity/`, the VM, Chrome and the run window): `keyboard_waspressed` (a press counts once, held does not, a repeat does not, two keys at once, a key asked twice; `ClearPressed`; a dialog and a change of form clear them); `keys_punctuation` (the new `Keys` values as numbers and in `KeyDown`); `sprite_flip` (`Hits` by pixels with a picture that is not symmetric, flipped and not); `sprite_order` (`BringToFront` and `SendToBack`, and `Me.Controls` unchanged); `duel_example` (the example driven by a script of keys, `Wait` and ticks through a hit, a block, a KO and a round).
 - **`gubasic_runtime`:** a widget test that a flipped sprite's pixels are mirrored on the screen and in its mask; that `BringToFront` draws it on top (a picture of overlapping sprites).
 - **`gubasic_player`:** the punctuation keys from the window reach `IsDown` and `WasPressed`.
 - **The IDE:** an integration test (Windows and macOS in CI) that plays a round in the IDE's own window with keys from the test, and keeps a picture (D119).
-- **The web:** `tool/web_check/duel.mjs` (Playwright) plays the built web player's Duel with the keyboard, including `.` and `/`.
+- **The web:** `tool/web_check/duel.mjs` (Playwright) plays the built web player's Duel with the keyboard, including `.` and `/`; then again with the keys a browser sends while a Korean input method is on (through the DevTools protocol: `key` a Korean letter or `Process`, `keyCode` 229, `code` the key's place), which must act the same. A browser in headless mode cannot turn on a real input method; the author checks it once by hand with the Korean input on.
 - **Speed:** measured once as STAGE2_PLAN §7 measures the Shooter (benchmark 7).
-- **By hand:** the author plays it with someone on the Mac and on Windows, for the feel of the keys.
+- **By hand:** the author plays it with someone on the Mac and on Windows, for the feel of the keys; and on a laptop keyboard, both players holding three or more keys at once (walk, crouch or jump, and an attack), with the training view on to see that every key held shows. Whether a keyboard reports many keys at once is its hardware (key rollover), so it cannot be checked by keys a program sends; if a common combination is lost, the default keys are changed.
 
 ## 6. Questions for the author
 
@@ -125,3 +128,12 @@ No new diagnostics. `WasPressed` of a number that is no key answers `False`, as 
 5. **The punctuation keys.** Recommended: add the eleven of §2.4 with .NET's names and numbers, so that the second player can use `.` and `/`. Alternative: player 2 on the numeric pad, which laptops lack.
 6. **A computer opponent.** Recommended: **yes, a simple one**, chosen with a "1 player / 2 players" choice on the start screen, so that one person can try the example: it walks toward the other, attacks when in reach and blocks now and then, about 40 lines of the same state machine. Alternative: two players only, and the computer opponent later.
 7. **Order of the work.** Recommended, each merged on its own with its parity programs: (a) the punctuation keys and `WasPressed`; (b) `FlipX`; (c) `BringToFront` and `SendToBack`; (d) the Duel example with its assets, the web check, the integration test and the documents; then the speed measured.
+
+## 7. The author's answers (2026-11-10)
+
+- **Q1, Q4, Q6, Q7 as recommended.** Q6 with a shape: each fighter takes an **input bundle** (forward, back, jump, crouch, punch, kick, block), and a person and the computer fill the same bundle (§2.5).
+- **Q2 as recommended**, and the documents say what it flips about: the sprite's own vertical middle line, its place and size unchanged (§2.1). In Duel the hitbox moves with the facing.
+- **Q3 as recommended**, with **`Keyboard.ClearPressed()`** to forget the presses not yet asked, and the presses forgotten by themselves when the form in front changes (§2.2).
+- **Q5 as recommended**, with the web reading the browser's `event.code`, so that the keys work while a Korean input method is on; the web check tries it in that state too (§2.4, §5).
+- **Duel gets a key that shows the hitboxes and hurtboxes as coloured boxes** (`B`, the training view, §2.5).
+- **Check on a real laptop keyboard** that two players holding three or more keys at once lose none (§5, by hand, since only the hardware can tell).

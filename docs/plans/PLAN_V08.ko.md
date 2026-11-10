@@ -2,7 +2,7 @@
 
 [English](PLAN_V08.md)
 
-2026-11-10에 [PLAN_TEMPLATE.ko.md](../PLAN_TEMPLATE.ko.md)대로 썼습니다. 6절의 질문에 작성자가 답하기 전에는 아무 작업도 시작하지 않습니다.
+2026-11-10에 [PLAN_TEMPLATE.ko.md](../PLAN_TEMPLATE.ko.md)대로 썼습니다. 작성자의 답은 7절(D139)에 있고, 위의 절들은 답대로 고쳐 썼습니다.
 
 ## 1. 무엇을, 왜
 
@@ -39,9 +39,9 @@ End Sub
 
 | 멤버 | 무엇 |
 |---|---|
-| `FlipX` (`Boolean`, 처음 `False`) | 프레임을 같은 자리, 같은 크기로 좌우를 뒤집어 그립니다. `"Pixels"`의 `Hits`는 뒤집힌 픽셀을 씁니다. `"Rectangle"`과 `"Circle"`은 어느 쪽이든 같습니다. |
+| `FlipX` (`Boolean`, 처음 `False`) | 프레임을 스프라이트 자신의 세로 가운데 줄을 기준으로, 같은 자리와 같은 크기로 좌우를 뒤집어 그립니다. `X`, `Left`, `Width`는 바뀌지 않고, 왼쪽 끝에 있던 것이 오른쪽 끝에 옵니다. `"Pixels"`의 `Hits`는 뒤집힌 픽셀을 씁니다. `"Rectangle"`과 `"Circle"`은 어느 쪽이든 같습니다. |
 
-좌우만 뒤집습니다. 선수, 걷는 사람, 우주선이 돌아서는 데 쓰입니다. 위아래(`FlipY`)와 회전(`Angle`)은 KNOWN_ISSUES에 남습니다. 디자이너의 속성 창에는 `Visible`처럼 체크 상자로 보입니다.
+그래서 선수를 돌려세우는 프로그램은 다른 것을 바꾸지 않아도 됩니다. 주먹의 히트박스를 어디에 둘지처럼 바라보는 방향에 따르는 것은 프로그램이 직접 놓습니다(Duel 예제는 히트박스를 선수가 바라보는 쪽 앞에 둡니다). 좌우만 뒤집습니다. 선수, 걷는 사람, 우주선이 돌아서는 데 쓰입니다. 위아래(`FlipY`)와 회전(`Angle`)은 KNOWN_ISSUES에 남습니다. 디자이너의 속성 창에는 `Visible`처럼 체크 상자로 보입니다.
 
 ### 2.2 `Keyboard.WasPressed(key)`
 
@@ -49,7 +49,7 @@ End Sub
 |---|---|
 | `Keyboard.WasPressed(key)` → `Boolean` | 프로그램이 그 키의 `WasPressed`를 마지막으로 물은 뒤(처음이면 프로그램 시작 뒤) `key`가 눌렸는지. 누르고 있는 키도, 시스템의 키 반복도 다시 세지 않고, 두 틱 사이에 눌렀다 뗀 것은 한 번 셉니다. |
 
-`IsDown`은 그대로 "지금 누르고 있나"(걷기, 막기)이고, `WasPressed`는 "눌렸나"(공격, 점프, 메뉴 고르기)입니다. 한 키에 대해 눌림 한 번에 한 번 답합니다. 같은 키를 두 곳에서 물으면 둘이 나눠 가지며, 참조가 이것을 말합니다. 창이 포커스를 잃거나 대화 상자가 열려 있는 동안에는 아무것도 눌리지 않습니다. 폰에서는 `IsDown`처럼 늘 `False`입니다.
+`IsDown`은 그대로 "지금 누르고 있나"(걷기, 막기)이고, `WasPressed`는 "눌렸나"(공격, 점프, 메뉴 고르기)입니다. 한 키에 대해 눌림 한 번에 한 번 답합니다. 같은 키를 두 곳에서 물으면 둘이 나눠 가지며, 참조가 이것을 말합니다. **`Keyboard.ClearPressed()`** 는 아직 묻지 않은 눌림을 모두 잊어서, 앞에서(제목 화면, 멈춤 동안) 누른 것이 나중에 작동하지 않게 합니다. 창이 포커스를 잃을 때, 대화 상자가 열릴 때, 앞의 폼이 바뀔 때(`Show`, `ShowDialog`, `Hide`, `Close`로 다른 폼이 앞에 올 때)도 저절로 잊습니다. 폰에서 `WasPressed`는 `IsDown`처럼 늘 `False`입니다.
 
 ### 2.3 `BringToFront()`와 `SendToBack()`
 
@@ -62,17 +62,20 @@ Visual Basic .NET의 이름입니다([Microsoft: Control.BringToFront](https://l
 
 ### 2.4 문장 부호 키
 
-`Keys.Oemcomma`, `Keys.OemPeriod`, `Keys.OemQuestion`, `Keys.OemSemicolon`, `Keys.OemQuotes`, `Keys.OemMinus`, `Keys.Oemplus`, `Keys.OemOpenBrackets`, `Keys.OemCloseBrackets`, `Keys.OemPipe`, `Keys.Oemtilde`. Visual Basic .NET의 이름과 번호입니다(188, 190, 191, 186, 222, 189, 187, 219, 221, 220, 192. [Microsoft: Keys](https://learn.microsoft.com/en-us/dotnet/api/system.windows.forms.keys)). .NET처럼 미국 키보드에서의 자리이고, 다른 배열에서는 같은 자리에 다른 글자가 찍혀 있으며 참조가 이것을 말합니다. 다른 키처럼 `KeyDown`과 `KeyUp`을 일으키고, `IsDown`과 `WasPressed`가 답합니다.
+`Keys.Oemcomma`, `Keys.OemPeriod`, `Keys.OemQuestion`, `Keys.OemSemicolon`, `Keys.OemQuotes`, `Keys.OemMinus`, `Keys.Oemplus`, `Keys.OemOpenBrackets`, `Keys.OemCloseBrackets`, `Keys.OemPipe`, `Keys.Oemtilde`. Visual Basic .NET의 이름과 번호입니다(188, 190, 191, 186, 222, 189, 187, 219, 221, 220, 192. [Microsoft: Keys](https://learn.microsoft.com/en-us/dotnet/api/system.windows.forms.keys)). 글자와 숫자가 이미 그렇듯(D138) 키의 자리로 읽습니다: 배열이 무엇이든, 입력기가 무엇을 하든 미국 키보드에서의 자리입니다. 웹에서는 브라우저의 `event.code`([UI Events KeyboardEvent code values](https://www.w3.org/TR/uievents-code/))이므로, `event.key`가 한글 글자나 `Process`가 되는 한글 입력 상태에서도 키가 작동합니다. 데스크톱에서는 키의 물리 코드입니다. 다른 배열에서는 같은 자리에 다른 기호가 찍혀 있으며 참조가 이것을 말합니다. 다른 키처럼 `KeyDown`과 `KeyUp`을 일으키고, `IsDown`과 `WasPressed`가 답합니다.
 
 ### 2.5 Duel 예제
 
 `examples/duel`, 640×400 폼 하나.
 
 - **키.** 1P: `A` `D` 걷기, `W` 점프, `S` 앉기, `F` 주먹, `G` 발차기. 2P: `←` `→` 걷기, `↑` 점프, `↓` 앉기, `.` 주먹, `/` 발차기. 뒤로(상대 반대쪽으로) 누르고 있으면 막습니다. 두 묶음 모두 `IsDown`과 `WasPressed`로 읽으므로 함께 쓸 수 있습니다.
+- **입력 묶음.** 선수는 `Structure Inputs`(`Forward`, `Back`, `Jump`, `Crouch`, `Punch`, `Kick`, `Block`)로 움직이고, 묶음은 선수가 움직이기 전에 틱마다 채웁니다. 사람은 키로(앞·뒤는 바라보는 방향으로 셈하고, 막기는 뒤로 누르고 있음에서), 컴퓨터는 몇 가지 규칙으로 채웁니다. 선수의 상태 기계는 묶음만 읽으므로 사람과 컴퓨터가 같은 규칙으로 싸웁니다.
+- **1인 또는 2인.** 시작 화면에서 고릅니다. 1인이면 컴퓨터가 2P의 묶음을 채웁니다: 상대에게 걸어가고, 닿으면 공격하고, 가끔 막습니다.
 - **Timer 하나가 루프**(16 ms)이고 `Milliseconds()`를 씁니다: 키를 읽고, 선수마다 상태 기계를 돌리고, 움직이고, 상자를 놓고, 맞음을 검사하고, 체력 바, 시계, 라운드.
 - **두 선수에 한 루틴:** 0과 1로 찾는 배열(`state(1)`, `health(1)`, `facing(1)`, …)과 배열에 든 스프라이트로, 같은 코드가 둘을 움직입니다.
 - **표로 된 프레임 데이터:** `Structure Attack`에 `Startup`, `Active`, `Recovery`(밀리초), `Damage`, 히트박스의 `Reach`와 `Height`, `Frames`. 주먹과 발차기, 앉으면 낮게.
-- **상자:** 선수마다 프레임 없는 허트박스 스프라이트와 히트박스 스프라이트. "상자 보기"(CheckBox)를 켜면 반투명 그림을 줍니다.
+- **상자:** 선수마다 프레임 없는 허트박스 스프라이트와 히트박스 스프라이트. 히트박스는 선수가 바라보는 쪽 앞에 놓이므로, 선수가 돌아서면 반대쪽으로 옮겨 갑니다.
+- **훈련 보기, `B` 키:** 허트박스를 파란 상자로, 맞히는 중인 히트박스를 빨간 상자로 그리고(상자 스프라이트에 반투명 그림을 줌), 선수마다 채워지는 입력 묶음을 격투 게임의 훈련 모드처럼 보입니다. 두 사람이 한꺼번에 누른 키를 키보드가 모두 알리는지 확인하는 방법이기도 합니다.
 - **맞음:** 80 ms 히트 스톱(아무것도 움직이지 않음), 밀려남, 체력 감소, 소리. 막으면 덜 밀리고 다른 소리가 나며 체력은 줄지 않습니다.
 - **라운드:** 60초. KO나 시계가 라운드를 끝내고, 두 라운드를 이기면 승리. 시작 버튼이 시작하고 다시 시작합니다.
 - **그림과 소리**는 Shooter처럼 도구 스크립트가 만듭니다(`apps/ide/tool/draw_duel_assets.dart`): 두 색의 단순한 도형, 선수마다 오른쪽을 보는 프레임 한 묶음, 합성한 WAV 소리.
@@ -108,13 +111,13 @@ Visual Basic .NET의 이름입니다([Microsoft: Control.BringToFront](https://l
 
 ## 5. 테스트
 
-- **동일성 프로그램**(`test/parity/`, VM, Chrome, 실행 창): `keyboard_waspressed`(눌림은 한 번, 누르고 있음과 반복은 세지 않음, 두 키 한꺼번에, 대화 상자가 지움, 한 키를 두 번 물음); `keys_punctuation`(새 `Keys` 값의 숫자와 `KeyDown`); `sprite_flip`(좌우가 같지 않은 그림으로 픽셀 `Hits`, 뒤집었을 때와 아닐 때); `sprite_order`(`BringToFront`와 `SendToBack`, 바뀌지 않는 `Me.Controls`); `duel_example`(예제를 키, `Wait`, 틱 대본으로 맞음, 막음, KO, 라운드까지).
+- **동일성 프로그램**(`test/parity/`, VM, Chrome, 실행 창): `keyboard_waspressed`(눌림은 한 번, 누르고 있음과 반복은 세지 않음, 두 키 한꺼번에, 한 키를 두 번 물음; `ClearPressed`; 대화 상자와 폼 바뀜이 지움); `keys_punctuation`(새 `Keys` 값의 숫자와 `KeyDown`); `sprite_flip`(좌우가 같지 않은 그림으로 픽셀 `Hits`, 뒤집었을 때와 아닐 때); `sprite_order`(`BringToFront`와 `SendToBack`, 바뀌지 않는 `Me.Controls`); `duel_example`(예제를 키, `Wait`, 틱 대본으로 맞음, 막음, KO, 라운드까지).
 - **`gubasic_runtime`:** 뒤집은 스프라이트의 픽셀이 화면과 마스크에서 거울처럼 되는지, `BringToFront`가 위에 그리는지(겹친 스프라이트 그림)의 위젯 테스트.
 - **`gubasic_player`:** 창에서 온 문장 부호 키가 `IsDown`과 `WasPressed`에 닿는지.
 - **IDE:** IDE 창 안에서 테스트가 보낸 키로 한 라운드를 하고 그림을 남기는 통합 테스트(CI의 Windows와 macOS, D119).
-- **웹:** `tool/web_check/duel.mjs`(Playwright)가 빌드한 웹 플레이어의 Duel을 `.`와 `/`까지 키보드로 합니다.
+- **웹:** `tool/web_check/duel.mjs`(Playwright)가 빌드한 웹 플레이어의 Duel을 `.`와 `/`까지 키보드로 합니다. 그리고 한글 입력 상태에서 브라우저가 보내는 키(DevTools 프로토콜로: `key`는 한글 글자나 `Process`, `keyCode` 229, `code`는 키의 자리)로 한 번 더 해서 똑같이 작동해야 합니다. 헤드리스 브라우저는 진짜 입력기를 켤 수 없으므로, 작성자가 한글 입력을 켠 채 손으로 한 번 확인합니다.
 - **속도:** STAGE2_PLAN 7절이 Shooter를 잰 방법으로 한 번(기준 프로그램 7).
-- **손으로:** 작성자가 맥과 Windows에서 다른 사람과 해 보고 키의 느낌을 봅니다.
+- **손으로:** 작성자가 맥과 Windows에서 다른 사람과 해 보고 키의 느낌을 봅니다. 그리고 노트북 키보드에서 두 사람이 각각 세 키 이상(걷기, 앉기나 점프, 공격)을 한꺼번에 누르고, 훈련 보기로 누른 키가 모두 보이는지 봅니다. 키보드가 여러 키를 한꺼번에 알리는지는 하드웨어(키 롤오버)의 일이라 프로그램이 보내는 키로는 확인할 수 없습니다. 흔한 조합이 빠지면 기본 키를 바꿉니다.
 
 ## 6. 작성자에게 묻는 것
 
@@ -125,3 +128,12 @@ Visual Basic .NET의 이름입니다([Microsoft: Control.BringToFront](https://l
 5. **문장 부호 키.** 권장: 2.4절의 열한 개를 .NET의 이름과 번호로 더해서 2P가 `.`와 `/`를 쓰게 함. 다른 길: 2P를 숫자 패드에 두기(노트북에는 없음).
 6. **컴퓨터 상대.** 권장: **예, 단순한 것으로**. 시작 화면에서 "1인 / 2인"을 골라 혼자서도 예제를 해 볼 수 있게 합니다. 상대에게 걸어가고, 닿으면 공격하고, 가끔 막는 정도로 같은 상태 기계 40줄쯤입니다. 다른 길: 두 사람만, 컴퓨터 상대는 나중에.
 7. **작업 순서.** 권장, 각각 동일성 프로그램과 함께 따로 병합: (a) 문장 부호 키와 `WasPressed`; (b) `FlipX`; (c) `BringToFront`와 `SendToBack`; (d) Duel 예제와 그림·소리, 웹 확인, 통합 테스트, 문서; 그다음 속도 측정.
+
+## 7. 작성자의 답(2026-11-10)
+
+- **Q1, Q4, Q6, Q7은 권장대로.** Q6은 모양을 정함: 선수는 **입력 묶음**(앞, 뒤, 점프, 앉기, 주먹, 발차기, 막기)을 받고, 사람과 컴퓨터가 같은 묶음을 채웁니다(2.5절).
+- **Q2는 권장대로**, 무엇을 기준으로 뒤집는지 문서에 정함: 스프라이트 자신의 세로 가운데 줄, 자리와 크기는 그대로(2.1절). Duel에서 히트박스는 바라보는 방향을 따라 옮겨 갑니다.
+- **Q3은 권장한 뜻대로**, 아직 묻지 않은 눌림을 잊는 **`Keyboard.ClearPressed()`** 를 함께 두고, 앞의 폼이 바뀔 때도 저절로 잊습니다(2.2절).
+- **Q5는 권장대로**, 웹은 브라우저의 `event.code`로 읽어 한글 입력 상태에서도 작동하게 하고, 웹 확인에서 그 상태로도 시험합니다(2.4절, 5절).
+- **Duel에 히트박스와 허트박스를 색 상자로 보이는 키를 둡니다**(`B`, 훈련 보기, 2.5절).
+- **실제 노트북 키보드에서** 두 사람이 세 키 이상 한꺼번에 눌러도 빠지지 않는지 확인합니다(5절, 손으로. 하드웨어만 알 수 있으므로).
