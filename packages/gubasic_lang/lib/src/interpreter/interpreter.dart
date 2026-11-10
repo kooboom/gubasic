@@ -432,14 +432,19 @@ class Interpreter {
   /// form gets it only when its KeyPreview is True. Like a click it waits
   /// for the running handler, does not re-enter, and is blocked while a
   /// dialog is open.
+  /// [repeat]: a KeyDown the system repeats while the key is held.
   EventOutcome raiseKey(String event, GbKeyEvent key,
-      {String? form, bool inTextBox = false}) {
+      {String? form, bool inTextBox = false, bool repeat = false}) {
     // What Keyboard.IsDown answers (D138): every key that goes down or up
     // while the program runs and no dialog is open, whether or not a
-    // handler runs, and in a TextBox too.
+    // handler runs, and in a TextBox too. A press is a key going down
+    // that was up, and not the system's repeat: what WasPressed answers
+    // (D139).
     if (_formRun != null && _ended == null && _openDialogs == 0) {
       if (event == 'KeyDown') {
-        _keysDown.add(key.keyCode);
+        if (_keysDown.add(key.keyCode) && !repeat) {
+          _keysPressed.add(key.keyCode);
+        }
       } else {
         _keysDown.remove(key.keyCode);
       }
@@ -461,9 +466,20 @@ class Interpreter {
   /// The keys down right now, by their Keys number (D138).
   final _keysDown = <int>{};
 
+  /// The keys pressed and not yet asked of `Keyboard.WasPressed` (D139).
+  final _keysPressed = <int>{};
+
   /// All keys are let go: the window lost the focus, or a dialog opened
-  /// (D138), so that none stays held in `Keyboard.IsDown`.
-  void releaseKeys() => _keysDown.clear();
+  /// (D138), so that none stays held in `Keyboard.IsDown`, and no press
+  /// waits for `Keyboard.WasPressed` (D139).
+  void releaseKeys() {
+    _keysDown.clear();
+    _keysPressed.clear();
+  }
+
+  /// The form in front when [_showForms] last told the host; a change
+  /// forgets the presses not yet asked (D139).
+  _FormRun? _toldFront;
 
   /// The user presses or lets go a mouse button on [control] (null: the
   /// form) of the form in front (D111): its MouseDown or MouseUp, told
@@ -584,11 +600,17 @@ class Interpreter {
     return done.future;
   }
 
-  /// Tells the host which forms are shown.
-  void _showForms() => _formHost.showForms([
-        for (final f in _shown)
-          ShownForm(f.name, dialog: _shownAsDialog.contains(f)),
-      ]);
+  /// Tells the host which forms are shown. When another form has come to
+  /// the front, the presses meant for the one before are forgotten
+  /// (D139).
+  void _showForms() {
+    if (_toldFront != null && _toldFront != _front) _keysPressed.clear();
+    _toldFront = _front;
+    _formHost.showForms([
+      for (final f in _shown)
+        ShownForm(f.name, dialog: _shownAsDialog.contains(f)),
+    ]);
+  }
 
   /// `Show`: puts [form] in front (D88). A form shown already comes to the
   /// front; one not loaded starts (again after Close: its variables and
@@ -3311,6 +3333,14 @@ class Interpreter {
       case _BuiltinObject(name: 'Keys'):
         return GbInt.of(keyCodesByLowerName[name]!.$2);
       case _BuiltinObject(name: 'Keyboard'):
+        switch (name) {
+          // WasPressed(key): pressed since last asked of it (D139).
+          case 'waspressed':
+            return _keysPressed.remove((args[0] as GbInt).toSmallInt());
+          case 'clearpressed':
+            _keysPressed.clear();
+            return null;
+        }
         // IsDown(key) (D138).
         return _keysDown.contains((args[0] as GbInt).toSmallInt());
       case _BuiltinObject(name: 'File'):

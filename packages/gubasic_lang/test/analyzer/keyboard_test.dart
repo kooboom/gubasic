@@ -1,7 +1,8 @@
 import 'package:gubasic_lang/gubasic_lang.dart';
 import 'package:test/test.dart';
 
-/// `Keyboard.IsDown` and the keys it alone knows (docs/DESIGN.md D138).
+/// `Keyboard.IsDown` and the keys it alone knows (docs/DESIGN.md D138);
+/// `WasPressed`, `ClearPressed` and the punctuation keys (D139).
 void main() {
   test('Keyboard.IsDown takes a Keys value and gives a Boolean', () {
     final program = compile('''
@@ -51,5 +52,47 @@ End Sub
         d.last.message,
         'GuBASIC has no Declare (Sleep): what is outside the language comes '
         'in as a component.');
+  });
+
+  test('WasPressed gives a Boolean, ClearPressed is a statement', () {
+    final program = compile('''
+Sub Main()
+    Dim punch As Boolean = Keyboard.WasPressed(Keys.OemPeriod)
+    If Keyboard.WasPressed(Keys.F) Or punch Then Debug.Print("punch")
+    Keyboard.ClearPressed()
+End Sub
+''');
+    expect(program.diagnostics, isEmpty);
+  });
+
+  test('ClearPressed gives no value', () {
+    expect(compile('''
+Sub Main()
+    Debug.Print(Keyboard.ClearPressed())
+End Sub
+''').diagnostics, isNotEmpty);
+  });
+
+  test("the punctuation keys have Visual Basic .NET's names and numbers", () {
+    expect({
+      for (final name in [
+        'OemSemicolon', 'Oemplus', 'Oemcomma', 'OemMinus', 'OemPeriod', //
+        'OemQuestion', 'Oemtilde', 'OemOpenBrackets', 'OemPipe',
+        'OemCloseBrackets', 'OemQuotes',
+      ])
+        name: keyCodes[name],
+    }, {
+      'OemSemicolon': 186,
+      'Oemplus': 187,
+      'Oemcomma': 188,
+      'OemMinus': 189,
+      'OemPeriod': 190,
+      'OemQuestion': 191,
+      'Oemtilde': 192,
+      'OemOpenBrackets': 219,
+      'OemPipe': 220,
+      'OemCloseBrackets': 221,
+      'OemQuotes': 222,
+    });
   });
 }

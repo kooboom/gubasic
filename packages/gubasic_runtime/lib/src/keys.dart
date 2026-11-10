@@ -5,8 +5,10 @@ import 'package:flutter/services.dart';
 /// apart. Shift, Control and Alt are told as 16, 17 and 18 (`Keys.ShiftKey`,
 /// `Keys.ControlKey`, `Keys.Menu`), which raise no event of their own but
 /// which `Keyboard.IsDown` knows (D138). The numbers are the Windows
-/// virtual-key codes, as Visual Basic .NET's Keys are. Letters and digits are read by where they are on the
-/// keyboard, so that an input method (Korean) does not change them.
+/// virtual-key codes, as Visual Basic .NET's Keys are. Letters, digits and
+/// the punctuation keys are read by where they are on the keyboard (on
+/// the web the browser's `event.code`), so that an input method (Korean)
+/// does not change them (D138, D139).
 int? gbKeyCode(KeyEvent event) {
   final physical = event.physicalKey;
   final letter = _letters.indexOf(physical);
@@ -15,6 +17,8 @@ int? gbKeyCode(KeyEvent event) {
   if (digit >= 0) return 48 + digit;
   final pad = _numPad.indexOf(physical);
   if (pad >= 0) return 96 + pad;
+  final punctuation = _punctuation[physical];
+  if (punctuation != null) return punctuation;
   final key = event.logicalKey;
   final f = _functionKeys.indexOf(key);
   if (f >= 0) return 112 + f;
@@ -114,4 +118,20 @@ final _others = {
   LogicalKeyboardKey.arrowDown: 40,
   LogicalKeyboardKey.insert: 45,
   LogicalKeyboardKey.delete: 46,
+};
+
+/// The punctuation keys by their place, with .NET's Keys numbers (D139):
+/// `Keys.OemPeriod` is 190.
+final _punctuation = {
+  PhysicalKeyboardKey.semicolon: 186,
+  PhysicalKeyboardKey.equal: 187,
+  PhysicalKeyboardKey.comma: 188,
+  PhysicalKeyboardKey.minus: 189,
+  PhysicalKeyboardKey.period: 190,
+  PhysicalKeyboardKey.slash: 191,
+  PhysicalKeyboardKey.backquote: 192,
+  PhysicalKeyboardKey.bracketLeft: 219,
+  PhysicalKeyboardKey.backslash: 220,
+  PhysicalKeyboardKey.bracketRight: 221,
+  PhysicalKeyboardKey.quote: 222,
 };

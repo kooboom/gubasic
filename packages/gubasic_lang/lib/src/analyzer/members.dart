@@ -309,6 +309,10 @@ Map<String, MemberSpec> _builtinObjectMembers(String name) => switch (name) {
       'Keyboard' => {
           'isdown':
               MemberSpec.method('IsDown', [const ParamSpec('key', _i)], _b),
+          // Pressed since last asked of that key; forgetting them (D139).
+          'waspressed':
+              MemberSpec.method('WasPressed', [const ParamSpec('key', _i)], _b),
+          'clearpressed': MemberSpec.method('ClearPressed', [], _v),
         },
       // The mouse's buttons (D111): MouseButtons.Left is 1048576.
       'MouseButtons' => {

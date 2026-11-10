@@ -1,0 +1,4 @@
+' The other form: going back to Form1 brings it to the front again.
+Sub btnBack_Click()
+    Me.Hide
+End Sub

@@ -135,11 +135,13 @@ class RunHost implements FormHost, FileHost, ComponentHost {
           required control,
           required alt,
           required inTextBox,
+          required repeat,
         }) => lastOutcome = interpreter.raiseKey(
           event,
           GbKeyEvent(keyCode, shift: shift, control: control, alt: alt),
           form: form.name,
           inTextBox: inTextBox,
+          repeat: repeat,
         ),
     onKeysReleased: () => interpreter.releaseKeys(),
     onMouse: (control, event, button, x, y) =>

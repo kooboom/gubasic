@@ -1,0 +1,5 @@
+formatVersion: 1
+properties:
+  Caption: Other
+controls:
+  - { name: btnBack, type: Button, properties: { Caption: Back } }

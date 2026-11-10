@@ -1,0 +1,7 @@
+formatVersion: 1
+controls:
+  - { name: btnTwice, type: Button, properties: { Caption: Twice } }
+  - { name: btnClear, type: Button, properties: { Caption: Clear, Top: 30 } }
+  - { name: btnAsk, type: Button, properties: { Caption: Ask, Top: 60 } }
+  - { name: btnOther, type: Button, properties: { Caption: Other, Top: 90 } }
+  - { name: tmrGame, type: Timer, properties: { Interval: 16, Enabled: true } }

@@ -1,0 +1,9 @@
+Form.KeyDown OemPeriod
+Form.KeyDown OemQuestion
+tmrGame.Tick              ' both held at once
+Form.KeyUp OemPeriod
+Form.KeyDown Oemcomma
+tmrGame.Tick
+Form.KeyUp OemQuestion
+Form.KeyUp Oemcomma
+Close

@@ -1,0 +1,29 @@
+' Keyboard.WasPressed (D139): whether a key went down since the program
+' last asked it of that key. Held, or repeated by the system, it does not
+' count again; a tap between two ticks counts once. Keyboard.ClearPressed
+' forgets the presses not yet asked, and they are forgotten by themselves
+' when a dialog opens or another form comes to the front.
+Sub tmrGame_Tick()
+    Dim got As String = ""
+    If Keyboard.WasPressed(Keys.F) Then got = got & "F "
+    If Keyboard.WasPressed(Keys.G) Then got = got & "G "
+    If Keyboard.WasPressed(Keys.OemPeriod) Then got = got & "Period "
+    Debug.Print("Pressed: " & got & "| F held: " & Keyboard.IsDown(Keys.F))
+End Sub
+
+' Asked twice of one key, it answers once per press.
+Sub btnTwice_Click()
+    Debug.Print("F: " & Keyboard.WasPressed(Keys.F) & ", again: " & Keyboard.WasPressed(Keys.F))
+End Sub
+
+Sub btnClear_Click()
+    Keyboard.ClearPressed()
+End Sub
+
+Sub btnAsk_Click()
+    MsgBox("A press made before this is forgotten")
+End Sub
+
+Sub btnOther_Click()
+    Form2.Show
+End Sub

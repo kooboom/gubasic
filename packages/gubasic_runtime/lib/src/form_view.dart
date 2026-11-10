@@ -86,6 +86,8 @@ class _GbFormViewState extends State<GbFormView> with WidgetsBindingObserver {
       control: keyboard.isControlPressed,
       alt: keyboard.isAltPressed,
       inTextBox: inTextBox,
+      // The system repeating a held key: not a press (D139).
+      repeat: event is KeyRepeatEvent,
     );
     return KeyEventResult.ignored;
   }

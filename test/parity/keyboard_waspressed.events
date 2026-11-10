@@ -1,0 +1,32 @@
+tmrGame.Tick              ' nothing pressed
+Form.KeyDown F
+tmrGame.Tick              ' F, once
+tmrGame.Tick              ' held: not again
+Form.KeyDown F            ' the system's repeat, a KeyDown while held: not again
+tmrGame.Tick
+Form.KeyUp F
+Form.KeyDown F
+Form.KeyUp F              ' a tap between two ticks counts once
+Form.KeyDown G
+Form.KeyDown OemPeriod
+tmrGame.Tick              ' F, G and the period at once
+Form.KeyUp G
+Form.KeyUp OemPeriod
+Form.KeyDown F
+Form.KeyUp F
+btnTwice.Click            ' asked twice: True, then False
+Form.KeyDown G
+Form.KeyUp G
+btnClear.Click            ' ClearPressed forgets G
+tmrGame.Tick
+Form.KeyDown F
+Form.KeyUp F
+btnAsk.Click              ' a MsgBox opens: F is forgotten
+OK
+tmrGame.Tick
+Form.KeyDown G
+Form.KeyUp G
+btnOther.Click            ' Form2 comes to the front: G is forgotten
+btnBack.Click             ' and Form1 again
+tmrGame.Tick
+Close

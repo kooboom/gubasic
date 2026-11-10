@@ -91,10 +91,23 @@
 - `Keys.F10 As Integer`
 - `Keys.F11 As Integer`
 - `Keys.F12 As Integer`
+- `Keys.OemSemicolon As Integer`
+- `Keys.Oemplus As Integer`
+- `Keys.Oemcomma As Integer`
+- `Keys.OemMinus As Integer`
+- `Keys.OemPeriod As Integer`
+- `Keys.OemQuestion As Integer`
+- `Keys.Oemtilde As Integer`
+- `Keys.OemOpenBrackets As Integer`
+- `Keys.OemPipe As Integer`
+- `Keys.OemCloseBrackets As Integer`
+- `Keys.OemQuotes As Integer`
 
 ### Keyboard
 
 - `Keyboard.IsDown(key As Integer) As Boolean`
+- `Keyboard.WasPressed(key As Integer) As Boolean`
+- `Keyboard.ClearPressed()`
 
 ### DialogResult
 

@@ -45,6 +45,7 @@ void main() {
       required control,
       required alt,
       required inTextBox,
+      required repeat,
     }) {},
   );
 

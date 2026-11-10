@@ -1,0 +1,18 @@
+Debug.Print: 186 187 188 189
+Debug.Print: 190 191 192 219
+Debug.Print: 220 221 222
+> Form.KeyDown OemPeriod
+Debug.Print: punch (.)
+> Form.KeyDown OemQuestion
+Debug.Print: kick (/)
+> tmrGame.Tick
+Debug.Print: period held: True, slash held: True
+> Form.KeyUp OemPeriod
+> Form.KeyDown Oemcomma
+Debug.Print: KeyDown 188
+> tmrGame.Tick
+Debug.Print: period held: False, slash held: True
+> Form.KeyUp OemQuestion
+> Form.KeyUp Oemcomma
+> Close
+Closed

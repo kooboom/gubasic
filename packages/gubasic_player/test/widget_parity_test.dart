@@ -736,6 +736,18 @@ class _WidgetDriver implements ScriptDriver {
       String.fromCharCode(65 + c): LogicalKeyboardKey(
         LogicalKeyboardKey.keyA.keyId + c,
       ),
+    // The punctuation keys (D139).
+    'OemSemicolon': LogicalKeyboardKey.semicolon,
+    'Oemplus': LogicalKeyboardKey.equal,
+    'Oemcomma': LogicalKeyboardKey.comma,
+    'OemMinus': LogicalKeyboardKey.minus,
+    'OemPeriod': LogicalKeyboardKey.period,
+    'OemQuestion': LogicalKeyboardKey.slash,
+    'Oemtilde': LogicalKeyboardKey.backquote,
+    'OemOpenBrackets': LogicalKeyboardKey.bracketLeft,
+    'OemPipe': LogicalKeyboardKey.backslash,
+    'OemCloseBrackets': LogicalKeyboardKey.bracketRight,
+    'OemQuotes': LogicalKeyboardKey.quote,
   };
 
   /// The keys held down since their KeyDown step: a KeyDown of one again

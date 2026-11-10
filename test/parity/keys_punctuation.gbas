@@ -1,0 +1,23 @@
+' The punctuation keys (D139), with Visual Basic .NET's names and
+' numbers: their places on a US keyboard, whatever is printed on them.
+' They raise KeyDown and KeyUp, and Keyboard.IsDown knows them.
+Sub Form_Load()
+    Debug.Print(Keys.OemSemicolon & " " & Keys.Oemplus & " " & Keys.Oemcomma & " " & Keys.OemMinus)
+    Debug.Print(Keys.OemPeriod & " " & Keys.OemQuestion & " " & Keys.Oemtilde & " " & Keys.OemOpenBrackets)
+    Debug.Print(Keys.OemPipe & " " & Keys.OemCloseBrackets & " " & Keys.OemQuotes)
+End Sub
+
+Sub Form_KeyDown(e As KeyEventArgs)
+    Select Case e.KeyCode
+        Case Keys.OemPeriod
+            Debug.Print("punch (.)")
+        Case Keys.OemQuestion
+            Debug.Print("kick (/)")
+        Case Else
+            Debug.Print("KeyDown " & e.KeyCode)
+    End Select
+End Sub
+
+Sub tmrGame_Tick()
+    Debug.Print("period held: " & Keyboard.IsDown(Keys.OemPeriod) & ", slash held: " & Keyboard.IsDown(Keys.OemQuestion))
+End Sub

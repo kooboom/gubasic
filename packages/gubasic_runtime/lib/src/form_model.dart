@@ -97,6 +97,7 @@ typedef GbKeySink = void Function(
   required bool control,
   required bool alt,
   required bool inTextBox,
+  required bool repeat,
 });
 
 /// The bytes of the project's picture [name] (PNG, JPEG or GIF), or null

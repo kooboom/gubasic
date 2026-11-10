@@ -1,0 +1,46 @@
+Forms: Form1
+> tmrGame.Tick
+Debug.Print: Pressed: | F held: False
+> Form.KeyDown F
+> tmrGame.Tick
+Debug.Print: Pressed: F | F held: True
+> tmrGame.Tick
+Debug.Print: Pressed: | F held: True
+> Form.KeyDown F
+> tmrGame.Tick
+Debug.Print: Pressed: | F held: True
+> Form.KeyUp F
+> Form.KeyDown F
+> Form.KeyUp F
+> Form.KeyDown G
+> Form.KeyDown OemPeriod
+> tmrGame.Tick
+Debug.Print: Pressed: F G Period | F held: False
+> Form.KeyUp G
+> Form.KeyUp OemPeriod
+> Form.KeyDown F
+> Form.KeyUp F
+> btnTwice.Click
+Debug.Print: F: True, again: False
+> Form.KeyDown G
+> Form.KeyUp G
+> btnClear.Click
+> tmrGame.Tick
+Debug.Print: Pressed: | F held: False
+> Form.KeyDown F
+> Form.KeyUp F
+> btnAsk.Click
+MsgBox: A press made before this is forgotten
+> OK
+> tmrGame.Tick
+Debug.Print: Pressed: | F held: False
+> Form.KeyDown G
+> Form.KeyUp G
+> btnOther.Click
+Forms: Form1 > Form2
+> btnBack.Click
+Forms: Form1
+> tmrGame.Tick
+Debug.Print: Pressed: | F held: False
+> Close
+Closed

@@ -5,7 +5,8 @@
 /// Shift, Control and Alt raise no event of their own: they are held
 /// with another key, as `e.Shift`, `e.Control` and `e.Alt` say; only
 /// `Keyboard.IsDown` knows them, as `Keys.ShiftKey`, `Keys.ControlKey`
-/// and `Keys.Menu` (D138).
+/// and `Keys.Menu` (D138). The punctuation keys (`Keys.OemPeriod`) are
+/// their places on a US keyboard, whatever is printed on them (D139).
 final Map<String, int> keyCodes = {
   'Back': 8,
   'Tab': 9,
@@ -29,6 +30,17 @@ final Map<String, int> keyCodes = {
   for (var c = 0; c < 26; c++) String.fromCharCode(65 + c): 65 + c,
   for (var d = 0; d <= 9; d++) 'NumPad$d': 96 + d,
   for (var f = 1; f <= 12; f++) 'F$f': 111 + f,
+  'OemSemicolon': 186,
+  'Oemplus': 187,
+  'Oemcomma': 188,
+  'OemMinus': 189,
+  'OemPeriod': 190,
+  'OemQuestion': 191,
+  'Oemtilde': 192,
+  'OemOpenBrackets': 219,
+  'OemPipe': 220,
+  'OemCloseBrackets': 221,
+  'OemQuotes': 222,
 };
 
 /// The keys that raise no KeyDown or KeyUp of their own (D101): Shift,
