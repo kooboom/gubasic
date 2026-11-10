@@ -26,10 +26,11 @@ SpriteShape? spriteShapeNamed(String text) {
 
 /// A Sprite as `Hits` and `DistanceTo` see it (D138): where it is, with
 /// fractions, its size, its shape, and the mask of its frame when the
-/// shape is [SpriteShape.pixels] (null: no opaque pixel at all).
+/// shape is [SpriteShape.pixels] (null: no opaque pixel at all), read
+/// mirrored left to right when [flipX] (D139).
 class SpriteBox {
   const SpriteBox(this.x, this.y, this.width, this.height, this.shape,
-      {this.mask});
+      {this.mask, this.flipX = false});
 
   final double x;
   final double y;
@@ -37,6 +38,9 @@ class SpriteBox {
   final int height;
   final SpriteShape shape;
   final PictureMask? mask;
+
+  /// Drawn mirrored about its own vertical middle line (D139).
+  final bool flipX;
 
   double get centerX => x + width / 2;
   double get centerY => y + height / 2;
@@ -58,8 +62,9 @@ class SpriteBox {
       case SpriteShape.pixels:
         final m = mask;
         if (m == null || width == 0 || height == 0) return false;
+        final mx = ((cx - x) * m.width / width).floor();
         return m.at(
-          ((cx - x) * m.width / width).floor(),
+          flipX ? m.width - 1 - mx : mx,
           ((cy - y) * m.height / height).floor(),
         );
     }

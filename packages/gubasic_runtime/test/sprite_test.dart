@@ -6,7 +6,7 @@ import 'package:gubasic_runtime/gubasic_runtime.dart';
 
 /// A Sprite (docs/DESIGN.md D138): the frame of its Frames that Frame
 /// names, drawn filling it; nothing without frames; its name outlined
-/// in the designer.
+/// in the designer; mirrored about its middle with FlipX (D139).
 void main() {
   // A 1 x 1 PNG, the smallest picture that decodes.
   final png = Uint8List.fromList([
@@ -75,5 +75,34 @@ void main() {
   test('the names in Frames', () {
     expect(gbFrameNames(' a.png , b.png,, '), ['a.png', 'b.png']);
     expect(gbFrameNames(''), isEmpty);
+  });
+
+  testWidgets('FlipX mirrors the frame about its middle, in the same place', (
+    tester,
+  ) async {
+    final state = sprite('ship.png', 0);
+    await pump(tester, state);
+    final before = tester.getRect(find.byType(GbSprite));
+    Matrix4 transform() => tester
+        .widget<Transform>(
+          find.ancestor(
+            of: find.byType(Image),
+            matching: find.byType(Transform),
+          ),
+        )
+        .transform;
+    expect(transform().isIdentity(), isTrue);
+    state.set('FlipX', true);
+    await tester.pump();
+    // x' = -x about the middle: a scale of -1 across, nothing else.
+    final m = transform();
+    expect(m.entry(0, 0), -1);
+    expect(m.entry(1, 1), 1);
+    expect(tester.getRect(find.byType(GbSprite)), before);
+    final image = tester.getRect(find.byType(Image));
+    expect(image, before, reason: 'the frame fills the same rectangle');
+    state.set('FlipX', false);
+    await tester.pump();
+    expect(transform().isIdentity(), isTrue);
   });
 }

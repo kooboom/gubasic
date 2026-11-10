@@ -7,7 +7,9 @@ import 'image.dart';
 /// pictures named in `Frames`, drawn filling the control, as an Image with
 /// `Stretch` is; what is behind shows through its transparent pixels. With
 /// no frames it is empty on a running form, and outlined with its name in
-/// the designer. Like an Image, it takes clicks over its whole area.
+/// the designer. Like an Image, it takes clicks over its whole area. With
+/// `FlipX` the frame is drawn mirrored about its own vertical middle line
+/// (D139).
 class GbSprite extends StatelessWidget {
   const GbSprite({super.key, required this.model, required this.state});
 
@@ -22,16 +24,21 @@ class GbSprite extends StatelessWidget {
       final index = state.integer('Frame');
       final name = index >= 0 && index < frames.length ? frames[index] : '';
       final bytes = name.isEmpty ? null : model.pictures(name);
+      // Mirrored about its own middle, in the same place (D139).
+      final flipX = state.has('FlipX') && state['FlipX'] == true;
       return GestureDetector(
         behavior: HitTestBehavior.opaque,
         onTap: () => model.raise(state.name, 'Click'),
         child: bytes != null
-            ? Image.memory(
-                bytes,
-                fit: BoxFit.fill,
-                // The next frame replaces the last without a blank frame.
-                gaplessPlayback: true,
-                errorBuilder: (context, _, _) => GbMissingPicture(name: name),
+            ? Transform.flip(
+                flipX: flipX,
+                child: Image.memory(
+                  bytes,
+                  fit: BoxFit.fill,
+                  // The next frame replaces the last without a blank frame.
+                  gaplessPlayback: true,
+                  errorBuilder: (context, _, _) => GbMissingPicture(name: name),
+                ),
               )
             : name.isNotEmpty
             ? GbMissingPicture(name: name)

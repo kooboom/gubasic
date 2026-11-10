@@ -1,0 +1,15 @@
+Debug.Print: FlipX at first: False
+Debug.Print: Facing right, fist on the right: hits False, X 0, Left 0, Width 20
+Set sprFighter.FlipX: True
+Debug.Print: Turned round, fist on the right: hits True, X 0, Left 0, Width 20
+Set sprFist.Left: 2
+Debug.Print: Turned round, fist on the left: hits False, X 0, Left 0, Width 20
+Set sprFighter.FlipX: False
+Debug.Print: Facing right, fist on the left: hits True, X 0, Left 0, Width 20
+Set sprFighter.Shape: Rectangle
+Set sprFist.Left: 14
+Set sprFighter.FlipX: True
+Debug.Print: Rectangle turned round: hits True, X 0, Left 0, Width 20
+Debug.Print: Distance 6
+> Close
+Closed

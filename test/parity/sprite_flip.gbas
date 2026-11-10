@@ -1,0 +1,28 @@
+' FlipX (D139): the frame drawn mirrored left to right about the
+' sprite's own vertical middle line, in the same place and size. Hits by
+' Pixels uses the mirrored pixels; Rectangle and Circle are the same
+' either way. The fighter's picture is opaque on its left half only
+' (sprite_flip.masks: 4 x 4, drawn at 20 x 20).
+Sub Say(what As String)
+    Debug.Print(what & ": hits " & sprFist.Hits(sprFighter) & _
+        ", X " & sprFighter.X & ", Left " & sprFighter.Left & ", Width " & sprFighter.Width)
+End Sub
+
+Sub Form_Load()
+    Debug.Print("FlipX at first: " & sprFighter.FlipX)
+    ' The fist at 14 to 18 is over the right half, which is clear.
+    Say("Facing right, fist on the right")
+    sprFighter.FlipX = True
+    Say("Turned round, fist on the right")
+    ' The fist at 2 to 6 is over the left half.
+    sprFist.X = 2
+    Say("Turned round, fist on the left")
+    sprFighter.FlipX = False
+    Say("Facing right, fist on the left")
+    ' A rectangle is the same either way.
+    sprFighter.Shape = "Rectangle"
+    sprFist.X = 14
+    sprFighter.FlipX = True
+    Say("Rectangle turned round")
+    Debug.Print("Distance " & sprFist.DistanceTo(sprFighter))
+End Sub

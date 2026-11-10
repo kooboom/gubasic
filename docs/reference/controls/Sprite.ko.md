@@ -16,6 +16,7 @@
 | `X` | Double | `0.0` | 실행 중에만 정함 |
 | `Y` | Double | `0.0` | 실행 중에만 정함 |
 | `Shape` | String | `"Rectangle"` |  |
+| `FlipX` | Boolean | `False` |  |
 | `SpeedX` | Double | `0.0` |  |
 | `SpeedY` | Double | `0.0` |  |
 | `Left` | Integer | `0` |  |

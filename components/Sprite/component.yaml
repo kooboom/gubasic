@@ -8,7 +8,8 @@
 # other controls, like an Image; what is behind shows through its
 # transparent pixels. Hits(other) says whether two sprites touch, by
 # their Shape: Rectangle, Circle or Pixels; DistanceTo(other) is the
-# distance between their centres.
+# distance between their centres. FlipX draws it mirrored left to
+# right about its middle (D139).
 name: Sprite
 version: 1
 visual: true
@@ -35,6 +36,11 @@ properties:
   # largest circle in it; Pixels, the pixels of its frame whose alpha is
   # 128 or more, scaled to its size.
   - { name: Shape, type: String, default: Rectangle }
+  # Drawn mirrored left to right about its own vertical middle line, in
+  # the same place and size (D139): a fighter turned round. Hits by
+  # Pixels uses the mirrored pixels. Draw the figure in the middle of its
+  # frames, so that it turns round on the spot.
+  - { name: FlipX, type: Boolean, default: false }
   # How fast Move moves it, in pixels a second.
   - { name: SpeedX, type: Double, default: 0 }
   - { name: SpeedY, type: Double, default: 0 }

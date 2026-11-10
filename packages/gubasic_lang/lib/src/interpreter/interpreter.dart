@@ -2128,7 +2128,8 @@ class Interpreter {
         _raw(c, 'Width') as int,
         _raw(c, 'Height') as int,
         spriteShapeNamed(_raw(c, 'Shape') as String)!,
-        mask: name == null ? null : _formHost.pictureMask(name));
+        mask: name == null ? null : _formHost.pictureMask(name),
+        flipX: _raw(c, 'FlipX') as bool);
   }
 
   /// A member of form [c] that is not its component's (D88): one of its

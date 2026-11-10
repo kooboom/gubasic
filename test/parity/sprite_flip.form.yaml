@@ -1,0 +1,4 @@
+formatVersion: 1
+controls:
+  - { name: sprFighter, type: Sprite, properties: { Frames: half.png, Shape: Pixels, Width: 20, Height: 20 } }
+  - { name: sprFist, type: Sprite, properties: { Left: 14, Top: 8, Width: 4, Height: 4 } }
