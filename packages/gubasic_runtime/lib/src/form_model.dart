@@ -23,10 +23,24 @@ enum GbControlKind {
 }
 
 /// The layer a control is drawn in, its component.yaml's `layer`
-/// (docs/DESIGN.md D41): [graphic] controls (Label) under all the others,
-/// whatever their order; within a layer, a later control is on top and
-/// takes the clicks where they overlap.
-enum GbLayer { graphic, control }
+/// (docs/DESIGN.md D41, D139): the [picture]s (Image, Sprite) under all
+/// the others, the [graphic] controls (Label) over them and under the
+/// rest, whatever their order; within a layer, a later control is on top
+/// and takes the clicks where they overlap. Among the pictures,
+/// `DrawOrder` (BringToFront, SendToBack) comes before the order.
+enum GbLayer { picture, graphic, control }
+
+/// [controls] by their `DrawOrder` (D139), the lowest first; those with
+/// the same, or none, keep their order. The pictures have one, which
+/// BringToFront and SendToBack change.
+List<GbControlState> gbByDrawOrder(List<GbControlState> controls) {
+  int order(GbControlState c) => c.has('DrawOrder') ? c['DrawOrder'] as int : 0;
+  final at = {for (final (i, c) in controls.indexed) c: i};
+  return controls..sort((a, b) {
+    final byOrder = order(a).compareTo(order(b));
+    return byOrder != 0 ? byOrder : at[a]!.compareTo(at[b]!);
+  });
+}
 
 /// One control's current properties: `Caption`, `Text`, `Left`, `Top`,
 /// `Width`, `Height`, named as in its component.yaml. Values are `int`,
@@ -183,8 +197,9 @@ class GbFormModel {
   static Uint8List? _noPictures(String name) => null;
 
   /// The controls on the form itself in the order they are drawn, the last
-  /// on top: the graphic layer first, each layer in the form file's order
-  /// (D41). Those in a Frame are drawn in it: [drawnIn].
+  /// on top: layer by layer, the pictures first, each layer in the form
+  /// file's order and the pictures by their `DrawOrder` before it (D41,
+  /// D139). Those in a Frame are drawn in it: [drawnIn].
   List<GbControlState> get drawingOrder => drawnIn(null);
 
   /// The Frames [state] is in, the innermost first (D105, D137).
@@ -208,15 +223,17 @@ class GbFormModel {
   }
 
   /// The controls in the Frame named [container] (null: on the form
-  /// itself), in the order they are drawn (D41, D105).
+  /// itself), in the order they are drawn (D41, D105, D139).
   List<GbControlState> drawnIn(String? container) =>
       (_drawingOrder ??= {})[container?.toLowerCase()] ??= List.unmodifiable([
         for (final layer in GbLayer.values)
-          for (final c in _controls)
-            if (c.layer == layer &&
-                c.kind != GbControlKind.menu &&
-                c.container?.toLowerCase() == container?.toLowerCase())
-              c,
+          ...gbByDrawOrder([
+            for (final c in _controls)
+              if (c.layer == layer &&
+                  c.kind != GbControlKind.menu &&
+                  c.container?.toLowerCase() == container?.toLowerCase())
+                c,
+          ]),
       ]);
   Map<String?, List<GbControlState>>? _drawingOrder;
 
@@ -311,6 +328,10 @@ class GbFormModel {
     c.set(property, value);
     if (identical(c, form)) {
       if (property == 'Width' || property == 'Height') _place();
+    } else if (property == 'DrawOrder') {
+      // BringToFront or SendToBack (D139): drawn in a new order.
+      _drawingOrder = null;
+      _layout.ping();
     } else if (_placing.contains(property) && _bases.containsKey(c)) {
       _bases[c] = _baseOf(c);
       // A Frame's new size moves the controls in it (D105).

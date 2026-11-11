@@ -33,6 +33,8 @@
 - `Move(ms As Integer)`
 - `Hits(other As Sprite) As Boolean`
 - `DistanceTo(other As Sprite) As Double`
+- `BringToFront()`
+- `SendToBack()`
 
 ## 이벤트
 

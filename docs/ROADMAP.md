@@ -125,7 +125,7 @@ Plan: [plans/PLAN_V08.md](plans/PLAN_V08.md) (2026-11-10; the answers are D139).
 
 - [x] The punctuation keys (`Keys.OemPeriod`, `Keys.OemQuestion`, …), read by the key's place, on the web by `event.code`; `Keyboard.WasPressed(key)` and `Keyboard.ClearPressed()` (D139)
 - [x] `Sprite.FlipX`: the frame mirrored about the sprite's middle (D139)
-- [ ] `BringToFront()` and `SendToBack()` on `Sprite` and `Image` (D139)
+- [x] `BringToFront()` and `SendToBack()` on `Sprite` and `Image`, the pictures a layer of their own under the Labels (D139)
 - [ ] Example: Duel, a fighting game for two on one keyboard or against the computer: fighters driven by an input bundle, frame data, hurtboxes and hitboxes with a training view, rounds (D139)
 
 ### After v0.6 (candidates, order recommended)

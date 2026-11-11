@@ -13,7 +13,7 @@
 name: Sprite
 version: 1
 visual: true
-layer: graphic
+layer: picture
 defaultEvent: Click
 properties:
   # The project's pictures it is drawn from, separated by commas:
@@ -59,6 +59,10 @@ properties:
   # Any text the program keeps with it, as in Visual Basic; GuBASIC does
   # nothing with it (D98).
   - { name: Tag, type: String, default: "" }
+  # Where it is drawn among the sprites and images of its place (D139):
+  # the higher in front, the form file's order between equal ones. Kept
+  # by BringToFront and SendToBack; 0 when the form starts.
+  - { name: DrawOrder, type: Integer, default: 0, internal: true }
 events:
   - Click()
   # A mouse button pressed and let go on it (D111).
@@ -73,6 +77,11 @@ methods:
   - Hits(other As Sprite) As Boolean
   # Between their centres.
   - DistanceTo(other As Sprite) As Double
+  # Drawn in front of every other sprite and image on its form, or in its
+  # Frame, or behind them all (D139); always under the other controls.
+  # Only the drawing changes: Hits and Me.Controls do not.
+  - BringToFront()
+  - SendToBack()
 # Names other versions of BASIC use, pointed to GuBASIC's (A036,
 # docs/DESIGN.md D50).
 otherNames:

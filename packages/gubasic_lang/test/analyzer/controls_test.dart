@@ -10,10 +10,10 @@ import 'package:test/test.dart';
 final _form = readFormFile('''
 formatVersion: 1
 controls:
-  - { name: btnA, type: Button }
-  - { name: btnB, type: Button }
-  - { name: lblShow, type: Label }
-  - { name: txtName, type: TextBox }
+  - { name: btnA, type: Button, properties: { Top: 0 } }
+  - { name: btnB, type: Button, properties: { Top: 40 } }
+  - { name: lblShow, type: Label, properties: { Top: 80 } }
+  - { name: txtName, type: TextBox, properties: { Top: 120 } }
 ''', name: 'Form1').form;
 
 List<String> _codes(String source) => [

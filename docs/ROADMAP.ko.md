@@ -125,7 +125,7 @@ IDE 안에서 완결되는 비주얼 베이직의 핵심 경험입니다.
 
 - [x] 문장 부호 키(`Keys.OemPeriod`, `Keys.OemQuestion`, …)를 키의 자리로, 웹에서는 `event.code`로 읽기; `Keyboard.WasPressed(key)`와 `Keyboard.ClearPressed()`(D139)
 - [x] `Sprite.FlipX`: 스프라이트 가운데를 기준으로 뒤집은 프레임(D139)
-- [ ] `Sprite`와 `Image`의 `BringToFront()`와 `SendToBack()`(D139)
+- [x] `Sprite`와 `Image`의 `BringToFront()`와 `SendToBack()`, Label 아래의 자기 층이 된 그림(D139)
 - [ ] 예제: Duel, 한 키보드에 둘이 또는 컴퓨터와 하는 격투 게임: 입력 묶음으로 움직이는 선수, 프레임 데이터, 훈련 보기가 있는 허트박스와 히트박스, 라운드(D139)
 
 ### v0.6 다음(후보, 권장 순서)

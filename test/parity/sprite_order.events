@@ -1,0 +1,32 @@
+' The form file's order: B over A, C under the Label, Big under the
+' button, In2 over In1.
+sprA.Click        ' Blocked: B covers its middle
+sprB.Click
+sprA.MouseDown Left 60 10
+sprA.MouseUp Left 60 90   ' let go away from it: no Click
+imgC.Click        ' Blocked: the Label is over it
+lblScore.Click
+sprBig.Click      ' Blocked: the button covers its middle
+btnGo.Click
+sprIn1.Click      ' Blocked
+sprIn2.Click
+btnAFront.Click
+sprA.Click
+sprB.Click        ' Blocked
+sprA.MouseDown Left 60 10
+sprA.MouseUp Left 60 90   ' let go away from it: no Click
+btnPictures.Click
+imgC.Click        ' still Blocked: a picture stays under the Label
+sprBig.Click      ' still Blocked: and under the button
+btnInside.Click
+sprIn1.Click
+sprIn2.Click      ' Blocked
+btnNew.Click
+sprA.Click        ' Blocked: the new sprite is over A and B
+sprB.Click        ' Blocked
+btnNewBack.Click
+sprA.Click
+btnABack.Click
+sprB.Click
+sprA.Click        ' Blocked
+Close

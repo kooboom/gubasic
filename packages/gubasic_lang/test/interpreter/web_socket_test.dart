@@ -8,8 +8,8 @@ import 'package:test/test.dart';
 final _form = readFormFile('''
 formatVersion: 1
 controls:
-  - { name: btnGo, type: Button }
-  - { name: btnOther, type: Button }
+  - { name: btnGo, type: Button, properties: { Top: 0 } }
+  - { name: btnOther, type: Button, properties: { Top: 40 } }
   - { name: wsChat, type: WebSocket }
 ''', name: 'Form1').form;
 

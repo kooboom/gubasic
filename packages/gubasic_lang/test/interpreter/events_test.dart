@@ -9,9 +9,9 @@ import 'fake_host.dart';
 final _form = readFormFile('''
 formatVersion: 1
 controls:
-  - { name: btnA, type: Button }
-  - { name: btnB, type: Button }
-  - { name: btnC, type: Button }
+  - { name: btnA, type: Button, properties: { Top: 0 } }
+  - { name: btnB, type: Button, properties: { Top: 40 } }
+  - { name: btnC, type: Button, properties: { Top: 80 } }
 ''', name: 'Form1').form;
 
 Interpreter _interpreter(String source, ScriptedHost host) {

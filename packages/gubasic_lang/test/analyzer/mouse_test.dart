@@ -7,9 +7,9 @@ import 'package:test/test.dart';
 final _form = readFormFile('''
 formatVersion: 1
 controls:
-  - { name: lblName, type: Label }
-  - { name: lblCity, type: Label }
-  - { name: btnOk, type: Button }
+  - { name: lblName, type: Label, properties: { Top: 0 } }
+  - { name: lblCity, type: Label, properties: { Top: 40 } }
+  - { name: btnOk, type: Button, properties: { Top: 80 } }
 ''', name: 'Form1').form;
 
 List<String> _codes(String source) => [
