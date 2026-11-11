@@ -24,7 +24,7 @@ void main() {
       GbControlState('sprShip', GbControlKind.sprite, {
         'Frames': frames, 'Frame': frame, 'Left': 10, 'Top': 20, //
         'Width': 64, 'Height': 64,
-      }, layer: GbLayer.graphic);
+      }, layer: GbLayer.picture);
 
   Future<GbFormModel> pump(
     WidgetTester tester,

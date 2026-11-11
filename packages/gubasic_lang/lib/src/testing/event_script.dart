@@ -954,6 +954,92 @@ class ScriptedHost implements FormHost, FileHost, ComponentHost, DatabaseFiles {
     _dialogs.clear();
   }
 
+  /// The control of the form in front drawn on top at ([x], [y]) on the
+  /// form, as the run window's pointer finds it (D41, D111, D139); null for
+  /// the form itself. Each control seen and Enabled takes the pointer over
+  /// its whole box, one in a Frame only inside the Frame; the others let
+  /// it through to what is under them.
+  String? controlAt(num x, num y) => _controlAt(front, null, x, y);
+
+  String? _controlAt(String form, String? frame, num x, num y) {
+    final prefix = '${form.toLowerCase()}.';
+    final layers = ComponentLayer.values;
+    final here = <(String, int, int, int)>[];
+    for (final MapEntry(:key, :value) in _components.entries) {
+      final spec = builtinComponents[value.toLowerCase()];
+      if (!key.startsWith(prefix) ||
+          spec == null ||
+          !spec.visual ||
+          _containers[key]?.toLowerCase() != frame?.toLowerCase()) {
+        continue;
+      }
+      final name = key.substring(prefix.length, key.length - 1);
+      final order = _properties[_key(form, name, 'DrawOrder')] as int? ?? 0;
+      here.add((name, layers.indexOf(spec.layer), order, here.length));
+    }
+    // From the top down: the last layer, the highest DrawOrder, the last.
+    here.sort((a, b) => a.$2 != b.$2
+        ? b.$2.compareTo(a.$2)
+        : a.$3 != b.$3
+            ? b.$3.compareTo(a.$3)
+            : b.$4.compareTo(a.$4));
+    for (final (name, _, _, _) in here) {
+      if (_properties[_key(form, name, 'Visible')] != true ||
+          _properties[_key(form, name, 'Enabled')] != true) {
+        continue;
+      }
+      final left = _int(form, name, 'Left'), top = _int(form, name, 'Top');
+      if (x < left ||
+          y < top ||
+          x >= left + _int(form, name, 'Width') ||
+          y >= top + _int(form, name, 'Height')) {
+        continue;
+      }
+      final spec =
+          builtinComponents[_components[_key(form, name, '')]!.toLowerCase()]!;
+      return (spec.container
+              ? _controlAt(form, name, x - left, y - top)
+              : null) ??
+          name;
+    }
+    return null;
+  }
+
+  /// Where [control] of the form in front is on the form: its top left
+  /// corner, through the Frames it is in (D105); (0, 0) for the form.
+  (int, int) originOf(String? control) {
+    var (x, y) = (0, 0);
+    for (var c = control; c != null; c = _containers[_key(front, c, '')]) {
+      x += _int(front, c, 'Left');
+      y += _int(front, c, 'Top');
+    }
+    return (x, y);
+  }
+
+  /// Whether [control] of the form in front, or a control in it, is on top
+  /// at its middle, so that a click there reaches it (D139).
+  bool reachable(String control) {
+    final (x, y) = originOf(control);
+    var at = controlAt(x + _int(front, control, 'Width') / 2,
+        y + _int(front, control, 'Height') / 2);
+    while (at != null && at.toLowerCase() != control.toLowerCase()) {
+      at = _containers[_key(front, at, '')];
+    }
+    return at != null;
+  }
+
+  /// Whether [control] of the form in front is seen and Enabled, and the
+  /// Frames it is in too (D137).
+  bool usable(String control) {
+    for (String? c = control; c != null; c = _containers[_key(front, c, '')]) {
+      if (_properties[_key(front, c, 'Enabled')] != true ||
+          _properties[_key(front, c, 'Visible')] != true) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   /// Whether menu item [control] of the form in front can be chosen in the
   /// menu bar: it and the menus it is in are Enabled and Visible (D106). A menu with items, or a
   /// line, is never chosen itself: a script that does is wrong.
@@ -1314,6 +1400,17 @@ class _HostDriver implements ScriptDriver {
     }
     if (control != null &&
         event == 'Click' &&
+        builtinComponents[host.componentOf(control)?.toLowerCase()]?.visual ==
+            true &&
+        !host.hasOpenDialog &&
+        host.usable(control) &&
+        !host.reachable(control)) {
+      // Another control is drawn over its middle, where the run window's
+      // click goes (D139).
+      return EventOutcome.blocked;
+    }
+    if (control != null &&
+        event == 'Click' &&
         host.componentOf(control) != 'Menu' &&
         !host.hasOpenDialog) {
       // A click is a left button pressed and let go in its middle, as the
@@ -1399,11 +1496,27 @@ class _HostDriver implements ScriptDriver {
   Future<bool> answer(String? value) async =>
       host.answer(inputBox: true, value: value ?? '');
 
+  /// The control each MouseDown step landed on, by the step's control:
+  /// its MouseUp goes there, as the run window's pointer does (D111).
+  final _pressed = <String?, String?>{};
+
+  /// A mouse button pressed at a place on a control, or the form: the
+  /// control drawn on top there takes it (D139), and its MouseUp.
   @override
   Future<EventOutcome> mouse(MouseStep step) async {
     if (host.hasOpenDialog) return EventOutcome.blocked;
-    return interpreter.raiseMouse(step.control, step.event,
-        GbMouseEvent(mouseButtons[step.button]!, step.x, step.y));
+    final (x, y) = host.originOf(step.control);
+    final (px, py) = (x + step.x, y + step.y);
+    final String? target;
+    if (step.event == 'MouseDown') {
+      target = _pressed[step.control?.toLowerCase()] = host.controlAt(px, py);
+    } else {
+      final key = step.control?.toLowerCase();
+      target = _pressed.containsKey(key) ? _pressed.remove(key) : step.control;
+    }
+    final (tx, ty) = host.originOf(target);
+    return interpreter.raiseMouse(target, step.event,
+        GbMouseEvent(mouseButtons[step.button]!, px - tx, py - ty));
   }
 
   @override

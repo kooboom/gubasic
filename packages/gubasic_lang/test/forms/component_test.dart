@@ -188,7 +188,9 @@ void main() {
         throwsFormatException);
   });
 
-  test('Label is drawn in the graphic layer, the others in front (D41)', () {
+  test('pictures under Labels, Labels under the others (D41, D139)', () {
+    expect(builtinComponents['image']!.layer, ComponentLayer.picture);
+    expect(builtinComponents['sprite']!.layer, ComponentLayer.picture);
     expect(builtinComponents['label']!.layer, ComponentLayer.graphic);
     for (final name in ['button', 'textbox', 'checkbox', 'form']) {
       expect(builtinComponents[name]!.layer, ComponentLayer.control,

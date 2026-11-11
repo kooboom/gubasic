@@ -1,0 +1,101 @@
+' Which is drawn in front (D139): sprites and images in the form file's
+' order at first, a later one over an earlier one, and one made with New
+' over those already there; BringToFront and SendToBack change it among
+' the sprites and images of their place, the form or a Frame. The one in
+' front takes the click where they overlap. Labels and buttons stay over
+' every picture, whatever the form file's order. Hits and Me.Controls do
+' not change with the order.
+Dim made As Sprite
+
+Function Names() As String
+    Dim s As String = ""
+    For Each c As Control In Me.Controls
+        s = s & " " & c.Name
+    Next
+    Return Mid(s, 2)
+End Function
+
+Sub Form_Load()
+    Debug.Print("Controls: " & Names())
+    Debug.Print("A hits B: " & sprA.Hits(sprB))
+End Sub
+
+Sub sprA_Click()
+    Debug.Print("A clicked")
+End Sub
+
+Sub sprB_Click()
+    Debug.Print("B clicked")
+End Sub
+
+Sub sprA_MouseDown(e As MouseEventArgs)
+    Debug.Print("A down at " & e.X & "," & e.Y)
+End Sub
+
+Sub sprB_MouseDown(e As MouseEventArgs)
+    Debug.Print("B down at " & e.X & "," & e.Y)
+End Sub
+
+Sub sprB_MouseUp(e As MouseEventArgs)
+    Debug.Print("B up at " & e.X & "," & e.Y)
+End Sub
+
+Sub imgC_Click()
+    Debug.Print("C clicked")
+End Sub
+
+Sub lblScore_Click()
+    Debug.Print("Score clicked")
+End Sub
+
+Sub sprBig_Click()
+    Debug.Print("Big clicked")
+End Sub
+
+Sub btnGo_Click()
+    Debug.Print("Go clicked")
+End Sub
+
+Sub sprIn1_Click()
+    Debug.Print("In1 clicked")
+End Sub
+
+Sub sprIn2_Click()
+    Debug.Print("In2 clicked")
+End Sub
+
+Sub btnAFront_Click()
+    sprA.BringToFront()
+    sprA.BringToFront() ' already in front: nothing changes
+    Debug.Print("A in front; A hits B: " & sprA.Hits(sprB) & ", " & sprA.DistanceTo(sprB))
+End Sub
+
+Sub btnABack_Click()
+    sprA.SendToBack()
+    Debug.Print("A at the back; A hits B: " & sprA.Hits(sprB))
+End Sub
+
+Sub btnNew_Click()
+    made = New Sprite
+    made.Name = "sprNew"
+    made.Width = 140
+    made.Height = 100
+    Me.Controls.Add(made)
+    Debug.Print("Controls: " & Names())
+End Sub
+
+Sub btnNewBack_Click()
+    made.SendToBack()
+    Debug.Print("New at the back")
+End Sub
+
+Sub btnPictures_Click()
+    imgC.BringToFront()
+    sprBig.BringToFront()
+    Debug.Print("C and Big in front; Controls: " & Names())
+End Sub
+
+Sub btnInside_Click()
+    sprIn1.BringToFront()
+    Debug.Print("In1 in front in the Frame")
+End Sub

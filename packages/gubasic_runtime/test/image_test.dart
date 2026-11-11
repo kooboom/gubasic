@@ -24,7 +24,7 @@ void main() {
     final image = GbControlState('imgShape', GbControlKind.image, {
       'Picture': picture, 'Stretch': false, 'Left': 10, 'Top': 10, //
       'Width': 100, 'Height': 60,
-    }, layer: GbLayer.graphic);
+    }, layer: GbLayer.picture);
     model = GbFormModel(
       form: {'Caption': 'Shapes', 'Width': 320, 'Height': 120},
       controls: [image],

@@ -107,6 +107,64 @@ void main() {
       );
       expect(events, ['lblOver.Click']);
     });
+
+    testWidgets('sprites are under a Label, in the order DrawOrder says '
+        '(D139)', (tester) async {
+      events = [];
+      GbControlState sprite(String name, int left) =>
+          GbControlState(name, GbControlKind.sprite, {
+            'Frames': '', 'Frame': 0, 'Left': left, 'Top': 0, //
+            'Width': 100, 'Height': 40, 'DrawOrder': 0,
+          }, layer: GbLayer.picture);
+      model = GbFormModel(
+        form: {'Caption': '', 'Width': 200, 'Height': 40},
+        controls: [
+          GbControlState('lblScore', GbControlKind.label, {
+            'Caption': '0', 'Left': 120, 'Top': 0, 'Width': 80, //
+            'Height': 40,
+          }, layer: GbLayer.graphic),
+          sprite('sprA', 0),
+          sprite('sprB', 50),
+        ],
+        onEvent: (c, e) => events.add('$c.$e'),
+      );
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Align(
+              alignment: Alignment.topLeft,
+              child: GbFormView(model: model),
+            ),
+          ),
+        ),
+      );
+      final form = tester.getTopLeft(find.byType(GbFormView));
+      Future<void> tapAll() async {
+        await tester.tapAt(form + const Offset(75, 20)); // A and B
+        await tester.tapAt(form + const Offset(135, 20)); // B and the Label
+      }
+
+      expect(model.drawingOrder.map((c) => c.name), [
+        'sprA',
+        'sprB',
+        'lblScore',
+      ]);
+      await tapAll();
+      model.setProperty('sprA', 'DrawOrder', 1);
+      await tester.pump();
+      expect(model.drawingOrder.map((c) => c.name), [
+        'sprB',
+        'sprA',
+        'lblScore',
+      ]);
+      await tapAll();
+      expect(events, [
+        'sprB.Click',
+        'lblScore.Click',
+        'sprA.Click',
+        'lblScore.Click',
+      ]);
+    });
   });
 
   testWidgets('a Button is filled, so a Label under it does not show', (
