@@ -155,10 +155,11 @@ class MethodSpec {
   final bool settable;
 }
 
-/// The layer a control is drawn in (docs/DESIGN.md D41): [graphic]
-/// controls (Label) under all the others, whatever their order in the
-/// form file; within a layer, a control later in the file is on top.
-enum ComponentLayer { graphic, control }
+/// The layer a control is drawn in (docs/DESIGN.md D41, D139): the
+/// [picture]s (Image, Sprite) under all the others, the [graphic]
+/// controls (Label) over them and under the rest, whatever their order in
+/// the form file; within a layer, a control later in the file is on top.
+enum ComponentLayer { picture, graphic, control }
 
 /// A control type described by a component.yaml (docs/DESIGN.md §5, D10).
 class ComponentSpec {

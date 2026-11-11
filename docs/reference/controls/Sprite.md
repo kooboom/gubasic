@@ -35,6 +35,8 @@ Default event (made by a double-click): `Click`
 - `Move(ms As Integer)`
 - `Hits(other As Sprite) As Boolean`
 - `DistanceTo(other As Sprite) As Double`
+- `BringToFront()`
+- `SendToBack()`
 
 ## Events
 

@@ -62,7 +62,7 @@ End Sub
     expect(c.properties['x']!.designTime, isFalse);
     expect(c.properties['fracx']!.internal, isTrue);
     expect(c.properties.containsKey('backcolor'), isFalse);
-    expect(c.layer, ComponentLayer.graphic);
+    expect(c.layer, ComponentLayer.picture);
     expect(c.methods['move']!.parameters.single.name, 'ms');
     expect(splitPictureNames(' a.png ,, b.png,'), ['a.png', 'b.png']);
     expect(joinPictureNames(['a.png', 'b.png']), 'a.png, b.png');

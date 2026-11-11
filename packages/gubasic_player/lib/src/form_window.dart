@@ -53,6 +53,7 @@ GbControlState controlStateOf(
   modelProperties(properties),
   container: container,
   layer: switch (component.layer) {
+    ComponentLayer.picture => GbLayer.picture,
     ComponentLayer.graphic => GbLayer.graphic,
     ComponentLayer.control => GbLayer.control,
   },

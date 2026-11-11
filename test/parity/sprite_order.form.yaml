@@ -1,0 +1,21 @@
+formatVersion: 2
+properties: { Caption: Order, Width: 400, Height: 320 }
+controls:
+  - { name: lblScore, type: Label, properties: { Caption: Score, Left: 200, Top: 0, Width: 100, Height: 100 } }
+  - { name: btnGo, type: Button, properties: { Caption: Go, Left: 230, Top: 110, Width: 60, Height: 40 } }
+  - { name: sprA, type: Sprite, properties: { Left: 0, Top: 0, Width: 100, Height: 100 } }
+  - { name: sprB, type: Sprite, properties: { Left: 40, Top: 0, Width: 100, Height: 100 } }
+  - { name: imgC, type: Image, properties: { Left: 200, Top: 0, Width: 100, Height: 100 } }
+  - { name: sprBig, type: Sprite, properties: { Left: 200, Top: 100, Width: 120, Height: 60 } }
+  - { name: btnAFront, type: Button, properties: { Caption: A front, Left: 0, Top: 165, Width: 60, Height: 30 } }
+  - { name: btnABack, type: Button, properties: { Caption: A back, Left: 62, Top: 165, Width: 60, Height: 30 } }
+  - { name: btnNew, type: Button, properties: { Caption: New, Left: 124, Top: 165, Width: 60, Height: 30 } }
+  - { name: btnPictures, type: Button, properties: { Caption: Pictures, Left: 205, Top: 165, Width: 60, Height: 30 } }
+  - { name: btnInside, type: Button, properties: { Caption: Inside, Left: 270, Top: 165, Width: 60, Height: 30 } }
+  - { name: btnNewBack, type: Button, properties: { Caption: New back, Left: 335, Top: 165, Width: 60, Height: 30 } }
+  - name: fraBox
+    type: Frame
+    properties: { Caption: Box, Left: 0, Top: 200, Width: 200, Height: 110 }
+    controls:
+      - { name: sprIn1, type: Sprite, properties: { Left: 10, Top: 20, Width: 90, Height: 80 } }
+      - { name: sprIn2, type: Sprite, properties: { Left: 50, Top: 20, Width: 80, Height: 80 } }

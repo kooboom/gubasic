@@ -22,6 +22,11 @@
 | `BackColor` | Color | `(not set)` |  |
 | `Tag` | String | `""` |  |
 
+## 메서드
+
+- `BringToFront()`
+- `SendToBack()`
+
 ## 이벤트
 
 - `Click()`

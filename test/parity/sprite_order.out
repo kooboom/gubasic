@@ -1,0 +1,74 @@
+Debug.Print: Controls: lblScore btnGo sprA sprB imgC sprBig btnAFront btnABack btnNew btnPictures btnInside btnNewBack fraBox sprIn1 sprIn2
+Debug.Print: A hits B: True
+> sprA.Click
+Blocked: sprA.Click
+> sprB.Click
+Debug.Print: B down at 50,50
+Debug.Print: B up at 50,50
+Debug.Print: B clicked
+> sprA.MouseDown Left 60 10
+Debug.Print: B down at 20,10
+> sprA.MouseUp Left 60 90
+Debug.Print: B up at 20,90
+> imgC.Click
+Blocked: imgC.Click
+> lblScore.Click
+Debug.Print: Score clicked
+> sprBig.Click
+Blocked: sprBig.Click
+> btnGo.Click
+Debug.Print: Go clicked
+> sprIn1.Click
+Blocked: sprIn1.Click
+> sprIn2.Click
+Debug.Print: In2 clicked
+> btnAFront.Click
+Set sprA.DrawOrder: 1
+Debug.Print: A in front; A hits B: True, 40
+> sprA.Click
+Debug.Print: A down at 50,50
+Debug.Print: A clicked
+> sprB.Click
+Blocked: sprB.Click
+> sprA.MouseDown Left 60 10
+Debug.Print: A down at 60,10
+> sprA.MouseUp Left 60 90
+> btnPictures.Click
+Set imgC.DrawOrder: 2
+Set sprBig.DrawOrder: 3
+Debug.Print: C and Big in front; Controls: lblScore btnGo sprA sprB imgC sprBig btnAFront btnABack btnNew btnPictures btnInside btnNewBack fraBox sprIn1 sprIn2
+> imgC.Click
+Blocked: imgC.Click
+> sprBig.Click
+Blocked: sprBig.Click
+> btnInside.Click
+Set sprIn1.DrawOrder: 1
+Debug.Print: In1 in front in the Frame
+> sprIn1.Click
+Debug.Print: In1 clicked
+> sprIn2.Click
+Blocked: sprIn2.Click
+> btnNew.Click
+Add sprNew (Sprite)
+Debug.Print: Controls: lblScore btnGo sprA sprB imgC sprBig btnAFront btnABack btnNew btnPictures btnInside btnNewBack fraBox sprIn1 sprIn2 sprNew
+> sprA.Click
+Blocked: sprA.Click
+> sprB.Click
+Blocked: sprB.Click
+> btnNewBack.Click
+Set sprNew.DrawOrder: -1
+Debug.Print: New at the back
+> sprA.Click
+Debug.Print: A down at 50,50
+Debug.Print: A clicked
+> btnABack.Click
+Set sprA.DrawOrder: -2
+Debug.Print: A at the back; A hits B: True
+> sprB.Click
+Debug.Print: B down at 50,50
+Debug.Print: B up at 50,50
+Debug.Print: B clicked
+> sprA.Click
+Blocked: sprA.Click
+> Close
+Closed

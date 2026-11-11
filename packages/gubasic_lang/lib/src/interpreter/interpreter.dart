@@ -1932,6 +1932,13 @@ class Interpreter {
     if (form.controls.containsKey(name.toLowerCase())) {
       _fail(DiagnosticCode.controlNameTaken, at, [name, form.name]);
     }
+    if (c.component.layer == ComponentLayer.picture) {
+      // In front of the pictures already in its place (D139).
+      final orders = [
+        for (final o in _picturesBeside(form, c)) _raw(o, 'DrawOrder') as int,
+      ];
+      c.pending['DrawOrder'] = orders.isEmpty ? 0 : orders.reduce(math.max);
+    }
     c
       ..name = name
       ..form = form.name
@@ -1940,6 +1947,37 @@ class Interpreter {
     c.pending.clear();
     form.controls[name.toLowerCase()] = c;
     form.order.add(c);
+  }
+
+  /// The sprites and images on [form] in [c]'s place (the form, or its
+  /// Frame), other than [c], in the order of [_FormRun.order] (D139).
+  List<GbControl> _picturesBeside(_FormRun form, GbControl c) => [
+        for (final o in form.order)
+          if (!identical(o, c) &&
+              o.component.layer == ComponentLayer.picture &&
+              o.container?.toLowerCase() == c.container?.toLowerCase())
+            o,
+      ];
+
+  /// `BringToFront()` and `SendToBack()` (D139): [c] is drawn in front of
+  /// every other sprite and image in its place, or behind them all, by a
+  /// `DrawOrder` past theirs. Nothing is set when it already is there, nor
+  /// for one that is not on a form.
+  void _drawAtEdge(GbControl c, {required bool front}) {
+    if (!c.attached) return;
+    final form = _formNamed(c.form)!;
+    final others = _picturesBeside(form, c);
+    final mine = _raw(c, 'DrawOrder') as int;
+    final at = form.order.indexOf(c);
+    bool under(GbControl o) {
+      final n = _raw(o, 'DrawOrder') as int;
+      return n < mine || n == mine && form.order.indexOf(o) < at;
+    }
+
+    if (front ? others.every(under) : !others.any(under)) return;
+    final orders = [for (final o in others) _raw(o, 'DrawOrder') as int];
+    _rawSet(c, 'DrawOrder',
+        front ? orders.reduce(math.max) + 1 : orders.reduce(math.min) - 1);
   }
 
   /// The component's name and the smallest number from 1 that no control
@@ -2258,6 +2296,12 @@ class Interpreter {
         final other =
             args[0] as GbControl? ?? _fail(DiagnosticCode.nothingReference, at);
         return spriteDistance(_spriteBox(c), _spriteBox(other));
+      case ('Sprite' || 'Image', 'BringToFront'):
+        _drawAtEdge(c, front: true);
+        return null;
+      case ('Sprite' || 'Image', 'SendToBack'):
+        _drawAtEdge(c, front: false);
+        return null;
       case ('Sprite', 'Move'):
         _moveSprite(c, (args[0] as GbInt).toSmallInt() ?? 0);
         return null;
