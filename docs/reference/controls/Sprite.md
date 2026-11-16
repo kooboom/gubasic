@@ -2,7 +2,7 @@
 
 [All of the reference](../README.md)
 
-A picture that moves (docs/DESIGN.md D138): a game's ship, shot or enemy. Frames names the project's pictures it is drawn from, separated by commas; Frame is the one shown, from 0, and with FrameTime above 0 Move turns them one after another. X and Y are where it is, with fractions, Left and Top the same place rounded down; SpeedX and SpeedY are pixels a second, and Move(ms) moves it by them, nothing moving by itself. The frame is drawn filling Width and Height. Drawn under the other controls, like an Image; what is behind shows through its transparent pixels. Hits(other) says whether two sprites touch, by their Shape: Rectangle, Circle or Pixels; DistanceTo(other) is the distance between their centres. FlipX draws it mirrored left to right about its middle (D139).
+A picture that moves (docs/DESIGN.md D138): a game's ship, shot or enemy. Frames names the project's pictures it is drawn from, separated by commas; Frame is the one shown, from 0, and with FrameTime above 0 Move turns them one after another. X and Y are where it is, with fractions, Left and Top the same place rounded down; SpeedX and SpeedY are pixels a second, and Move(ms) moves it by them, nothing moving by itself. The frame is drawn filling Width and Height. Drawn under the other controls, like an Image; what is behind shows through its transparent pixels. Hits(other) says whether two sprites touch, by their Shape: Rectangle, Circle or Pixels; DistanceTo(other) is the distance between their centres. FlipX draws it mirrored left to right about its middle (D139). With no frames it draws nothing and the pointer goes through it: a hurtbox or a hitbox (D139).
 
 Explained in [LANGUAGE.md §11](../../LANGUAGE.md).
 

@@ -152,6 +152,8 @@ IDE 안에서 완결되는 비주얼 베이직의 핵심 경험입니다.
 - [ ] 게시 메뉴: Vercel, Firebase Hosting, GitHub Pages, 개인 서버
 - [ ] 타입을 아는 자동완성
 - [ ] Dart 코드 삽입(비상구)
+- [ ] Visual Basic 같은 포커스: `SetFocus`, `GotFocus`와 `LostFocus`, `TabIndex`와 `TabStop`(그 순서대로 Tab), `ActiveControl`, 폼의 기본 버튼과 취소 버튼(Enter와 Esc). 지금은 클릭한 컨트롤이 포커스를 가지고, Tab은 배치를 따릅니다(2026-11-16 조사)
+- [ ] 놀이터의 "이 코드로 폼 프로젝트 만들기" 버튼: 코드를 웹 IDE의 새 프로젝트 Form1에 넣고, 그 `Sub Main`을 부르는 `Form_Load`를 덧붙임
 
 ## 1.0 이후 (아이디어)
 

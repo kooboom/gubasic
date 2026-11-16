@@ -152,6 +152,8 @@ Plan: [plans/PLAN_V08.md](plans/PLAN_V08.md) (2026-11-10; the answers are D139).
 - [ ] Publish menu: Vercel, Firebase Hosting, GitHub Pages, personal server
 - [ ] Type-aware autocompletion
 - [ ] Embedded-Dart escape hatch
+- [ ] Focus as in Visual Basic: `SetFocus`, `GotFocus` and `LostFocus`, `TabIndex` and `TabStop` (Tab in the order they set), `ActiveControl`, and a form's Default and Cancel buttons (Enter and Esc). Today a clicked control keeps the focus and Tab follows the layout (2026-11-16 survey)
+- [ ] A button in the playground, "Make a form project with this code": the code into Form1 of a new project in the web IDE, with a `Form_Load` that calls its `Sub Main`
 
 ## Beyond 1.0 (ideas)
 

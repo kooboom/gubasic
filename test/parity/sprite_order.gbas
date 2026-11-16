@@ -4,7 +4,9 @@
 ' the sprites and images of their place, the form or a Frame. The one in
 ' front takes the click where they overlap. Labels and buttons stay over
 ' every picture, whatever the form file's order. Hits and Me.Controls do
-' not change with the order.
+' not change with the order. A control not Visible, and a Sprite with no
+' frames (a hurtbox or a hitbox), let the pointer through to what is under
+' them.
 Dim made As Sprite
 
 Function Names() As String
@@ -78,6 +80,7 @@ End Sub
 Sub btnNew_Click()
     made = New Sprite
     made.Name = "sprNew"
+    made.Frames = "box.png"
     made.Width = 140
     made.Height = 100
     Me.Controls.Add(made)
@@ -98,4 +101,13 @@ End Sub
 Sub btnInside_Click()
     sprIn1.BringToFront()
     Debug.Print("In1 in front in the Frame")
+End Sub
+
+Sub sprHitbox_Click()
+    Debug.Print("Hitbox clicked")
+End Sub
+
+Sub btnHideScore_Click()
+    lblScore.Visible = False
+    Debug.Print("Score hidden")
 End Sub

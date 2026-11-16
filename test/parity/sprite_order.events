@@ -1,7 +1,8 @@
 ' The form file's order: B over A, C under the Label, Big under the
 ' button, In2 over In1.
 sprA.Click        ' Blocked: B covers its middle
-sprB.Click
+sprB.Click        ' the hitbox over B has no frames: B takes it
+sprHitbox.Click   ' Blocked: the pointer goes through it
 sprA.MouseDown Left 60 10
 sprA.MouseUp Left 60 90   ' let go away from it: no Click
 imgC.Click        ' Blocked: the Label is over it
@@ -29,4 +30,6 @@ sprA.Click
 btnABack.Click
 sprB.Click
 sprA.Click        ' Blocked
+btnHideScore.Click
+imgC.Click        ' the Label is not Visible: C takes it
 Close

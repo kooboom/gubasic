@@ -178,6 +178,18 @@ Problems we know about and have **deliberately** left unfixed for now. Each entr
 - **Why deferred:** Flutter's text field takes those keys before the form can see them; letting the form see them first would mean taking them over from every text field.
 - **Revisit:** when a program needs them, or with the menus' shortcut keys.
 
+## A Grid keeps some keys from the form
+
+- **What:** while a Grid has the focus and is not editing a cell, it takes Enter, F2 and the keys that type a letter or digit to start editing; the form's `KeyDown`, `Keyboard.IsDown` and `Keyboard.WasPressed` do not hear those presses, though they hear the key let go.
+- **Why deferred:** the Grid needs those keys to edit its cells, and no program so far uses both a Grid and the keys of a game.
+- **Revisit:** when a program needs both, or with `KeyPreview` rules for controls other than TextBox.
+
+## The event scripts cannot press a focused button with a key
+
+- **What:** in the run window, a Button clicked keeps the focus and Space or Enter presses it again (LANGUAGE §11.1); the event scripts of the parity tests on the interpreter alone (the VM and Chrome) have no focus, so `Form.KeyDown Space` never presses a button there. The run window's own test (`start_button_focus_test`) checks it instead.
+- **Why deferred:** the interpreter alone has no keyboard focus to follow; modelling Flutter's focus there would be a second focus system to keep the same.
+- **Revisit:** with `SetFocus` and `TabIndex` (ROADMAP), which would give the scripts a focus to follow.
+
 ## The form designer needs a mouse
 
 - **What:** controls are placed with the mouse (or a touchpad); the keyboard chooses a control (Tab, Shift+Tab), moves, resizes, deletes and orders it, and the Properties window chooses controls and takes typed values. On the web with Flutter's accessibility layer on (as a screen reader turns it on), a double-click in the toolbox did not place a control when tried in Chrome; choosing a tool and clicking on the form still works. The cause was not looked into.

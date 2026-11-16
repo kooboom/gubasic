@@ -9,7 +9,8 @@
 # transparent pixels. Hits(other) says whether two sprites touch, by
 # their Shape: Rectangle, Circle or Pixels; DistanceTo(other) is the
 # distance between their centres. FlipX draws it mirrored left to
-# right about its middle (D139).
+# right about its middle (D139). With no frames it draws nothing and the
+# pointer goes through it: a hurtbox or a hitbox (D139).
 name: Sprite
 version: 1
 visual: true

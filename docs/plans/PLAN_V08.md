@@ -142,3 +142,12 @@ No new diagnostics. `WasPressed` of a number that is no key answers `False`, as 
 - **Q5 as recommended**, with the web reading the browser's `event.code`, so that the keys work while a Korean input method is on; the web check tries it in that state too (§2.4, §5).
 - **Duel gets a key that shows the hitboxes and hurtboxes as coloured boxes** (`B`, the training view, §2.5).
 - **Check on a real laptop keyboard** that two players holding three or more keys at once lose none (§5, by hand, since only the hardware can tell).
+
+## 8. Release notes, as they are gathered
+
+What the v0.8.0 release notes say, written as each part is merged.
+
+**What changed (may change how an existing program looks or acts)**
+- Images and sprites are drawn under Labels, whatever the form file's order (D139). Before, an Image later in the form file than a Label it overlapped covered it; now the Label is over it. Move the Label or the Image apart if a form relied on that.
+- Where controls overlap, the control on top that is seen takes the click: one not `Visible` and a Sprite with no frames let the pointer through to what is under them (D139).
+- A running form takes the keys without a click first: when it is shown, when the IDE's run window is chosen again after the code, and when the window comes back to the front. On the web, a page that does not have the keys yet shows "Click to start" over the form (D139).

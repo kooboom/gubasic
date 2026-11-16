@@ -957,8 +957,8 @@ class ScriptedHost implements FormHost, FileHost, ComponentHost, DatabaseFiles {
   /// The control of the form in front drawn on top at ([x], [y]) on the
   /// form, as the run window's pointer finds it (D41, D111, D139); null for
   /// the form itself. Each control seen and Enabled takes the pointer over
-  /// its whole box, one in a Frame only inside the Frame; the others let
-  /// it through to what is under them.
+  /// its whole box, one in a Frame only inside the Frame; the others, and
+  /// a Sprite with no frames, let it through to what is under them.
   String? controlAt(num x, num y) => _controlAt(front, null, x, y);
 
   String? _controlAt(String form, String? frame, num x, num y) {
@@ -985,7 +985,8 @@ class ScriptedHost implements FormHost, FileHost, ComponentHost, DatabaseFiles {
             : b.$4.compareTo(a.$4));
     for (final (name, _, _, _) in here) {
       if (_properties[_key(form, name, 'Visible')] != true ||
-          _properties[_key(form, name, 'Enabled')] != true) {
+          _properties[_key(form, name, 'Enabled')] != true ||
+          _framelessSprite(form, name)) {
         continue;
       }
       final left = _int(form, name, 'Left'), top = _int(form, name, 'Top');
@@ -1007,6 +1008,14 @@ class ScriptedHost implements FormHost, FileHost, ComponentHost, DatabaseFiles {
 
   /// Where [control] of the form in front is on the form: its top left
   /// corner, through the Frames it is in (D105); (0, 0) for the form.
+  /// A Sprite with no frames draws nothing, a hurtbox or a hitbox: the
+  /// pointer goes through it (D139).
+  bool _framelessSprite(String form, String name) =>
+      _components[_key(form, name, '')]?.toLowerCase() == 'sprite' &&
+      (_properties[_key(form, name, 'Frames')] as String? ?? '')
+          .split(',')
+          .every((f) => f.trim().isEmpty);
+
   (int, int) originOf(String? control) {
     var (x, y) = (0, 0);
     for (var c = control; c != null; c = _containers[_key(front, c, '')]) {

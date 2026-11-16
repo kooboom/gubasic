@@ -7,7 +7,8 @@ import 'image.dart';
 /// pictures named in `Frames`, drawn filling the control, as an Image with
 /// `Stretch` is; what is behind shows through its transparent pixels. With
 /// no frames it is empty on a running form, and outlined with its name in
-/// the designer. Like an Image, it takes clicks over its whole area. With
+/// the designer. Like an Image, it takes clicks over its whole area, but
+/// with no frames the pointer goes through it (form_view.dart). With
 /// `FlipX` the frame is drawn mirrored about its own vertical middle line
 /// (D139).
 class GbSprite extends StatelessWidget {

@@ -151,7 +151,7 @@ class RunHost implements FormHost, FileHost, ComponentHost {
           GbMouseEvent(button, x, y),
           form: form.name,
         ),
-  );
+  )..clickToStart = dialogs.strings.clickToStart;
 
   /// The model of [form], shown or not.
   GbFormModel modelOf(String form) => _models[form.toLowerCase()]!;

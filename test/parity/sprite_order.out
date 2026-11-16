@@ -1,4 +1,4 @@
-Debug.Print: Controls: lblScore btnGo sprA sprB imgC sprBig btnAFront btnABack btnNew btnPictures btnInside btnNewBack fraBox sprIn1 sprIn2
+Debug.Print: Controls: lblScore btnGo sprA sprB sprHitbox imgC sprBig btnAFront btnABack btnNew btnPictures btnInside btnHideScore btnNewBack fraBox sprIn1 sprIn2
 Debug.Print: A hits B: True
 > sprA.Click
 Blocked: sprA.Click
@@ -6,6 +6,8 @@ Blocked: sprA.Click
 Debug.Print: B down at 50,50
 Debug.Print: B up at 50,50
 Debug.Print: B clicked
+> sprHitbox.Click
+Blocked: sprHitbox.Click
 > sprA.MouseDown Left 60 10
 Debug.Print: B down at 20,10
 > sprA.MouseUp Left 60 90
@@ -36,7 +38,7 @@ Debug.Print: A down at 60,10
 > btnPictures.Click
 Set imgC.DrawOrder: 2
 Set sprBig.DrawOrder: 3
-Debug.Print: C and Big in front; Controls: lblScore btnGo sprA sprB imgC sprBig btnAFront btnABack btnNew btnPictures btnInside btnNewBack fraBox sprIn1 sprIn2
+Debug.Print: C and Big in front; Controls: lblScore btnGo sprA sprB sprHitbox imgC sprBig btnAFront btnABack btnNew btnPictures btnInside btnHideScore btnNewBack fraBox sprIn1 sprIn2
 > imgC.Click
 Blocked: imgC.Click
 > sprBig.Click
@@ -50,7 +52,7 @@ Debug.Print: In1 clicked
 Blocked: sprIn2.Click
 > btnNew.Click
 Add sprNew (Sprite)
-Debug.Print: Controls: lblScore btnGo sprA sprB imgC sprBig btnAFront btnABack btnNew btnPictures btnInside btnNewBack fraBox sprIn1 sprIn2 sprNew
+Debug.Print: Controls: lblScore btnGo sprA sprB sprHitbox imgC sprBig btnAFront btnABack btnNew btnPictures btnInside btnHideScore btnNewBack fraBox sprIn1 sprIn2 sprNew
 > sprA.Click
 Blocked: sprA.Click
 > sprB.Click
@@ -70,5 +72,10 @@ Debug.Print: B up at 50,50
 Debug.Print: B clicked
 > sprA.Click
 Blocked: sprA.Click
+> btnHideScore.Click
+Set lblScore.Visible: False
+Debug.Print: Score hidden
+> imgC.Click
+Debug.Print: C clicked
 > Close
 Closed

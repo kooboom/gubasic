@@ -172,6 +172,11 @@ class GbFormModel {
   /// keys come to [onKey].
   VoidCallback? requestFocus;
 
+  /// What the running form says over itself on the web while the page
+  /// does not have the keys (`gbPageFocus`, D139), set by the host; null:
+  /// nothing.
+  String? clickToStart;
+
   /// Where on the screen the mouse or a finger last went down on the form,
   /// set by its view: where `PopupMenu` shows a menu (D106).
   Offset? lastPointer;

@@ -11,6 +11,7 @@ class GbStrings {
     required this.ok,
     required this.cancel,
     required this.saveAs,
+    required this.clickToStart,
   });
 
   final String ok;
@@ -20,15 +21,21 @@ class GbStrings {
   /// dialog and the file is downloaded under the name (D113).
   final String saveAs;
 
+  /// Over a running form on the web while the page does not have the keys
+  /// (D139): the browser gives them once the page is clicked.
+  final String clickToStart;
+
   static const en = GbStrings(
     ok: 'OK',
     cancel: 'Cancel',
     saveAs: 'Save as (the file is downloaded under this name):',
+    clickToStart: 'Click to start',
   );
   static const ko = GbStrings(
     ok: '확인',
     cancel: '취소',
     saveAs: '저장할 이름(이 이름으로 내려받습니다):',
+    clickToStart: '클릭해서 시작',
   );
 }
 

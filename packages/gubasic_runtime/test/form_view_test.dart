@@ -111,11 +111,14 @@ void main() {
     testWidgets('sprites are under a Label, in the order DrawOrder says '
         '(D139)', (tester) async {
       events = [];
-      GbControlState sprite(String name, int left) =>
-          GbControlState(name, GbControlKind.sprite, {
-            'Frames': '', 'Frame': 0, 'Left': left, 'Top': 0, //
-            'Width': 100, 'Height': 40, 'DrawOrder': 0,
-          }, layer: GbLayer.picture);
+      GbControlState sprite(
+        String name,
+        int left, {
+        String frames = 'box.png',
+      }) => GbControlState(name, GbControlKind.sprite, {
+        'Frames': frames, 'Frame': 0, 'Left': left, 'Top': 0, //
+        'Width': 100, 'Height': 40, 'DrawOrder': 0,
+      }, layer: GbLayer.picture);
       model = GbFormModel(
         form: {'Caption': '', 'Width': 200, 'Height': 40},
         controls: [
@@ -125,6 +128,9 @@ void main() {
           }, layer: GbLayer.graphic),
           sprite('sprA', 0),
           sprite('sprB', 50),
+          // A hitbox with no frames over both, on top: the pointer goes
+          // through it.
+          sprite('sprHitbox', 0, frames: ''),
         ],
         onEvent: (c, e) => events.add('$c.$e'),
       );
@@ -147,6 +153,7 @@ void main() {
       expect(model.drawingOrder.map((c) => c.name), [
         'sprA',
         'sprB',
+        'sprHitbox',
         'lblScore',
       ]);
       await tapAll();
@@ -154,6 +161,7 @@ void main() {
       await tester.pump();
       expect(model.drawingOrder.map((c) => c.name), [
         'sprB',
+        'sprHitbox',
         'sprA',
         'lblScore',
       ]);

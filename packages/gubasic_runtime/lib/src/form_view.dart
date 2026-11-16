@@ -1,3 +1,5 @@
+import 'dart:ui' show ViewFocusEvent, ViewFocusState;
+
 import 'package:flutter/material.dart';
 
 import 'package:flutter/services.dart';
@@ -9,6 +11,7 @@ import 'grid.dart';
 import 'keys.dart';
 import 'look.dart';
 import 'image.dart';
+import 'page_focus.dart';
 import 'sprite.dart';
 import 'list_box.dart';
 import 'menus.dart';
@@ -24,8 +27,12 @@ import 'text_box.dart';
 /// menu bar is drawn by the window around it ([GbMenuBar]), or by the
 /// system on macOS ([gbPlatformMenus]).
 ///
-/// The form takes the keyboard's focus when it is shown and when its empty
-/// part is clicked; its keys go to [GbFormModel.onKey] (D101), and are
+/// The form takes the keyboard's focus when it is shown, when it is shown
+/// again (the IDE's run window chosen after the code), when the window
+/// comes back to the front, and when its empty part is clicked (D139); on
+/// the web, while the page does not have the keys, it says
+/// [GbFormModel.clickToStart] over itself. Its keys go to
+/// [GbFormModel.onKey] (D101), and are
 /// left for the control that has the focus too (a TextBox types them).
 /// The arrow keys do not move the focus between its controls, so that a
 /// game can use them.
@@ -43,17 +50,61 @@ class _GbFormViewState extends State<GbFormView> with WidgetsBindingObserver {
 
   GbFormModel get model => widget.model;
 
+  /// Whether the form is seen: an IndexedStack, such as the IDE's, hides
+  /// it while another view is chosen.
+  bool _shown = false;
+
+  /// Whether the form wants the keys: it runs and has somewhere to send
+  /// them.
+  bool get _takesKeys => model.onKey != null && !model.designing;
+
   @override
   void initState() {
     super.initState();
     model.requestFocus = _focus.requestFocus;
     WidgetsBinding.instance.addObserver(this);
+    gbPageFocus.addListener(_pageFocusChanged);
   }
 
-  /// In the background, every key is let go (D138).
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Shown, first or again: the form takes the keys at once (D139).
+    final shown = Visibility.of(context);
+    if (shown && !_shown) _takeFocusSoon();
+    _shown = shown;
+  }
+
+  /// Gives the form the focus after this frame, unless it or a control in
+  /// it has it already: after whatever else asked for it as the form was
+  /// shown (the route, the IDE's own views).
+  void _takeFocusSoon() {
+    if (!_takesKeys) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && _shown && !_focus.hasFocus) _focus.requestFocus();
+    });
+  }
+
+  void _pageFocusChanged() {
+    if (!mounted) return;
+    setState(() {});
+    if (gbPageFocus.value) _takeFocusSoon();
+  }
+
+  /// In the background, every key is let go (D138); back in front, the
+  /// form takes the keys again.
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state != AppLifecycleState.resumed) model.onKeysReleased?.call();
+    if (state != AppLifecycleState.resumed) {
+      model.onKeysReleased?.call();
+    } else {
+      _takeFocusSoon();
+    }
+  }
+
+  @override
+  void didChangeViewFocus(ViewFocusEvent event) {
+    if (event.state == ViewFocusState.focused) _takeFocusSoon();
   }
 
   @override
@@ -65,6 +116,7 @@ class _GbFormViewState extends State<GbFormView> with WidgetsBindingObserver {
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    gbPageFocus.removeListener(_pageFocusChanged);
     if (model.requestFocus == _focus.requestFocus) model.requestFocus = null;
     _focus.dispose();
     super.dispose();
@@ -162,7 +214,29 @@ class _GbFormViewState extends State<GbFormView> with WidgetsBindingObserver {
               ),
             ),
             for (final c in model.drawingOrder) _GbPlaced(model, c),
+            if (_takesKeys && !gbPageFocus.value && model.clickToStart != null)
+              Positioned.fill(child: _clickToStart(context)),
           ],
+        ),
+      ),
+    ),
+  );
+
+  /// Over the form while the page does not have the keys (D139): a click
+  /// anywhere gives them to the page, and the form takes them.
+  Widget _clickToStart(BuildContext context) => GestureDetector(
+    behavior: HitTestBehavior.opaque,
+    onTapDown: (_) => _focus.requestFocus(),
+    child: ColoredBox(
+      color: const Color(0x99000000),
+      child: Center(
+        child: Text(
+          model.clickToStart!,
+          style: const TextStyle(
+            color: Color(0xFFFFFFFF),
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
         ),
       ),
     ),
@@ -198,6 +272,13 @@ class _GbPlaced extends StatelessWidget {
         body = IgnorePointer(
           child: ExcludeFocus(child: Opacity(opacity: 0.45, child: body)),
         );
+      }
+      if (!model.designing &&
+          state.kind == GbControlKind.sprite &&
+          gbFrameNames(state.text('Frames')).isEmpty) {
+        // A sprite with no frames draws nothing, a hurtbox or a hitbox:
+        // the pointer goes through it to what is under it (D139).
+        body = IgnorePointer(child: body);
       }
       return Positioned(
         left: state.integer('Left').toDouble(),
