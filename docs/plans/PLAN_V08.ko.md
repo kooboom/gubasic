@@ -148,6 +148,6 @@ Visual Basic .NET의 이름입니다([Microsoft: Control.BringToFront](https://l
 v0.8.0 릴리스 노트에 쓸 것을, 부분마다 병합할 때 적습니다.
 
 **바뀐 점(기존 프로그램의 모습이나 동작이 바뀔 수 있음)**
-- Image와 Sprite는 폼 파일의 순서와 상관없이 Label 아래에 그려집니다(D139). 전에는 겹친 Label보다 폼 파일에서 뒤에 있는 Image가 Label을 덮었지만, 이제는 Label이 위에 있습니다. 그 모습에 기대던 폼은 Label과 Image를 떨어뜨려 놓습니다.
+- Image와 Sprite는 폼 파일의 순서와 상관없이 Label 아래에 그려집니다(D139). 전에는 겹친 Label보다 폼 파일에서 뒤에 있는 Image가 Label을 덮었지만, 이제는 Label이 위에 있습니다. 그 모습에 기대던 폼은 Label과 Image를 떨어뜨려 놓습니다. Visual Basic 6에서는 Label과 Image 같은 그래픽 개체가 한 층이라 `ZOrder`로 Image를 Label 위에 둘 수 있었던 것과 다릅니다([VB6 ZOrder Method, MSDN Library 사본](https://techshelps.github.io/MSDN/VB98/html/vbmthzorder.htm)).
 - 컨트롤이 겹친 곳에서는 위에 보이는 컨트롤이 클릭을 받습니다. `Visible`이 아닌 컨트롤과 프레임 없는 Sprite는 포인터를 아래로 통과시킵니다(D139).
 - 실행 중인 폼은 먼저 클릭하지 않아도 키를 받습니다: 보일 때, IDE에서 코드 화면에 다녀와 실행 화면을 다시 고를 때, 창이 다시 앞에 올 때. 웹에서 아직 키를 받지 못한 페이지는 폼 위에 "클릭해서 시작"을 띄웁니다(D139).
