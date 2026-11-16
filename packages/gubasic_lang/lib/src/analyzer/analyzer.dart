@@ -102,7 +102,8 @@ class _ProcedureContext {
 class _Analyzer {
   _Analyzer(this.parsed, this.form, List<String>? pictures,
       List<String>? sounds, this.forms, this.modules, String? moduleName)
-      : _lines = LineMap(parsed.source),
+      : _inModule = moduleName != null,
+        _lines = LineMap(parsed.source),
         _builtins = Scope(ScopeKind.builtins, null) {
     for (final f in builtinFunctions.values) {
       _builtins.declare(Symbol(
@@ -197,6 +198,36 @@ class _Analyzer {
 
   /// The project's modules, by lower-case name (D102).
   final Map<String, ModuleInterface>? modules;
+
+  /// Whether the code is a module of a project, not the playground's.
+  final bool _inModule;
+
+  /// [name], `Me` or a control, used in code without a form: in a module,
+  /// with the form's name to write first (A084); in the playground, with
+  /// the way to a form (A003).
+  void _noForm(Node at, String name) {
+    if (!_inModule) {
+      _reportAt(at, DiagnosticCode.unknownNameMaybeControl, [name]);
+      return;
+    }
+    final all = forms?.values.toList() ?? const <FormInterface>[];
+    if (name.toLowerCase() == 'me') {
+      _reportAt(at, DiagnosticCode.moduleUsesFormPart,
+          [name, all.firstOrNull?.name ?? 'Form1']);
+      return;
+    }
+    // The form that has a control of that name, with its spelling.
+    for (final f in all) {
+      final control = f.file.control(name);
+      if (control != null) {
+        _reportAt(at, DiagnosticCode.moduleUsesFormPart,
+            [name, '${f.name}.${control.name}']);
+        return;
+      }
+    }
+    _reportAt(at, DiagnosticCode.moduleUsesFormPart,
+        [name, '${all.firstOrNull?.name ?? 'Form1'}.$name']);
+  }
 
   /// The module each Public name of [modules] is from.
   final _moduleOf = Map<Symbol, String>.identity();
@@ -566,8 +597,7 @@ class _Analyzer {
       final target = e.target;
       if (form == null) {
         // Code without a form has no controls to handle.
-        _reportAt(
-            target, DiagnosticCode.unknownNameMaybeControl, [_text(target)]);
+        _noForm(target, _text(target));
         continue;
       }
       final ControlDecl? control;
@@ -1775,7 +1805,7 @@ class _Analyzer {
           ? formComponent.type
           : ControlType(formComponent, form: own);
     }
-    _reportAt(e, DiagnosticCode.unknownNameMaybeControl, ['Me']);
+    _noForm(e, 'Me');
     return GbType.unknown;
   }
 
@@ -1834,7 +1864,7 @@ class _Analyzer {
       return;
     }
     if (beforeDot && form == null) {
-      _reportAt(e, DiagnosticCode.unknownNameMaybeControl, [e.name]);
+      _noForm(e, e.name);
       return;
     }
     if (form != null && !beforeDot) {

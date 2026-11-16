@@ -71,7 +71,26 @@ void main() {
           'Tools': 'Sub Show()\nMe.Caption = ""\n'
               'End Sub\n'
         })),
-        ['A003@Tools.gbas:2']);
+        ['A084@Tools.gbas:2']);
+  });
+
+  test('Me or a control alone in a module names the form to write (A084)', () {
+    List<List<Object?>> args(String body) => [
+          for (final m
+              in _project('', {'Tools': 'Sub Show()\n$body\nEnd Sub\n'})
+                  .modules)
+            for (final d in m.program.diagnostics) [d.code.code, ...d.args]
+        ];
+    expect(args('Me.Caption = ""'), [
+      ['A084', 'Me', 'Form1']
+    ]);
+    // The control's own spelling, from the form that has it.
+    expect(args('LBLTOTAL.Caption = ""'), [
+      ['A084', 'LBLTOTAL', 'Form1.lblTotal']
+    ]);
+    expect(args('lblNone.Caption = ""'), [
+      ['A084', 'lblNone', 'Form1.lblNone']
+    ]);
   });
 
   test('a name Public in two modules is written with its module (A054)', () {

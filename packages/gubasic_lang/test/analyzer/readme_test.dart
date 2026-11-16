@@ -36,7 +36,7 @@ void main() {
     final r = compile(sample('README.md'));
     expect(r.diagnostics.map((d) => '${d.code.code}@${d.line}'), ['A003@4']);
     expect(r.diagnostics.single.args, ['lblMessage']);
-    expect(r.diagnostics.single.message, contains('This code has no form'));
+    expect(r.diagnostics.single.message, contains('File → New Project…'));
   });
 
   test('the example project and form files have no diagnostics', () {

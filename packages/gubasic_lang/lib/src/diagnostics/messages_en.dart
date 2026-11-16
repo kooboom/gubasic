@@ -118,10 +118,11 @@ const Map<DiagnosticCode, String> englishMessages = {
       'of the form, with parentheses: write Me.PopupMenu({0}).',
   DiagnosticCode.unknownNameDidYouMean: '"{0}" is not declared. '
       'There is a similar name, "{1}"; check the spelling.',
-  DiagnosticCode.unknownNameMaybeControl: '"{0}" is not declared. '
-      'This code has no form, so controls and Me cannot be used here (the '
-      'playground runs code without a form); use variables declared with '
-      'Dim, or open the code as a project with a form.',
+  DiagnosticCode.unknownNameMaybeControl: '"{0}" is not declared. The '
+      'playground runs code without a form, so controls and Me cannot be '
+      'used here. If it is a variable, declare it with Dim. To use a form, '
+      'make a project in the IDE with File → New Project…, then put this '
+      'code in Form1 with View Code.',
   DiagnosticCode.unknownType:
       'There is no type named "{0}". Check the spelling.',
   DiagnosticCode.duplicateDeclaration:
@@ -337,6 +338,10 @@ const Map<DiagnosticCode, String> englishMessages = {
       'Milliseconds().',
   DiagnosticCode.badShapeInCode: '{0} is not a shape. A Sprite\'s Shape is '
       'Rectangle, Circle or Pixels; the program would stop here.',
+  DiagnosticCode.moduleUsesFormPart: '"{0}" is not declared. A module has '
+      'no form of its own, so Me and a control cannot be used by themselves '
+      'in it. Write the form\'s name first, as {1}, or move this code into '
+      'the form\'s code.',
   DiagnosticCode.vb6Beep: 'Beep is not in GuBASIC. Add a short sound in '
       'File → Sounds and play it with Sound.Play, as Sound.Play("beep.wav").',
   DiagnosticCode.unknownSoundInCode: 'This project has no sound "{0}": the '

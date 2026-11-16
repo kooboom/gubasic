@@ -179,8 +179,7 @@ void main() {
     expect(_source.value, readmeSample);
     _click('#tabs button:nth-child(3)');
     expect(_texts('.diagnostics .code'), ['A003']);
-    expect(
-        _texts('.diagnostics .msg').single, contains('This code has no form'));
+    expect(_texts('.diagnostics .msg').single, contains('File → New Project…'));
     _click('#sample-starter');
     expect(_source.value, starterSample);
   });

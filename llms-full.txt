@@ -143,7 +143,7 @@ The analyzer checks names and types (§2.1, §3.2, §5.2). It runs even when the
 |---|---|
 | A001 | A name is not declared |
 | A002 | A name is not declared, and a similar visible name exists ("did you mean") |
-| A003 | An undeclared name used with `.` (`lblMessage.Caption`), or `Me`, in code without a form (the playground): controls and `Me` need a form (§11) |
+| A003 | An undeclared name used with `.` (`lblMessage.Caption`), or `Me`, in code without a form (the playground): controls and `Me` need a form (§11); the message says to make a project with File → New Project… and put the code in Form1 |
 | A004 | A type name does not exist |
 | A005 | A name is already declared in the same scope or procedure |
 | A006 | A local is used above its declaration |
@@ -777,7 +777,7 @@ End Sub
 - `Me` refers to the current form; its properties are those of `Form` (§11.1).
 - The controls are the ones in the form file (§11.2). Their names can be used anywhere in the form's code, like form-level variables. A form-level variable or procedure cannot have a control's name (A030); a local can, but then hides the control (warning A031).
 - **Where controls overlap**, a `Label` is always under the other controls (`Button`, `TextBox`, `CheckBox`, `ListBox`), whatever their order in the form file, and the control on top takes the click. Among controls of the same kind of layer, the one later in the form file is on top (DESIGN.md D41).
-- Code without a form, such as a program in the playground, cannot use controls or `Me` (A003).
+- Code without a form, such as a program in the playground, cannot use controls or `Me` (A003); the message says how to make a project with a form for it.
 - **Several forms** (DESIGN.md D88). A project's forms are used by their names, each one object: `Form2.Show`, `Form2.txtName.Text`.
   - The forms shown are a stack in one window. `Form2.Show` puts Form2 on top, and the forms under it keep their values; a form shown already comes to the top. `Form2.ShowDialog` puts it on top as a dialog, over the form behind, which is dimmed, and the code waits until it goes. `Me.Hide` goes back to the form under, keeping this one's values; `Me.Close` goes back too, runs `Form_Closed`, and the next `Show` starts the form again: its variables and controls as at the start, and `Form_Load` again. With no form shown, the program has ended.
   - Only the form on top takes clicks and typing. The window's close button ends the program; each form shown first gets its `Form_Closed`, from the top down. `End` runs none.
@@ -996,7 +996,7 @@ A **module** (DESIGN.md D102) is code without a form, shared by the project: the
 
 - Its `Public` variables and constants, and its `Sub`s and `Function`s that are not `Private`, can be used in every form and module by their names, `Total`, or with the module's, `Module1.Total`. A name two modules make `Public` is written with its module's name (A054). A form's or module's own name of that spelling comes first.
 - What it declares with `Dim` or `Private` stays its own.
-- Its code cannot use `Me` or controls by themselves; it uses forms by their names: `Form1.Show`, `Form1.lblTotal.Caption`.
+- Its code cannot use `Me` or controls by themselves; it uses forms by their names: `Form1.Show`, `Form1.lblTotal.Caption`. Without the form's name it is A084, whose message names the form to write first.
 - Its variables get their initial values when the program starts, before the forms'.
 - **`Sub Main`**: with `startup: Sub Main` (in the IDE: ⋮ next to the module, Start with Sub Main), the program starts with `Sub Main()` of a module instead of a form. It shows the forms it wants (`Form1.Show`, or `Form1.ShowDialog` to wait); when it returns, the program goes on while a form is shown, and ends when none is. `Sub Main` is in one module only (A055), and a project starting with it needs one (F019). A form's `Sub Main` is an ordinary procedure.
 

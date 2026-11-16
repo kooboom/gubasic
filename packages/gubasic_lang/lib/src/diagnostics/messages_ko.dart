@@ -106,8 +106,8 @@ const Map<DiagnosticCode, String> koreanMessages = {
   DiagnosticCode.unknownNameDidYouMean:
       '{0} 이름이 선언되지 않았습니다. 비슷한 이름으로 {1} 이름이 있으니 철자를 확인해 주세요.',
   DiagnosticCode.unknownNameMaybeControl: '{0} 이름이 선언되지 않았습니다. '
-      '이 코드에는 폼이 없어서 컨트롤과 Me를 쓸 수 없습니다(놀이터는 폼 없이 코드만 실행합니다). '
-      'Dim으로 선언한 변수를 쓰거나, 폼이 있는 프로젝트로 열어 주세요.',
+      '놀이터는 폼 없이 코드만 실행하므로 컨트롤과 Me를 쓸 수 없습니다. 변수라면 Dim으로 선언합니다. '
+      '폼을 쓰려면 IDE에서 파일 → 새 프로젝트…로 프로젝트를 만들고, 이 코드를 Form1의 코드 보기에 넣습니다.',
   DiagnosticCode.unknownType: '{0} 타입이 없습니다. 철자를 확인해 주세요.',
   DiagnosticCode.duplicateDeclaration:
       '{0} 이름은 {1}번 줄에서 이미 선언했습니다. 다른 이름을 써 주세요.',
@@ -263,6 +263,9 @@ const Map<DiagnosticCode, String> koreanMessages = {
       '{0} 표기는 GuBASIC에 없습니다. GuBASIC에서 Timer는 컨트롤입니다. 프로그램 시작부터의 밀리초는 Milliseconds()입니다.',
   DiagnosticCode.badShapeInCode:
       '{0} 표기는 모양이 아닙니다. Sprite의 Shape는 Rectangle, Circle, Pixels 가운데 하나입니다. 프로그램이 여기서 멈춥니다.',
+  DiagnosticCode.moduleUsesFormPart:
+      '{0} 이름이 선언되지 않았습니다. 모듈에는 자기 폼이 없어서 Me나 컨트롤 이름만으로는 쓸 수 없습니다. '
+          '폼 이름을 앞에 붙여 쓰거나(예: {1}), 이 코드를 폼의 코드로 옮깁니다.',
   DiagnosticCode.vb6Beep:
       'GuBASIC에는 Beep이 없습니다. 파일 → 소리에서 짧은 소리를 더하고 Sound.Play("beep.wav")처럼 Sound.Play로 냅니다.',
   DiagnosticCode.unknownSoundInCode:

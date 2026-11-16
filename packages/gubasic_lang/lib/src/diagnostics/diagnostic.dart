@@ -206,8 +206,8 @@ enum DiagnosticCode {
   /// name, the suggestion.
   unknownNameDidYouMean('A002'),
 
-  /// An undeclared name used with `.` (likely a control), or `Me`.
-  /// Args: the name.
+  /// An undeclared name used with `.` (likely a control), or `Me`, in
+  /// code without a form: the playground's. Args: the name.
   unknownNameMaybeControl('A003'),
 
   /// A type name that does not exist. Args: the name.
@@ -538,6 +538,10 @@ enum DiagnosticCode {
   /// `Sound.Play` (D138). No replacement: the project needs the sound
   /// first.
   vb6Beep('A083'),
+
+  /// `Me` or a control by itself in a module, which has no form of its own
+  /// (D102). Args: the name, how to write it with a form's name.
+  moduleUsesFormPart('A084'),
 
   // Form and project files (.form.yaml, .gbproj)
 
