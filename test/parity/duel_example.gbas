@@ -353,9 +353,11 @@ Sub KeepApart()
     Fence(1)
 End Sub
 
+' 선수 그림 전체가 경기장 안에 남게 합니다. 쓰러진 그림은 프레임을 거의 다 차지하므로,
+' 밀려나도 끝에서 잘리지 않게 그림의 양쪽 끝을 경계로 씁니다(왼쪽과 오른쪽 모두).
 Sub Fence(f As Integer)
-    If fighters(f).X < -20 Then fighters(f).X = -20
-    If fighters(f).X > Me.Width - fighters(f).Width + 20 Then fighters(f).X = Me.Width - fighters(f).Width + 20
+    If fighters(f).X < 0 Then fighters(f).X = 0
+    If fighters(f).X > Me.Width - fighters(f).Width Then fighters(f).X = Me.Width - fighters(f).Width
 End Sub
 
 ' 허트박스는 몸에, 히트박스는 공격이 맞힐 수 있는 동안만 바라보는 쪽 앞에 놓습니다.

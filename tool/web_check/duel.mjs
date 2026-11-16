@@ -14,6 +14,9 @@
 //   node tool/web_check/duel.mjs [--web apps/player/build/web]
 //        [--bundle apps/player/build/duel/duel.gbz] [--headed]
 //        [--channel chrome] [--shots folder]
+//
+// With --shots it keeps a picture of each knock-out (duel-ko-1.png, …) and
+// of the end (duel-web.png).
 import { createServer } from 'node:http';
 import { existsSync, mkdirSync, readFileSync, statSync } from 'node:fs';
 import { dirname, extname, join, resolve } from 'node:path';
@@ -98,8 +101,15 @@ const fight = async (press, walk, punch, text) => {
     if (await shows(text, 300)) break;
   }
   await press(walk, 'up');
-  return shows(text, 1000);
+  const shown = await shows(text, 1000);
+  // The knock-out at the stage's edge: the fighter down stays inside it.
+  if (shots) {
+    mkdirSync(shots, { recursive: true });
+    await page.screenshot({ path: join(shots, `duel-ko-${++knockOuts}.png`) });
+  }
+  return shown;
 };
+let knockOuts = 0;
 
 // Round 1 and 2: the keys as a US keyboard sends them.
 const keyboard = async (key, how) => (how === 'down' ? page.keyboard.down(key) : page.keyboard.up(key));
