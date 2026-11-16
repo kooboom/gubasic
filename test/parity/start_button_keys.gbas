@@ -1,0 +1,17 @@
+' A game's start button is hidden or disabled when the match begins, so
+' that Space or Enter does not press it again (LANGUAGE §11.1); the form
+' still hears the keys, in KeyDown and in Keyboard.
+Sub btnStart_Click()
+    Debug.Print("two players")
+    btnStart.Visible = False
+End Sub
+
+Sub btnSolo_Click()
+    Debug.Print("one player")
+    btnSolo.Enabled = False
+End Sub
+
+Sub Form_KeyDown(e As KeyEventArgs)
+    Debug.Print("key " & e.KeyCode & ", held " & Keyboard.IsDown(e.KeyCode) & _
+        ", pressed " & Keyboard.WasPressed(e.KeyCode))
+End Sub

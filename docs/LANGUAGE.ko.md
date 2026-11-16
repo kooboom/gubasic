@@ -881,6 +881,8 @@ End Sub
   End Sub
   ```
 
+- **버튼과 게임의 키.** 마우스로 클릭한 버튼은 키보드 포커스를 가지고 있어서, Visual Basic 6이나 운영체제처럼 스페이스나 Enter를 누르면 다시 눌립니다. 폼은 그 키를 `KeyDown`과 `Keyboard`로 여전히 듣습니다. 그래서 게임은 경기가 시작되면 시작 버튼을 숨기거나(`Visible = False`) 끄고(`Enabled = False`), 경기가 끝나면 다시 보입니다. 숨기거나 끈 버튼은 키를 받지 않고, 키는 계속 폼에 갑니다. Shooter 예제도 이렇게 시작 버튼을 끕니다.
+
 - **Enabled, Visible, 글자와 색**(DESIGN.ko.md D137). Visual Basic과 같은 이름과 뜻입니다. 폼에 보이는 모든 컨트롤에는 **`Enabled`** 와 **`Visible`** (`Boolean`, 처음에는 `True`)이 있습니다. `Enabled`가 아닌 컨트롤은 회색이 되고 클릭이나 입력을 받지 않으며, `Visible`이 아닌 컨트롤은 그려지지 않습니다. `Enabled`나 `Visible`이 아닌 Frame은 안의 컨트롤도 막거나 숨깁니다. 프로그램이 값을 바꿀 때의 이벤트(`Checked`, `Text`)는 그대로 실행됩니다. 그런 컨트롤을 클릭해도 아무 일도 일어나지 않습니다. 글자가 있는 컨트롤과 폼에는 **`FontSize`** (`Double`, 포인트, 1~200), **`FontBold`** (`Boolean`), **`ForeColor`** (`Color`)가 있고, 폼을 뺀 모두에 **`BackColor`** (`Color`)가 있으며 폼의 것은 폼 자신의 배경입니다. `FontSize`, `FontBold`, `ForeColor`를 정하지 않은 컨트롤은 들어 있는 Frame의 것을, 없으면 폼의 것을, 그것도 없으면 9.75포인트(GuBASIC이 늘 그리던 크기), 보통 굵기, 테마의 색을 씁니다. Visual Basic .NET의 컨트롤이 담은 것의 값을 물려받는 것과 같습니다. `BackColor`는 자기 것만이고, 없으면(Label 등) 뒤의 것이 비쳐 보입니다. 속성 창에서 빈 칸과 FontBold의 셋째 상태는 "정하지 않음"입니다. **`Color`** 는 Visual Basic .NET의 것입니다([Microsoft](https://learn.microsoft.com/en-us/dotnet/api/system.drawing.color)): `Color.Red`, `Color.SkyBlue` 같은 이름 있는 색, 각 값이 0~255인 `Color.FromArgb(red, green, blue)`(벗어나면 R050), 그리고 속성을 "정하지 않음"으로 되돌리는 `Color.Empty`. `Color`에는 `R`, `G`, `B`, `A`, `IsEmpty`, `Name`(`Red`, `#FF8800`, `Empty`)이 있고 `=`와 `<>`로 견줍니다. 폼 파일에는 색을 이름이나 `#RRGGBB`로 적습니다(F023). Visual Basic 6의 `vbRed`, `RGB(r, g, b)`는 `Color.Red`, `Color.FromArgb`로 안내합니다(A079). 폼에는 `Enabled`, `Visible`이 없습니다. 폼은 `Show`, `Hide`, `ShowDialog`(11.4절)로 보이고 숨깁니다.
 
   ```vb

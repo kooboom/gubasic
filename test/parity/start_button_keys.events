@@ -1,0 +1,11 @@
+btnStart.Click
+Form.KeyDown Space
+Form.KeyUp Space
+Form.KeyDown Enter
+Form.KeyUp Enter
+btnStart.Click         ' hidden: not pressed again
+btnSolo.Click
+Form.KeyDown Space
+Form.KeyUp Space
+btnSolo.Click          ' disabled: not pressed again
+Close

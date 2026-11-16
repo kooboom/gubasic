@@ -1,0 +1,7 @@
+formatVersion: 1
+properties:
+  Width: 400
+  Height: 300
+controls:
+  - { name: btnStart, type: Button, properties: { Caption: 2 players, Left: 20, Top: 20, Width: 120 } }
+  - { name: btnSolo, type: Button, properties: { Caption: 1 player, Left: 160, Top: 20, Width: 120 } }

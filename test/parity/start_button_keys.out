@@ -1,0 +1,21 @@
+> btnStart.Click
+Debug.Print: two players
+Set btnStart.Visible: False
+> Form.KeyDown Space
+Debug.Print: key 32, held True, pressed True
+> Form.KeyUp Space
+> Form.KeyDown Enter
+Debug.Print: key 13, held True, pressed True
+> Form.KeyUp Enter
+> btnStart.Click
+Disabled: btnStart.Click
+> btnSolo.Click
+Debug.Print: one player
+Set btnSolo.Enabled: False
+> Form.KeyDown Space
+Debug.Print: key 32, held True, pressed True
+> Form.KeyUp Space
+> btnSolo.Click
+Disabled: btnSolo.Click
+> Close
+Closed

@@ -78,6 +78,7 @@ Visual Basic .NET's names ([Microsoft: Control.BringToFront](https://learn.micro
 - **The training view, on `B`:** draws the hurtboxes as blue boxes and the active hitboxes as red ones (by giving the box sprites a translucent picture), and shows each fighter's input bundle as it is filled, as fighting games' training modes do. It is also how two people check that their keyboard reports all the keys they hold at once.
 - **A hit:** hit stop of 80 ms (nothing moves), push back, health down, a sound; blocked, less push and a different sound, and no damage.
 - **Rounds:** 60 seconds; a KO or the clock ends a round; two rounds win; Start begins and starts again.
+- **The start screen:** the start buttons (1 player, 2 players) are hidden (`Visible = False`) when a match begins and shown again when it ends, so that a focused button does not take Space or Enter during a match (§5.1).
 - **Pictures and sounds** made by a tool script, as the Shooter's (`apps/ide/tool/draw_duel_assets.dart`): plain shapes in two colours, one set of frames each, facing right; WAV sounds synthesised.
 
 ### 2.6 Messages
@@ -118,6 +119,10 @@ No new diagnostics. `WasPressed` of a number that is no key answers `False`, as 
 - **The web:** `tool/web_check/duel.mjs` (Playwright) plays the built web player's Duel with the keyboard, including `.` and `/`; then again with the keys a browser sends while a Korean input method is on (through the DevTools protocol: `key` a Korean letter or `Process`, `keyCode` 229, `code` the key's place), which must act the same. A browser in headless mode cannot turn on a real input method; the author checks it once by hand with the Korean input on.
 - **Speed:** measured once as STAGE2_PLAN §7 measures the Shooter (benchmark 7).
 - **By hand:** the author plays it with someone on the Mac and on Windows, for the feel of the keys; and on a laptop keyboard, both players holding three or more keys at once (walk, crouch or jump, and an attack), with the training view on to see that every key held shows. Whether a keyboard reports many keys at once is its hardware (key rollover), so it cannot be checked by keys a program sends; if a common combination is lost, the default keys are changed.
+
+### 5.1 Checked by hand
+
+- **2026-11-16, MacBook, the key-check program** (twelve labels lit by `IsDown`, a count of `WasPressed` for each key; not in the repository), by the author: as expected with the keyboard's own auto-repeat (a key held counts once); with the Korean input method on (`W` `A` `S` `D` `.` `/`); with two hands at once (`W`+`D`+`F`, `↑`+`→`+`.`). After a button is clicked, `IsDown` and `WasPressed` still hear every key. A button that has the focus is pressed by Space, as in Visual Basic 6 and the operating systems; that stays, and games hide or disable their start button when a match begins (§2.5, LANGUAGE §11.1).
 
 ## 6. Questions for the author
 
