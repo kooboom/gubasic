@@ -243,6 +243,9 @@ String _controlTypeNames() => [
         if (c != formComponent && !c.menu) c.name
     ].join(', ');
 
+/// What places a control on the form; a control not seen on it has none.
+const _placeProperties = {'left', 'top', 'width', 'height'};
+
 /// Reads a `properties:` map for [component] into [into].
 void _properties(YamlReader r, YamlNode node, ComponentSpec component,
     Map<String, Object> into, Map<String, String>? pictures) {
@@ -252,6 +255,14 @@ void _properties(YamlReader r, YamlNode node, ComponentSpec component,
     final keyNode = key as YamlNode;
     final name = '${keyNode.value}';
     final spec = component.properties[name.toLowerCase()];
+    // A control not seen on the form, a Timer, has no place: a place an
+    // older file or another tool wrote for it is left out unsaid, and is
+    // not written again (D100).
+    if (spec == null &&
+        !component.visual &&
+        _placeProperties.contains(name.toLowerCase())) {
+      continue;
+    }
     if (spec == null || spec.internal) {
       r.report(keyNode.span, DiagnosticCode.unknownProperty, [
         name,

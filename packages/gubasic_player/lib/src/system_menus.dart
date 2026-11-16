@@ -5,6 +5,33 @@ import 'package:gubasic_runtime/gubasic_runtime.dart';
 import 'player_strings.dart';
 import 'run_session.dart';
 
+/// Edit → Delete (D110): what has the focus deletes what is chosen in it.
+/// The form designer maps it to deleting its chosen controls; anywhere
+/// else [gbInvokeEdit] sends a text field the Delete key's own intent.
+class GbDeleteIntent extends Intent {
+  const GbDeleteIntent();
+}
+
+/// Sends [intent], an item of the Edit menu, to [on] or to what has the
+/// keyboard's focus, as the item's keys would: the designer, a text field,
+/// the code editor. [GbDeleteIntent] in a text field, or where nothing
+/// maps it, deletes the field's selection or its next letter.
+void gbInvokeEdit(Intent intent, [FocusNode? on]) {
+  final context = (on ?? FocusManager.instance.primaryFocus)?.context;
+  if (context == null) return;
+  // In a text field, also one of the Properties window inside the
+  // designer, Delete is the field's: it never deletes a control.
+  final inText =
+      context.widget is EditableText ||
+      context.findAncestorWidgetOfExactType<EditableText>() != null;
+  if (intent is GbDeleteIntent &&
+      (inText || Actions.maybeFind<GbDeleteIntent>(context) == null)) {
+    Actions.maybeInvoke(context, const DeleteCharacterIntent(forward: true));
+    return;
+  }
+  Actions.maybeInvoke(context, intent);
+}
+
 /// On macOS, the system's menu bar of an app that runs GuBASIC programs,
 /// the IDE or an exported app (docs/DESIGN.md D106): the app's own menu,
 /// then, while [session]'s program shows a form, the menus of the form in
@@ -156,6 +183,16 @@ class _SystemMenusState extends State<SystemMenus> {
               words[6],
               LogicalKeyboardKey.keyA,
               const SelectAllTextIntent(cause),
+            ),
+          ],
+        ),
+        PlatformMenuItemGroup(
+          members: [
+            // No key of its own here: Backspace and Delete stay the
+            // field's or the designer's.
+            PlatformMenuItem(
+              label: words[7],
+              onSelected: () => gbInvokeEdit(const GbDeleteIntent()),
             ),
           ],
         ),

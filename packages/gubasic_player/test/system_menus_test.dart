@@ -118,7 +118,7 @@ void main() {
           for (final g in edit.menus)
             for (final i in (g as PlatformMenuItemGroup).members) i.label,
         ],
-        ['실행 취소', '다시 실행', '잘라내기', '복사', '붙여넣기', '모두 선택'],
+        ['실행 취소', '다시 실행', '잘라내기', '복사', '붙여넣기', '모두 선택', '삭제'],
       );
 
       final session = RunSession(

@@ -111,4 +111,90 @@ void main() {
       contains('Sub Timer1_Tick()\n'),
     );
   });
+
+  Future<Finder> placeTimer(WidgetTester tester) async {
+    final tool = find.byKey(const ValueKey('toolbox.Timer'));
+    await tester.tap(tool);
+    await tester.pump(kDoubleTapMinTime);
+    await tester.tap(tool);
+    await tester.pumpAndSettle();
+    return find.byKey(const ValueKey('designer.tray.Timer1'));
+  }
+
+  testWidgets('a right click on it opens the menu; Delete there deletes it', (
+    tester,
+  ) async {
+    await open(tester);
+    final chip = await placeTimer(tester);
+    await tester.tapAt(
+      tester.getCenter(chip),
+      kind: PointerDeviceKind.mouse,
+      buttons: kSecondaryButton,
+    );
+    await tester.pumpAndSettle();
+    // Front and back are for controls on the form.
+    expect(
+      tester
+          .widget<PopupMenuItem<VoidCallback>>(
+            find.byKey(designerMenuKey('front')),
+          )
+          .enabled,
+      isFalse,
+    );
+    await tester.tap(find.byKey(designerMenuKey('delete')));
+    await tester.pumpAndSettle();
+    expect(chip, findsNothing);
+    expect(text(tester), hello[formFile]);
+  });
+
+  testWidgets('Backspace and Edit → Delete delete it; undo brings it back', (
+    tester,
+  ) async {
+    await open(tester);
+    final chip = await placeTimer(tester);
+    await tester.sendKeyEvent(LogicalKeyboardKey.backspace);
+    await tester.pumpAndSettle();
+    expect(chip, findsNothing);
+    await tester.tap(find.byKey(const ValueKey('menu.edit')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('menu.edit.undo')));
+    await tester.pumpAndSettle();
+    expect(chip, findsOneWidget, reason: 'Edit → Undo');
+
+    await tester.tap(chip);
+    await tester.pump(const Duration(milliseconds: 500));
+    await tester.tap(find.byKey(const ValueKey('menu.edit')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('menu.edit.delete')));
+    await tester.pumpAndSettle();
+    expect(chip, findsNothing);
+    expect(text(tester), hello[formFile]);
+  });
+
+  testWidgets('Edit → Delete in a field of the Properties window deletes '
+      'text, not the control', (tester) async {
+    await open(tester);
+    final chip = await placeTimer(tester);
+    final field = find.descendant(
+      of: find.byKey(propertyFieldKey('Interval')),
+      matching: find.byType(EditableText),
+    );
+    await tester.tap(field);
+    await tester.pump();
+    // The caret at the start: Delete takes the first digit of 100.
+    final editable = tester.state<EditableTextState>(field);
+    editable.userUpdateTextEditingValue(
+      editable.textEditingValue.copyWith(
+        selection: const TextSelection.collapsed(offset: 0),
+      ),
+      SelectionChangedCause.tap,
+    );
+    await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('menu.edit')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('menu.edit.delete')));
+    await tester.pumpAndSettle();
+    expect(chip, findsOneWidget);
+    expect(tester.widget<EditableText>(field).controller.text, '00');
+  });
 }

@@ -822,10 +822,16 @@ class _IdeShellState extends State<IdeShell> {
             appBar: AppBar(
               // The File menu at the top left, where Visual Basic and most
               // desktop programs have it.
-              leading: controller.canUseFolders || controller.canUseBrowser
-                  ? _fileMenu(context)
-                  : null,
-              leadingWidth: 96,
+              leading: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (controller.canUseFolders || controller.canUseBrowser)
+                    _fileMenu(context),
+                  // macOS has its Edit menu on the system's menu bar.
+                  if (!gbUsesSystemMenus) _editMenu(context),
+                ],
+              ),
+              leadingWidth: gbUsesSystemMenus ? 96 : 192,
               automaticallyImplyLeading: false,
               title: Text(
                 widget.controller.current.isDirty
@@ -1139,6 +1145,98 @@ class _IdeShellState extends State<IdeShell> {
           onPressed: () => menu.isOpen ? menu.close() : menu.open(),
           child: Text(s.fileMenu),
         ),
+      ),
+    );
+  }
+
+  /// What had the keyboard's focus when the Edit menu opened: its items go
+  /// there, as their keys would.
+  FocusNode? _editTarget;
+
+  /// The Edit menu in the window, where the system has no menu bar for it
+  /// (the web, Windows; D110): Undo, Redo, Cut, Copy, Paste, Select All
+  /// and Delete, each sent to what had the focus, the designer or a text
+  /// field. Delete in a text field deletes text, never a control.
+  Widget _editMenu(BuildContext context) {
+    final words = widget.strings.player.editMenu;
+    MenuItemButton item(
+      String id,
+      String label,
+      Intent intent, {
+      SingleActivator? shortcut,
+    }) => MenuItemButton(
+      key: ValueKey('menu.edit.$id'),
+      onPressed: _running
+          ? null
+          : () {
+              final on = _editTarget;
+              // After the menu has closed and given the focus back.
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                on?.requestFocus();
+                gbInvokeEdit(intent, on);
+              });
+            },
+      shortcut: shortcut,
+      child: Text(label),
+    );
+    const cause = SelectionChangedCause.keyboard;
+    return MenuAnchor(
+      menuChildren: [
+        item(
+          'undo',
+          words[1],
+          const UndoTextIntent(cause),
+          shortcut: _shortcut(LogicalKeyboardKey.keyZ),
+        ),
+        item(
+          'redo',
+          words[2],
+          const RedoTextIntent(cause),
+          shortcut: _isApple
+              ? _shortcut(LogicalKeyboardKey.keyZ, shift: true)
+              : _shortcut(LogicalKeyboardKey.keyY),
+        ),
+        const Divider(),
+        item(
+          'cut',
+          words[3],
+          const CopySelectionTextIntent.cut(cause),
+          shortcut: _shortcut(LogicalKeyboardKey.keyX),
+        ),
+        item(
+          'copy',
+          words[4],
+          CopySelectionTextIntent.copy,
+          shortcut: _shortcut(LogicalKeyboardKey.keyC),
+        ),
+        item(
+          'paste',
+          words[5],
+          const PasteTextIntent(cause),
+          shortcut: _shortcut(LogicalKeyboardKey.keyV),
+        ),
+        item(
+          'delete',
+          words[7],
+          const GbDeleteIntent(),
+          shortcut: const SingleActivator(LogicalKeyboardKey.delete),
+        ),
+        const Divider(),
+        item(
+          'selectAll',
+          words[6],
+          const SelectAllTextIntent(cause),
+          shortcut: _shortcut(LogicalKeyboardKey.keyA),
+        ),
+      ],
+      builder: (context, menu, _) => TextButton(
+        key: const ValueKey('menu.edit'),
+        onPressed: () {
+          if (menu.isOpen) return menu.close();
+          _editTarget = FocusManager.instance.primaryFocus;
+          menu.open();
+        },
+        child: Text(words[0]),
       ),
     );
   }

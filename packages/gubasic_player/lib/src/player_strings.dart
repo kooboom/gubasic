@@ -55,8 +55,9 @@ class PlayerStrings {
   /// The item that shows the open source licences (D120).
   final String licenses;
 
-  /// The IDE's Edit menu on macOS's menu bar while no program runs (D110):
-  /// its title, then Undo, Redo, Cut, Copy, Paste and Select All.
+  /// The IDE's Edit menu while no program runs (D110), on macOS's menu bar
+  /// and in the window elsewhere: its title, then Undo, Redo, Cut, Copy,
+  /// Paste, Select All and Delete.
   final List<String> editMenu;
 
   /// [diagnostic] in [file], in this language.
@@ -81,7 +82,16 @@ class PlayerStrings {
         'again.',
     windowMenu: 'Window',
     licenses: 'Open Source Licenses',
-    editMenu: ['Edit', 'Undo', 'Redo', 'Cut', 'Copy', 'Paste', 'Select All'],
+    editMenu: [
+      'Edit',
+      'Undo',
+      'Redo',
+      'Cut',
+      'Copy',
+      'Paste',
+      'Select All',
+      'Delete',
+    ],
   );
 
   static const ko = PlayerStrings(
@@ -96,6 +106,6 @@ class PlayerStrings {
     notABundle: '이 앱의 프로그램 파일(project.gbz)이 손상되었습니다. 앱을 다시 내보내 주세요.',
     windowMenu: '윈도우',
     licenses: '오픈소스 라이선스',
-    editMenu: ['편집', '실행 취소', '다시 실행', '잘라내기', '복사', '붙여넣기', '모두 선택'],
+    editMenu: ['편집', '실행 취소', '다시 실행', '잘라내기', '복사', '붙여넣기', '모두 선택', '삭제'],
   );
 }

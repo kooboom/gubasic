@@ -518,16 +518,19 @@ class _FormDesignerState extends State<FormDesigner> {
   /// control, at the same place.
   ({String target, Offset at})? _press, _pressBefore;
 
+  /// The right button, a two-finger click, or Control and a click on Apple
+  /// systems: what opens the context menu.
+  bool _secondary(PointerDownEvent e) =>
+      e.buttons & kSecondaryButton != 0 ||
+      (_isApple &&
+          e.buttons & kPrimaryButton != 0 &&
+          HardwareKeyboard.instance.isControlPressed);
+
   void _down(PointerDownEvent e) {
     _focus.requestFocus();
     // The right button, a two-finger click, or Control and a click on
     // Apple systems: the context menu.
-    final secondary =
-        e.buttons & kSecondaryButton != 0 ||
-        (_isApple &&
-            e.buttons & kPrimaryButton != 0 &&
-            HardwareKeyboard.instance.isControlPressed);
-    if (secondary) {
+    if (_secondary(e)) {
       _contextMenu(e.position, e.localPosition);
       return;
     }
@@ -1020,9 +1023,14 @@ class _FormDesignerState extends State<FormDesigner> {
   /// The designer's context menu at [global], for what is at [local] on
   /// the form: a right click, a two-finger click, Control and a click on
   /// Apple systems, and later a long press on a touch screen. A control
-  /// there is selected first. While a program runs only View Code works.
-  Future<void> _contextMenu(Offset global, Offset local) async {
-    final c = _controlAt(local);
+  /// there is selected first, or [inTray], a control of the tray under the
+  /// form (D100). While a program runs only View Code works.
+  Future<void> _contextMenu(
+    Offset global,
+    Offset local, {
+    ControlDecl? inTray,
+  }) async {
+    final c = inTray ?? _controlAt(local);
     setState(() {
       // A click on one of several chosen controls keeps them chosen.
       if (c == null || !_isChosen(c.name)) _selected = c?.name;
@@ -1096,14 +1104,14 @@ class _FormDesignerState extends State<FormDesigner> {
             designerMenuKey('front'),
             s.bringToFront,
             () => _order(front: true),
-            enabled: editable,
+            enabled: editable && _chosenPlaced.isNotEmpty,
             shortcut: key('J'),
           ),
           item(
             designerMenuKey('back'),
             s.sendToBack,
             () => _order(front: false),
-            enabled: editable,
+            enabled: editable && _chosenPlaced.isNotEmpty,
             shortcut: key('K'),
           ),
           item(
@@ -1357,6 +1365,9 @@ class _FormDesignerState extends State<FormDesigner> {
           ),
           SelectAllTextIntent: CallbackAction<SelectAllTextIntent>(
             onInvoke: (_) => _chooseAll(),
+          ),
+          GbDeleteIntent: CallbackAction<GbDeleteIntent>(
+            onInvoke: (_) => editable ? _delete() : null,
           ),
         },
         child: Focus(
@@ -1981,30 +1992,47 @@ class _FormDesignerState extends State<FormDesigner> {
     ];
     if (hidden.isEmpty) return null;
     final scheme = Theme.of(context).colorScheme;
-    return Container(
-      key: designerTrayKey,
-      decoration: BoxDecoration(
-        color: scheme.surfaceContainerLow,
-        border: Border(top: BorderSide(color: scheme.outlineVariant)),
-      ),
-      padding: const EdgeInsets.all(8),
-      child: Wrap(
-        spacing: 8,
-        runSpacing: 8,
-        children: [
-          for (final c in hidden)
-            _TrayChip(
-              key: ValueKey('designer.tray.${c.name}'),
-              name: c.name,
-              icon: ControlIcon.of(c.component, size: 16),
-              chosen: _isChosen(c.name),
-              onTap: () {
-                _focus.requestFocus();
-                setState(() => _selected = c.name);
-              },
-              onDoubleTap: () => widget.onOpenHandler?.call(c.name),
-            ),
-        ],
+    // On the web, the right button opens the designer's menu here too.
+    return MouseRegion(
+      onEnter: (_) {
+        if (kIsWeb) BrowserContextMenu.disableContextMenu();
+      },
+      onExit: (_) {
+        if (kIsWeb) BrowserContextMenu.enableContextMenu();
+      },
+      child: Container(
+        key: designerTrayKey,
+        decoration: BoxDecoration(
+          color: scheme.surfaceContainerLow,
+          border: Border(top: BorderSide(color: scheme.outlineVariant)),
+        ),
+        padding: const EdgeInsets.all(8),
+        child: Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            for (final c in hidden)
+              Listener(
+                // Its context menu, as a control's on the form.
+                onPointerDown: (e) {
+                  if (!_secondary(e)) return;
+                  _focus.requestFocus();
+                  _contextMenu(e.position, Offset.zero, inTray: c);
+                },
+                child: _TrayChip(
+                  key: ValueKey('designer.tray.${c.name}'),
+                  name: c.name,
+                  icon: ControlIcon.of(c.component, size: 16),
+                  chosen: _isChosen(c.name),
+                  onTap: () {
+                    _focus.requestFocus();
+                    setState(() => _selected = c.name);
+                  },
+                  onDoubleTap: () => widget.onOpenHandler?.call(c.name),
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }

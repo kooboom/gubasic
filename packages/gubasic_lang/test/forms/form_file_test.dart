@@ -171,6 +171,27 @@ controls:
         reason: 'the control is kept without it');
   });
 
+  test('a place on a control not seen on the form is left out unsaid (D100)',
+      () {
+    final r = readFormFile('''
+formatVersion: 1
+controls:
+  - { name: tmrA, type: Timer, properties: { Interval: 50, Left: 10, Top: 20, Width: 32, Height: 32 } }
+  - { name: dlgOpen, type: OpenFileDialog, properties: { Left: 10, Top: 4 } }
+  - { name: tmrB, type: Timer, properties: { Caption: x } }
+''', name: 'F');
+    // Only what is not a place is still reported.
+    expect(r.diagnostics.map((d) => '${d.code.code}@${d.line} ${d.args[0]}'),
+        ['F009@5 Caption']);
+    expect(r.form.controls.map((c) => c.properties), [
+      {'Interval': 50},
+      <String, Object>{},
+      <String, Object>{},
+    ]);
+    // And it is not written again.
+    expect(writeFormFile(r.form), isNot(contains('Left')));
+  });
+
   test('F010: a property value of the wrong type', () {
     final r = readFormFile(
         'formatVersion: 1\ncontrols:\n'
