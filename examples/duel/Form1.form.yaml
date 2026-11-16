@@ -7,7 +7,7 @@ properties:
 controls:
   - name: lblFloor
     type: Label
-    properties: { Caption: "  1P  A D 걷기 · W 점프 · S 앉기 · F 주먹 · G 발차기      2P  ← → 걷기 · ↑ 점프 · ↓ 앉기 · . 주먹 · / 발차기      B 훈련 보기", Left: 0, Top: 360, Width: 640, Height: 40, FontSize: 10.0, ForeColor: "#C8CCD6", BackColor: "#3A3F4B", Anchor: Left Right Bottom }
+    properties: { Caption: "  1P  A D 걷기 · W 점프 · S 앉기 · F 주먹 · G 발차기      2P  ← → · ↑ · ↓ · . · /  (같은 순서)      B 훈련 보기", Left: 0, Top: 360, Width: 640, Height: 40, FontSize: 10.0, ForeColor: "#C8CCD6", BackColor: "#3A3F4B", Anchor: Left Right Bottom }
   - name: lblName1
     type: Label
     properties: { Caption: 1P, Left: 12, Top: 10, Width: 40, Height: 20, FontBold: true, ForeColor: "#BFD6FF" }
