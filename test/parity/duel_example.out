@@ -1,0 +1,1136 @@
+Set lblMessage.Caption: 1인 또는 2인을 고르세요
+Set sprHurt1.Frames: 
+Set sprHurt1.Frame: 0
+Set sprHurt1.FrameClock: 0
+Set sprHit1.Frames: 
+Set sprHit1.Frame: 0
+Set sprHit1.FrameClock: 0
+Set sprHurt2.Frames: 
+Set sprHurt2.Frame: 0
+Set sprHurt2.FrameClock: 0
+Set sprHit2.Frames: 
+Set sprHit2.Frame: 0
+Set sprHit2.FrameClock: 0
+Set lblInputs1.Visible: False
+Set lblInputs2.Visible: False
+> btnTwo.Click
+Set btnOne.Visible: False
+Set btnTwo.Visible: False
+Set sprFighter1.SpeedX: 0
+Set sprFighter1.SpeedY: 0
+Set sprHit1.Visible: False
+Set sprFighter2.SpeedX: 0
+Set sprFighter2.SpeedY: 0
+Set sprHit2.Visible: False
+Set lblMessage.Caption: 라운드 1
+Set lblBar1.Width: 220
+Set lblBar2.Width: 220
+Set lblBar2.Left: 368
+Set tmrGame.Enabled: True
+> Form.KeyDown D
+> Form.KeyDown Left
+> Wait 50
+> tmrGame.Tick
+Set sprFighter1.SpeedX: 170
+Set sprFighter1.Left: 128
+Set sprFighter1.FracX: 0.5
+Set sprFighter2.SpeedX: -170
+Set sprFighter2.Left: 415
+Set sprFighter2.FracX: 0.5
+Set sprHurt1.Height: 106
+Set sprHurt1.Top: 254
+Set sprHurt1.Left: 156
+Set sprHurt1.FracX: 0.5
+Set sprFighter1.Frame: 0
+Set sprFighter1.Frames: p1_walk.png, p1_stand.png
+Set sprFighter1.Frame: 0
+Set sprFighter1.FrameClock: 0
+Set sprFighter1.FrameTime: 140
+Set sprHurt2.Height: 106
+Set sprHurt2.Top: 254
+Set sprHurt2.Left: 443
+Set sprHurt2.FracX: 0.5
+Set sprFighter2.Frame: 0
+Set sprFighter2.Frames: p2_walk.png, p2_stand.png
+Set sprFighter2.Frame: 0
+Set sprFighter2.FrameClock: 0
+Set sprFighter2.FrameTime: 140
+> Wait 50
+> tmrGame.Tick
+Set sprFighter1.Left: 137
+Set sprFighter1.FracX: 0
+Set sprFighter1.FrameClock: 50
+Set sprFighter2.Left: 407
+Set sprFighter2.FracX: 0
+Set sprFighter2.FrameClock: 50
+Set sprHurt1.Left: 165
+Set sprHurt1.FracX: 0
+Set sprHurt2.Left: 435
+Set sprHurt2.FracX: 0
+> Wait 50
+> tmrGame.Tick
+Set sprFighter1.Left: 145
+Set sprFighter1.FracX: 0.5
+Set sprFighter1.FrameClock: 100
+Set sprFighter2.Left: 398
+Set sprFighter2.FracX: 0.5
+Set sprFighter2.FrameClock: 100
+Set sprHurt1.Left: 173
+Set sprHurt1.FracX: 0.5
+Set sprHurt2.Left: 426
+Set sprHurt2.FracX: 0.5
+> Wait 50
+> tmrGame.Tick
+Set sprFighter1.Left: 154
+Set sprFighter1.FracX: 0
+Set sprFighter1.FrameClock: 10
+Set sprFighter1.Frame: 1
+Set sprFighter2.Left: 390
+Set sprFighter2.FracX: 0
+Set sprFighter2.FrameClock: 10
+Set sprFighter2.Frame: 1
+Set sprHurt1.Left: 182
+Set sprHurt1.FracX: 0
+Set sprHurt2.Left: 418
+Set sprHurt2.FracX: 0
+> Wait 50
+> tmrGame.Tick
+Set sprFighter1.Left: 162
+Set sprFighter1.FracX: 0.5
+Set sprFighter1.FrameClock: 60
+Set sprFighter2.Left: 381
+Set sprFighter2.FracX: 0.5
+Set sprFighter2.FrameClock: 60
+Set sprHurt1.Left: 190
+Set sprHurt1.FracX: 0.5
+Set sprHurt2.Left: 409
+Set sprHurt2.FracX: 0.5
+> Wait 50
+> tmrGame.Tick
+Set sprFighter1.Left: 171
+Set sprFighter1.FracX: 0
+Set sprFighter1.FrameClock: 110
+Set sprFighter2.Left: 373
+Set sprFighter2.FracX: 0
+Set sprFighter2.FrameClock: 110
+Set sprHurt1.Left: 199
+Set sprHurt1.FracX: 0
+Set sprHurt2.Left: 401
+Set sprHurt2.FracX: 0
+> Wait 50
+> tmrGame.Tick
+Set sprFighter1.Left: 179
+Set sprFighter1.FracX: 0.5
+Set sprFighter1.FrameClock: 20
+Set sprFighter1.Frame: 0
+Set sprFighter2.Left: 364
+Set sprFighter2.FracX: 0.5
+Set sprFighter2.FrameClock: 20
+Set sprFighter2.Frame: 0
+Set sprHurt1.Left: 207
+Set sprHurt1.FracX: 0.5
+Set sprHurt2.Left: 392
+Set sprHurt2.FracX: 0.5
+> Wait 50
+> tmrGame.Tick
+Set sprFighter1.Left: 188
+Set sprFighter1.FracX: 0
+Set sprFighter1.FrameClock: 70
+Set sprFighter2.Left: 356
+Set sprFighter2.FracX: 0
+Set sprFighter2.FrameClock: 70
+Set sprHurt1.Left: 216
+Set sprHurt1.FracX: 0
+Set sprHurt2.Left: 384
+Set sprHurt2.FracX: 0
+> Wait 50
+> tmrGame.Tick
+Set sprFighter1.Left: 196
+Set sprFighter1.FracX: 0.5
+Set sprFighter1.FrameClock: 120
+Set sprFighter2.Left: 347
+Set sprFighter2.FracX: 0.5
+Set sprFighter2.FrameClock: 120
+Set sprHurt1.Left: 224
+Set sprHurt1.FracX: 0.5
+Set sprHurt2.Left: 375
+Set sprHurt2.FracX: 0.5
+> Wait 50
+> tmrGame.Tick
+Set sprFighter1.Left: 205
+Set sprFighter1.FracX: 0
+Set sprFighter1.FrameClock: 30
+Set sprFighter1.Frame: 1
+Set sprFighter2.Left: 339
+Set sprFighter2.FracX: 0
+Set sprFighter2.FrameClock: 30
+Set sprFighter2.Frame: 1
+Set sprHurt1.Left: 233
+Set sprHurt1.FracX: 0
+Set sprHurt2.Left: 367
+Set sprHurt2.FracX: 0
+> Wait 50
+> tmrGame.Tick
+Set sprFighter1.Left: 213
+Set sprFighter1.FracX: 0.5
+Set sprFighter1.FrameClock: 80
+Set sprFighter2.Left: 330
+Set sprFighter2.FracX: 0.5
+Set sprFighter2.FrameClock: 80
+Set sprHurt1.Left: 241
+Set sprHurt1.FracX: 0.5
+Set sprHurt2.Left: 358
+Set sprHurt2.FracX: 0.5
+> Wait 50
+> tmrGame.Tick
+Set sprFighter1.Left: 222
+Set sprFighter1.FracX: 0
+Set sprFighter1.FrameClock: 130
+Set sprFighter2.Left: 322
+Set sprFighter2.FracX: 0
+Set sprFighter2.FrameClock: 130
+Set sprHurt1.Left: 250
+Set sprHurt1.FracX: 0
+Set sprHurt2.Left: 350
+Set sprHurt2.FracX: 0
+> Wait 50
+> tmrGame.Tick
+Set sprFighter1.Left: 230
+Set sprFighter1.FracX: 0.5
+Set sprFighter1.FrameClock: 40
+Set sprFighter1.Frame: 0
+Set sprFighter2.Left: 313
+Set sprFighter2.FracX: 0.5
+Set sprFighter2.FrameClock: 40
+Set sprFighter2.Frame: 0
+Set sprHurt1.Left: 258
+Set sprHurt1.FracX: 0.5
+Set sprHurt2.Left: 341
+Set sprHurt2.FracX: 0.5
+> Wait 50
+> tmrGame.Tick
+Set sprFighter1.Left: 239
+Set sprFighter1.FracX: 0
+Set sprFighter1.FrameClock: 90
+Set sprFighter2.Left: 305
+Set sprFighter2.FracX: 0
+Set sprFighter2.FrameClock: 90
+Set sprHurt1.Left: 267
+Set sprHurt1.FracX: 0
+Set sprHurt2.Left: 333
+Set sprHurt2.FracX: 0
+> Wait 50
+> tmrGame.Tick
+Set sprFighter1.Left: 247
+Set sprFighter1.FracX: 0.5
+Set sprFighter1.FrameClock: 0
+Set sprFighter1.Frame: 1
+Set sprFighter2.Left: 296
+Set sprFighter2.FracX: 0.5
+Set sprFighter2.FrameClock: 0
+Set sprFighter2.Frame: 1
+Set sprFighter1.FracX: 0
+Set sprFighter2.Left: 297
+Set sprFighter2.FracX: 0
+Set sprHurt1.Left: 275
+Set sprHurt2.Left: 325
+> Form.KeyUp D
+> Form.KeyUp Left
+> Form.KeyDown F
+> Wait 16
+> tmrGame.Tick
+Set sprFighter1.SpeedX: 0
+Set sprFighter1.FrameClock: 16
+Set sprFighter2.SpeedX: 0
+Set sprFighter2.FrameClock: 16
+Set sprFighter1.Frame: 0
+Set sprFighter1.Frames: p1_punch.png
+Set sprFighter1.Frame: 0
+Set sprFighter1.FrameClock: 0
+Set sprFighter1.FrameTime: 0
+Set sprFighter2.Frame: 0
+Set sprFighter2.Frames: p2_stand.png
+Set sprFighter2.Frame: 0
+Set sprFighter2.FrameClock: 0
+Set sprFighter2.FrameTime: 0
+> Form.KeyUp F
+> Wait 70
+> tmrGame.Tick
+Set sprHit1.Width: 30
+Set sprHit1.Height: 22
+Set sprHit1.Top: 274
+Set sprHit1.Left: 311
+Set sprHit1.Visible: True
+Set sprHit1.Visible: False
+Set sprFighter2.Left: 325
+Sound: hit.wav
+Set lblBar1.Width: 220
+Set lblBar2.Width: 202
+Set lblBar2.Left: 386
+> Wait 100
+> tmrGame.Tick
+Set sprHurt2.Left: 353
+Set sprFighter2.Frame: 0
+Set sprFighter2.Frames: p2_hurt.png
+Set sprFighter2.Frame: 0
+Set sprFighter2.FrameClock: 0
+Set sprFighter2.FrameTime: 0
+> Wait 400
+> tmrGame.Tick
+Set lblMessage.Caption: 
+Set sprFighter1.Frame: 0
+Set sprFighter1.Frames: p1_stand.png
+Set sprFighter1.Frame: 0
+Set sprFighter1.FrameClock: 0
+Set sprFighter1.FrameTime: 0
+Set sprFighter2.Frame: 0
+Set sprFighter2.Frames: p2_stand.png
+Set sprFighter2.Frame: 0
+Set sprFighter2.FrameClock: 0
+Set sprFighter2.FrameTime: 0
+Set lblClock.Caption: 59
+> Form.KeyDown D
+> Wait 50
+> tmrGame.Tick
+Set sprFighter1.SpeedX: 170
+Set sprFighter1.Left: 255
+Set sprFighter1.FracX: 0.5
+Set sprHurt1.Left: 283
+Set sprHurt1.FracX: 0.5
+Set sprFighter1.Frame: 0
+Set sprFighter1.Frames: p1_walk.png, p1_stand.png
+Set sprFighter1.Frame: 0
+Set sprFighter1.FrameClock: 0
+Set sprFighter1.FrameTime: 140
+> Wait 50
+> tmrGame.Tick
+Set sprFighter1.Left: 264
+Set sprFighter1.FracX: 0
+Set sprFighter1.FrameClock: 50
+Set sprHurt1.Left: 292
+Set sprHurt1.FracX: 0
+> Wait 50
+> tmrGame.Tick
+Set sprFighter1.Left: 272
+Set sprFighter1.FracX: 0.5
+Set sprFighter1.FrameClock: 100
+Set sprHurt1.Left: 300
+Set sprHurt1.FracX: 0.5
+> Form.KeyUp D
+> Form.KeyDown G
+> Form.KeyDown Right
+> Wait 16
+> tmrGame.Tick
+Set sprFighter1.SpeedX: 0
+Set sprFighter1.FrameClock: 116
+Set sprFighter1.Frame: 0
+Set sprFighter1.Frames: p1_kick.png
+Set sprFighter1.Frame: 0
+Set sprFighter1.FrameClock: 0
+Set sprFighter1.FrameTime: 0
+Set sprFighter2.Frame: 0
+Set sprFighter2.Frames: p2_block.png
+Set sprFighter2.Frame: 0
+Set sprFighter2.FrameClock: 0
+Set sprFighter2.FrameTime: 0
+> Form.KeyUp G
+> Wait 130
+> tmrGame.Tick
+Set sprHit1.Width: 34
+Set sprHit1.Height: 26
+Set sprHit1.Top: 298
+Set sprHit1.Left: 336
+Set sprHit1.FracX: 0.5
+Set sprHit1.Visible: True
+Set sprHit1.Visible: False
+Set sprFighter2.Left: 337
+Sound: block.wav
+Set lblBar1.Width: 220
+Set lblBar2.Width: 202
+Set lblBar2.Left: 386
+> Wait 100
+> tmrGame.Tick
+Set sprHurt2.Left: 365
+> Wait 400
+> tmrGame.Tick
+Set sprFighter2.SpeedX: 136
+Set sprFighter2.Left: 343
+Set sprFighter2.FracX: 0.8000000000000114
+Set sprFighter1.Frame: 0
+Set sprFighter1.Frames: p1_stand.png
+Set sprFighter1.Frame: 0
+Set sprFighter1.FrameClock: 0
+Set sprFighter1.FrameTime: 0
+Set sprHurt2.Left: 371
+Set sprHurt2.FracX: 0.8000000000000114
+Set sprFighter2.Frame: 0
+Set sprFighter2.Frames: p2_walk.png, p2_stand.png
+Set sprFighter2.Frame: 0
+Set sprFighter2.FrameClock: 0
+Set sprFighter2.FrameTime: 140
+Set lblClock.Caption: 58
+> Form.KeyUp Right
+> Form.KeyDown D
+> Wait 50
+> tmrGame.Tick
+Set sprFighter1.SpeedX: 170
+Set sprFighter1.Left: 281
+Set sprFighter1.FracX: 0
+Set sprFighter2.SpeedX: 0
+Set sprFighter2.FrameClock: 50
+Set sprHurt1.Left: 309
+Set sprHurt1.FracX: 0
+Set sprFighter1.Frame: 0
+Set sprFighter1.Frames: p1_walk.png, p1_stand.png
+Set sprFighter1.Frame: 0
+Set sprFighter1.FrameClock: 0
+Set sprFighter1.FrameTime: 140
+Set sprFighter2.Frame: 0
+Set sprFighter2.Frames: p2_stand.png
+Set sprFighter2.Frame: 0
+Set sprFighter2.FrameClock: 0
+Set sprFighter2.FrameTime: 0
+> Wait 50
+> tmrGame.Tick
+Set sprFighter1.Left: 289
+Set sprFighter1.FracX: 0.5
+Set sprFighter1.FrameClock: 50
+Set sprHurt1.Left: 317
+Set sprHurt1.FracX: 0.5
+> Wait 50
+> tmrGame.Tick
+Set sprFighter1.Left: 298
+Set sprFighter1.FracX: 0
+Set sprFighter1.FrameClock: 100
+Set sprFighter1.Left: 295
+Set sprFighter1.FracX: 0.8999999999999773
+Set sprFighter2.Left: 345
+Set sprFighter2.FracX: 0.8999999999999773
+Set sprHurt1.Left: 323
+Set sprHurt1.FracX: 0.8999999999999773
+Set sprHurt2.Left: 373
+Set sprHurt2.FracX: 0.8999999999999773
+> Wait 50
+> tmrGame.Tick
+Set sprFighter1.Left: 304
+Set sprFighter1.FracX: 0.39999999999997726
+Set sprFighter1.FrameClock: 10
+Set sprFighter1.Frame: 1
+Set sprFighter1.Left: 300
+Set sprFighter1.FracX: 0.14999999999997726
+Set sprFighter2.Left: 350
+Set sprFighter2.FracX: 0.14999999999997726
+Set sprHurt1.Left: 328
+Set sprHurt1.FracX: 0.14999999999997726
+Set sprHurt2.Left: 378
+Set sprHurt2.FracX: 0.14999999999997726
+> Form.KeyUp D
+> Form.KeyDown G
+> Wait 16
+> tmrGame.Tick
+Set sprFighter1.SpeedX: 0
+Set sprFighter1.FrameClock: 26
+Set sprFighter1.Frame: 0
+Set sprFighter1.Frames: p1_kick.png
+Set sprFighter1.Frame: 0
+Set sprFighter1.FrameClock: 0
+Set sprFighter1.FrameTime: 0
+> Form.KeyUp G
+> Wait 130
+> tmrGame.Tick
+Set sprHit1.Width: 34
+Set sprHit1.Height: 26
+Set sprHit1.Left: 364
+Set sprHit1.FracX: 0.14999999999997726
+Set sprHit1.Visible: True
+Set sprHit1.Visible: False
+Set sprFighter2.Left: 378
+Sound: hit.wav
+Set lblBar1.Width: 220
+Set lblBar2.Width: 176
+Set lblBar2.Left: 412
+> Wait 100
+> tmrGame.Tick
+Set sprHurt2.Left: 406
+Set sprFighter2.Frame: 0
+Set sprFighter2.Frames: p2_hurt.png
+Set sprFighter2.Frame: 0
+Set sprFighter2.FrameClock: 0
+Set sprFighter2.FrameTime: 0
+> Wait 400
+> tmrGame.Tick
+Set sprFighter1.Frame: 0
+Set sprFighter1.Frames: p1_stand.png
+Set sprFighter1.Frame: 0
+Set sprFighter1.FrameClock: 0
+Set sprFighter1.FrameTime: 0
+Set sprFighter2.Frame: 0
+Set sprFighter2.Frames: p2_stand.png
+Set sprFighter2.Frame: 0
+Set sprFighter2.FrameClock: 0
+Set sprFighter2.FrameTime: 0
+> Form.KeyDown D
+> Wait 50
+> tmrGame.Tick
+Set sprFighter1.SpeedX: 170
+Set sprFighter1.Left: 308
+Set sprFighter1.FracX: 0.6499999999999773
+Set sprHurt1.Left: 336
+Set sprHurt1.FracX: 0.6499999999999773
+Set sprFighter1.Frame: 0
+Set sprFighter1.Frames: p1_walk.png, p1_stand.png
+Set sprFighter1.Frame: 0
+Set sprFighter1.FrameClock: 0
+Set sprFighter1.FrameTime: 140
+Set lblClock.Caption: 57
+> Wait 50
+> tmrGame.Tick
+Set sprFighter1.Left: 317
+Set sprFighter1.FracX: 0.14999999999997726
+Set sprFighter1.FrameClock: 50
+Set sprHurt1.Left: 345
+Set sprHurt1.FracX: 0.14999999999997726
+> Wait 50
+> tmrGame.Tick
+Set sprFighter1.Left: 325
+Set sprFighter1.FracX: 0.6499999999999773
+Set sprFighter1.FrameClock: 100
+Set sprHurt1.Left: 353
+Set sprHurt1.FracX: 0.6499999999999773
+> Wait 50
+> tmrGame.Tick
+Set sprFighter1.Left: 334
+Set sprFighter1.FracX: 0.14999999999997726
+Set sprFighter1.FrameClock: 10
+Set sprFighter1.Frame: 1
+Set sprFighter1.Left: 331
+Set sprFighter2.Left: 381
+Set sprHurt1.Left: 359
+Set sprHurt1.FracX: 0.14999999999997726
+Set sprHurt2.Left: 409
+> Form.KeyUp D
+> Form.KeyDown G
+> Wait 16
+> tmrGame.Tick
+Set sprFighter1.SpeedX: 0
+Set sprFighter1.FrameClock: 26
+Set sprFighter1.Frame: 0
+Set sprFighter1.Frames: p1_kick.png
+Set sprFighter1.Frame: 0
+Set sprFighter1.FrameClock: 0
+Set sprFighter1.FrameTime: 0
+> Form.KeyUp G
+> Wait 130
+> tmrGame.Tick
+Set sprHit1.Width: 34
+Set sprHit1.Height: 26
+Set sprHit1.Left: 395
+Set sprHit1.Visible: True
+Set sprHit1.Visible: False
+Set sprFighter2.Left: 409
+Sound: hit.wav
+Set lblBar1.Width: 220
+Set lblBar2.Width: 149
+Set lblBar2.Left: 439
+> Wait 100
+> tmrGame.Tick
+Set sprHurt2.Left: 437
+Set sprFighter2.Frame: 0
+Set sprFighter2.Frames: p2_hurt.png
+Set sprFighter2.Frame: 0
+Set sprFighter2.FrameClock: 0
+Set sprFighter2.FrameTime: 0
+> Wait 400
+> tmrGame.Tick
+Set sprFighter1.Frame: 0
+Set sprFighter1.Frames: p1_stand.png
+Set sprFighter1.Frame: 0
+Set sprFighter1.FrameClock: 0
+Set sprFighter1.FrameTime: 0
+Set sprFighter2.Frame: 0
+Set sprFighter2.Frames: p2_stand.png
+Set sprFighter2.Frame: 0
+Set sprFighter2.FrameClock: 0
+Set sprFighter2.FrameTime: 0
+> Form.KeyDown D
+> Wait 50
+> tmrGame.Tick
+Set sprFighter1.SpeedX: 170
+Set sprFighter1.Left: 339
+Set sprFighter1.FracX: 0.6499999999999773
+Set sprHurt1.Left: 367
+Set sprHurt1.FracX: 0.6499999999999773
+Set sprFighter1.Frame: 0
+Set sprFighter1.Frames: p1_walk.png, p1_stand.png
+Set sprFighter1.Frame: 0
+Set sprFighter1.FrameClock: 0
+Set sprFighter1.FrameTime: 140
+> Wait 50
+> tmrGame.Tick
+Set sprFighter1.Left: 348
+Set sprFighter1.FracX: 0.14999999999997726
+Set sprFighter1.FrameClock: 50
+Set sprHurt1.Left: 376
+Set sprHurt1.FracX: 0.14999999999997726
+> Wait 50
+> tmrGame.Tick
+Set sprFighter1.Left: 356
+Set sprFighter1.FracX: 0.6499999999999773
+Set sprFighter1.FrameClock: 100
+Set sprHurt1.Left: 384
+Set sprHurt1.FracX: 0.6499999999999773
+> Wait 50
+> tmrGame.Tick
+Set sprFighter1.Left: 365
+Set sprFighter1.FracX: 0.14999999999997726
+Set sprFighter1.FrameClock: 10
+Set sprFighter1.Frame: 1
+Set sprFighter1.Left: 362
+Set sprFighter2.Left: 412
+Set sprHurt1.Left: 390
+Set sprHurt1.FracX: 0.14999999999997726
+Set sprHurt2.Left: 440
+Set lblClock.Caption: 56
+> Form.KeyUp D
+> Form.KeyDown G
+> Wait 16
+> tmrGame.Tick
+Set sprFighter1.SpeedX: 0
+Set sprFighter1.FrameClock: 26
+Set sprFighter1.Frame: 0
+Set sprFighter1.Frames: p1_kick.png
+Set sprFighter1.Frame: 0
+Set sprFighter1.FrameClock: 0
+Set sprFighter1.FrameTime: 0
+> Form.KeyUp G
+> Wait 130
+> tmrGame.Tick
+Set sprHit1.Width: 34
+Set sprHit1.Height: 26
+Set sprHit1.Left: 426
+Set sprHit1.Visible: True
+Set sprHit1.Visible: False
+Set sprFighter2.Left: 440
+Sound: hit.wav
+Set lblBar1.Width: 220
+Set lblBar2.Width: 123
+Set lblBar2.Left: 465
+> Wait 100
+> tmrGame.Tick
+Set sprHurt2.Left: 468
+Set sprFighter2.Frame: 0
+Set sprFighter2.Frames: p2_hurt.png
+Set sprFighter2.Frame: 0
+Set sprFighter2.FrameClock: 0
+Set sprFighter2.FrameTime: 0
+> Wait 400
+> tmrGame.Tick
+Set sprFighter1.Frame: 0
+Set sprFighter1.Frames: p1_stand.png
+Set sprFighter1.Frame: 0
+Set sprFighter1.FrameClock: 0
+Set sprFighter1.FrameTime: 0
+Set sprFighter2.Frame: 0
+Set sprFighter2.Frames: p2_stand.png
+Set sprFighter2.Frame: 0
+Set sprFighter2.FrameClock: 0
+Set sprFighter2.FrameTime: 0
+> Form.KeyDown D
+> Wait 50
+> tmrGame.Tick
+Set sprFighter1.SpeedX: 170
+Set sprFighter1.Left: 370
+Set sprFighter1.FracX: 0.6499999999999773
+Set sprHurt1.Left: 398
+Set sprHurt1.FracX: 0.6499999999999773
+Set sprFighter1.Frame: 0
+Set sprFighter1.Frames: p1_walk.png, p1_stand.png
+Set sprFighter1.Frame: 0
+Set sprFighter1.FrameClock: 0
+Set sprFighter1.FrameTime: 140
+> Wait 50
+> tmrGame.Tick
+Set sprFighter1.Left: 379
+Set sprFighter1.FracX: 0.14999999999997726
+Set sprFighter1.FrameClock: 50
+Set sprHurt1.Left: 407
+Set sprHurt1.FracX: 0.14999999999997726
+> Wait 50
+> tmrGame.Tick
+Set sprFighter1.Left: 387
+Set sprFighter1.FracX: 0.6499999999999773
+Set sprFighter1.FrameClock: 100
+Set sprHurt1.Left: 415
+Set sprHurt1.FracX: 0.6499999999999773
+> Wait 50
+> tmrGame.Tick
+Set sprFighter1.Left: 396
+Set sprFighter1.FracX: 0.14999999999997726
+Set sprFighter1.FrameClock: 10
+Set sprFighter1.Frame: 1
+Set sprFighter1.Left: 393
+Set sprFighter2.Left: 443
+Set sprHurt1.Left: 421
+Set sprHurt1.FracX: 0.14999999999997726
+Set sprHurt2.Left: 471
+> Form.KeyUp D
+> Form.KeyDown G
+> Wait 16
+> tmrGame.Tick
+Set sprFighter1.SpeedX: 0
+Set sprFighter1.FrameClock: 26
+Set sprFighter1.Frame: 0
+Set sprFighter1.Frames: p1_kick.png
+Set sprFighter1.Frame: 0
+Set sprFighter1.FrameClock: 0
+Set sprFighter1.FrameTime: 0
+> Form.KeyUp G
+> Wait 130
+> tmrGame.Tick
+Set sprHit1.Width: 34
+Set sprHit1.Height: 26
+Set sprHit1.Left: 457
+Set sprHit1.Visible: True
+Set sprHit1.Visible: False
+Set sprFighter2.Left: 471
+Sound: hit.wav
+Set lblBar1.Width: 220
+Set lblBar2.Width: 96
+Set lblBar2.Left: 492
+Set lblClock.Caption: 55
+> Wait 100
+> tmrGame.Tick
+Set sprHurt2.Left: 499
+Set sprFighter2.Frame: 0
+Set sprFighter2.Frames: p2_hurt.png
+Set sprFighter2.Frame: 0
+Set sprFighter2.FrameClock: 0
+Set sprFighter2.FrameTime: 0
+> Wait 400
+> tmrGame.Tick
+Set sprFighter1.Frame: 0
+Set sprFighter1.Frames: p1_stand.png
+Set sprFighter1.Frame: 0
+Set sprFighter1.FrameClock: 0
+Set sprFighter1.FrameTime: 0
+Set sprFighter2.Frame: 0
+Set sprFighter2.Frames: p2_stand.png
+Set sprFighter2.Frame: 0
+Set sprFighter2.FrameClock: 0
+Set sprFighter2.FrameTime: 0
+> Form.KeyDown D
+> Wait 50
+> tmrGame.Tick
+Set sprFighter1.SpeedX: 170
+Set sprFighter1.Left: 401
+Set sprFighter1.FracX: 0.6499999999999773
+Set sprHurt1.Left: 429
+Set sprHurt1.FracX: 0.6499999999999773
+Set sprFighter1.Frame: 0
+Set sprFighter1.Frames: p1_walk.png, p1_stand.png
+Set sprFighter1.Frame: 0
+Set sprFighter1.FrameClock: 0
+Set sprFighter1.FrameTime: 140
+> Wait 50
+> tmrGame.Tick
+Set sprFighter1.Left: 410
+Set sprFighter1.FracX: 0.14999999999997726
+Set sprFighter1.FrameClock: 50
+Set sprHurt1.Left: 438
+Set sprHurt1.FracX: 0.14999999999997726
+> Wait 50
+> tmrGame.Tick
+Set sprFighter1.Left: 418
+Set sprFighter1.FracX: 0.6499999999999773
+Set sprFighter1.FrameClock: 100
+Set sprHurt1.Left: 446
+Set sprHurt1.FracX: 0.6499999999999773
+> Wait 50
+> tmrGame.Tick
+Set sprFighter1.Left: 427
+Set sprFighter1.FracX: 0.14999999999997726
+Set sprFighter1.FrameClock: 10
+Set sprFighter1.Frame: 1
+Set sprFighter1.Left: 424
+Set sprFighter2.Left: 474
+Set sprHurt1.Left: 452
+Set sprHurt1.FracX: 0.14999999999997726
+Set sprHurt2.Left: 502
+> Form.KeyUp D
+> Form.KeyDown G
+> Wait 16
+> tmrGame.Tick
+Set sprFighter1.SpeedX: 0
+Set sprFighter1.FrameClock: 26
+Set sprFighter1.Frame: 0
+Set sprFighter1.Frames: p1_kick.png
+Set sprFighter1.Frame: 0
+Set sprFighter1.FrameClock: 0
+Set sprFighter1.FrameTime: 0
+> Form.KeyUp G
+> Wait 130
+> tmrGame.Tick
+Set sprHit1.Width: 34
+Set sprHit1.Height: 26
+Set sprHit1.Left: 488
+Set sprHit1.Visible: True
+Set sprHit1.Visible: False
+Set sprFighter2.Left: 502
+Sound: hit.wav
+Set lblBar1.Width: 220
+Set lblBar2.Width: 70
+Set lblBar2.Left: 518
+> Wait 100
+> tmrGame.Tick
+Set sprHurt2.Left: 530
+Set sprFighter2.Frame: 0
+Set sprFighter2.Frames: p2_hurt.png
+Set sprFighter2.Frame: 0
+Set sprFighter2.FrameClock: 0
+Set sprFighter2.FrameTime: 0
+> Wait 400
+> tmrGame.Tick
+Set sprFighter1.Frame: 0
+Set sprFighter1.Frames: p1_stand.png
+Set sprFighter1.Frame: 0
+Set sprFighter1.FrameClock: 0
+Set sprFighter1.FrameTime: 0
+Set sprFighter2.Frame: 0
+Set sprFighter2.Frames: p2_stand.png
+Set sprFighter2.Frame: 0
+Set sprFighter2.FrameClock: 0
+Set sprFighter2.FrameTime: 0
+Set lblClock.Caption: 54
+> Form.KeyDown D
+> Wait 50
+> tmrGame.Tick
+Set sprFighter1.SpeedX: 170
+Set sprFighter1.Left: 432
+Set sprFighter1.FracX: 0.6499999999999773
+Set sprHurt1.Left: 460
+Set sprHurt1.FracX: 0.6499999999999773
+Set sprFighter1.Frame: 0
+Set sprFighter1.Frames: p1_walk.png, p1_stand.png
+Set sprFighter1.Frame: 0
+Set sprFighter1.FrameClock: 0
+Set sprFighter1.FrameTime: 140
+> Wait 50
+> tmrGame.Tick
+Set sprFighter1.Left: 441
+Set sprFighter1.FracX: 0.14999999999997726
+Set sprFighter1.FrameClock: 50
+Set sprHurt1.Left: 469
+Set sprHurt1.FracX: 0.14999999999997726
+> Wait 50
+> tmrGame.Tick
+Set sprFighter1.Left: 449
+Set sprFighter1.FracX: 0.6499999999999773
+Set sprFighter1.FrameClock: 100
+Set sprHurt1.Left: 477
+Set sprHurt1.FracX: 0.6499999999999773
+> Wait 50
+> tmrGame.Tick
+Set sprFighter1.Left: 458
+Set sprFighter1.FracX: 0.14999999999997726
+Set sprFighter1.FrameClock: 10
+Set sprFighter1.Frame: 1
+Set sprFighter1.Left: 455
+Set sprFighter2.Left: 505
+Set sprHurt1.Left: 483
+Set sprHurt1.FracX: 0.14999999999997726
+Set sprHurt2.Left: 533
+> Form.KeyUp D
+> Form.KeyDown G
+> Wait 16
+> tmrGame.Tick
+Set sprFighter1.SpeedX: 0
+Set sprFighter1.FrameClock: 26
+Set sprFighter1.Frame: 0
+Set sprFighter1.Frames: p1_kick.png
+Set sprFighter1.Frame: 0
+Set sprFighter1.FrameClock: 0
+Set sprFighter1.FrameTime: 0
+> Form.KeyUp G
+> Wait 130
+> tmrGame.Tick
+Set sprHit1.Width: 34
+Set sprHit1.Height: 26
+Set sprHit1.Left: 519
+Set sprHit1.Visible: True
+Set sprHit1.Visible: False
+Set sprFighter2.Left: 533
+Sound: hit.wav
+Set lblBar1.Width: 220
+Set lblBar2.Width: 44
+Set lblBar2.Left: 544
+> Wait 100
+> tmrGame.Tick
+Set sprHurt2.Left: 561
+Set sprFighter2.Frame: 0
+Set sprFighter2.Frames: p2_hurt.png
+Set sprFighter2.Frame: 0
+Set sprFighter2.FrameClock: 0
+Set sprFighter2.FrameTime: 0
+> Wait 400
+> tmrGame.Tick
+Set sprFighter1.Frame: 0
+Set sprFighter1.Frames: p1_stand.png
+Set sprFighter1.Frame: 0
+Set sprFighter1.FrameClock: 0
+Set sprFighter1.FrameTime: 0
+Set sprFighter2.Frame: 0
+Set sprFighter2.Frames: p2_stand.png
+Set sprFighter2.Frame: 0
+Set sprFighter2.FrameClock: 0
+Set sprFighter2.FrameTime: 0
+Set lblClock.Caption: 53
+> Form.KeyDown D
+> Wait 50
+> tmrGame.Tick
+Set sprFighter1.SpeedX: 170
+Set sprFighter1.Left: 463
+Set sprFighter1.FracX: 0.6499999999999773
+Set sprHurt1.Left: 491
+Set sprHurt1.FracX: 0.6499999999999773
+Set sprFighter1.Frame: 0
+Set sprFighter1.Frames: p1_walk.png, p1_stand.png
+Set sprFighter1.Frame: 0
+Set sprFighter1.FrameClock: 0
+Set sprFighter1.FrameTime: 140
+> Wait 50
+> tmrGame.Tick
+Set sprFighter1.Left: 472
+Set sprFighter1.FracX: 0.14999999999997726
+Set sprFighter1.FrameClock: 50
+Set sprHurt1.Left: 500
+Set sprHurt1.FracX: 0.14999999999997726
+> Wait 50
+> tmrGame.Tick
+Set sprFighter1.Left: 480
+Set sprFighter1.FracX: 0.6499999999999773
+Set sprFighter1.FrameClock: 100
+Set sprHurt1.Left: 508
+Set sprHurt1.FracX: 0.6499999999999773
+> Wait 50
+> tmrGame.Tick
+Set sprFighter1.Left: 489
+Set sprFighter1.FracX: 0.14999999999997726
+Set sprFighter1.FrameClock: 10
+Set sprFighter1.Frame: 1
+Set sprFighter1.Left: 486
+Set sprFighter2.Left: 536
+Set sprHurt1.Left: 514
+Set sprHurt1.FracX: 0.14999999999997726
+Set sprHurt2.Left: 564
+> Form.KeyUp D
+> Form.KeyDown G
+> Wait 16
+> tmrGame.Tick
+Set sprFighter1.SpeedX: 0
+Set sprFighter1.FrameClock: 26
+Set sprFighter1.Frame: 0
+Set sprFighter1.Frames: p1_kick.png
+Set sprFighter1.Frame: 0
+Set sprFighter1.FrameClock: 0
+Set sprFighter1.FrameTime: 0
+> Form.KeyUp G
+> Wait 130
+> tmrGame.Tick
+Set sprHit1.Width: 34
+Set sprHit1.Height: 26
+Set sprHit1.Left: 550
+Set sprHit1.Visible: True
+Set sprHit1.Visible: False
+Set sprFighter2.Left: 564
+Sound: hit.wav
+Set sprFighter2.FracX: 0
+Set lblBar1.Width: 220
+Set lblBar2.Width: 17
+Set lblBar2.Left: 571
+> Wait 100
+> tmrGame.Tick
+Set sprHurt2.Left: 592
+Set sprHurt2.FracX: 0
+Set sprFighter2.Frame: 0
+Set sprFighter2.Frames: p2_hurt.png
+Set sprFighter2.Frame: 0
+Set sprFighter2.FrameClock: 0
+Set sprFighter2.FrameTime: 0
+> Wait 400
+> tmrGame.Tick
+Set sprFighter1.Frame: 0
+Set sprFighter1.Frames: p1_stand.png
+Set sprFighter1.Frame: 0
+Set sprFighter1.FrameClock: 0
+Set sprFighter1.FrameTime: 0
+Set sprFighter2.Frame: 0
+Set sprFighter2.Frames: p2_stand.png
+Set sprFighter2.Frame: 0
+Set sprFighter2.FrameClock: 0
+Set sprFighter2.FrameTime: 0
+Set lblClock.Caption: 52
+> Form.KeyDown D
+> Wait 50
+> tmrGame.Tick
+Set sprFighter1.SpeedX: 170
+Set sprFighter1.Left: 494
+Set sprFighter1.FracX: 0.6499999999999773
+Set sprHurt1.Left: 522
+Set sprHurt1.FracX: 0.6499999999999773
+Set sprFighter1.Frame: 0
+Set sprFighter1.Frames: p1_walk.png, p1_stand.png
+Set sprFighter1.Frame: 0
+Set sprFighter1.FrameClock: 0
+Set sprFighter1.FrameTime: 140
+> Wait 50
+> tmrGame.Tick
+Set sprFighter1.Left: 503
+Set sprFighter1.FracX: 0.14999999999997726
+Set sprFighter1.FrameClock: 50
+Set sprHurt1.Left: 531
+Set sprHurt1.FracX: 0.14999999999997726
+> Wait 50
+> tmrGame.Tick
+Set sprFighter1.Left: 511
+Set sprFighter1.FracX: 0.6499999999999773
+Set sprFighter1.FrameClock: 100
+Set sprHurt1.Left: 539
+Set sprHurt1.FracX: 0.6499999999999773
+> Wait 50
+> tmrGame.Tick
+Set sprFighter1.Left: 520
+Set sprFighter1.FracX: 0.14999999999997726
+Set sprFighter1.FrameClock: 10
+Set sprFighter1.Frame: 1
+Set sprFighter1.Left: 517
+Set sprFighter1.FracX: 0.07500000000004547
+Set sprFighter2.Left: 567
+Set sprFighter2.FracX: 0.07500000000004547
+Set sprFighter2.Left: 564
+Set sprFighter2.FracX: 0
+Set sprHurt1.Left: 545
+Set sprHurt1.FracX: 0.07500000000004547
+> Form.KeyUp D
+> Form.KeyDown G
+> Wait 16
+> tmrGame.Tick
+Set sprFighter1.SpeedX: 0
+Set sprFighter1.FrameClock: 26
+Set sprFighter1.Left: 515
+Set sprFighter1.FracX: 0.5375000000000227
+Set sprFighter2.Left: 565
+Set sprFighter2.FracX: 0.5375000000000227
+Set sprFighter2.Left: 564
+Set sprFighter2.FracX: 0
+Set sprHurt1.Left: 543
+Set sprHurt1.FracX: 0.5375000000000227
+Set sprFighter1.Frame: 0
+Set sprFighter1.Frames: p1_kick.png
+Set sprFighter1.Frame: 0
+Set sprFighter1.FrameClock: 0
+Set sprFighter1.FrameTime: 0
+> Form.KeyUp G
+> Wait 130
+> tmrGame.Tick
+Set sprFighter1.Left: 514
+Set sprFighter1.FracX: 0.7687499999999545
+Set sprFighter2.FracX: 0.7687499999999545
+Set sprFighter2.FracX: 0
+Set sprHurt1.Left: 542
+Set sprHurt1.FracX: 0.7687499999999545
+Set sprHit1.Width: 34
+Set sprHit1.Height: 26
+Set sprHit1.Left: 578
+Set sprHit1.FracX: 0.7687499999999545
+Set sprHit1.Visible: True
+Set sprHit1.Visible: False
+Set sprFighter2.Left: 592
+Sound: hit.wav
+Set sprFighter2.Frame: 0
+Set sprFighter2.Frames: p2_down.png
+Set sprFighter2.Frame: 0
+Set sprFighter2.FrameClock: 0
+Set sprFighter2.FrameTime: 0
+Sound: ko.wav
+Set sprHit1.Visible: False
+Set sprHit2.Visible: False
+Set lblMessage.Caption: KO! 1P가 이겼습니다
+Set lblBar1.Width: 220
+Set lblBar2.Width: 0
+Set lblBar2.Left: 588
+Set lblWins1.Caption: ★
+Set sprFighter2.Left: 564
+Set lblBar1.Width: 220
+Set lblBar2.Width: 0
+Set lblBar2.Left: 588
+> Wait 100
+> tmrGame.Tick
+Set sprFighter1.FracX: 0.38437499999997726
+Set sprFighter2.FracX: 0.38437499999997726
+Set sprFighter2.FracX: 0
+Set sprHurt1.FracX: 0.38437499999997726
+Set sprHurt2.Visible: False
+> Wait 400
+> tmrGame.Tick
+Set sprFighter1.FracX: 0.19218750000004547
+Set sprFighter2.FracX: 0.19218750000004547
+Set sprFighter2.FracX: 0
+Set sprHurt1.FracX: 0.19218750000004547
+Set sprFighter1.Frame: 0
+Set sprFighter1.Frames: p1_stand.png
+Set sprFighter1.Frame: 0
+Set sprFighter1.FrameClock: 0
+Set sprFighter1.FrameTime: 0
+> Wait 2000
+> tmrGame.Tick
+Set sprFighter1.FracX: 0.09609375000002274
+Set sprFighter2.FracX: 0.09609375000002274
+Set sprFighter2.FracX: 0
+Set sprHurt1.FracX: 0.09609375000002274
+Set sprFighter1.SpeedX: 0
+Set sprFighter1.SpeedY: 0
+Set sprHit1.Visible: False
+Set sprFighter2.SpeedX: 0
+Set sprFighter2.SpeedY: 0
+Set sprHit2.Visible: False
+Set sprFighter1.Left: 120
+Set sprFighter1.FracX: 0
+Set sprFighter2.Left: 424
+Set lblMessage.Caption: 라운드 2
+Set sprFighter2.Frame: 0
+Set sprFighter2.Frames: p2_stand.png
+Set sprFighter2.Frame: 0
+Set sprFighter2.FrameClock: 0
+Set sprFighter2.FrameTime: 0
+Set lblBar1.Width: 220
+Set lblBar2.Width: 220
+Set lblBar2.Left: 368
+> Form.KeyDown B
+> Wait 50
+> tmrGame.Tick
+Set sprHurt1.Frames: hurtbox.png
+Set sprHurt1.Frame: 0
+Set sprHurt1.FrameClock: 0
+Set sprHit1.Frames: hitbox.png
+Set sprHit1.Frame: 0
+Set sprHit1.FrameClock: 0
+Set sprHurt2.Frames: hurtbox.png
+Set sprHurt2.Frame: 0
+Set sprHurt2.FrameClock: 0
+Set sprHit2.Frames: hitbox.png
+Set sprHit2.Frame: 0
+Set sprHit2.FrameClock: 0
+Set lblInputs1.Visible: True
+Set lblInputs2.Visible: True
+Set lblInputs1.Caption: 1P 
+Set lblInputs2.Caption: 2P 
+Set sprHurt1.Left: 148
+Set sprHurt1.FracX: 0
+Set sprHurt2.Visible: True
+Set sprHurt2.Left: 452
+Set lblClock.Caption: 60
+Set lblInputs1.Caption: 1P 
+Set lblInputs2.Caption: 2P 
+> Form.KeyUp B
+> Close
+Closed

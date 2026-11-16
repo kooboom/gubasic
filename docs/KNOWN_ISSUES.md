@@ -31,6 +31,12 @@ Problems we know about and have **deliberately** left unfixed for now. Each entr
 - **Why deferred:** checking it needs a phone and a Wi-Fi network at hand, outside what the tests can do; the author judged the Playwright round enough to merge (2026-11-03).
 - **Revisit:** the next time the author has a phone at hand: open LiveQuiz in the desktop IDE, turn on "Allow Devices on the Same Network", allow the IDE on the private network when Windows asks, choose "Preview on the Web", scan the code and play one round. Whether macOS's firewall asks the same is to be seen on the Mac.
 
+## Duel is played on one computer
+
+- **What:** the Duel example (D139) is two players on one keyboard, or one against the computer; it is not played between two computers. Some keyboards cannot report three or more keys held at once by two players (their key rollover), which no program can change.
+- **Why deferred:** `Room` carries messages between computers (D136), but a fighting game over a network needs rollback, each side running ahead and correcting itself when the other's keys arrive late: a subject of its own (plans/PLAN_V08.md §4).
+- **Revisit:** when a game for two computers is planned, with `Room`.
+
 ## What v0.7's game tools leave for later
 
 - **What:** a `Sprite` does not turn (`Angle`) or flip upside down (`FlipY`); it flips left to right with `FlipX` since v0.8 (D139). There is no tile map or scrolling background: a wide `Image` moved by the loop does it for a start. No joystick or gamepad: the keyboard only, so the Shooter is for the desktop and the web. Music does not fade: `Volume` changes at once. Sound on phones is not tried until stage 3 brings the phone Player.

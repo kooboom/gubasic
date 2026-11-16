@@ -657,6 +657,12 @@ void main() {
           ];
           for (var i = 0; i < controls.length; i++) {
             for (final b in controls.skip(i + 1)) {
+              // Pictures over pictures keep the form file's order (D139):
+              // the Duel's boxes lie over its fighters.
+              if (controls[i].component.layer == ComponentLayer.picture &&
+                  b.component.layer == ComponentLayer.picture) {
+                continue;
+              }
               final p = boxOf(controls[i]);
               final q = boxOf(b);
               final apart =

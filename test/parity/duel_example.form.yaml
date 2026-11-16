@@ -1,0 +1,67 @@
+formatVersion: 1
+properties:
+  Caption: Duel
+  Width: 640
+  Height: 400
+  BackColor: "#1B1F2A"
+controls:
+  - name: lblFloor
+    type: Label
+    properties: { Caption: "  1P  A D 걷기 · W 점프 · S 앉기 · F 주먹 · G 발차기      2P  ← → 걷기 · ↑ 점프 · ↓ 앉기 · . 주먹 · / 발차기      B 훈련 보기", Left: 0, Top: 360, Width: 640, Height: 40, FontSize: 10.0, ForeColor: "#C8CCD6", BackColor: "#3A3F4B", Anchor: Left Right Bottom }
+  - name: lblName1
+    type: Label
+    properties: { Caption: 1P, Left: 12, Top: 10, Width: 40, Height: 20, FontBold: true, ForeColor: "#BFD6FF" }
+  - name: lblBar1
+    type: Label
+    properties: { Caption: "", Left: 52, Top: 12, Width: 220, Height: 16, BackColor: "#3D7BE0" }
+  - name: lblWins1
+    type: Label
+    properties: { Caption: "", Left: 52, Top: 32, Width: 160, Height: 18, ForeColor: Gold }
+  - name: lblClock
+    type: Label
+    properties: { Caption: "60", Left: 290, Top: 4, Width: 60, Height: 32, FontSize: 20.0, FontBold: true, ForeColor: White }
+  - name: lblName2
+    type: Label
+    properties: { Caption: 2P, Left: 596, Top: 10, Width: 40, Height: 20, FontBold: true, ForeColor: "#FFC7D1", Anchor: Right Top }
+  - name: lblBar2
+    type: Label
+    properties: { Caption: "", Left: 368, Top: 12, Width: 220, Height: 16, BackColor: "#D9465F", Anchor: Right Top }
+  - name: lblWins2
+    type: Label
+    properties: { Caption: "", Left: 428, Top: 32, Width: 160, Height: 18, ForeColor: Gold, Anchor: Right Top }
+  - name: lblInputs1
+    type: Label
+    properties: { Caption: "", Left: 12, Top: 56, Width: 300, Height: 20, FontSize: 10.0, ForeColor: "#BFD6FF", Visible: false }
+  - name: lblInputs2
+    type: Label
+    properties: { Caption: "", Left: 328, Top: 56, Width: 300, Height: 20, FontSize: 10.0, ForeColor: "#FFC7D1", Visible: false, Anchor: Right Top }
+  - name: lblMessage
+    type: Label
+    properties: { Caption: "", Left: 120, Top: 130, Width: 400, Height: 40, FontSize: 22.0, FontBold: true, ForeColor: Gold }
+  - name: btnOne
+    type: Button
+    properties: { Caption: 1인 (컴퓨터와), Left: 170, Top: 190, Width: 140, Height: 36 }
+  - name: btnTwo
+    type: Button
+    properties: { Caption: 2인, Left: 330, Top: 190, Width: 140, Height: 36 }
+  - name: sprFighter1
+    type: Sprite
+    properties: { Frames: p1_stand.png, Left: 120, Top: 248, Width: 96, Height: 112 }
+  - name: sprFighter2
+    type: Sprite
+    properties: { Frames: p2_stand.png, FlipX: true, Left: 424, Top: 248, Width: 96, Height: 112 }
+  - name: sprHurt1
+    type: Sprite
+    properties: { Left: 148, Top: 256, Width: 40, Height: 104 }
+  - name: sprHurt2
+    type: Sprite
+    properties: { Left: 452, Top: 256, Width: 40, Height: 104 }
+  - name: sprHit1
+    type: Sprite
+    properties: { Left: 0, Top: 0, Width: 1, Height: 1, Visible: false }
+  - name: sprHit2
+    type: Sprite
+    properties: { Left: 0, Top: 0, Width: 1, Height: 1, Visible: false }
+  - name: tmrGame
+    type: Timer
+    properties: { Interval: 16 }

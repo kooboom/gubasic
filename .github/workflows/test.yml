@@ -325,6 +325,11 @@ jobs:
       - name: The Shooter in the IDE's own window
         working-directory: apps/ide
         run: dart run gubasic_test_support:integration integration_test/shooter_test.dart -d windows --dart-define=SHOTS=${{ runner.temp }}/scores
+      # The Duel example in the IDE's own window (D139): two players on one
+      # keyboard, a punctuation key among theirs, and the training view.
+      - name: The Duel in the IDE's own window
+        working-directory: apps/ide
+        run: dart run gubasic_test_support:integration integration_test/duel_test.dart -d windows --dart-define=SHOTS=${{ runner.temp }}/scores
       # The open source licences in the IDE's own window (D120).
       - name: The open source licences in the IDE's own window
         working-directory: apps/ide
@@ -470,6 +475,11 @@ jobs:
       - name: The Shooter in the IDE's own window
         working-directory: apps/ide
         run: dart run gubasic_test_support:integration integration_test/shooter_test.dart -d macos --dart-define=SHOTS=${{ runner.temp }}/scores
+      # The Duel example in the IDE's own window (D139): two players on one
+      # keyboard, a punctuation key among theirs, and the training view.
+      - name: The Duel in the IDE's own window
+        working-directory: apps/ide
+        run: dart run gubasic_test_support:integration integration_test/duel_test.dart -d macos --dart-define=SHOTS=${{ runner.temp }}/scores
       # The open source licences in the IDE's own window (D120).
       - name: The open source licences in the IDE's own window
         working-directory: apps/ide

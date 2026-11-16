@@ -1,0 +1,584 @@
+' 격투 게임의 정석(docs/DESIGN.md D139): Timer 하나가 게임 루프이고, 선수마다
+' 상태 기계가 있습니다. 선수는 키를 직접 읽지 않고 "입력 묶음"만 읽으므로,
+' 사람(키)과 컴퓨터(규칙)가 같은 규칙으로 싸웁니다. 공격은 표(프레임 데이터)로
+' 정하고, 맞는 곳(허트박스)과 때리는 곳(히트박스)은 그림 없는 Sprite입니다.
+' B를 누르면 훈련 보기: 상자를 색으로, 입력 묶음을 글자로 보입니다.
+
+' 선수 하나가 이번 틱에 하려는 것. 키나 컴퓨터가 채웁니다.
+Structure Inputs
+    Forward As Boolean      ' 상대 쪽으로
+    Back As Boolean         ' 상대 반대쪽으로
+    Jump As Boolean
+    Crouch As Boolean
+    Punch As Boolean
+    Kick As Boolean
+    Block As Boolean        ' 뒤로 누르고 있음
+End Structure
+
+' 공격 하나의 프레임 데이터. 시간은 ms, 자리는 픽셀입니다.
+Structure Attack
+    Look As String          ' 그림: punch, kick, lowpunch, lowkick
+    Startup As Integer      ' 누른 뒤 맞히기 시작할 때까지
+    Active As Integer       ' 맞힐 수 있는 동안
+    Recovery As Integer     ' 거두는 동안
+    Damage As Integer
+    Reach As Integer        ' 히트박스가 몸 앞으로 뻗는 길이
+    Top As Integer          ' 히트박스 위쪽, 선수 그림 위에서부터
+    Height As Integer
+    Low As Boolean          ' 서서 막으면 못 막고, 앉아서 막아야 함
+End Structure
+
+' 선수의 상태
+Const Idle As Integer = 0
+Const Walking As Integer = 1
+Const Crouching As Integer = 2
+Const Jumping As Integer = 3
+Const Attacking As Integer = 4
+Const Blocking As Integer = 5
+Const Hurt As Integer = 6
+Const Down As Integer = 7
+
+Const FloorTop As Double = 248      ' 바닥에 선 선수 그림의 Y
+Const WalkSpeed As Double = 170     ' 초당 픽셀
+Const JumpSpeed As Double = -560
+Const Gravity As Double = 1500      ' 초당 초당 픽셀
+Const HitStop As Integer = 80       ' 맞은 순간 모두 멈추는 ms
+Const HurtTime As Integer = 300
+Const RoundTime As Integer = 60000
+Const MaxHealth As Integer = 100
+Const BarWidth As Integer = 220
+
+Dim fighters(1) As Sprite
+Dim hurtboxes(1) As Sprite
+Dim hitboxes(1) As Sprite
+Dim prefix(1) As String
+Dim state(1) As Integer
+Dim stateAt(1) As Integer           ' 지금 상태가 된 때(ms)
+Dim attackOf(1) As Integer          ' 하는 중인 공격, attacks의 번호
+Dim landed(1) As Boolean            ' 이번 공격이 이미 맞혔음
+Dim health(1) As Integer
+Dim facing(1) As Integer            ' 1: 오른쪽을 봄, -1: 왼쪽을 봄
+Dim wins(1) As Integer
+Dim inputs(1) As Inputs
+Dim attacks(3) As Attack
+
+Dim computer As Boolean             ' 2P를 컴퓨터가 함
+Dim training As Boolean
+Dim fighting As Boolean             ' 라운드가 진행 중
+Dim roundNumber As Integer
+Dim roundStart As Integer
+Dim nextRoundAt As Integer          ' 0이 아니면 그때 다음 라운드
+Dim messageUntil As Integer
+Dim stopUntil As Integer            ' 히트 스톱이 끝나는 때
+Dim lastTime As Integer
+Dim cpuNextAttack As Integer
+Dim cpuSeen As Integer              ' 컴퓨터가 본 상대 공격의 시작 시각
+Dim cpuBlocks As Boolean
+Dim cpuCount As Integer
+
+Sub Form_Load()
+    fighters(0) = sprFighter1
+    fighters(1) = sprFighter2
+    hurtboxes(0) = sprHurt1
+    hurtboxes(1) = sprHurt2
+    hitboxes(0) = sprHit1
+    hitboxes(1) = sprHit2
+    prefix(0) = "p1_"
+    prefix(1) = "p2_"
+    ' 프레임 데이터: 주먹은 빠르고 약하고, 발차기는 느리고 셉니다. 앉아서 하면 낮은 공격.
+    attacks(0) = New Attack With {.Look = "punch", .Startup = 60, .Active = 80, .Recovery = 160,
+                                  .Damage = 8, .Reach = 30, .Top = 26, .Height = 22, .Low = False}
+    attacks(1) = New Attack With {.Look = "kick", .Startup = 120, .Active = 100, .Recovery = 240,
+                                  .Damage = 12, .Reach = 34, .Top = 50, .Height = 26, .Low = False}
+    attacks(2) = New Attack With {.Look = "lowpunch", .Startup = 70, .Active = 80, .Recovery = 180,
+                                  .Damage = 6, .Reach = 30, .Top = 60, .Height = 22, .Low = True}
+    attacks(3) = New Attack With {.Look = "lowkick", .Startup = 130, .Active = 100, .Recovery = 260,
+                                  .Damage = 10, .Reach = 36, .Top = 92, .Height = 18, .Low = True}
+    facing(0) = 1
+    facing(1) = -1
+    lblMessage.Caption = "1인 또는 2인을 고르세요"
+    ShowTraining()
+End Sub
+
+Sub btnOne_Click()
+    computer = True
+    StartMatch()
+End Sub
+
+Sub btnTwo_Click()
+    computer = False
+    StartMatch()
+End Sub
+
+' 경기 시작. 버튼은 숨겨서, 경기 중에 스페이스나 Enter를 가져가지 않게 합니다.
+Sub StartMatch()
+    btnOne.Visible = False
+    btnTwo.Visible = False
+    wins(0) = 0
+    wins(1) = 0
+    roundNumber = 0
+    Keyboard.ClearPressed()
+    StartRound()
+    lastTime = Milliseconds()
+    tmrGame.Start()
+End Sub
+
+Sub StartRound()
+    Dim now As Integer = Milliseconds()
+    Dim f As Integer
+    For f = 0 To 1
+        health(f) = MaxHealth
+        landed(f) = False
+        SetState(f, Idle, now)
+        fighters(f).Y = FloorTop
+        fighters(f).SpeedX = 0
+        fighters(f).SpeedY = 0
+        hitboxes(f).Visible = False
+    Next
+    fighters(0).X = 120
+    fighters(1).X = 424
+    facing(0) = 1
+    facing(1) = -1
+    roundNumber = roundNumber + 1
+    roundStart = now
+    nextRoundAt = 0
+    stopUntil = 0
+    cpuNextAttack = now + 800
+    fighting = True
+    Say("라운드 " & roundNumber, now + 1000)
+    For f = 0 To 1
+        SetLook(f)
+    Next
+    ShowBars()
+End Sub
+
+' 게임 루프: 입력 묶음을 채우고, 선수를 움직이고, 상자를 놓고, 맞음을 봅니다.
+Sub tmrGame_Tick()
+    Dim now As Integer = Milliseconds()
+    Dim dt As Integer = now - lastTime
+    If dt > 50 Then dt = 50
+    lastTime = now
+    If Keyboard.WasPressed(Keys.B) Then
+        training = Not training
+        ShowTraining()
+    End If
+    If now < stopUntil Then Exit Sub        ' 히트 스톱: 아무것도 움직이지 않음
+    If messageUntil > 0 And now >= messageUntil Then Say("", 0)
+
+    ' 1. 입력 묶음: 라운드 중에만 채웁니다.
+    Dim f As Integer
+    For f = 0 To 1
+        Dim want As Inputs = KeysOf(f)
+        If f = 1 And computer Then want = ComputerOf(1, now)
+        If Not fighting Then want = New Inputs With {.Forward = False}
+        inputs(f) = want
+    Next
+
+    ' 2. 상태 기계와 움직임, 3. 서로 마주 봄과 밀어냄, 4. 상자
+    For f = 0 To 1
+        StepFighter(f, now, dt)
+    Next
+    FaceEachOther()
+    KeepApart()
+    For f = 0 To 1
+        PlaceBoxes(f, now)
+        SetLook(f)
+    Next
+
+    ' 5. 맞음: 두 선수가 같은 틱에 서로 맞힐 수도 있습니다.
+    Dim hit0 As Boolean = Touches(0, 1)
+    Dim hit1 As Boolean = Touches(1, 0)
+    If hit0 Then Strike(0, 1, now)
+    If hit1 Then Strike(1, 0, now)
+
+    ' 6. 시계와 라운드
+    If fighting Then
+        Dim secs As Integer = (RoundTime - (now - roundStart) + 999) \ 1000
+        If secs < 0 Then secs = 0
+        If lblClock.Caption <> CStr(secs) Then lblClock.Caption = CStr(secs)
+        If now - roundStart >= RoundTime Then TimeUp(now)
+    ElseIf nextRoundAt > 0 And now >= nextRoundAt Then
+        NextRound()
+    End If
+    If training Then ShowInputs()
+End Sub
+
+' 사람의 키로 채운 입력 묶음. 앞·뒤는 바라보는 방향으로 셉니다.
+Function KeysOf(f As Integer) As Inputs
+    Dim leftKey As Integer = Keys.A
+    Dim rightKey As Integer = Keys.D
+    Dim upKey As Integer = Keys.W
+    Dim downKey As Integer = Keys.S
+    Dim punchKey As Integer = Keys.F
+    Dim kickKey As Integer = Keys.G
+    If f = 1 Then
+        leftKey = Keys.Left
+        rightKey = Keys.Right
+        upKey = Keys.Up
+        downKey = Keys.Down
+        punchKey = Keys.OemPeriod
+        kickKey = Keys.OemQuestion
+    End If
+    Dim toward As Integer = rightKey
+    Dim away As Integer = leftKey
+    If facing(f) < 0 Then
+        toward = leftKey
+        away = rightKey
+    End If
+    Dim back As Boolean = Keyboard.IsDown(away)
+    Return New Inputs With {.Forward = Keyboard.IsDown(toward), .Back = back,
+                            .Jump = Keyboard.WasPressed(upKey), .Crouch = Keyboard.IsDown(downKey),
+                            .Punch = Keyboard.WasPressed(punchKey), .Kick = Keyboard.WasPressed(kickKey),
+                            .Block = back}
+End Function
+
+' 컴퓨터가 채운 입력 묶음: 다가가고, 닿으면 공격하고, 상대 공격은 세 번에 두 번 막습니다.
+Function ComputerOf(f As Integer, now As Integer) As Inputs
+    Dim other As Integer = 1 - f
+    Dim gap As Double = Abs(Centre(other) - Centre(f))
+    If state(other) = Attacking And gap < 110 Then
+        If stateAt(other) <> cpuSeen Then
+            cpuSeen = stateAt(other)
+            cpuCount = cpuCount + 1
+            cpuBlocks = cpuCount Mod 3 <> 0
+        End If
+        If cpuBlocks Then
+            Return New Inputs With {.Back = True, .Block = True, .Crouch = attacks(attackOf(other)).Low}
+        End If
+    End If
+    If gap > 70 Then Return New Inputs With {.Forward = True}
+    If now >= cpuNextAttack And state(f) <> Attacking Then
+        cpuNextAttack = now + 700
+        cpuCount = cpuCount + 1
+        If cpuCount Mod 2 = 0 Then Return New Inputs With {.Kick = True}
+        Return New Inputs With {.Punch = True}
+    End If
+    Return New Inputs With {.Forward = False}
+End Function
+
+' 선수 하나의 상태 기계: 입력 묶음만 보고 다음 상태와 속도를 정합니다.
+Sub StepFighter(f As Integer, now As Integer, dt As Integer)
+    Dim spr As Sprite = fighters(f)
+    Dim want As Inputs = inputs(f)
+    Dim since As Integer = now - stateAt(f)
+    Select Case state(f)
+        Case Idle, Walking, Crouching, Blocking
+            If want.Jump Then
+                SetState(f, Jumping, now)
+                spr.SpeedY = JumpSpeed
+                Go(f, 0)
+                If want.Forward Then Go(f, facing(f) * WalkSpeed)
+                If want.Back Then Go(f, -facing(f) * WalkSpeed)
+            ElseIf want.Punch Or want.Kick Then
+                Dim a As Integer = 0
+                If want.Kick Then a = 1
+                If want.Crouch Then a = a + 2
+                attackOf(f) = a
+                landed(f) = False
+                SetState(f, Attacking, now)
+                Go(f, 0)
+            ElseIf want.Block And state(1 - f) = Attacking Then
+                Become(f, Blocking, now)
+                Go(f, 0)
+            ElseIf want.Crouch Then
+                Become(f, Crouching, now)
+                Go(f, 0)
+            ElseIf want.Forward Then
+                Become(f, Walking, now)
+                Go(f, facing(f) * WalkSpeed)
+            ElseIf want.Back Then
+                Become(f, Walking, now)
+                Go(f, -facing(f) * WalkSpeed * 0.8)
+            Else
+                Become(f, Idle, now)
+                Go(f, 0)
+            End If
+        Case Attacking
+            Dim atk As Attack = attacks(attackOf(f))
+            If since >= atk.Startup + atk.Active + atk.Recovery Then
+                If atk.Low Then
+                    SetState(f, Crouching, now)
+                Else
+                    SetState(f, Idle, now)
+                End If
+            End If
+        Case Hurt
+            Go(f, 0)
+            If since >= HurtTime Then SetState(f, Idle, now)
+        Case Down
+            Go(f, 0)
+    End Select
+    ' 공중에 있으면 떨어지고, 바닥에 닿으면 섭니다.
+    Dim flying As Boolean = spr.Y < FloorTop Or spr.SpeedY <> 0
+    If flying Then spr.SpeedY = spr.SpeedY + Gravity * dt / 1000
+    spr.Move(dt)
+    If flying And spr.Y >= FloorTop Then
+        spr.Y = FloorTop
+        spr.SpeedY = 0
+        If state(f) = Jumping Then SetState(f, Idle, now)
+    End If
+    Fence(f)
+End Sub
+
+' 걷는 속도. 바뀔 때만 정합니다.
+Sub Go(f As Integer, speed As Double)
+    If fighters(f).SpeedX <> speed Then fighters(f).SpeedX = speed
+End Sub
+
+' 땅에 서서 다른 일을 하지 않을 때 서로 마주 봅니다.
+Sub FaceEachOther()
+    Dim f As Integer
+    For f = 0 To 1
+        If state(f) <= Crouching Or state(f) = Blocking Then
+            If Centre(1 - f) > Centre(f) Then facing(f) = 1
+            If Centre(1 - f) < Centre(f) Then facing(f) = -1
+        End If
+    Next
+End Sub
+
+' 몸이 겹치지 않게 둘을 반씩 밀어냅니다.
+Sub KeepApart()
+    Const Closest As Double = 50
+    Dim gap As Double = Centre(1) - Centre(0)
+    If Abs(gap) >= Closest Then Exit Sub
+    Dim push As Double = (Closest - Abs(gap)) / 2
+    If gap >= 0 Then
+        fighters(0).X = fighters(0).X - push
+        fighters(1).X = fighters(1).X + push
+    Else
+        fighters(0).X = fighters(0).X + push
+        fighters(1).X = fighters(1).X - push
+    End If
+    Fence(0)
+    Fence(1)
+End Sub
+
+Sub Fence(f As Integer)
+    If fighters(f).X < -20 Then fighters(f).X = -20
+    If fighters(f).X > Me.Width - fighters(f).Width + 20 Then fighters(f).X = Me.Width - fighters(f).Width + 20
+End Sub
+
+' 허트박스는 몸에, 히트박스는 공격이 맞힐 수 있는 동안만 바라보는 쪽 앞에 놓습니다.
+Sub PlaceBoxes(f As Integer, now As Integer)
+    Dim spr As Sprite = fighters(f)
+    Dim c As Double = Centre(f)
+    Dim low As Boolean = state(f) = Crouching
+    If state(f) = Attacking Then low = attacks(attackOf(f)).Low
+    Dim body As Sprite = hurtboxes(f)
+    Dim seen As Boolean = state(f) <> Down
+    If body.Visible <> seen Then body.Visible = seen
+    Dim top As Integer = 6
+    Dim tall As Integer = 106
+    If low Then
+        top = 44
+        tall = 68
+    End If
+    If body.Height <> tall Then body.Height = tall
+    body.Y = spr.Y + top
+    body.X = c - 20
+
+    Dim hit As Sprite = hitboxes(f)
+    If hit.Visible Then hit.Visible = False
+    If state(f) <> Attacking Or landed(f) Then Exit Sub
+    Dim atk As Attack = attacks(attackOf(f))
+    Dim since As Integer = now - stateAt(f)
+    If since < atk.Startup Or since >= atk.Startup + atk.Active Then Exit Sub
+    hit.Width = atk.Reach
+    hit.Height = atk.Height
+    hit.Y = spr.Y + atk.Top
+    If facing(f) > 0 Then
+        hit.X = c + 16
+    Else
+        hit.X = c - 16 - atk.Reach
+    End If
+    hit.Visible = True
+End Sub
+
+' a의 히트박스가 d의 허트박스에 닿는지
+Function Touches(a As Integer, d As Integer) As Boolean
+    If Not hitboxes(a).Visible Or Not fighting Then Return False
+    Return hitboxes(a).Hits(hurtboxes(d))
+End Function
+
+' a가 d를 맞힘: 막았으면 덜 밀리고 체력은 그대로, 아니면 체력이 줄고 휘청입니다.
+Sub Strike(a As Integer, d As Integer, now As Integer)
+    Dim atk As Attack = attacks(attackOf(a))
+    landed(a) = True
+    hitboxes(a).Visible = False
+    Dim ready As Boolean = state(d) <= Crouching Or state(d) = Blocking
+    Dim blocked As Boolean = ready And inputs(d).Block And (Not atk.Low Or inputs(d).Crouch)
+    If blocked Then
+        SetState(d, Blocking, now)
+        fighters(d).X = fighters(d).X + facing(a) * 12
+        Sound.Play("block.wav")
+    Else
+        health(d) = health(d) - atk.Damage
+        If health(d) < 0 Then health(d) = 0
+        fighters(d).X = fighters(d).X + facing(a) * 28
+        Sound.Play("hit.wav")
+        If health(d) = 0 Then
+            KnockOut(d, now)
+        Else
+            SetState(d, Hurt, now)
+        End If
+    End If
+    Fence(d)
+    stopUntil = now + HitStop
+    ShowBars()
+End Sub
+
+Sub KnockOut(d As Integer, now As Integer)
+    SetState(d, Down, now)
+    SetLook(d)
+    Sound.Play("ko.wav")
+    EndRound(1 - d, "KO", now)
+End Sub
+
+Sub TimeUp(now As Integer)
+    If health(0) > health(1) Then
+        EndRound(0, "시간 끝", now)
+    ElseIf health(1) > health(0) Then
+        EndRound(1, "시간 끝", now)
+    Else
+        EndRound(-1, "시간 끝", now)
+    End If
+End Sub
+
+' 라운드 끝: 이긴 쪽(없으면 -1)에 1승. 2초 뒤 다음 라운드나 경기 끝.
+Sub EndRound(winner As Integer, why As String, now As Integer)
+    fighting = False
+    hitboxes(0).Visible = False
+    hitboxes(1).Visible = False
+    If winner >= 0 Then
+        wins(winner) = wins(winner) + 1
+        Say(why & "! " & (winner + 1) & "P가 이겼습니다", 0)
+    Else
+        Say(why & "! 비겼습니다", 0)
+    End If
+    nextRoundAt = now + 2000
+    ShowBars()
+End Sub
+
+Sub NextRound()
+    nextRoundAt = 0
+    If wins(0) >= 2 Or wins(1) >= 2 Then
+        tmrGame.Stop()
+        If wins(0) >= 2 Then
+            Say("1P 승리!", 0)
+        Else
+            Say("2P 승리!", 0)
+        End If
+        ' 경기가 끝났으니 버튼을 다시 보입니다.
+        btnOne.Caption = "다시: 1인"
+        btnTwo.Caption = "다시: 2인"
+        btnOne.Visible = True
+        btnTwo.Visible = True
+    Else
+        StartRound()
+    End If
+End Sub
+
+' 새 상태로 바꾸고 그때를 적습니다.
+Sub SetState(f As Integer, s As Integer, now As Integer)
+    state(f) = s
+    stateAt(f) = now
+End Sub
+
+' 이미 그 상태면 그대로(걷는 그림이 처음부터 다시 시작하지 않게).
+Sub Become(f As Integer, s As Integer, now As Integer)
+    If state(f) <> s Then SetState(f, s, now)
+End Sub
+
+' 상태에 맞는 그림. 그림은 오른쪽을 보고 있고, 왼쪽을 보면 FlipX로 뒤집습니다.
+Sub SetLook(f As Integer)
+    Dim look As String = "stand"
+    Select Case state(f)
+        Case Walking
+            look = "walk"
+        Case Crouching
+            look = "crouch"
+        Case Jumping
+            look = "jump"
+        Case Attacking
+            look = attacks(attackOf(f)).Look
+        Case Blocking
+            look = "block"
+            If inputs(f).Crouch Then look = "crouch"
+        Case Hurt
+            look = "hurt"
+        Case Down
+            look = "down"
+    End Select
+    Dim frames As String = prefix(f) & look & ".png"
+    Dim frameTime As Integer = 0
+    If look = "walk" Then
+        frames = prefix(f) & "walk.png, " & prefix(f) & "stand.png"
+        frameTime = 140
+    End If
+    Dim spr As Sprite = fighters(f)
+    If spr.Frames <> frames Then
+        spr.Frame = 0
+        spr.Frames = frames
+        spr.FrameTime = frameTime
+    End If
+    Dim turned As Boolean = facing(f) < 0
+    If spr.FlipX <> turned Then spr.FlipX = turned
+End Sub
+
+Function Centre(f As Integer) As Double
+    Return fighters(f).X + fighters(f).Width / 2
+End Function
+
+' 훈련 보기: 상자에 반투명 그림을 주고 입력 묶음을 보입니다. 끄면 그림 없는 상자로.
+Sub ShowTraining()
+    Dim f As Integer
+    For f = 0 To 1
+        If training Then
+            hurtboxes(f).Frames = "hurtbox.png"
+            hitboxes(f).Frames = "hitbox.png"
+        Else
+            hurtboxes(f).Frames = ""
+            hitboxes(f).Frames = ""
+        End If
+    Next
+    lblInputs1.Visible = training
+    lblInputs2.Visible = training
+    If training Then ShowInputs()
+End Sub
+
+Sub ShowInputs()
+    lblInputs1.Caption = "1P " & Marks(inputs(0))
+    lblInputs2.Caption = "2P " & Marks(inputs(1))
+End Sub
+
+Function Marks(want As Inputs) As String
+    Dim s As String = ""
+    If want.Forward Then s = s & "앞 "
+    If want.Back Then s = s & "뒤 "
+    If want.Jump Then s = s & "점프 "
+    If want.Crouch Then s = s & "앉기 "
+    If want.Punch Then s = s & "주먹 "
+    If want.Kick Then s = s & "발차기 "
+    If want.Block Then s = s & "막기"
+    Return s
+End Function
+
+Sub ShowBars()
+    lblBar1.Width = health(0) * BarWidth \ MaxHealth
+    lblBar2.Width = health(1) * BarWidth \ MaxHealth
+    lblBar2.Left = 588 - lblBar2.Width
+    If lblWins1.Caption <> Stars(wins(0)) Then lblWins1.Caption = Stars(wins(0))
+    If lblWins2.Caption <> Stars(wins(1)) Then lblWins2.Caption = Stars(wins(1))
+End Sub
+
+Function Stars(n As Integer) As String
+    If n = 0 Then Return ""
+    If n = 1 Then Return "★"
+    Return "★★"
+End Function
+
+' 가운데 글자를 보이고, clearAt(ms)이 되면 지웁니다. 0이면 그대로 둡니다.
+Sub Say(text As String, clearAt As Integer)
+    lblMessage.Caption = text
+    messageUntil = clearAt
+End Sub

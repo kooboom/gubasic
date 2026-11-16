@@ -1,0 +1,235 @@
+' Duel (examples/duel), two players: they meet, 1P punches, 2P blocks a
+' kick by holding back, then 1P kicks until the knock-out; the next
+' round starts, and B shows the training view.
+btnTwo.Click          ' the buttons hide; round 1
+Form.KeyDown D        ' 1P walks right, 2P walks left
+Form.KeyDown Left
+Wait 50
+tmrGame.Tick
+Wait 50
+tmrGame.Tick
+Wait 50
+tmrGame.Tick
+Wait 50
+tmrGame.Tick
+Wait 50
+tmrGame.Tick
+Wait 50
+tmrGame.Tick
+Wait 50
+tmrGame.Tick
+Wait 50
+tmrGame.Tick
+Wait 50
+tmrGame.Tick
+Wait 50
+tmrGame.Tick
+Wait 50
+tmrGame.Tick
+Wait 50
+tmrGame.Tick
+Wait 50
+tmrGame.Tick
+Wait 50
+tmrGame.Tick
+Wait 50
+tmrGame.Tick          ' they meet
+Form.KeyUp D
+Form.KeyUp Left
+Form.KeyDown F        ' 1P punches
+Wait 16
+tmrGame.Tick
+Form.KeyUp F
+Wait 70
+tmrGame.Tick          ' active: the punch lands, 2P is hurt and pushed back
+Wait 100
+tmrGame.Tick          ' after the hit stop
+Wait 400
+tmrGame.Tick          ' both stand again
+Form.KeyDown D
+Wait 50
+tmrGame.Tick
+Wait 50
+tmrGame.Tick
+Wait 50
+tmrGame.Tick
+Form.KeyUp D
+Form.KeyDown G        ' 1P kicks
+Form.KeyDown Right    ' 2P holds back (it faces left): it blocks
+Wait 16
+tmrGame.Tick
+Form.KeyUp G
+Wait 130
+tmrGame.Tick          ' active: blocked, no damage, a different sound
+Wait 100
+tmrGame.Tick
+Wait 400
+tmrGame.Tick
+Form.KeyUp Right
+Form.KeyDown D
+Wait 50
+tmrGame.Tick
+Wait 50
+tmrGame.Tick
+Wait 50
+tmrGame.Tick
+Wait 50
+tmrGame.Tick
+Form.KeyUp D
+Form.KeyDown G
+Wait 16
+tmrGame.Tick
+Form.KeyUp G
+Wait 130
+tmrGame.Tick          ' the kick lands
+Wait 100
+tmrGame.Tick
+Wait 400
+tmrGame.Tick
+Form.KeyDown D
+Wait 50
+tmrGame.Tick
+Wait 50
+tmrGame.Tick
+Wait 50
+tmrGame.Tick
+Wait 50
+tmrGame.Tick
+Form.KeyUp D
+Form.KeyDown G
+Wait 16
+tmrGame.Tick
+Form.KeyUp G
+Wait 130
+tmrGame.Tick          ' the kick lands
+Wait 100
+tmrGame.Tick
+Wait 400
+tmrGame.Tick
+Form.KeyDown D
+Wait 50
+tmrGame.Tick
+Wait 50
+tmrGame.Tick
+Wait 50
+tmrGame.Tick
+Wait 50
+tmrGame.Tick
+Form.KeyUp D
+Form.KeyDown G
+Wait 16
+tmrGame.Tick
+Form.KeyUp G
+Wait 130
+tmrGame.Tick          ' the kick lands
+Wait 100
+tmrGame.Tick
+Wait 400
+tmrGame.Tick
+Form.KeyDown D
+Wait 50
+tmrGame.Tick
+Wait 50
+tmrGame.Tick
+Wait 50
+tmrGame.Tick
+Wait 50
+tmrGame.Tick
+Form.KeyUp D
+Form.KeyDown G
+Wait 16
+tmrGame.Tick
+Form.KeyUp G
+Wait 130
+tmrGame.Tick          ' the kick lands
+Wait 100
+tmrGame.Tick
+Wait 400
+tmrGame.Tick
+Form.KeyDown D
+Wait 50
+tmrGame.Tick
+Wait 50
+tmrGame.Tick
+Wait 50
+tmrGame.Tick
+Wait 50
+tmrGame.Tick
+Form.KeyUp D
+Form.KeyDown G
+Wait 16
+tmrGame.Tick
+Form.KeyUp G
+Wait 130
+tmrGame.Tick          ' the kick lands
+Wait 100
+tmrGame.Tick
+Wait 400
+tmrGame.Tick
+Form.KeyDown D
+Wait 50
+tmrGame.Tick
+Wait 50
+tmrGame.Tick
+Wait 50
+tmrGame.Tick
+Wait 50
+tmrGame.Tick
+Form.KeyUp D
+Form.KeyDown G
+Wait 16
+tmrGame.Tick
+Form.KeyUp G
+Wait 130
+tmrGame.Tick          ' the kick lands
+Wait 100
+tmrGame.Tick
+Wait 400
+tmrGame.Tick
+Form.KeyDown D
+Wait 50
+tmrGame.Tick
+Wait 50
+tmrGame.Tick
+Wait 50
+tmrGame.Tick
+Wait 50
+tmrGame.Tick
+Form.KeyUp D
+Form.KeyDown G
+Wait 16
+tmrGame.Tick
+Form.KeyUp G
+Wait 130
+tmrGame.Tick          ' the kick lands
+Wait 100
+tmrGame.Tick
+Wait 400
+tmrGame.Tick
+Form.KeyDown D
+Wait 50
+tmrGame.Tick
+Wait 50
+tmrGame.Tick
+Wait 50
+tmrGame.Tick
+Wait 50
+tmrGame.Tick
+Form.KeyUp D
+Form.KeyDown G
+Wait 16
+tmrGame.Tick
+Form.KeyUp G
+Wait 130
+tmrGame.Tick          ' the eighth kick: KO, 1P wins the round
+Wait 100
+tmrGame.Tick
+Wait 400
+tmrGame.Tick
+Wait 2000
+tmrGame.Tick          ' round 2
+Form.KeyDown B        ' the training view: the boxes in colour
+Wait 50
+tmrGame.Tick
+Form.KeyUp B
+Close
