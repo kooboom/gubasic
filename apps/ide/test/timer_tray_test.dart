@@ -36,7 +36,10 @@ void main() {
     tester,
   ) async {
     await open(tester);
-    expect(find.byKey(designerTrayKey), findsNothing);
+    // The tray is there from the start, named, and says what goes in it.
+    expect(find.byKey(designerTrayKey), findsOneWidget);
+    expect(find.text(s.componentTray), findsOneWidget);
+    expect(find.text(s.componentTrayEmpty), findsOneWidget);
     final tool = find.byKey(const ValueKey('toolbox.Timer'));
     await tester.tap(tool);
     await tester.pump(kDoubleTapMinTime);
@@ -44,8 +47,10 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byKey(designerTrayKey), findsOneWidget);
     expect(find.byKey(const ValueKey('designer.tray.Timer1')), findsOneWidget);
+    expect(find.text(s.componentTrayEmpty), findsNothing);
     expect(text(tester), endsWith('  - name: Timer1\n    type: Timer\n'));
-    expect(find.text('Timer1 (Timer)'), findsOneWidget, reason: 'chosen');
+    // Chosen, and the status line says where it went.
+    expect(find.text('Timer1 (Timer) · ${s.inComponentTray}'), findsOneWidget);
     // Its properties, and no place or size.
     expect(find.byKey(propertyFieldKey('Interval')), findsOneWidget);
     expect(find.byKey(propertyFieldKey('Enabled')), findsOneWidget);
@@ -84,7 +89,7 @@ void main() {
     expect(find.text('Form1 (Form) · 320×120'), findsOneWidget);
     await tester.tap(chip);
     await tester.pump(const Duration(milliseconds: 500));
-    expect(find.text('Timer1 (Timer)'), findsOneWidget);
+    expect(find.text('Timer1 (Timer) · ${s.inComponentTray}'), findsOneWidget);
 
     await tester.sendKeyEvent(LogicalKeyboardKey.delete);
     await tester.pumpAndSettle();

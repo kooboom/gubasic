@@ -449,9 +449,15 @@ class _FormDesignerState extends State<FormDesigner> {
   void _placeInTray(ComponentSpec type) {
     final form = _form;
     final name = newControlName(form, type);
-    setState(() => _tool = null);
+    setState(() {
+      _tool = null;
+      _trayLit++;
+    });
     _apply(withControl(form, type, name, _noBox), select: name);
   }
+
+  /// How many controls went into the tray: each lights it for a moment.
+  int _trayLit = 0;
 
   static const ControlBox _noBox = (left: 0, top: 0, width: 0, height: 0);
 
@@ -1388,7 +1394,7 @@ class _FormDesignerState extends State<FormDesigner> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     Expanded(child: _canvas(context, form, editable)),
-                    ?_tray(context, form),
+                    _tray(context, form),
                   ],
                 ),
               ),
@@ -1985,13 +1991,20 @@ class _FormDesignerState extends State<FormDesigner> {
   /// The tray under the form (D100): the controls not seen on it, its
   /// Timers, each a chip that a click chooses and a double-click opens the
   /// handler of; null when there are none.
-  Widget? _tray(BuildContext context, FormFile form) {
+  Widget _tray(BuildContext context, FormFile form) {
     final hidden = [
       for (final c in designedControls(form))
         if (!c.component.visual) c,
     ];
-    if (hidden.isEmpty) return null;
-    final scheme = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final s = widget.strings;
+    // Named, and saying what goes there while empty; brighter once it holds
+    // controls, and lit for a moment when one goes in, so that a Timer
+    // drawn on the form is seen to land here.
+    final rest = hidden.isEmpty
+        ? scheme.surfaceContainerLow
+        : scheme.surfaceContainerHigh;
     // On the web, the right button opens the designer's menu here too.
     return MouseRegion(
       onEnter: (_) {
@@ -2000,37 +2013,74 @@ class _FormDesignerState extends State<FormDesigner> {
       onExit: (_) {
         if (kIsWeb) BrowserContextMenu.enableContextMenu();
       },
-      child: Container(
-        key: designerTrayKey,
-        decoration: BoxDecoration(
-          color: scheme.surfaceContainerLow,
-          border: Border(top: BorderSide(color: scheme.outlineVariant)),
-        ),
-        padding: const EdgeInsets.all(8),
-        child: Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: [
-            for (final c in hidden)
-              Listener(
-                // Its context menu, as a control's on the form.
-                onPointerDown: (e) {
-                  if (!_secondary(e)) return;
-                  _focus.requestFocus();
-                  _contextMenu(e.position, Offset.zero, inTray: c);
-                },
-                child: _TrayChip(
-                  key: ValueKey('designer.tray.${c.name}'),
-                  name: c.name,
-                  icon: ControlIcon.of(c.component, size: 16),
-                  chosen: _isChosen(c.name),
-                  onTap: () {
-                    _focus.requestFocus();
-                    setState(() => _selected = c.name);
-                  },
-                  onDoubleTap: () => widget.onOpenHandler?.call(c.name),
-                ),
+      child: TweenAnimationBuilder<double>(
+        key: ValueKey(_trayLit),
+        tween: Tween(begin: _trayLit == 0 ? 0 : 1, end: 0),
+        duration: const Duration(milliseconds: 1200),
+        builder: (context, lit, child) => Container(
+          key: designerTrayKey,
+          decoration: BoxDecoration(
+            color: Color.lerp(rest, scheme.primaryContainer, lit),
+            border: Border(
+              top: BorderSide(
+                color: hidden.isEmpty ? scheme.outlineVariant : scheme.outline,
               ),
+            ),
+          ),
+          padding: const EdgeInsets.all(8),
+          // As tall empty as with a chip in it: the form does not jump.
+          constraints: const BoxConstraints(minHeight: 41),
+          child: child,
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Text(
+              s.componentTray,
+              key: const ValueKey('designer.tray.name'),
+              style: theme.textTheme.labelMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: hidden.isEmpty ? scheme.onSurfaceVariant : null,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: hidden.isEmpty
+                  ? Text(
+                      s.componentTrayEmpty,
+                      key: const ValueKey('designer.tray.empty'),
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: scheme.onSurfaceVariant,
+                      ),
+                    )
+                  : Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        for (final c in hidden)
+                          Listener(
+                            // Its context menu, as a control's on the form.
+                            onPointerDown: (e) {
+                              if (!_secondary(e)) return;
+                              _focus.requestFocus();
+                              _contextMenu(e.position, Offset.zero, inTray: c);
+                            },
+                            child: _TrayChip(
+                              key: ValueKey('designer.tray.${c.name}'),
+                              name: c.name,
+                              icon: ControlIcon.of(c.component, size: 16),
+                              chosen: _isChosen(c.name),
+                              onTap: () {
+                                _focus.requestFocus();
+                                setState(() => _selected = c.name);
+                              },
+                              onDoubleTap: () =>
+                                  widget.onOpenHandler?.call(c.name),
+                            ),
+                          ),
+                      ],
+                    ),
+            ),
           ],
         ),
       ),
@@ -2058,7 +2108,8 @@ class _FormDesignerState extends State<FormDesigner> {
             '${_chosenControls.length}',
           )
         : selected != null && !selected.component.visual
-        ? '${selected.name} (${selected.component.name})'
+        ? '${selected.name} (${selected.component.name}) · '
+              '${widget.strings.inComponentTray}'
         : selected != null
         ? describe(
             selected.name,

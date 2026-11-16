@@ -137,6 +137,9 @@ class IdeStrings {
     required this.fitInside,
     required this.fitInsideTip,
     required this.stoppedAtEdge,
+    required this.componentTray,
+    required this.componentTrayEmpty,
+    required this.inComponentTray,
     required this.formHasErrors,
     required this.properties,
     required this.integerRange,
@@ -544,6 +547,12 @@ class IdeStrings {
   /// In the designer's status line while a drag is stopped at the form's
   /// edge (D77).
   final String stoppedAtEdge;
+
+  /// The name on the tray under the form (D100), what it says while it is
+  /// empty, and what the status line adds for a control chosen in it.
+  final String componentTray;
+  final String componentTrayEmpty;
+  final String inComponentTray;
   final String formHasErrors;
 
   // The Properties window (D35).
@@ -1080,6 +1089,10 @@ class IdeStrings {
     outsideOne: '1 control is outside the form:',
     outsideMany: '{0} controls are outside the form:',
     fitInside: 'Fit inside the form',
+    componentTray: 'Components',
+    componentTrayEmpty:
+        'Controls not seen on the form, such as a Timer, go here when drawn.',
+    inComponentTray: 'in Components under the form',
     stoppedAtEdge: 'The form\'s edge: a control dragged with the mouse stays inside the form. To put it past the edge, type its Left, Top, Width or Height in the Properties window.',
     fitInsideTip: 'Keeps where each one starts and makes it end at the form\'s edge; one that starts outside the form, or would become smaller than its default size, is moved inside instead. Its Anchor stays as it is.',
     formHasErrors: 'This form file has errors, so the designer only shows it: changing it would drop what could not be read. Fix the file in a text editor, then open the project again.',
@@ -1456,6 +1469,9 @@ class IdeStrings {
     outsideOne: '폼 밖으로 나간 컨트롤 1개:',
     outsideMany: '폼 밖으로 나간 컨트롤 {0}개:',
     fitInside: '폼 안으로 맞추기',
+    componentTray: '구성 요소',
+    componentTrayEmpty: 'Timer처럼 폼에 보이지 않는 컨트롤은 그리면 여기에 놓입니다.',
+    inComponentTray: '폼 아래 구성 요소 칸에 있음',
     stoppedAtEdge: '폼 끝입니다. 마우스로 끄는 컨트롤은 폼 안에 머뭅니다. 폼 밖으로 두려면 속성 창에서 Left, Top, Width나 Height를 칩니다.',
     fitInsideTip: '컨트롤이 시작하는 자리는 지키고 폼 끝까지 줄입니다. 폼 밖에서 시작하거나 기본 크기보다 작아지는 컨트롤은 대신 폼 안으로 옮깁니다. Anchor는 그대로입니다.',
     formHasErrors: '이 폼 파일에는 오류가 있어서 그리기 화면에서 보기만 합니다. 고치면 읽지 못한 부분이 사라지기 때문입니다. 텍스트 편집기로 파일을 고친 뒤 프로젝트를 다시 엽니다.',
