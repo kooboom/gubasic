@@ -135,6 +135,11 @@ class BenchProbe {
       await _settle();
       if (session.result != null) break;
       final began = _now;
+      // The script acts for the user, as the run window's form tells the
+      // host of a click or a key (the sound engine starts there, D138).
+      if (step is EventStep || step is KeyStep || step is MouseStep) {
+        host.userActed();
+      }
       switch (step) {
         case EventStep(:final control, :final event):
           interpreter.raiseEvent(control, event);

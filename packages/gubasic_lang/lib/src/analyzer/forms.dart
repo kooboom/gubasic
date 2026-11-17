@@ -104,6 +104,11 @@ class ProjectProgram {
   final Map<Symbol, Symbol> canonical;
 
   /// `Sub Main()` of a module, and its module; null when there is none.
+  /// Whether any form or module uses the `Sound` object (D138).
+  bool get usesSound =>
+      forms.any((f) => f.program.usesSound) ||
+      modules.any((m) => m.program.usesSound);
+
   (ModuleProgram, ProcedureDecl)? get main {
     for (final m in modules) {
       if (m.program.analysis.fileScope.symbols['main']?.procedure case final p?

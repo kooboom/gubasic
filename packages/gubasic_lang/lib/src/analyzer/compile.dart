@@ -5,6 +5,7 @@ import '../parser/parser.dart';
 import 'analysis_result.dart';
 import 'analyzer.dart';
 import 'forms.dart';
+import 'symbols.dart';
 
 /// Lexing, parsing and analysis of one source file.
 class CompileResult {
@@ -19,6 +20,13 @@ class CompileResult {
     ...parseResult.parserDiagnostics,
     ...analysis.diagnostics,
   ]);
+
+  /// Whether the code uses the `Sound` object (D138): a host starts the
+  /// sound engine at the program's first click or key only then.
+  late final bool usesSound = analysis.symbols.values.any(
+    (s) =>
+        s.kind == SymbolKind.builtinObject && s.name.toLowerCase() == 'sound',
+  );
 
   /// Whether any diagnostic is an error. Warnings alone do not count: a
   /// program with only warnings can run (D23).

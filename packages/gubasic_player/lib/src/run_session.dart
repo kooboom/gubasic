@@ -49,6 +49,9 @@ class RunSession extends ChangeNotifier {
             debugger: debugger,
           );
     this.host
+      // Its first click or key starts the sound engine, if it has sounds
+      // to play (D138).
+      ..usesSound = startup.project?.usesSound ?? startup.program.usesSound
       ..interpreter = interpreter
       ..onDebugPrint = (line) {
         output.add(line);

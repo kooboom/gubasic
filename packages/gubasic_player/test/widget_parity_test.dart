@@ -259,6 +259,9 @@ class _FakeSound implements GbSound {
       transcript.add(TranscriptLine.volume((volume * 100).round()));
 
   @override
+  Future<bool> start() async => true;
+
+  @override
   Future<void> stopAll() async {}
 }
 

@@ -136,21 +136,26 @@ class RunHost implements FormHost, FileHost, ComponentHost {
           required alt,
           required inTextBox,
           required repeat,
-        }) => lastOutcome = interpreter.raiseKey(
-          event,
-          GbKeyEvent(keyCode, shift: shift, control: control, alt: alt),
-          form: form.name,
-          inTextBox: inTextBox,
-          repeat: repeat,
-        ),
+        }) {
+          userActed();
+          lastOutcome = interpreter.raiseKey(
+            event,
+            GbKeyEvent(keyCode, shift: shift, control: control, alt: alt),
+            form: form.name,
+            inTextBox: inTextBox,
+            repeat: repeat,
+          );
+        },
     onKeysReleased: () => interpreter.releaseKeys(),
-    onMouse: (control, event, button, x, y) =>
-        lastOutcome = interpreter.raiseMouse(
-          control,
-          event,
-          GbMouseEvent(button, x, y),
-          form: form.name,
-        ),
+    onMouse: (control, event, button, x, y) {
+      userActed();
+      lastOutcome = interpreter.raiseMouse(
+        control,
+        event,
+        GbMouseEvent(button, x, y),
+        form: form.name,
+      );
+    },
   )..clickToStart = dialogs.strings.clickToStart;
 
   /// The model of [form], shown or not.
@@ -214,8 +219,27 @@ class RunHost implements FormHost, FileHost, ComponentHost {
   /// read it.
   EventOutcome? lastOutcome;
 
-  void _onEvent(String form, String? control, String event) =>
-      lastOutcome = interpreter.raiseEvent(control, event, form: form);
+  void _onEvent(String form, String? control, String event) {
+    userActed();
+    lastOutcome = interpreter.raiseEvent(control, event, form: form);
+  }
+
+  /// Whether the program uses `Sound`, told by its session from the
+  /// compiled code (D138): then its first click, key or mouse button
+  /// starts the sound engine, so that the engine's start, about a tenth of
+  /// a second, comes there and not at a sound in the middle of a game. A
+  /// program without `Sound` never starts it.
+  bool usesSound = false;
+  var _soundStarted = false;
+
+  /// The user clicked, pressed a key or a mouse button: the run window's
+  /// form tells it, and a measuring build's probe, which acts for the
+  /// user, too.
+  void userActed() {
+    if (!usesSound || _soundStarted) return;
+    _soundStarted = true;
+    unawaited((_soundEngine ??= GbSound()).start());
+  }
 
   /// A CheckBox asks before a click changes it (D44).
   bool _accepts(String form, String? control, String event) {

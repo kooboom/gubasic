@@ -39,6 +39,12 @@ abstract class GbSound {
 
   /// Stops everything and forgets the decoded sounds: the program ended.
   Future<void> stopAll();
+
+  /// Starts the engine before the first sound (D138): its start holds the
+  /// app's thread for about a tenth of a second, which a game's loop must
+  /// not meet in play. False when it cannot start yet (on the web, before
+  /// the user's first click or key); the first play tries again.
+  Future<bool> start();
 }
 
 /// GbSound over flutter_soloud. The engine starts on the first play and
@@ -58,6 +64,9 @@ class _SoLoudSound implements GbSound {
   Future<bool>? _starting;
 
   Future<bool> _ready() => _starting ??= _start();
+
+  @override
+  Future<bool> start() => _ready();
 
   Future<bool> _start() async {
     final engine = SoLoud.instance;
