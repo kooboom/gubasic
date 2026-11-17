@@ -46,11 +46,20 @@ abstract class GbSound {
 /// after the user has clicked or pressed a key, so a play before that is
 /// dropped without an error (D138).
 class _SoLoudSound implements GbSound {
-  final _sources = <String, AudioSource>{};
+  /// Each sound, loading or loaded: plays that come while it loads (a
+  /// game's shots, not waited for) share one load.
+  final _sources = <String, Future<AudioSource?>>{};
   SoundHandle? _music;
   var _volume = 1.0;
 
-  Future<bool> _ready() async {
+  /// The engine starting: plays that come meanwhile share one start. A
+  /// start that failed (on the web, before the first click) is tried again
+  /// by the next play.
+  Future<bool>? _starting;
+
+  Future<bool> _ready() => _starting ??= _start();
+
+  Future<bool> _start() async {
     final engine = SoLoud.instance;
     if (engine.isInitialized) return true;
     try {
@@ -58,6 +67,7 @@ class _SoLoudSound implements GbSound {
       engine.setGlobalVolume(_volume);
       return true;
     } catch (_) {
+      _starting = null;
       return false;
     }
   }
@@ -65,10 +75,14 @@ class _SoLoudSound implements GbSound {
   Future<AudioSource?> _source(String name, Uint8List bytes) async {
     if (!await _ready()) return null;
     final key = name.toLowerCase();
-    if (_sources[key] case final loaded?) return loaded;
+    return _sources[key] ??= _load(key, name, bytes);
+  }
+
+  Future<AudioSource?> _load(String key, String name, Uint8List bytes) async {
     try {
-      return _sources[key] = await SoLoud.instance.loadMem(name, bytes);
+      return await SoLoud.instance.loadMem(name, bytes);
     } catch (_) {
+      _sources.remove(key);
       return null;
     }
   }
@@ -122,11 +136,14 @@ class _SoLoudSound implements GbSound {
       _sources.clear();
       return;
     }
-    for (final source in _sources.values) {
+    final loading = _sources.values.toList();
+    _sources.clear();
+    for (final source in loading) {
       try {
-        await SoLoud.instance.disposeSource(source);
+        if (await source case final loaded?) {
+          await SoLoud.instance.disposeSource(loaded);
+        }
       } catch (_) {}
     }
-    _sources.clear();
   }
 }

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:gubasic_lang/gubasic_lang.dart';
@@ -16,8 +17,13 @@ class PlayerSound extends SoundComponent {
   Uint8List _bytes(String name) =>
       _sounds?.call(name) ?? (throw SoundComponent.notFound(name));
 
+  /// Plays without waiting (D138): a game's loop goes on while the engine
+  /// starts or decodes the sound, the first time a few hundred
+  /// milliseconds. A name the project does not have is still R053 at once.
   @override
-  Future<void> play(String name) => _engine.play(name, _bytes(name));
+  Future<void> play(String name) async {
+    unawaited(_engine.play(name, _bytes(name)));
+  }
 
   @override
   Future<void> playMusic(String name) => _engine.playMusic(name, _bytes(name));
