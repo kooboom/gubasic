@@ -18,7 +18,8 @@ import 'package:integration_test/integration_test.dart';
 /// players on one keyboard, the keys the test sends (not the computer's).
 /// The start buttons hide; both walk in, holding their keys; 1P punches
 /// with F and 2P with the period key, a punctuation key, until each has
-/// hurt the other; B shows the training view. Run with `dart run
+/// hurt the other; 1P's jump kick goes through a crouching block and is
+/// stopped by a standing one; B shows the training view. Run with `dart run
 /// gubasic_test_support:integration integration_test/duel_test.dart -d
 /// windows` (or `-d macos`); with `--dart-define=SHOTS=folder` it saves
 /// the run window there as `duel-PLATFORM.png`. CI runs it on Windows and
@@ -100,6 +101,58 @@ void main() {
     );
     await tester.sendKeyUpEvent(LogicalKeyboardKey.arrowLeft);
     await punchUntilHurt(LogicalKeyboardKey.period, 'lblBar1');
+
+    // Jump attacks are high: a crouching block does not stop them, a
+    // standing one does. 1P walks in, then jumps and kicks at once.
+    Future<void> walkIn() async {
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.keyD);
+      await until(
+        '1P walking in',
+        () => left('sprFighter2') - left('sprFighter1') < 60,
+      );
+      await tester.sendKeyUpEvent(LogicalKeyboardKey.keyD);
+    }
+
+    Future<void> wait(int ms) =>
+        tester.runAsync(() => Future<void>.delayed(Duration(milliseconds: ms)));
+
+    await wait(500);
+    await walkIn();
+    final before = width('lblBar2');
+    await tester.sendKeyDownEvent(LogicalKeyboardKey.arrowRight);
+    await tester.sendKeyDownEvent(LogicalKeyboardKey.arrowDown);
+    await tester.sendKeyDownEvent(LogicalKeyboardKey.keyW);
+    await tester.sendKeyDownEvent(LogicalKeyboardKey.keyG);
+    await tester.sendKeyUpEvent(LogicalKeyboardKey.keyW);
+    await tester.sendKeyUpEvent(LogicalKeyboardKey.keyG);
+    await until('the jump kick through a crouching block', () {
+      return width('lblBar2') < before;
+    });
+    await wait(900);
+    await tester.sendKeyUpEvent(LogicalKeyboardKey.arrowDown);
+    await tester.sendKeyUpEvent(LogicalKeyboardKey.arrowRight);
+    await tester.pump();
+
+    // A standing block stops it: 2P is seen blocking, and keeps its health.
+    await wait(500);
+    await walkIn();
+    final standing = width('lblBar2');
+    String frames2() =>
+        host.modelOf('Form1').control('sprFighter2')!.text('Frames');
+    var blocked = false;
+    await tester.sendKeyDownEvent(LogicalKeyboardKey.arrowRight);
+    await tester.sendKeyDownEvent(LogicalKeyboardKey.keyW);
+    await tester.sendKeyDownEvent(LogicalKeyboardKey.keyG);
+    await tester.sendKeyUpEvent(LogicalKeyboardKey.keyW);
+    await tester.sendKeyUpEvent(LogicalKeyboardKey.keyG);
+    for (var i = 0; i < 24; i++) {
+      blocked = blocked || frames2() == 'p2_block.png';
+      await wait(50);
+      await tester.pump();
+    }
+    await tester.sendKeyUpEvent(LogicalKeyboardKey.arrowRight);
+    expect(blocked, isTrue, reason: '2P blocked standing');
+    expect(width('lblBar2'), standing, reason: 'no damage when blocked');
 
     // The training view: the bundles shown, as the keys fill them.
     await tester.sendKeyEvent(LogicalKeyboardKey.keyB);

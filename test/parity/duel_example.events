@@ -228,6 +228,136 @@ Wait 400
 tmrGame.Tick
 Wait 2000
 tmrGame.Tick          ' round 2
+Form.KeyDown D        ' round 2: they meet again
+Form.KeyDown Left
+Wait 50
+tmrGame.Tick
+Wait 50
+tmrGame.Tick
+Wait 50
+tmrGame.Tick
+Wait 50
+tmrGame.Tick
+Wait 50
+tmrGame.Tick
+Wait 50
+tmrGame.Tick
+Wait 50
+tmrGame.Tick
+Wait 50
+tmrGame.Tick
+Wait 50
+tmrGame.Tick
+Wait 50
+tmrGame.Tick
+Wait 50
+tmrGame.Tick
+Wait 50
+tmrGame.Tick
+Wait 50
+tmrGame.Tick
+Wait 50
+tmrGame.Tick
+Wait 50
+tmrGame.Tick
+Form.KeyUp D
+Form.KeyUp Left
+Form.KeyDown Right    ' 2P blocks crouching (back and down)
+Form.KeyDown Down
+Form.KeyDown W        ' 1P jumps and kicks at once: a jump kick, high
+Form.KeyDown G
+Wait 16
+tmrGame.Tick
+Form.KeyUp W
+Form.KeyUp G
+Wait 50
+tmrGame.Tick
+Wait 50
+tmrGame.Tick
+Wait 50
+tmrGame.Tick
+Wait 50
+tmrGame.Tick
+Wait 50
+tmrGame.Tick
+Wait 50
+tmrGame.Tick
+Wait 50
+tmrGame.Tick
+Wait 50
+tmrGame.Tick
+Wait 50
+tmrGame.Tick
+Wait 50
+tmrGame.Tick
+Wait 50
+tmrGame.Tick
+Wait 50
+tmrGame.Tick
+Wait 50
+tmrGame.Tick
+Wait 50
+tmrGame.Tick
+Wait 50
+tmrGame.Tick
+Wait 50
+tmrGame.Tick          ' landed: the jump kick hit through the crouching block
+Form.KeyUp Down
+Form.KeyUp Right
+Wait 400
+tmrGame.Tick
+Form.KeyDown D
+Wait 50
+tmrGame.Tick
+Wait 50
+tmrGame.Tick
+Wait 50
+tmrGame.Tick
+Wait 50
+tmrGame.Tick
+Form.KeyUp D
+Form.KeyDown Right    ' 2P blocks standing
+Form.KeyDown W        ' 1P jumps, then kicks in the air
+Wait 16
+tmrGame.Tick
+Form.KeyUp W
+Wait 100
+tmrGame.Tick
+Form.KeyDown G
+Wait 16
+tmrGame.Tick
+Form.KeyUp G
+Wait 50
+tmrGame.Tick
+Wait 50
+tmrGame.Tick
+Wait 50
+tmrGame.Tick
+Wait 50
+tmrGame.Tick
+Wait 50
+tmrGame.Tick
+Wait 50
+tmrGame.Tick
+Wait 50
+tmrGame.Tick
+Wait 50
+tmrGame.Tick
+Wait 50
+tmrGame.Tick
+Wait 50
+tmrGame.Tick
+Wait 50
+tmrGame.Tick
+Wait 50
+tmrGame.Tick
+Wait 50
+tmrGame.Tick
+Wait 50
+tmrGame.Tick          ' landed: blocked standing, no damage
+Form.KeyUp Right
+Wait 400
+tmrGame.Tick
 Form.KeyDown B        ' the training view: the boxes in colour
 Wait 50
 tmrGame.Tick

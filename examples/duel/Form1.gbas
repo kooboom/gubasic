@@ -26,6 +26,8 @@ Structure Attack
     Top As Integer          ' 히트박스 위쪽, 선수 그림 위에서부터
     Height As Integer
     Low As Boolean          ' 서서 막으면 못 막고, 앉아서 막아야 함
+    High As Boolean         ' 앉아서 막으면 못 막고, 서서 막아야 함(점프 공격)
+    Air As Boolean          ' 공중에서 하고, 땅에 닿으면 끝남
 End Structure
 
 ' 선수의 상태
@@ -60,7 +62,7 @@ Dim health(1) As Integer
 Dim facing(1) As Integer            ' 1: 오른쪽을 봄, -1: 왼쪽을 봄
 Dim wins(1) As Integer
 Dim inputs(1) As Inputs
-Dim attacks(3) As Attack
+Dim attacks(5) As Attack
 
 Dim computer As Boolean             ' 2P를 컴퓨터가 함
 Dim training As Boolean
@@ -85,7 +87,8 @@ Sub Form_Load()
     hitboxes(1) = sprHit2
     prefix(0) = "p1_"
     prefix(1) = "p2_"
-    ' 프레임 데이터: 주먹은 빠르고 약하고, 발차기는 느리고 셉니다. 앉아서 하면 낮은 공격.
+    ' 프레임 데이터: 주먹은 빠르고 약하고, 발차기는 느리고 셉니다. 앉아서 하면 낮은 공격,
+    ' 점프 중에 하면 높은 공격. 점프 공격은 내려오면서 맞고, 땅에 닿을 때까지 이어집니다.
     attacks(0) = New Attack With {.Look = "punch", .Startup = 60, .Active = 80, .Recovery = 160,
                                   .Damage = 8, .Reach = 30, .Top = 26, .Height = 22, .Low = False}
     attacks(1) = New Attack With {.Look = "kick", .Startup = 120, .Active = 100, .Recovery = 240,
@@ -94,6 +97,10 @@ Sub Form_Load()
                                   .Damage = 6, .Reach = 30, .Top = 60, .Height = 22, .Low = True}
     attacks(3) = New Attack With {.Look = "lowkick", .Startup = 130, .Active = 100, .Recovery = 260,
                                   .Damage = 10, .Reach = 36, .Top = 92, .Height = 18, .Low = True}
+    attacks(4) = New Attack With {.Look = "punch", .Startup = 50, .Active = 1000, .Recovery = 0,
+                                  .Damage = 8, .Reach = 30, .Top = 30, .Height = 30, .High = True, .Air = True}
+    attacks(5) = New Attack With {.Look = "kick", .Startup = 70, .Active = 1000, .Recovery = 0,
+                                  .Damage = 11, .Reach = 36, .Top = 60, .Height = 40, .High = True, .Air = True}
     facing(0) = 1
     facing(1) = -1
     lblMessage.Caption = "1인 또는 2인을 고르세요"
@@ -246,6 +253,12 @@ Function ComputerOf(f As Integer, now As Integer) As Inputs
             Return New Inputs With {.Back = True, .Block = True, .Crouch = attacks(attackOf(other)).Low}
         End If
     End If
+    ' 네 번에 한 번은 조금 떨어진 곳에서 뛰어들며 점프 발차기를 합니다.
+    If gap > 75 And gap < 130 And now >= cpuNextAttack And cpuCount Mod 4 = 3 Then
+        cpuNextAttack = now + 1200
+        cpuCount = cpuCount + 1
+        Return New Inputs With {.Forward = True, .Jump = True, .Kick = True}
+    End If
     If gap > 70 Then Return New Inputs With {.Forward = True}
     If now >= cpuNextAttack And state(f) <> Attacking Then
         cpuNextAttack = now + 700
@@ -264,18 +277,11 @@ Sub StepFighter(f As Integer, now As Integer, dt As Integer)
     Select Case state(f)
         Case Idle, Walking, Crouching, Blocking
             If want.Jump Then
-                SetState(f, Jumping, now)
-                spr.SpeedY = JumpSpeed
-                Go(f, 0)
-                If want.Forward Then Go(f, facing(f) * WalkSpeed)
-                If want.Back Then Go(f, -facing(f) * WalkSpeed)
+                Leap(f, want, now)
+                ' 점프와 함께 누른 주먹·발차기는 점프 공격입니다.
+                If want.Punch Or want.Kick Then StartAttack(f, want, now)
             ElseIf want.Punch Or want.Kick Then
-                Dim a As Integer = 0
-                If want.Kick Then a = 1
-                If want.Crouch Then a = a + 2
-                attackOf(f) = a
-                landed(f) = False
-                SetState(f, Attacking, now)
+                StartAttack(f, want, now)
                 Go(f, 0)
             ElseIf want.Block And state(1 - f) = Attacking Then
                 Become(f, Blocking, now)
@@ -293,9 +299,18 @@ Sub StepFighter(f As Integer, now As Integer, dt As Integer)
                 Become(f, Idle, now)
                 Go(f, 0)
             End If
+        Case Jumping
+            If want.Punch Or want.Kick Then StartAttack(f, want, now)
         Case Attacking
             Dim atk As Attack = attacks(attackOf(f))
-            If since >= atk.Startup + atk.Active + atk.Recovery Then
+            ' 공격을 누르고 곧바로 점프를 누르면(50 ms 안), 점프 공격으로 바꿉니다.
+            If want.Jump And Not atk.Air And Not atk.Low And since < 50 Then
+                Dim kick As Boolean = attackOf(f) = 1
+                Leap(f, want, now)
+                attackOf(f) = 4
+                If kick Then attackOf(f) = 5
+                SetState(f, Attacking, now)
+            ElseIf Not atk.Air And since >= atk.Startup + atk.Active + atk.Recovery Then
                 If atk.Low Then
                     SetState(f, Crouching, now)
                 Else
@@ -315,9 +330,35 @@ Sub StepFighter(f As Integer, now As Integer, dt As Integer)
     If flying And spr.Y >= FloorTop Then
         spr.Y = FloorTop
         spr.SpeedY = 0
+        ' 땅에 닿으면 점프도, 점프 공격도 끝납니다.
         If state(f) = Jumping Then SetState(f, Idle, now)
+        If state(f) = Attacking And attacks(attackOf(f)).Air Then SetState(f, Idle, now)
+        Go(f, 0)
     End If
     Fence(f)
+End Sub
+
+' 뛰어오릅니다. 앞이나 뒤를 누르고 있으면 그쪽으로.
+Sub Leap(f As Integer, want As Inputs, now As Integer)
+    SetState(f, Jumping, now)
+    fighters(f).SpeedY = JumpSpeed
+    Go(f, 0)
+    If want.Forward Then Go(f, facing(f) * WalkSpeed)
+    If want.Back Then Go(f, -facing(f) * WalkSpeed)
+End Sub
+
+' 공격을 시작합니다: 공중이면 점프 공격, 앉아 있으면 낮은 공격.
+Sub StartAttack(f As Integer, want As Inputs, now As Integer)
+    Dim a As Integer = 0
+    If want.Kick Then a = 1
+    If state(f) = Jumping Then
+        a = a + 4
+    ElseIf want.Crouch Then
+        a = a + 2
+    End If
+    attackOf(f) = a
+    landed(f) = False
+    SetState(f, Attacking, now)
 End Sub
 
 ' 걷는 속도. 바뀔 때만 정합니다.
@@ -408,7 +449,9 @@ Sub Strike(a As Integer, d As Integer, now As Integer)
     landed(a) = True
     hitboxes(a).Visible = False
     Dim ready As Boolean = state(d) <= Crouching Or state(d) = Blocking
-    Dim blocked As Boolean = ready And inputs(d).Block And (Not atk.Low Or inputs(d).Crouch)
+    ' 낮은 공격은 앉아서, 높은 공격(점프 공격)은 서서 막아야 합니다.
+    Dim blocked As Boolean = ready And inputs(d).Block And (Not atk.Low Or inputs(d).Crouch) And _
+                             (Not atk.High Or Not inputs(d).Crouch)
     If blocked Then
         SetState(d, Blocking, now)
         fighters(d).X = fighters(d).X + facing(a) * 12
