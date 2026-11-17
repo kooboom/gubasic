@@ -153,6 +153,7 @@ Plan: [plans/PLAN_V08.md](plans/PLAN_V08.md) (2026-11-10; the answers are D139).
 - [ ] Type-aware autocompletion
 - [ ] Embedded-Dart escape hatch
 - [ ] Focus as in Visual Basic: `SetFocus`, `GotFocus` and `LostFocus`, `TabIndex` and `TabStop` (Tab in the order they set), `ActiveControl`, and a form's Default and Cancel buttons (Enter and Esc). Today a clicked control keeps the focus and Tab follows the layout (2026-11-16 survey)
+- [ ] Draw a form's pictures once before play: as the form is shown, its Sprites' and Images' pictures drawn once unseen, so that the first frame of a game does not hold the page (about 50 ms in Chrome, 90 ms in WebKit, KNOWN_ISSUES); limited to the startup form's pictures, or a few MB, so that a project with many large pictures does not start slower
 - [ ] Examples in the IDE's language: the words a running example shows (the Duel's start buttons, its winner's line, its help on the floor; the Shooter's too) are Korean only; they would follow the IDE's language, English or Korean, so that English users can read them
 - [ ] A button in the playground, "Make a form project with this code": the code into Form1 of a new project in the web IDE, with a `Form_Load` that calls its `Sub Main`
 

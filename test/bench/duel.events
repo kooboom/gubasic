@@ -2,8 +2,9 @@
 ' one player against the computer; 1P walks in, punches, kicks, crouches
 ' and blocks for about 24 seconds, the training view on for the second
 ' half, so that both fighters' state machines, the boxes and the hits run
-' every tick. Its Timer is the loop; the probe times each Tick.
+' every tick, after the round's intro of about a second. Its Timer is the loop; the probe times each Tick.
 btnOne.Click
+Wait 1200             ' the round's intro
 Form.KeyDown D
 Wait 900
 Form.KeyUp D

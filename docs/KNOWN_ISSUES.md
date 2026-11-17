@@ -31,6 +31,12 @@ Problems we know about and have **deliberately** left unfixed for now. Each entr
 - **Why deferred:** checking it needs a phone and a Wi-Fi network at hand, outside what the tests can do; the author judged the Playwright round enough to merge (2026-11-03).
 - **Revisit:** the next time the author has a phone at hand: open LiveQuiz in the desktop IDE, turn on "Allow Devices on the Same Network", allow the IDE on the private network when Windows asks, choose "Preview on the Web", scan the code and play one round. Whether macOS's firewall asks the same is to be seen on the Mac.
 
+## The first frame of a game holds the page for a moment
+
+- **What:** the first time a game's pictures are drawn on a fresh page, that frame holds the page about 50 ms in Chrome and about 90 ms in WebKit (STAGE2_PLAN §7, the first seconds of the Duel). The Duel draws it during its round intro, when nobody plays.
+- **Why deferred:** drawing a form's pictures once, unseen, as the form is shown would move it to the title screen, but it decodes and uploads every picture at the start, which a project with many large ones would pay for in its start; the author chose to leave it for now (2026-11-17).
+- **Revisit:** with ROADMAP's "draw a form's pictures once before play", if a game is found to stutter at its start.
+
 ## Duel is played on one computer
 
 - **What:** the Duel example (D139) is two players on one keyboard, or one against the computer; it is not played between two computers. Some keyboards cannot report three or more keys held at once by two players (their key rollover), which no program can change.

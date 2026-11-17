@@ -113,9 +113,9 @@ let knockOuts = 0;
 
 // Round 1 and 2: the keys as a US keyboard sends them.
 const keyboard = async (key, how) => (how === 'down' ? page.keyboard.down(key) : page.keyboard.up(key));
-say(await shows('라운드 1', 5000), 'round 1 starts, the buttons hidden');
+say(await shows('1라운드', 5000), 'round 1 starts, the buttons hidden');
 say(await fight(keyboard, 'KeyD', 'KeyF', 'KO! 1P가 이겼습니다'), '1P: D held and F pressed, a knock-out');
-say(await shows('라운드 2', 5000), 'round 2 starts');
+say(await shows('2라운드', 5000), 'round 2 starts');
 say(await fight(keyboard, 'ArrowLeft', 'Period', 'KO! 2P가 이겼습니다'), '2P: ← held and . pressed, a knock-out');
 
 // Round 3: what a browser sends while a Korean input method is on: the
@@ -132,7 +132,7 @@ const ime = async (code, how) => {
     nativeVirtualKeyCode: 229,
   });
 };
-say(await shows('라운드 3', 5000), 'round 3 starts');
+say(await shows('3라운드', 5000), 'round 3 starts');
 say(await fight(ime, 'KeyD', 'KeyF', 'KO! 1P가 이겼습니다'), '1P with the Korean input method on: ㅇ held and ㄹ pressed, a knock-out');
 say(await shows('1P 승리!', 5000), '1P wins the match, two rounds to one');
 say(await page.getByRole('button', { name: '다시: 2인', exact: true }).isVisible(), 'the buttons are back');

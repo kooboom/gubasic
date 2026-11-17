@@ -212,6 +212,8 @@ What they say:
 
 Decoding the pictures does not hold it: 39 decodes in the first second, off the page's thread, most 5–10 ms, one 44–48 ms alongside the first frame.
 
+**After the author's two changes** (2026-11-17): the sound engine starts as early as the page allows (D138), and the Duel begins each round with a second of "1라운드" and "시작!" when no keys act. Measured the same way, the first game frame (47 ms in Chrome, 86–89 ms in WebKit) now comes about 0.7 s after the first tick, inside the intro, and no frame after it takes more than 18 ms. Playing an exported Duel's page as a person would (opened fresh, a first click on the form, then "2인"), the AudioContext is made before "2인" is pressed, and in the 3 s after it neither Chrome nor WebKit shows a long task or a gap of more than 40 ms between frames.
+
 **Sizes of the player** (release builds, the hello project built in): **web** 42 MB as a folder, of which 36 MB are CanvasKit's builds for different browsers; a browser loads about 11 MB (`main.dart.js` 2.8 MB, one CanvasKit 7 MB, Pretendard 1.6 MB); 15 MB as a `.zip`. **macOS** 43 MB (universal), 19 MB as a `.zip`. **Windows** 29.5 MB as a folder, with the Visual C++ runtime next to the program (CI prints it with every build; the IDE's folder is 36 MB). The IDE for comparison: 51 MB on macOS, `main.dart.js` 3.4 MB.
 
 **Criteria.** The transpiler is planned again (decision 2) when, in the player, on any of the web or macOS:

@@ -1,7 +1,15 @@
 ' Duel (examples/duel), two players: they meet, 1P punches, 2P blocks a
 ' kick by holding back, then 1P kicks until the knock-out; the next
 ' round starts, and B shows the training view.
-btnTwo.Click          ' the buttons hide; round 1
+btnTwo.Click          ' the buttons hide; round 1's intro: "1라운드"
+Form.KeyDown F        ' pressed during the intro: no punch
+Wait 50
+tmrGame.Tick
+Form.KeyUp F
+Wait 700
+tmrGame.Tick          ' "시작!"
+Wait 400
+tmrGame.Tick          ' the fight begins, the clock runs
 Form.KeyDown D        ' 1P walks right, 2P walks left
 Form.KeyDown Left
 Wait 50
@@ -227,7 +235,11 @@ tmrGame.Tick
 Wait 400
 tmrGame.Tick
 Wait 2000
-tmrGame.Tick          ' round 2
+tmrGame.Tick          ' round 2's intro
+Wait 750
+tmrGame.Tick          ' "시작!"
+Wait 400
+tmrGame.Tick          ' round 2 begins
 Form.KeyDown D        ' round 2: they meet again
 Form.KeyDown Left
 Wait 50

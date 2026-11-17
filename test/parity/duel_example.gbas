@@ -70,6 +70,8 @@ Dim fighting As Boolean             ' 라운드가 진행 중
 Dim roundNumber As Integer
 Dim roundStart As Integer
 Dim nextRoundAt As Integer          ' 0이 아니면 그때 다음 라운드
+Dim introducing As Boolean          ' 라운드 시작 연출 중
+Dim introAt As Integer              ' 연출을 시작한 때
 Dim messageUntil As Integer
 Dim stopUntil As Integer            ' 히트 스톱이 끝나는 때
 Dim lastTime As Integer
@@ -147,12 +149,15 @@ Sub StartRound()
     facing(0) = 1
     facing(1) = -1
     roundNumber = roundNumber + 1
-    roundStart = now
     nextRoundAt = 0
     stopUntil = 0
-    cpuNextAttack = now + 800
-    fighting = True
-    Say("라운드 " & roundNumber, now + 1000)
+    ' 라운드 시작 연출: "N라운드"와 "시작!"을 보이는 동안 입력을 받지 않습니다.
+    ' 처음 그리는 그림의 준비 같은 시작의 멈춤도 이때 지나갑니다.
+    fighting = False
+    introducing = True
+    introAt = now
+    Say(roundNumber & "라운드", 0)
+    lblClock.Caption = CStr(RoundTime \ 1000)
     For f = 0 To 1
         SetLook(f)
     Next
@@ -171,6 +176,7 @@ Sub tmrGame_Tick()
     End If
     If now < stopUntil Then Exit Sub        ' 히트 스톱: 아무것도 움직이지 않음
     If messageUntil > 0 And now >= messageUntil Then Say("", 0)
+    If introducing Then Introduce(now)
 
     ' 1. 입력 묶음: 라운드 중에만 채웁니다.
     Dim f As Integer
@@ -208,6 +214,20 @@ Sub tmrGame_Tick()
         NextRound()
     End If
     If training Then ShowInputs()
+End Sub
+
+' 라운드 시작 연출: 0.7초 동안 "N라운드", 0.4초 동안 "시작!", 그다음 싸움이 시작됩니다.
+Sub Introduce(now As Integer)
+    If now - introAt < 700 Then Exit Sub
+    If now - introAt < 1100 Then
+        If lblMessage.Caption <> "시작!" Then Say("시작!", 0)
+        Exit Sub
+    End If
+    introducing = False
+    Say("", 0)
+    fighting = True
+    roundStart = now
+    cpuNextAttack = now + 800
 End Sub
 
 ' 사람의 키로 채운 입력 묶음. 앞·뒤는 바라보는 방향으로 셉니다.

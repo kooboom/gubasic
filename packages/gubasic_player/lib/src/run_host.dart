@@ -235,7 +235,9 @@ class RunHost implements FormHost, FileHost, ComponentHost {
   /// The user clicked, pressed a key or a mouse button: the run window's
   /// form tells it, and a measuring build's probe, which acts for the
   /// user, too.
-  void userActed() {
+  void userActed() => _startSound();
+
+  void _startSound() {
     if (!usesSound || _soundStarted) return;
     _soundStarted = true;
     unawaited((_soundEngine ??= GbSound()).start());
@@ -346,6 +348,10 @@ class RunHost implements FormHost, FileHost, ComponentHost {
       _startClocks();
     }
     shown = List.unmodifiable(forms);
+    // A page that has had a click already (the IDE's Run, the web page's
+    // "Click to start") lets the engine start now, on the first form,
+    // rather than at the click that starts a game (D138).
+    if (first && gbPageWasActivated()) _startSound();
     if (first) onShowForm?.call();
     onFormsChanged?.call();
   }

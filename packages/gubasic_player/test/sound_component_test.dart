@@ -24,12 +24,26 @@ void main() {
   // at its first click or key, not at a sound in the middle of a game. One
   // that does not never starts it (no AudioContext on a page that never
   // sounds).
-  for (final uses in [true, false]) {
+  // The engine's own start holds the app's thread for about a tenth of a
+  // second (STAGE2_PLAN §7, the Duel), so a program that uses Sound starts
+  // it before play: when its first form shows, if the page has had a click
+  // already (the IDE's Run, the web page's "Click to start"), or else at
+  // its first click or key. One that does not use Sound never starts it
+  // (no AudioContext on a page that never sounds).
+  for (final (uses, activated) in [
+    (true, true),
+    (true, false),
+    (false, true),
+  ]) {
     testWidgets(
-      uses
-          ? 'a program that uses Sound starts the engine at its first click'
-          : 'a program without Sound never starts the engine',
+      !uses
+          ? 'a program without Sound never starts the engine'
+          : activated
+          ? 'on a page clicked already, the engine starts with the first form'
+          : 'on a page not clicked yet, the engine starts at the first click',
       (tester) async {
+        gbPageWasActivated = () => activated;
+        addTearDown(() => gbPageWasActivated = () => true);
         final form = readFormFile('''
 formatVersion: 1
 controls:
@@ -61,10 +75,14 @@ controls:
           ),
         );
         await tester.pump();
-        expect(engine.started, 0, reason: 'not before the user acts');
+        expect(
+          engine.started,
+          uses && activated ? 1 : 0,
+          reason: 'with the first form',
+        );
         await tester.tap(find.text('Go'));
         await tester.pump();
-        expect(engine.started, uses ? 1 : 0);
+        expect(engine.started, uses ? 1 : 0, reason: 'by the first click');
         await tester.tap(find.text('Go'));
         await tester.pump();
         expect(engine.started, uses ? 1 : 0, reason: 'once');
@@ -75,6 +93,55 @@ controls:
       },
     );
   }
+
+  testWidgets('a click on "Click to start" starts the engine before play', (
+    tester,
+  ) async {
+    // A web page opened fresh: no click yet, no keys.
+    gbPageWasActivated = () => false;
+    gbPageFocus.value = false;
+    addTearDown(() {
+      gbPageWasActivated = () => true;
+      gbPageFocus.value = true;
+    });
+    final form = readFormFile('''
+formatVersion: 1
+controls:
+  - { name: btnGo, type: Button, properties: { Caption: Go, Width: 80, Height: 30 } }
+''', name: 'Form1').form;
+    final program = compile(
+      'Sub btnGo_Click()\nIf False Then Sound.Play("hit.wav")\nEnd Sub\n',
+      form: form,
+      sounds: ['hit.wav'],
+    );
+    final engine = _SlowSound();
+    final session = RunSession(
+      StartupForm(form, 'Form1.gbas', program, null),
+      strings: PlayerStrings.en,
+      host: RunHost(
+        form,
+        settings: GbMemorySettings(),
+        sound: engine,
+        sounds: (name) => Uint8List(4),
+      ),
+    );
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: Center(child: RunWindow(session: session)),
+        ),
+      ),
+    );
+    await tester.pump();
+    expect(engine.started, 0);
+    await tester.tap(find.text('Click to start'));
+    await tester.pump();
+    expect(engine.started, 1, reason: 'the click that gives the page keys');
+    engine.done.complete();
+    session.closeForm();
+    await tester.pump();
+    session.dispose();
+  });
 
   test('a sound the project does not have is still R053 at once', () async {
     final sound = PlayerSound(_SlowSound(), (name) => null);

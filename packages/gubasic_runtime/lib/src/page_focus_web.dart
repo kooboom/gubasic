@@ -11,3 +11,13 @@ ValueNotifier<bool> createPageFocus() {
   web.window.addEventListener('blur', update.toJS);
   return focus;
 }
+
+/// The browser's sticky user activation; false where it is not known
+/// (an older browser), so that the engine waits for a click as before.
+bool pageWasActivated() {
+  try {
+    return web.window.navigator.userActivation.hasBeenActive;
+  } catch (_) {
+    return false;
+  }
+}

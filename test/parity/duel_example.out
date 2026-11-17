@@ -22,11 +22,26 @@ Set sprHit1.Visible: False
 Set sprFighter2.SpeedX: 0
 Set sprFighter2.SpeedY: 0
 Set sprHit2.Visible: False
-Set lblMessage.Caption: 라운드 1
+Set lblMessage.Caption: 1라운드
+Set lblClock.Caption: 60
 Set lblBar1.Width: 220
 Set lblBar2.Width: 220
 Set lblBar2.Left: 368
 Set tmrGame.Enabled: True
+> Form.KeyDown F
+> Wait 50
+> tmrGame.Tick
+Set sprHurt1.Height: 106
+Set sprHurt1.Top: 254
+Set sprHurt2.Height: 106
+Set sprHurt2.Top: 254
+> Form.KeyUp F
+> Wait 700
+> tmrGame.Tick
+Set lblMessage.Caption: 시작!
+> Wait 400
+> tmrGame.Tick
+Set lblMessage.Caption: 
 > Form.KeyDown D
 > Form.KeyDown Left
 > Wait 50
@@ -37,8 +52,6 @@ Set sprFighter1.FracX: 0.5
 Set sprFighter2.SpeedX: -170
 Set sprFighter2.Left: 415
 Set sprFighter2.FracX: 0.5
-Set sprHurt1.Height: 106
-Set sprHurt1.Top: 254
 Set sprHurt1.Left: 156
 Set sprHurt1.FracX: 0.5
 Set sprFighter1.Frame: 0
@@ -46,8 +59,6 @@ Set sprFighter1.Frames: p1_walk.png, p1_stand.png
 Set sprFighter1.Frame: 0
 Set sprFighter1.FrameClock: 0
 Set sprFighter1.FrameTime: 140
-Set sprHurt2.Height: 106
-Set sprHurt2.Top: 254
 Set sprHurt2.Left: 443
 Set sprHurt2.FracX: 0.5
 Set sprFighter2.Frame: 0
@@ -277,7 +288,6 @@ Set sprFighter2.FrameClock: 0
 Set sprFighter2.FrameTime: 0
 > Wait 400
 > tmrGame.Tick
-Set lblMessage.Caption: 
 Set sprFighter1.Frame: 0
 Set sprFighter1.Frames: p1_stand.png
 Set sprFighter1.Frame: 0
@@ -1116,7 +1126,8 @@ Set sprHit2.Visible: False
 Set sprFighter1.Left: 120
 Set sprFighter1.FracX: 0
 Set sprFighter2.Left: 424
-Set lblMessage.Caption: 라운드 2
+Set lblMessage.Caption: 2라운드
+Set lblClock.Caption: 60
 Set sprFighter2.Frame: 0
 Set sprFighter2.Frames: p2_stand.png
 Set sprFighter2.Frame: 0
@@ -1125,6 +1136,16 @@ Set sprFighter2.FrameTime: 0
 Set lblBar1.Width: 220
 Set lblBar2.Width: 220
 Set lblBar2.Left: 368
+> Wait 750
+> tmrGame.Tick
+Set lblMessage.Caption: 시작!
+Set sprHurt1.Left: 148
+Set sprHurt1.FracX: 0
+Set sprHurt2.Visible: True
+Set sprHurt2.Left: 452
+> Wait 400
+> tmrGame.Tick
+Set lblMessage.Caption: 
 > Form.KeyDown D
 > Form.KeyDown Left
 > Wait 50
@@ -1142,7 +1163,6 @@ Set sprFighter1.Frames: p1_walk.png, p1_stand.png
 Set sprFighter1.Frame: 0
 Set sprFighter1.FrameClock: 0
 Set sprFighter1.FrameTime: 140
-Set sprHurt2.Visible: True
 Set sprHurt2.Left: 443
 Set sprHurt2.FracX: 0.5
 Set sprFighter2.Frame: 0
@@ -1150,7 +1170,6 @@ Set sprFighter2.Frames: p2_walk.png, p2_stand.png
 Set sprFighter2.Frame: 0
 Set sprFighter2.FrameClock: 0
 Set sprFighter2.FrameTime: 140
-Set lblClock.Caption: 60
 > Wait 50
 > tmrGame.Tick
 Set sprFighter1.Left: 137
@@ -1404,7 +1423,6 @@ Set sprFighter2.FrameClock: 0
 Set sprFighter2.FrameTime: 0
 > Wait 50
 > tmrGame.Tick
-Set lblMessage.Caption: 
 Set sprFighter1.SpeedY: -236
 Set sprFighter1.Top: 169
 Set sprFighter1.FracY: 0.7239999999999611
