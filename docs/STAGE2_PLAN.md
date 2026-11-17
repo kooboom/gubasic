@@ -205,6 +205,13 @@ What they say:
 - **About 35 frames a second are drawn**, not 60: the screen is drawn again only when something on it changes, and much of a fight is fighters standing or the hit stop, when nothing moves.
 - **The longest tick is now a tick like the others** (7 to 20 ms; once 32 ms in the IDE in WebKit, whose timers come every 20 ms). Measured first, the first hit's tick took 128–142 ms in Chrome and 121–321 ms on macOS, every run: `Sound.Play` waited while the sound engine started and decoded the sound, though D138 says it does not wait (the Shooter's first sound is in its Start button's `Click`, not in a tick, so it never showed). With `Sound.Play` returning at once it was still 110–120 ms in Chrome, and on macOS the first run after a build: the engine's own start holds the app's thread. The engine now starts at the program's first click or key when its code uses `Sound` (D138), here the "1 player" button, and the numbers above are from then. Without that start, the test `sound_component_test` fails.
 
+**The first seconds on a fresh page** (2026-11-17, the Duel; `tool/web_check/first_seconds.mjs` opens the measuring player in a new browser with no cache and lines the page's own records up with the game's first tick; two runs each). The game's ticks keep their pace from the first; a tick's handler is 9–13 ms in the first seconds (the browsers' JavaScript engines warming up) against 1.5–3 ms later, under the 16 ms of a tick. What a player feels as a stutter is two holds of the page, both within about 0.3 s of the click that starts the game:
+
+- **The sound engine starting** at that click (D138): in Chrome, making the AudioContext takes about 125 ms, a long task of 132 ms and a frame shown 150 ms late; in WebKit, making it takes 1 ms, but the page holds about 200 ms before the first tick.
+- **The first frame of the game:** its raster takes 48–52 ms in Chrome, its build and raster 86–91 ms in WebKit, as the fighters' pictures are first drawn.
+
+Decoding the pictures does not hold it: 39 decodes in the first second, off the page's thread, most 5–10 ms, one 44–48 ms alongside the first frame.
+
 **Sizes of the player** (release builds, the hello project built in): **web** 42 MB as a folder, of which 36 MB are CanvasKit's builds for different browsers; a browser loads about 11 MB (`main.dart.js` 2.8 MB, one CanvasKit 7 MB, Pretendard 1.6 MB); 15 MB as a `.zip`. **macOS** 43 MB (universal), 19 MB as a `.zip`. **Windows** 29.5 MB as a folder, with the Visual C++ runtime next to the program (CI prints it with every build; the IDE's folder is 36 MB). The IDE for comparison: 51 MB on macOS, `main.dart.js` 3.4 MB.
 
 **Criteria.** The transpiler is planned again (decision 2) when, in the player, on any of the web or macOS:

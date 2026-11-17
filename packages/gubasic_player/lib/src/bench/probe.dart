@@ -80,6 +80,10 @@ class BenchProbe {
   void tickStarted() {
     _tickStarts.add(_now);
     _tickEnds.add(-1);
+    // A mark the page's own records (long tasks, audio, decoding) can be
+    // lined up with: the game's first tick.
+    // ignore: avoid_print
+    if (_tickStarts.length == 1) print('GUBASIC_BENCH_TICK0');
   }
 
   /// The tick just begun started no handler (one was still running).
@@ -265,6 +269,42 @@ class BenchProbe {
     print('GUBASIC_BENCH ${jsonEncode(out)}');
   }
 
+  /// The first five seconds from the game's first tick, where a slow start
+  /// shows (a fresh page: the sound engine, the first frames, pictures):
+  /// ticks that came late (more than 25 ms after the one before) or whose
+  /// handler took more than 8 ms, as [ms from the first tick, gap,
+  /// handler]; gaps of more than 25 ms between frames, as [ms, gap]; and
+  /// frames whose build and raster took more than 16 ms, as [ms when
+  /// reported, build, raster].
+  Map<String, Object?> _firstSeconds(int start, double Function(num) ms) {
+    final end = start + 5000000;
+    final ticks = <List<double>>[];
+    for (var i = 0; i < _tickStarts.length && _tickStarts[i] <= end; i++) {
+      final gap = i == 0 ? 0 : _tickStarts[i] - _tickStarts[i - 1];
+      final handler = _tickEnds[i] < 0 ? 0 : _tickEnds[i] - _tickStarts[i];
+      if (gap > 25000 || handler > 8000) {
+        ticks.add([ms(_tickStarts[i] - start), ms(gap), ms(handler)]);
+      }
+    }
+    final frames = [
+      for (final f in _frameAt)
+        if (f >= start && f <= end) f,
+    ];
+    return {
+      'ticks': ticks,
+      'frameGaps': [
+        for (var i = 1; i < frames.length; i++)
+          if (frames[i] - frames[i - 1] > 25000)
+            [ms(frames[i] - start), ms(frames[i] - frames[i - 1])],
+      ],
+      'slowFrames': [
+        for (final t in _timings)
+          if (t.$1 >= start && t.$1 <= end && t.$2 + t.$3 > 16000)
+            [ms(t.$1 - start), ms(t.$2), ms(t.$3)],
+      ],
+    };
+  }
+
   /// A Timer's game, from its first tick to its last: ticks a second, the
   /// handler's milliseconds (mean and the longest), frames drawn and a
   /// frame's build and raster.
@@ -295,6 +335,7 @@ class BenchProbe {
     out['tickHandlerMaxMs'] = handler.isEmpty
         ? 0
         : ms(handler.reduce((a, b) => a > b ? a : b));
+    out['firstSeconds'] = _firstSeconds(start, ms);
     out['framesPerSecond'] = (frames.length / seconds * 10).round() / 10;
     out['buildMs'] = ms(mean([for (final t in timings) t.$2]));
     out['rasterMs'] = ms(mean([for (final t in timings) t.$3]));
