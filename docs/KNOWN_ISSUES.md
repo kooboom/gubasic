@@ -31,6 +31,12 @@ Problems we know about and have **deliberately** left unfixed for now. Each entr
 - **Why deferred:** checking it needs a phone and a Wi-Fi network at hand, outside what the tests can do; the author judged the Playwright round enough to merge (2026-11-03).
 - **Revisit:** the next time the author has a phone at hand: open LiveQuiz in the desktop IDE, turn on "Allow Devices on the Same Network", allow the IDE on the private network when Windows asks, choose "Preview on the Web", scan the code and play one round. Whether macOS's firewall asks the same is to be seen on the Mac.
 
+## The first sound holds a game for about a tenth of a second
+
+- **What:** the sound engine starts at a program's first `Sound.Play` or `Sound.PlayMusic`, and its start holds the app's own thread: about 110–120 ms in Chrome, and on macOS the first time after a build (STAGE2_PLAN §7, the Duel). A game whose first sound comes in the middle of play (the Duel's first hit) stops for that long once. `Sound.Play` itself no longer waits.
+- **Why deferred:** starting the engine earlier is a choice: at the program's start it would make an AudioContext on pages that never sound, and on the web it cannot start before the user's first click or key anyway.
+- **Revisit:** start the engine at a program's first click or key when its project has sounds, if the author chooses it.
+
 ## Duel is played on one computer
 
 - **What:** the Duel example (D139) is two players on one keyboard, or one against the computer; it is not played between two computers. Some keyboards cannot report three or more keys held at once by two players (their key rollover), which no program can change.

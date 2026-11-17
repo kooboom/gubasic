@@ -7,7 +7,8 @@ import 'package:gubasic_lang/gubasic_lang.dart';
 /// that drives it: the projects in ../../test/bench/ with their
 /// bench.events, and the typing and quiz examples with
 /// ../../test/bench/typing.events, the quiz's parity script, and the
-/// Shooter example with ../../test/bench/shooter.events. Written to
+/// Shooter example with ../../test/bench/shooter.events, and the Duel
+/// example with ../../test/bench/duel.events. Written to
 /// lib/src/bench/projects.g.dart, which only the measuring builds import
 /// (`package:gubasic_player/bench.dart`), so apps never carry it.
 ///
@@ -30,6 +31,10 @@ void main(List<String> args) {
     'shooter': (
       Directory('../../examples/shooter'),
       File('../../test/bench/shooter.events'),
+    ),
+    'duel': (
+      Directory('../../examples/duel'),
+      File('../../test/bench/duel.events'),
     ),
   };
   final names = benches.keys.toList()..sort();

@@ -129,6 +129,7 @@ The player runs the same interpreter as F5, so it should be as fast as the IDE; 
 4. **A small game:** 20 Images on a form, each moved a little every round; every round checks each pair for a collision and changes a score Label. With no Timer yet (2-9), a loop with `DoEvents` does what a 30 ms Timer would, as fast as it can. Measured: **updates per second (the aim is 30 or more)**, milliseconds per update, and how much of it is the interpreter (from the loop's start to its `DoEvents`) and how much drawing (Flutter's frame timings: build and raster).
 5. **A game like Galaga:** see below, after the measurements.
 6. **The Shooter example** (v0.7, D138): a game on a 16 ms Timer, timed by its ticks; see below.
+7. **The Duel example** (v0.8, D139): a fighting game on a 16 ms Timer, timed by its ticks; see below.
 
 **Measured in step 2-2** (2026-10-26, `main` at `ba11bc0` with step 2-2; the player and the IDE built for measuring, `lib/bench_main.dart`; Chrome and WebKit through Playwright on the author's Mac, WebKit standing in for Safari; the macOS apps as release builds). The player's numbers first, the IDE's in brackets:
 
@@ -187,6 +188,22 @@ What they say:
 - **The game keeps its Timer's pace everywhere:** 62 ticks a second, as a 16 ms Timer gives, in Chrome and on macOS; 50 in WebKit, whose timers come every 20 ms. The game moves by the milliseconds that passed (`Milliseconds()`), so the ship and the enemies go at the same speed in WebKit, in steps a little larger.
 - **A tick needs 1.3 to 6.5 ms of its 16** on average, under the 10 ms of the criteria below everywhere; drawing as for Galaga (Chrome's raster about 7 ms). Its longest single tick was 58 ms once, in the IDE in Chrome.
 - **A Shooter tick costs more than a Galaga round** (4 ms against 1.4 ms in Chrome, the same day), though it checks fewer pairs. The two do different work: the Shooter reads and sets its sprites' properties (`Visible`, `X`, `Y`, `Frames`) and calls `Move` and `Hits` as members of controls in arrays, where Galaga keeps its numbers in arrays of integers and sets only `Left` and `Top`. So these numbers do not compare `Move` and `Hits` with the BASIC lines they replace (plans/PLAN_V07.md §3.2 hoped to see that); that needs the same game written both ways. "Cheaper control lookups" below is the place to look first if a game comes near the criteria.
+
+**The Duel example** (benchmark 7, measured 2026-11-17 on the author's Mac with v0.8; `examples/duel` driven by `test/bench/duel.events`: one player against the computer, 1P walking in and back, punching, kicking high and low, crouching and jumping for about 25 seconds, the training view on for the second half). Timed as the Shooter: each tick from the Timer to the end of its handler. A tick runs two state machines, fills two input bundles (one from the keys, one by the computer's rules), places four box sprites and checks the hits with `Hits`, and sets a fighter's `Frames` and `FlipX` when they change. Two runs each, the player first and the IDE in brackets:
+
+| | Chrome | WebKit | macOS app |
+|---|---|---|---|
+| Ticks a second (the Timer asks 62) | 62.2 (61.8–61.9) | 49.8–49.9 (49.8–49.9) | 62.2–62.5 (62.2–62.4) |
+| A tick's handler | 1.6–1.7 ms (1.8–1.9 ms) | 3.1–3.3 ms (3.1–3.2 ms) | 1.4–1.5 ms (2.0–2.1 ms) |
+| — the longest tick | 112–121 ms (120 ms) | 15–20 ms (18–26 ms) | 13–117 ms (14–109 ms) |
+| Frames drawn a second | 39 (37–38) | 34–35 (34–35) | 33–34 (34–37) |
+| A frame's build + raster | 7.0 ms (9.0 ms) | 2.3 ms (2.9 ms) | 2.2 ms (3.0 ms) |
+
+What they say:
+
+- **The game keeps its Timer's pace everywhere**, as the Shooter does, and **a tick needs 1.4 to 3.3 ms of its 16**, less than a Shooter tick: two fighters and four boxes are fewer sprites than its shots and enemies.
+- **About 35 frames a second are drawn**, not 60: the screen is drawn again only when something on it changes, and much of a fight is fighters standing or the hit stop, when nothing moves.
+- **The longest tick is the first sound.** Measured first, it was 128–142 ms in Chrome and 121–321 ms on macOS, every run: `Sound.Play` waited while the sound engine started and decoded the sound, though D138 says it does not wait (the Shooter's first sound is in its Start button's `Click`, not in a tick, so it never showed). `Sound.Play` now returns at once. What is left is the engine's own start, which holds the app's thread itself: about 110–120 ms in Chrome on every run, and on macOS only the first time after a build (the second runs' longest tick was 13–14 ms). KNOWN_ISSUES has it.
 
 **Sizes of the player** (release builds, the hello project built in): **web** 42 MB as a folder, of which 36 MB are CanvasKit's builds for different browsers; a browser loads about 11 MB (`main.dart.js` 2.8 MB, one CanvasKit 7 MB, Pretendard 1.6 MB); 15 MB as a `.zip`. **macOS** 43 MB (universal), 19 MB as a `.zip`. **Windows** 29.5 MB as a folder, with the Visual C++ runtime next to the program (CI prints it with every build; the IDE's folder is 36 MB). The IDE for comparison: 51 MB on macOS, `main.dart.js` 3.4 MB.
 
